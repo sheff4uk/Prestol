@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<STYLE>
+body
+{
+    font-family:"Arial", sans-serif;
+    font-size: 10pt;
+}
+
+p
+{
+    line-height: 150%;
+}
+table.footer
+{
+    font-size: 10pt;
+    margin-top: 15px;
+    line-height: 150%;
+}
+table.order
+{
+    border-collapse: collapse;
+}
+table.order td
+{
+    font-size: 10pt;
+    border: 1px solid #000000;
+}
+
+</STYLE>
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title langs="ru">Счет</title>
+    </head>
+    <body bgcolor="white" lang="RU">
+
+
+        <div class="Section1">
+
+            <h1>Счет-фактура №{{ order.number }} от {{ order.createdAt|date("d.m.Y") }}</h1>
+            <p>
+                Продавец: {{ order.site.legalEntity }}<br>
+                Адрес: {{ order.site.address }}<br>
+                ИНН: {{ order.site.inn }}<br>
+                Грузотправитель и его адрес: {{ order.site.legalEntity }} {{ order.site.address }}<br>
+                Грузополучатель и его адрес: {{ order.customer.nickName }} {{ order.deliveryAddress }}<br>
+                К платежно-расчетному документу №{{ order.number }} от {{ order.createdAt|date("d.m.Y") }}
+                Покупатель: {{ order.customer.nickName }}<br>
+                Адрес: {{ order.customer.address }}<br>
+                Валюта: наименование, код {{ defaultCurrency }}<br>
+            </p>
+
+            <table border="0" cellspacing="0" cellpadding="2" width="100%" class="order">
+                <TR>
+                    <TD ROWSPAN=2 ALIGN="CENTER" VALIGN=MIDDLE>Наименование товара (описание выполненных работ, оказанных услуг), имущественного права</TD>
+                    <TD COLSPAN=2 ALIGN="CENTER" VALIGN=MIDDLE>Единицы измерения</TD>
+                    <TD ROWSPAN=2 ALIGN="CENTER" VALIGN=MIDDLE>Количество объем</TD>
+                    <TD ROWSPAN=2 ALIGN="CENTER" VALIGN=MIDDLE>Цена (тариф) за единицу измерения</TD>
+                    <TD ROWSPAN=2 ALIGN="CENTER" VALIGN=MIDDLE>Стоимость товаров (работ, услуг) имущественных прав, без налога — всего</TD>
+                    <TD ROWSPAN=2 ALIGN="CENTER" VALIGN=MIDDLE>В том числе сумма акциза</TD>
+                    <TD ROWSPAN=2 ALIGN="CENTER" VALIGN=MIDDLE>Налоговая ставка</TD>
+                    <TD ROWSPAN=2 ALIGN="CENTER" VALIGN=MIDDLE>Сумма налога предъявляемая полкупателю</TD>
+                    <TD ROWSPAN=2 ALIGN="CENTER" VALIGN=MIDDLE>Стоимость товаров (работ, услуг) имущественных прав с налогом — всего</TD>
+                    <TD COLSPAN=2 ALIGN="CENTER" VALIGN=MIDDLE>Страна происхождения товара</TD>
+                    <TD ROWSPAN=2 ALIGN="CENTER" VALIGN=MIDDLE>Номер таможенной декларации</TD>
+                </TR>
+                <TR>
+                        <TD ALIGN="LEFT">Код</TD>
+                        <TD ALIGN="LEFT">Условное обозначение (национальное)</TD>
+                        <TD ALIGN="LEFT">Цифровой код</TD>
+                        <TD ALIGN="LEFT">Краткое наименование</TD>
+                        </TR>
+                <tr>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>2а</td>
+                    <td>3</td>
+                    <td>4</td>
+                    <td>5</td>
+                    <td>6</td>
+                    <td>7</td>
+                    <td>8</td>
+                    <td>9</td>
+                    <td>10</td>
+                    <td>10а</td>
+                    <td>11</td>
+                </tr>
+
+                {% for op in order.availableOrderProducts %}
+                    <tr valign="top">
+                        <td >
+                            {{ op }}
+                        </td>
+                        <td >
+                            &nbsp;
+                        </td>
+                        <td >
+                            &nbsp;
+                        </td>
+                        <td >
+                            {{ op.quantity }}
+                        </td>
+                        <td >
+                            {{ op.price }}
+                        </td>
+                        <td >
+                            {{ op.summ }}
+                        </td>
+                        <td >
+                            &nbsp;
+                        </td>
+                        <td >
+                            &nbsp;
+                        </td>
+                        <td >
+                            &nbsp;
+                        </td>
+                        <td >
+                            {{ op.summ }}
+                        </td>
+                        <td >
+                            &nbsp;
+                        </td>
+                        <td >
+                            {{ op.offer.product.manufacturer }}
+                        </td>
+                        <td >
+                            &nbsp;
+                        </td>
+                    </tr>
+                {% endfor %}
+
+                <tr valign="top">
+                        <td colspan="5">
+                            <h3>Всего к оплате:</h3>
+                        </td>
+
+                        <td >
+                            {{ order.summ }}
+                        </td>
+                        <td colspan="2">
+                            X
+                        </td>
+                        <td >
+                            &nbsp;
+                        </td>
+                        <td >
+                            {{ order.totalSumm }}
+                        </td>
+                        <td colspan="3">
+                            &nbsp;
+                        </td>
+                    </tr>
+
+            </table>
+            <table border="0" cellspacing="0" cellpadding="0" width="100%" class="footer">
+                <tr>
+                    <td width="20%">
+                        Руководитель организации:
+                    </td>
+                    <td width="80%">
+                        _______________________ / ______________________________ /
+                    </td>
+                </tr>
+                <tr>
+                    <td width="20%">
+                        Гл. бухгалтер:
+                    </td>
+                    <td width="80%">
+                        _______________________ / ______________________________ /
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,346 @@
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url('../fonts/HelveticaNeue.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'FontAwesome';
+  src: url('../fonts/fontawesome-webfont.eot?v=4.5.0');
+  src: url('../fonts/fontawesome-webfont.eot?#iefix&v=4.5.0') format('embedded-opentype'), url('../fonts/fontawesome-webfont.woff2?v=4.5.0') format('woff2'), url('../fonts/fontawesome-webfont.woff?v=4.5.0') format('woff'), url('../fonts/fontawesome-webfont.ttf?v=4.5.0') format('truetype'), url('../fonts/fontawesome-webfont.svg?v=4.5.0#fontawesomeregular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+body {
+	padding-top: 60px;
+}
+a {
+	transition: .3s;	
+}
+body, td {
+	margin: 0 20px;
+	color: #333;
+	font-family: Verdana, Trebuchet MS, Tahoma, Arial, sans-serif;
+	//font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 10pt;
+}
+
+#overlay {
+  z-index: 10;
+  position: fixed;
+  background-color: #000;
+  opacity: 0.8;
+  -moz-opacity: 0.8;
+  filter: alpha(opacity=80);
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+  display: none;
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0px;
+}
+
+td, th {
+	padding: 3px;
+	border-bottom: 1px solid #bbb;
+	line-height: 1.45em;
+}
+
+th {
+	background: #FFBB55;
+}
+
+.attention td {
+    background: #fdc;
+}
+
+img.attention {
+    vertical-align: middle;
+}
+
+tr:target td {
+    background: #dfb;
+}
+
+table tbody tr:hover {
+	background: #ffa; /* Цвет фона при наведении */
+}
+
+tbody tr:nth-child(odd){ /* Задаем стили для нечетных рядов таблицы */
+	background: #fff;
+}
+ 
+tbody tr:nth-child(even){ /* Задаем стили для четных рядов таблицы */
+	background: #e2f6f8;
+}
+
+.addproduct > form > fieldset > div > label,
+.addproduct > form > fieldset > div > div > label {
+	display: block;
+	float: left;
+	width: 100px;
+}
+.addproduct > form > fieldset > div {
+	width: 100%;
+	margin: 1em 0;
+	//display: flex;
+}
+
+:required {
+	box-shadow: 3px 3px 10px #911;
+}
+
+.step {
+	margin: 0 !important;
+}
+
+//#formsteps label {
+//	width: 80px;
+//}
+
+input[type="checkbox"].isready + label {
+	width: 80px;
+}
+
+//#formsteps input[type="checkbox"]:checked + label:before {
+//	content: "Готово";
+//}
+
+//#formsteps label:before {
+//	content: "В работе";
+//}
+
+input[type="checkbox"].isready:checked + label:before {
+	content: "Готово";
+}
+
+input[type="checkbox"].isready + label:before {
+	content: "В работе";
+}
+
+.edit_steps label{
+//	width: 100px;
+	text-align: left;
+//	font-size: .9em;
+}
+
+.nowrap {
+	white-space: nowrap;
+}
+
+.material {
+	line-height: 1.79em;
+}
+
+.spase {
+	width: 20px;
+}
+
+.isready {
+	color: #191;
+	font-weight: bold;
+}
+
+#add_btn {
+	background: url("../img/bt_speed_dial_1x.png") no-repeat scroll center center transparent;
+	bottom: 100px;
+	cursor: pointer;
+	width: 56px;
+	height: 56px;
+	opacity: .4;
+	position: fixed;
+	right: 100px;
+	z-index: 9;
+	border-radius: 50%;
+	background-color: #db4437;
+	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+}
+
+#print_btn {
+	background: url("../img/printer.png") no-repeat scroll center center transparent;
+	bottom: 175px;
+	cursor: pointer;
+	width: 56px;
+	height: 56px;
+	opacity: .4;
+	position: fixed;
+	right: 100px;
+	z-index: 13;
+	border-radius: 50%;
+	background-color: #db4437;
+	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+}
+#print_btn > a {
+	display: none;
+	height: 100%;
+}
+
+#add_btn:hover, #print_btn:hover {
+	opacity: .8;
+}
+
+.bg-red {
+	background-color: #ff9090;
+//	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+	border-radius: 20%;
+}
+
+.bg-yellow {
+	background-color: #eded00;
+//	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+	border-radius: 20%;
+}
+
+.bg-green {
+	background-color: #3bec00;
+//	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+	border-radius: 20%;
+}
+
+//.b-string {
+//    position: relative;
+//    width: 100px;
+//    margin-left: 5px;
+//    overflow: hidden;
+//    white-space: nowrap
+// }
+//.b-string:hover {
+//	z-index: 1;
+//	position: absolute;
+//	display: table;
+//	box-shadow: 0px 0px 10px #999;
+//	border-radius: 5px;
+//	background: rgba(255,255,255, .8);
+//}
+.printlist {
+    display: inline-block;
+    vertical-align: top;
+    border: 1px solid #777;
+    border-radius: 7px;
+    padding: 10px;
+    margin: 10px;
+}
+
+.radiostatus {
+	//display: inline-block;
+}
+.free-amount input + span {
+	display: none;
+}
+.free-amount input:checked + span {
+	display: inline-block;
+}
+
+.print_col, .print_row {
+	display: none;
+}
+
+.print_row + label{
+	position: absolute;
+	left: -20px;
+}
+
+.main_table thead input[type="text"] {
+	display: block;
+	margin: 0 auto;
+	width: 100%;
+}
+
+.selectwr {
+	display: block;
+}
+.navbar {
+    background-color: #222;
+    border-color: #080808;
+	position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 10;
+    margin-left: -20px;
+}
+.navbar a {
+	text-decoration: none;
+}
+.navbar-header {
+	float: left;
+}
+.navbar-brand {
+	color: #9d9d9d;
+	float: left;
+    height: 50px;
+    padding: 15px 15px;
+    font-size: 18px;
+    line-height: 20px;
+}
+.navbar-brand:hover, .navbar-brand:focus {
+    color: #fff;
+    background-color: transparent;
+}
+.navbar-nav {
+	float: right;
+	padding-left: 0;
+    margin: 0;
+    list-style: none;
+}
+.navbar-nav > li {
+	float: left;
+}
+.navbar-nav > li > a {
+	color: #9d9d9d;
+	line-height: 20px;
+	position: relative;
+    display: block;
+    padding: 15px 15px;
+	font-size: 14px;
+}
+.navbar-nav > li > a:hover, .navbar-nav > li > a:focus {
+    color: #fff;
+    background-color: transparent;
+}
+.navbar-nav > .active > a, .navbar-nav > .active > a:hover, .navbar-nav > .active > a:focus {
+    color: #fff;
+    background-color: #080808;
+}
+select {
+	background: #ffffff;
+}
+input.tariff {
+	width: 60px;
+}
+input.amount {
+	width: 50px;
+}
+.main_table {
+	table-layout: fixed;
+	width: 100%;
+}
+.main_table td, .main_table th {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 1;
+	transition: .3s;
+}
+.main_table td:hover, .main_table th:hover {
+    overflow: visible;
+    position: relative;
+}
+.main_table td > span {
+	transition: .3s;
+}
+.main_table td:hover > span {
+    background: #ffa;
+    padding: 4px 0;
+    box-shadow: 5px 5px 8px #666;
+}
+.main_table th:hover {
+	color: #fff;
+}
