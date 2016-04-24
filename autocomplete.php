@@ -6,8 +6,8 @@
 			$query = "(SELECT CT.City AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID GROUP BY CT.CT_ID)
 					  UNION
 					  (SELECT CONCAT(CT.City, '/', SH.Shop) AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID)";
-			$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-			while( $row = mysql_fetch_array($res) )
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) )
 			{
 				echo "\"{$row["Shop"]}\",";
 			}
@@ -22,8 +22,8 @@
 		var WorkersTags = [
 		<?
 			$query = "SELECT Name FROM WorkersData";
-			$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-			while( $row = mysql_fetch_array($res) )
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) )
 			{
 				echo "\"{$row["Name"]}\",";
 			}
@@ -38,8 +38,8 @@
 		var ColorTags = [
 		<?
 			$query = "SELECT Color FROM OrdersData GROUP BY Color";
-			$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-			while( $row = mysql_fetch_array($res) )
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) )
 			{
 				echo "\"{$row["Color"]}\",";
 			}
@@ -54,8 +54,8 @@
 		var TextileTags = [
 		<?
 			$query = "SELECT ODD.Material FROM OrdersDataDetail ODD JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1 GROUP BY ODD.Material";
-			$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-			while( $row = mysql_fetch_array($res) )
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) )
 			{
 				echo "\"{$row["Material"]}\",";
 			}
@@ -70,8 +70,8 @@
 		var PlasticTags = [
 		<?
 			$query = "SELECT ODD.Material FROM OrdersDataDetail ODD JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2 GROUP BY ODD.Material";
-			$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-			while( $row = mysql_fetch_array($res) )
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) )
 			{
 				echo "\"{$row["Material"]}\",";
 			}
@@ -86,8 +86,8 @@
 		var TextilePlasticTags = [
 		<?
 			$query = "SELECT ODD.Material FROM OrdersDataDetail ODD JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID GROUP BY ODD.Material";
-			$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-			while( $row = mysql_fetch_array($res) )
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) )
 			{
 				echo "\"{$row["Material"]}\",";
 			}

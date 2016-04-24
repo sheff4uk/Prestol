@@ -1,8 +1,8 @@
 <?
 	include "../config.php";
     $query = "SELECT Name FROM WorkersData WHERE WD_ID = {$_GET["worker"]}";
-	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	$Worker = mysql_result($res,0,'Name');
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$Worker = mysqli_result($res,0,'Name');
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -66,8 +66,8 @@
                 GROUP BY ODD.ODD_ID
                 HAVING Step7 = {$_GET["worker"]}
                 ORDER BY OD.OD_ID DESC";
-	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	while( $row = mysql_fetch_array($res) )
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) )
 	{
         $comment = "";
         if( $row["worker7"] <> $row["worker8"] and $row["worker8"] > "" ) {

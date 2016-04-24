@@ -11,10 +11,10 @@
         $Blank = $_POST["Blank"] <> "" ? $_POST["Blank"] : "NULL";
         $Amount = $_POST["Amount"] <> "" ? $_POST["Amount"] : "NULL";
         $Tariff = $_POST["Tariff"] <> "" ? $_POST["Tariff"] : "NULL";
-        $Comment = mysql_real_escape_string( $_POST["Comment"] );
+        $Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 		$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Tariff, Comment)
 				  VALUES ({$Worker}, {$Blank}, {$Amount}, {$Tariff}, '{$Comment}')";
-		mysql_query( $query ) or die("Invalid query: " . mysql_error());
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
 		//header( "Location: ".$location );
 		header( "Location: ".$_SERVER['REQUEST_URI'] );
@@ -43,8 +43,8 @@
 					<option value="">-=Выберите работника=-</option>
 					<?
 					$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD";
-					$res = mysql_query($query) or die("Invalid query: " . mysql_error());
-					while( $row = mysql_fetch_array($res) )
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) )
 					{
 						echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
 					}
@@ -56,8 +56,8 @@
 					<option value="">-=Выберите заготовку=-</option>
 					<?
 					$query = "SELECT BL.BL_ID, BL.Name FROM BlankList BL ORDER BY BL.Name";
-					$res = mysql_query($query) or die("Invalid query: " . mysql_error());
-					while( $row = mysql_fetch_array($res) )
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) )
 					{
 						echo "<option value='{$row["BL_ID"]}'>{$row["Name"]}</option>";
 					}
@@ -95,8 +95,8 @@
 					LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
 					LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
 					ORDER BY BS.Date DESC";
-		$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-		while( $row = mysql_fetch_array($res) )
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) )
 		{
 			echo "<tr>";
 			echo "<td>{$row["Date"]}</td>";

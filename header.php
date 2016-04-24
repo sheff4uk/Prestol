@@ -91,8 +91,8 @@
 <?
 	// Узнаем кол-во непроверенных свободных
 	$query = "SELECT COUNT(1) CNT FROM `OrdersDataDetail` WHERE OD_ID IS NULL AND is_check = 0";
-	$result = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	$ischeckcount = " (".mysql_result($result,0,'CNT').")";
+	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$ischeckcount = " (".mysqli_result($result,0,'CNT').")";
 	  
 	$menu = array ("Ткань/пластик" => "/materials.php?isex0=1&prod1=1"
 				  ,"Производство" => "/workers.php?worker=0&type=1&isready=0"

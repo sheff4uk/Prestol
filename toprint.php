@@ -16,8 +16,8 @@
                     JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
                     WHERE ODD.is_check = 1
                     GROUP BY WD.WD_ID";
-        $res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-        while( $row = mysql_fetch_array($res) )
+        $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+        while( $row = mysqli_fetch_array($res) )
         {
             echo "<p><a class='button btnPrint' href='toprint/step6.php?worker={$row["WD_ID"]}'>{$row["Name"]}</a></p>";
         }
@@ -37,8 +37,8 @@
                     JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
                     WHERE ODD.is_check = 1
                     GROUP BY WD.WD_ID";
-        $res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-        while( $row = mysql_fetch_array($res) )
+        $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+        while( $row = mysqli_fetch_array($res) )
         {
             echo "<p><a class='button btnPrint' href='toprint/step7.php?worker={$row["WD_ID"]}'>{$row["Name"]}</a></p>";
         }

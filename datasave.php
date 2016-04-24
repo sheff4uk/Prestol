@@ -13,11 +13,11 @@ if( $_GET["oddid"] )
 			  LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 			  WHERE ODD.ODD_ID = {$_GET["oddid"]}";
-	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	$amount = mysql_result($res,0,'Amount');
-	$inprogress = mysql_result($res,0,'inprogress');
-	$color= mysql_result($res,0,'Color');
-	$ispainting = mysql_result($res,0,'IsPainting');
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$amount = mysqli_result($res,0,'Amount');
+	$inprogress = mysqli_result($res,0,'inprogress');
+	$color= mysqli_result($res,0,'Color');
+	$ispainting = mysqli_result($res,0,'IsPainting');
 	
 	// Если количество изделий уменьшено и изделие в работе, то переносим их на склад (свободные)
 	if( $amount > $_POST["Amount"] and $inprogress == 1)
@@ -25,14 +25,14 @@ if( $_GET["oddid"] )
 		// Перемещение на склад лишних изделий
 		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Color, is_check, order_date, arrival_date)
 				  SELECT NULL, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount - {$_POST["Amount"]}, IF({$ispainting} > 1, '{$color}', NULL), 0, order_date, arrival_date FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
-		mysql_query( $query ) or die("Invalid query: " . mysql_error());
-		$odd_id = mysql_insert_id();
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$odd_id = mysqli_insert_id( $mysqli );
 
 		// Копирование производственных этапов
 		$query = "INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, WD_ID, IsReady, Tariff)
 				  SELECT {$odd_id}, ST_ID, WD_ID, IsReady, Tariff FROM OrdersDataSteps
 				  WHERE ODD_ID = {$_GET["oddid"]}";
-		mysql_query( $query ) or die("Invalid query: " . mysql_error());
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
         
         $_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
     }
@@ -44,8 +44,8 @@ if( $_GET["oddid"] )
 	$Length = $_POST["Length"] ? "{$_POST["Length"]}" : "NULL";
 	$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
-	$Material = mysql_real_escape_string( $_POST["Material"] );
-    $Color = mysql_real_escape_string( $_POST["Color"] );
+	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
+    $Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
 	$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
 	$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
 	$query = "UPDATE OrdersDataDetail
@@ -62,7 +62,7 @@ if( $_GET["oddid"] )
                  ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
                  ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
 			  WHERE ODD_ID = {$_GET["oddid"]}";
-	mysql_query( $query ) or die("Invalid query: " . mysql_error());
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	// TODO: Нужно помечать в базе тарифы измененные вручную
 	// пересчитывать тарифы при изменении параметров изделия (модель, форма, размер) кроме ручных
@@ -75,10 +75,10 @@ if( $_GET["oddid"] )
 //			  FROM OrdersDataDetail ODD
 //			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 //			  WHERE ODD.ODD_ID = {$_GET["oddid"]}";
-//	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-//	$model = mysql_result($res,0,'PM_ID');
-//	$size = mysql_result($res,0,'PS_ID');
-//	$mechanism = mysql_result($res,0,'PME_ID');
+//	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//	$model = mysqli_result($res,0,'PM_ID');
+//	$size = mysqli_result($res,0,'PS_ID');
+//	$mechanism = mysqli_result($res,0,'PME_ID');
 
 	header( "Location: ".$_GET["location"]."#".$_GET["oddid"] ); // Перезагружаем экран
 	die;
@@ -89,7 +89,7 @@ if( isset($_POST["ODD_ID"]) )
 {
 	// Обнуление статуса готовности
 	$query = "UPDATE OrdersDataSteps SET IsReady = 0 WHERE ODD_ID = {$_POST["ODD_ID"]}";
-	mysql_query( $query ) or die("Invalid query: " . mysql_error());
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	foreach( $_POST as $k => $v) 
 	{
@@ -100,7 +100,7 @@ if( isset($_POST["ODD_ID"]) )
 		{
 			$sid = (int)str_replace( "WD_ID", "", $k );
 			$query = "UPDATE OrdersDataSteps SET WD_ID = $val WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
-			mysql_query( $query ) or die("Invalid query: " . mysql_error());
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
 		// Обновление тарифа
@@ -109,7 +109,7 @@ if( isset($_POST["ODD_ID"]) )
 			$sid = (int)str_replace( "Tariff", "", $k );
 			$tariff = $v ? "$v" : "NULL";
 			$query = "UPDATE OrdersDataSteps SET Tariff = $val WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
-			mysql_query( $query ) or die("Invalid query: " . mysql_error());
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
 		// Обновление статуса готовности
@@ -117,7 +117,7 @@ if( isset($_POST["ODD_ID"]) )
 		{
 			$sid = (int)str_replace( "IsReady", "", $k );
 			$query = "UPDATE OrdersDataSteps SET IsReady = $v WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
-			mysql_query( $query ) or die("Invalid query: " . mysql_error());
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 	}
 

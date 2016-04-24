@@ -2,8 +2,8 @@
 	// Массив форм столешниц в зависимости от модели
 	$ModelForm = array();
 	$query = "(SELECT 0 PM_ID, PF_ID, Form FROM ProductForms) UNION (SELECT PMF.PM_ID, PMF.PF_ID, PF.Form FROM ProductModelsForms PMF LEFT JOIN ProductForms PF ON PF.PF_ID = PMF.PF_ID)";
-	$result = mysql_query($query) or die("Invalid query: " . mysql_error()); 
-	while( $row = mysql_fetch_array($result) ) {
+	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($result) ) {
 		$ModelForm[$row["PM_ID"]][$row["PF_ID"]] = [$row["Form"]];
 	}
 
@@ -32,8 +32,8 @@
 			<?
 				echo "<option value=''>-=Выберите модель=-</option>";
 				$query = "SELECT * FROM ProductModels WHERE PT_ID = 1 ORDER BY Model";
-				$result = mysql_query($query) or die("Invalid query: " . mysql_error());
-				while( $row = mysql_fetch_array($result) )
+				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($result) )
 				{
 					echo "<option value='{$row["PM_ID"]}'>{$row["Model"]}</option>";
 				}
@@ -102,8 +102,8 @@
 			<?
 				echo "<option value=''>-=Выберите модель=-</option>";
 				$query = "SELECT * FROM ProductModels WHERE PT_ID = 2 ORDER BY Model";
-				$result = mysql_query($query) or die("Invalid query: " . mysql_error());
-				while( $row = mysql_fetch_array($result) )
+				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($result) )
 				{
 					echo "<option value='{$row["PM_ID"]}'>{$row["Model"]}</option>";
 				}
@@ -115,8 +115,8 @@
 			<div class="btnset" id="forms">
 			<?
 				$query = "SELECT PF_ID, Form FROM ProductForms";
-				$result = mysql_query($query) or die("Invalid query: " . mysql_error());
-				while( $row = mysql_fetch_array($result) ) {
+				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($result) ) {
 					echo "<input type='radio' id='form{$row["PF_ID"]}' name='Form' value='{$row["PF_ID"]}'>";
 					echo "<label for='form{$row["PF_ID"]}'>{$row["Form"]}</label>";
 				}
@@ -129,8 +129,8 @@
 			<div class="btnset">
 			<?
 				$query = "SELECT PME_ID, Mechanism FROM ProductMechanism";
-				$result = mysql_query($query) or die("Invalid query: " . mysql_error());
-				while( $row = mysql_fetch_array($result) ) {
+				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($result) ) {
 					echo "<input type='radio' id='mechanism{$row["PME_ID"]}' name='Mechanism' value='{$row["PME_ID"]}'>";
 					echo "<label for='mechanism{$row["PME_ID"]}'>{$row["Mechanism"]}</label>";
 				}

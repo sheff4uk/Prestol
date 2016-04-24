@@ -20,12 +20,12 @@
 	{
 		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
-        $ClientName = mysql_real_escape_string( $_POST["ClientName"] );
+        $ClientName = mysqli_real_escape_string( $mysqli,$_POST["ClientName"] );
         $Shop = $_POST["Shop"] <> "" ? $_POST["Shop"] : "NULL";
-        $OrderNumber = mysql_real_escape_string( $_POST["OrderNumber"] );
-        $Color = mysql_real_escape_string( $_POST["Color"] );
+        $OrderNumber = mysqli_real_escape_string( $mysqli,$_POST["OrderNumber"] );
+        $Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
         $IsPainting = $_POST["IsPainting"];
-        $Comment = mysql_real_escape_string( $_POST["Comment"] );
+        $Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 		$query = "UPDATE OrdersData
 				  SET CLientName = '{$ClientName}'
 				     ,StartDate = $StartDate
@@ -36,7 +36,7 @@
 				     ,IsPainting = $IsPainting
 				     ,Comment = '{$Comment}'
 				  WHERE OD_ID = {$id}";
-		mysql_query( $query ) or die("Invalid query: " . mysql_error());
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
 		header( "Location: ".$location );
 		die;
@@ -52,15 +52,15 @@
 		$Length = $_POST["Length"] ? "{$_POST["Length"]}" : "NULL";
 		$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 		$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
-		$Material = mysql_real_escape_string( $_POST["Material"] );
-		$Color = mysql_real_escape_string( $_POST["Color"] );
+		$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
+		$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
 		$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
 		$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
 		
 		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Color, order_date, arrival_date)
 				  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$Form}, {$Mechanism}, '{$Material}', {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$OrderDate}', '{$ArrivalDate}')";
-		mysql_query( $query ) or die("Invalid query: " . mysql_error());
-		$odd_id = mysql_insert_id();
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$odd_id = mysqli_insert_id( $mysqli );
 
 		// Вычисляем тарифи для разных этапов и записываем их
 		if( $_POST["Model"] ) {
@@ -85,7 +85,7 @@
 					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
 					WHERE ST.Default = 1";
 		}
-		mysql_query( $query ) or die("Invalid query: " . mysql_error());
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		$_SESSION["odd_id"] = $odd_id; // Cохраняем в сессию id вставленной записи
 		header( "Location: ".$location."#".$odd_id ); // Перезагружаем экран
@@ -107,21 +107,21 @@
 				  LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
                   LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
                   WHERE ODD.ODD_ID = {$odd_id}";
-        $res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-        $inprogress = mysql_result($res,0,'inprogress');
-        $color = mysql_result($res,0,'Color');
-        $ispainting = mysql_result($res,0,'IsPainting');
+        $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+        $inprogress = mysqli_result($res,0,'inprogress');
+        $color = mysqli_result($res,0,'Color');
+        $ispainting = mysqli_result($res,0,'IsPainting');
 
         if( $inprogress == 0 ) { // Если не приступили, то удаляем. Иначе - переносим в свободные.
             $query = "DELETE FROM OrdersDataSteps WHERE ODD_ID={$odd_id}";
-            mysql_query( $query ) or die("Invalid query: " . mysql_error());
+            mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
             $query = "DELETE FROM OrdersDataDetail WHERE ODD_ID={$odd_id}";
-            mysql_query( $query ) or die("Invalid query: " . mysql_error());
+            mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
         }
         else {
             $query = "UPDATE OrdersDataDetail SET OD_ID = NULL, is_check = 0, Color = IF({$ispainting} > 1, '{$color}', NULL) WHERE ODD_ID={$odd_id}";
-            mysql_query( $query ) or die("Invalid query: " . mysql_error());
+            mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
             
             $_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
         }
@@ -175,15 +175,15 @@
 					,Comment
 			  FROM OrdersData
 			  WHERE OD_ID = {$id}";
-	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	$ClientName = mysql_result($res,0,'ClientName');
-	$StartDate = mysql_result($res,0,'StartDate');
-	$EndDate = mysql_result($res,0,'EndDate');
-	$Shop = mysql_result($res,0,'SH_ID');
-	$OrderNumber = mysql_result($res,0,'OrderNumber');
-	$Color = mysql_result($res,0,'Color');
-	$IsPainting = mysql_result($res,0,'IsPainting');
-	$Comment = mysql_result($res,0,'Comment');
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$ClientName = mysqli_result($res,0,'ClientName');
+	$StartDate = mysqli_result($res,0,'StartDate');
+	$EndDate = mysqli_result($res,0,'EndDate');
+	$Shop = mysqli_result($res,0,'SH_ID');
+	$OrderNumber = mysqli_result($res,0,'OrderNumber');
+	$Color = mysqli_result($res,0,'Color');
+	$IsPainting = mysqli_result($res,0,'IsPainting');
+	$Comment = mysqli_result($res,0,'Comment');
 ?>
 		<form method='post'>
 		<tbody>
@@ -199,8 +199,8 @@
 								FROM Shops
 								JOIN Cities ON Cities.CT_ID = Shops.CT_ID
 								ORDER BY Cities.City, Shops.Shop";
-					$res = mysql_query($query) or die("Invalid query: " . mysql_error());
-					while( $row = mysql_fetch_array($res) )
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) )
 					{
 						echo "<option value='{$row["SH_ID"]}' {$row["selected"]}>{$row["Shop"]}</option>";
 					}
@@ -281,8 +281,8 @@
 		$query .= " WHERE ODD.OD_ID IS NULL";
 	}
 	$query .= " GROUP BY ODD.ODD_ID ORDER BY PT_ID DESC, PM.Model, ODD.ODD_ID";
-	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	while( $row = mysql_fetch_array($res) )
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) )
 	{
 		echo "<tr class='{$row["is_check"]}' id='{$row["ODD_ID"]}'>";
 		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
@@ -304,9 +304,9 @@
 				  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 				  WHERE ODD_ID = {$row["ODD_ID"]}
 				  ORDER BY ST.Sort";
-		$sub_res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
+		$sub_res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$steps = "<a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap' location='{$location}'>";
-		while( $sub_row = mysql_fetch_array($sub_res) )
+		while( $sub_row = mysqli_fetch_array($sub_res) )
 		{
 			$steps .= "<input type='checkbox' class='checkstatus' {$sub_row["IsReady"]} id='{$row["ODD_ID"]}{$sub_row["ST_ID"]}' {$sub_row["disabled"]}><label class='step' style='width:{$sub_row["Size"]}px;' for='{$row["ODD_ID"]}{$sub_row["ST_ID"]}' title='{$sub_row["Step"]} ({$sub_row["Name"]})'>{$sub_row["Short"]}</label>";
 		}

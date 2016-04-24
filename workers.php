@@ -17,8 +17,8 @@
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.WD_ID = WD.WD_ID AND ODS.IsReady = 0
 				  LEFT JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
 				  GROUP BY WD.WD_ID";
-		$res = mysql_query($query) or die("Invalid query: " . mysql_error());
-		while( $row = mysql_fetch_array($res) )
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) )
 		{
 			if( $_GET["worker"] == $row["WD_ID"] ) {$selected = "selected";}
 			else {$selected = "";}
@@ -32,8 +32,8 @@
 		echo "<label for='type'>Тип продукции:</label>";
 		echo "<div class='btnset' id='type'>";
 		$query = "SELECT PT_ID, Type FROM ProductTypes";
-		$res = mysql_query($query) or die("Invalid query: " . mysql_error());
-		while( $row = mysql_fetch_array($res) )
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) )
 		{
 			if( $_GET["type"] == $row["PT_ID"] ) {$checked = "checked";}
 			else {$checked = "";}
@@ -129,10 +129,10 @@
 				  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 				  GROUP BY OD.OD_ID, ODS.ST_ID
 				  ORDER BY ST.Sort";
-		$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-		if( mysql_num_rows($res) > 0 )
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( mysqli_num_rows($res) > 0 )
 		{
-			while( $row = mysql_fetch_array($res) )
+			while( $row = mysqli_fetch_array($res) )
 			{
 				if( isset($stid) and $stid != $row["ST_ID"])
 				{
@@ -154,8 +154,8 @@
 							WHERE ODD.OD_ID = {$row["OD_ID"]}
 							ORDER BY PM.PT_ID, ODD.ODD_ID";
 
-					$subres = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-					while( $subrow = mysql_fetch_array($subres) )
+					$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $subrow = mysqli_fetch_array($subres) )
 					{
 						// Формирование дропдауна со списком рабочих. Сортировка по релевантности.
 						$selectworker = "<select name='WD_ID{$row["ST_ID"]}' id='{$row["ST_ID"]}' class='selectwr'>";
@@ -171,8 +171,8 @@
 								  ) ODS ON ODS.WD_ID = WD.WD_ID
 								  GROUP BY WD.WD_ID
 								  ORDER BY CNT DESC";
-						$subsubres = mysql_query($query) or die("Invalid query: " . mysql_error());
-						while( $subsubrow = mysql_fetch_array($subsubres) )
+						$subsubres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $subsubrow = mysqli_fetch_array($subsubres) )
 						{
 							$selected = ( $subrow["WD_ID"] == $subsubrow["WD_ID"] ) ? "selected" : "";
 							$selectworker .= "<option {$selected} value='{$subsubrow["WD_ID"]}'>{$subsubrow["Name"]}</option>";

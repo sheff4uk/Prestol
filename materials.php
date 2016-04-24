@@ -17,7 +17,7 @@
 							 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
 							 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
 						  WHERE ODD_ID = {$prodid}";
-				mysql_query( $query ) or die("Invalid query: " . mysql_error());
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			}
 		}
 		header( "Location: ".$_SERVER['REQUEST_URI'] );
@@ -136,8 +136,8 @@
 			  	AND ODD.IsExist IN ({$isexist})
 				AND ODD.Material LIKE '%{$_GET["material"]}%'
 			  GROUP BY OD.OD_ID";
-	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	while( $row = mysql_fetch_array($res) )
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) )
 	{
 		echo "<tr>";
 		echo "<td>{$row["Checkbox"]}</td>";

@@ -19,12 +19,12 @@ case "steps":
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  WHERE ODD.ODD_ID = $odd_id";
-	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	$pt = mysql_result($res,0,'PT_ID');
-	$model = mysql_result($res,0,'Model');
-	$size = mysql_result($res,0,'Size');
-	$form = mysql_result($res,0,'Form');
-	$amount = mysql_result($res,0,'Amount');
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$pt = mysqli_result($res,0,'PT_ID');
+	$model = mysqli_result($res,0,'Model');
+	$size = mysqli_result($res,0,'Size');
+	$form = mysqli_result($res,0,'Form');
+	$amount = mysqli_result($res,0,'Amount');
 	$product = "<img src=\'/img/product_{$pt}.png\'>x{$amount}&nbsp;{$model}&nbsp;{$form}&nbsp;{$size}";
 	
 	// Получение информации об этапах производства
@@ -33,7 +33,7 @@ case "steps":
 			  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 			  WHERE ODS.ODD_ID = $odd_id
 			  ORDER BY ST.Sort";
-	$result = mysql_query($query) or die("Invalid query: " . mysql_error());
+	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	$text = "<input type=\'hidden\' name=\'ODD_ID\' value=\'$odd_id\'>";
 	$text .= "<h3>$product</h3>";
@@ -44,7 +44,7 @@ case "steps":
 	$text .= "<th>Готовность</th></tr>";
 	$text .= "</thead><tbody>";
 
-	while( $row = mysql_fetch_array($result) )
+	while( $row = mysqli_fetch_array($result) )
 	{
 		// Формирование дропдауна со списком рабочих. Сортировка по релевантности.
 		$selectworker = "<select name=\'WD_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\'>";
@@ -60,8 +60,8 @@ case "steps":
 				  ) ODS ON ODS.WD_ID = WD.WD_ID
 				  GROUP BY WD.WD_ID
 				  ORDER BY CNT DESC";
-		$res = mysql_query($query) or die("Invalid query: " . mysql_error());
-		while( $subrow = mysql_fetch_array($res) )
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $subrow = mysqli_fetch_array($res) )
 		{
 			$selected = ( $row["WD_ID"] == $subrow["WD_ID"] ) ? "selected" : "";
 			$selectworker .= "<option {$selected} value=\'{$subrow["WD_ID"]}\'>{$subrow["Name"]}</option>";
@@ -82,8 +82,8 @@ case "steps":
 case "livesearch":
 		
 	$query = "SELECT PT_ID FROM ProductModels WHERE PM_ID = {$_GET["model"]}";
-	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	$pt = mysql_result($res,0,'PT_ID');
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$pt = mysqli_result($res,0,'PT_ID');
 		
 	// Таблица изделий
 	$query = "SELECT ODD.ODD_ID
@@ -113,8 +113,8 @@ case "livesearch":
 	$query .= " GROUP BY ODD.ODD_ID";
 	$query .= " ORDER BY progress DESC";
 	
-	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	if( mysql_num_rows($res) > 0) {
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	if( mysqli_num_rows($res) > 0) {
 		$table = "<table><thead><tr>";
 		$table .= "<th></th>";
 		$table .= "<th>Кол-во</th>";
@@ -130,7 +130,7 @@ case "livesearch":
 	}
 		
 	$count = 0;
-	while( $row = mysql_fetch_array($res) )
+	while( $row = mysqli_fetch_array($res) )
 	{
 		$count = $count + $row["Amount"];
 		$table .= "<tr class='{$row["is_check"]} nowrap free-amount'>";
@@ -155,9 +155,9 @@ case "livesearch":
 				  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 				  WHERE ODS.ODD_ID = {$row["ODD_ID"]}
 				  ORDER BY ST.Sort";
-		$sub_res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
+		$sub_res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$steps = "<a class='nowrap'>";
-		while( $sub_row = mysql_fetch_array($sub_res) )
+		while( $sub_row = mysqli_fetch_array($sub_res) )
 		{
 			$steps .= "<input type='checkbox' class='checkstatus' {$sub_row["IsReady"]} id='{$row["ODD_ID"]}{$sub_row["ST_ID"]}' {$sub_row["disabled"]}><label class='step' style='width:{$sub_row["Size"]}px;' for='{$row["ODD_ID"]}{$sub_row["ST_ID"]}' title='{$sub_row["Step"]} ({$sub_row["Name"]})'>{$sub_row["Short"]}</label>";
 		}

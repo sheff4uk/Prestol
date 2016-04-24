@@ -9,17 +9,17 @@
 	{
 		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
 		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
-        $ClientName = mysql_real_escape_string( $_POST["ClientName"] );
+        $ClientName = mysqli_real_escape_string( $mysqli, $_POST["ClientName"] );
         $Shop = $_POST["Shop"] <> "" ? $_POST["Shop"] : "NULL";
-        $OrderNumber = mysql_real_escape_string( $_POST["OrderNumber"] );
-        $Color = mysql_real_escape_string( $_POST["Color"] );
-        $Comment = mysql_real_escape_string( $_POST["Comment"] );
+        $OrderNumber = mysqli_real_escape_string( $mysqli, $_POST["OrderNumber"] );
+        $Color = mysqli_real_escape_string( $mysqli, $_POST["Color"] );
+        $Comment = mysqli_real_escape_string( $mysqli, $_POST["Comment"] );
 		$query = "INSERT INTO OrdersData(CLientName, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment)
 				  VALUES ('{$ClientName}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}')";
-		mysql_query( $query ) or die("Invalid query: " . mysql_error());
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
 		// Перенаправление на экран деталей заказа
-		$id = mysql_insert_id();
+		$id = mysqli_insert_id( $mysqli );
 		header( "Location: orderdetail.php?id=".$id );
 //		header( "Location: /#".$id );
 		die;
@@ -31,7 +31,7 @@
 		$id = (int)$_GET["del"];
 
 		$query = "DELETE FROM OrdersData WHERE OD_ID={$id}";
-		mysql_query( $query ) or die("Invalid query: " . mysql_error());
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		header( "Location: /" ); // Перезагружаем экран
 		die;
@@ -43,7 +43,7 @@
 		$id = (int)$_GET["ready"];
 		$date = date("Y-m-d");
 		$query = "UPDATE OrdersData SET ReadyDate = '{$date}' WHERE OD_ID={$id}";
-		mysql_query( $query ) or die("Invalid query: " . mysql_error());
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		header( "Location: /" ); // Перезагружаем экран
 		die;
@@ -95,8 +95,8 @@
 									FROM Shops
 									JOIN Cities ON Cities.CT_ID = Shops.CT_ID
 									ORDER BY Cities.City, Shops.Shop";
-						$res = mysql_query($query) or die("Invalid query: " . mysql_error());
-						while( $row = mysql_fetch_array($res) )
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
 						{
 							echo "<option value='{$row["SH_ID"]}'>{$row["Shop"]}</option>";
 						}
@@ -281,8 +281,8 @@
 				  $query .= " AND Workers LIKE '%{$_SESSION["f_PR"]}%'";
 			  }
               $query .= " ORDER BY OD.OD_ID";
-	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	while( $row = mysql_fetch_array($res) )
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) )
 	{
 		echo "<tr id='{$row["OD_ID"]}'>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
@@ -310,9 +310,9 @@
 					JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 					GROUP BY ODD_ID
 					ORDER BY PM.PT_ID DESC, ODD.ODD_ID";
-		$sub_res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
+		$sub_res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$steps = "";
-		while( $sub_row = mysql_fetch_array($sub_res) )
+		while( $sub_row = mysqli_fetch_array($sub_res) )
 		{
 			$steps .= "<a href='#' id='{$sub_row["ODD_ID"]}' class='edit_steps' location='{$location}'>{$sub_row["Steps"]}</a><br>";
 		}
@@ -367,8 +367,8 @@
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 				  WHERE ODD.OD_ID = {$row["OD_ID"]}
 				  GROUP BY ODD.ODD_ID";
-		$result = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-		while( $sub_row = mysql_fetch_array($result) )
+		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $sub_row = mysqli_fetch_array($result) )
 		{
 			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "color"=>$sub_row["Color"], "material"=>$sub_row["Material"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"] );
 		}

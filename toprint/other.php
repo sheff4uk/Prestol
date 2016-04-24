@@ -84,8 +84,8 @@
 
 			  WHERE OD.IsReady = 0
               GROUP BY OD.OD_ID";
-	$res = mysql_query( $query ) or die("Invalid query: " . mysql_error());
-	while( $row = mysql_fetch_array($res) )
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) )
 	{
         echo "<tr><td>{$row["ClientName"]}<br>{$row["Shop"]}</td>";
         echo "<td class='nowrap'>{$row["Zakaz"]}</td>";
