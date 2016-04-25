@@ -59,14 +59,14 @@ function materialonoff(element)
 	if( $(element+' input[name="Material"]').val().length == 0 )
 	{
 		$(element+' .radiostatus input[type="radio"]').prop('disabled', true);
-        // Очистка инпутов дат заказа пластика
+		// Очистка инпутов дат заказа пластика
 		$('#1radio0').prop('checked', true);
 		$('#2radio2').prop('checked', true);
-        $(element+' .order_material').hide('fast');
-        $(element+' .order_material input').attr("required", false);
-        $(element+' .order_material input').val('');
-        $(element+' .order_material input.from').datepicker( "option", "maxDate", null );
-        $(element+' .order_material input.to').datepicker( "option", "minDate", null );
+		$(element+' .order_material').hide('fast');
+		$(element+' .order_material input').attr("required", false);
+		$(element+' .order_material input').val('');
+		$(element+' .order_material input.from').datepicker( "option", "maxDate", null );
+		$(element+' .order_material input.to').datepicker( "option", "minDate", null );
 	}
 	else
 	{
@@ -170,12 +170,12 @@ $(function() {
 		else {
 			$('#addchair input[name="Color"]').parent('div').hide('fast');
 		}
-        // Очистка инпутов дат заказа ткани
-        $('#addchair .order_material').hide('fast');
-        $('#addchair .order_material input').attr("required", false);
-        $('#addchair .order_material input').val('');
-        $('#addchair .order_material input.from').datepicker( "option", "maxDate", null );
-        $('#addchair .order_material input.to').datepicker( "option", "minDate", null );
+		// Очистка инпутов дат заказа ткани
+		$('#addchair .order_material').hide('fast');
+		$('#addchair .order_material input').attr("required", false);
+		$('#addchair .order_material input').val('');
+		$('#addchair .order_material input.from').datepicker( "option", "maxDate", null );
+		$('#addchair .order_material input.to').datepicker( "option", "minDate", null );
 		// Прячем картинки-треугольники
 		$('#addchair img[id="Amount"]').hide();
 		$('#addchair img[id="Model"]').hide();
@@ -194,12 +194,12 @@ $(function() {
 			$('#addchair input[name="Material"]').val(odd[id]['material']);
 			$('#1radio'+odd[id]['isexist']).prop('checked', true);
 			$('#addchair .radiostatus input[type="radio"]').button('refresh');
-            if( odd[id]['isexist'] == 1 ) {
-                $('#addchair .order_material').show('fast');
-                $('#addchair .order_material input').attr("required", true);
-                $('#addchair .order_material input.from').val( odd[id]['order_date'] );
-                $('#addchair .order_material input.to' ).val( odd[id]['arrival_date'] );
-            }
+			if( odd[id]['isexist'] == 1 ) {
+				$('#addchair .order_material').show('fast');
+				$('#addchair .order_material input').attr("required", true);
+				$('#addchair .order_material input.from').val( odd[id]['order_date'] );
+				$('#addchair .order_material input.to' ).val( odd[id]['arrival_date'] );
+			}
 			
 			// Если изделие в работе, то нельзя изменить модель и увеличить кол-во
 			if( odd[id]['inprogress'] == 1 )
@@ -212,7 +212,7 @@ $(function() {
 				$('#addchair input[id="Model"]').val(odd[id]['model']);
 			}
 
-            materialonoff('#addchair');
+			materialonoff('#addchair');
 
 			$("#addchair form").attr("action", "datasave.php?oddid="+id+"&location="+location);
 		}
@@ -276,12 +276,12 @@ $(function() {
 			$('#addtable input[name="Color"]').parent('div').hide('fast');
 			$('#addtable select[name="Model"]').attr('required', 'true');
 		}
-        // Очистка инпутов дат заказа пластика
-        $('#addtable .order_material').hide('fast');
-        $('#addtable .order_material input').attr("required", false);
-        $('#addtable .order_material input').val('');
-        $('#addtable .order_material input.from').datepicker( "option", "maxDate", null );
-        $('#addtable .order_material input.to').datepicker( "option", "minDate", null );
+		// Очистка инпутов дат заказа пластика
+		$('#addtable .order_material').hide('fast');
+		$('#addtable .order_material input').attr("required", false);
+		$('#addtable .order_material input').val('');
+		$('#addtable .order_material input.from').datepicker( "option", "maxDate", null );
+		$('#addtable .order_material input.to').datepicker( "option", "minDate", null );
 		// Прячем картинки-треугольники
 		$('#addtable img[id="Amount"]').hide();
 		// Сворачиваем акордион, очищаем
@@ -309,12 +309,12 @@ $(function() {
 			$('#addtable input[name="Material"]').val(odd[id]['material']);
 			$('#2radio'+odd[id]['isexist']).prop('checked', true);
 			$('#addtable .radiostatus input[type="radio"]').button('refresh');
-            if( odd[id]['isexist'] == 1 ) {
-                $('#addtable .order_material').show('fast');
-                $('#addtable .order_material input').attr("required", true);
-                $('#addtable .order_material input.from').val( odd[id]['order_date'] );
-                $('#addtable .order_material input.to' ).val( odd[id]['arrival_date'] );
-            }
+			if( odd[id]['isexist'] == 1 ) {
+				$('#addtable .order_material').show('fast');
+				$('#addtable .order_material input').attr("required", true);
+				$('#addtable .order_material input.from').val( odd[id]['order_date'] );
+				$('#addtable .order_material input.to' ).val( odd[id]['arrival_date'] );
+			}
 
 			// Если изделие в работе, то нельзя увеличить кол-во
 			if( odd[id]['inprogress'] == 1 )
@@ -323,7 +323,7 @@ $(function() {
 				$('#addtable input[name="Amount"]').attr('max', odd[id]['amount']);
 			}
 
-            materialonoff('#addtable');
+			materialonoff('#addtable');
 
 			$("#addtable form").attr("action", "datasave.php?oddid="+id+"&location="+location);
 		}
@@ -365,21 +365,21 @@ $(function() {
 		return false;
 	});
 
-    // Если ткань/пластик заказан - отображается дата заказа и дата ожидания.
-    $('.radiostatus input').change(function(){
-        if( $(this).val() == 1 ) {
-            $(this).parents( "form" ).find('.order_material').show('fast');
-            $(this).parents( "form" ).find('.order_material input').attr("required", true);
-            $(this).parents( "form" ).find('.from').val( $(this).parents( "form" ).find('.from').attr("defaultdate") );
-            $(this).parents( "form" ).find('.to').val( $(this).parents( "form" ).find('.to').attr("defaultdate") );
-        }
-        else {
-            $(this).parents( "form" ).find('.order_material').hide('fast');
-            $(this).parents( "form" ).find('.order_material input').attr("required", false);
-            $(this).parents( "form" ).find('.order_material input').val( '' );
-            $(this).parents( "form" ).find( ".from" ).datepicker( "option", "maxDate", null );
-            $(this).parents( "form" ).find( ".to" ).datepicker( "option", "minDate", null );
-        }
+	// Если ткань/пластик заказан - отображается дата заказа и дата ожидания.
+	$('.radiostatus input').change(function(){
+		if( $(this).val() == 1 ) {
+			$(this).parents( "form" ).find('.order_material').show('fast');
+			$(this).parents( "form" ).find('.order_material input').attr("required", true);
+			$(this).parents( "form" ).find('.from').val( $(this).parents( "form" ).find('.from').attr("defaultdate") );
+			$(this).parents( "form" ).find('.to').val( $(this).parents( "form" ).find('.to').attr("defaultdate") );
+		}
+		else {
+			$(this).parents( "form" ).find('.order_material').hide('fast');
+			$(this).parents( "form" ).find('.order_material input').attr("required", false);
+			$(this).parents( "form" ).find('.order_material input').val( '' );
+			$(this).parents( "form" ).find( ".from" ).datepicker( "option", "maxDate", null );
+			$(this).parents( "form" ).find( ".to" ).datepicker( "option", "minDate", null );
+		}
 		return false;
 	});
 	
