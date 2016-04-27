@@ -24,35 +24,8 @@
 		die;
 	}
 
-	$isexist = "";
-	$product = "";
-	if ( $_GET["isex0"] )
-	{
-		$isexist .= ", 0";
-		$ch0 = "checked";
-	}
-	if ( $_GET["isex1"] )
-	{
-		$isexist .= ", 1";
-		$ch1 = "checked";
-	}
-	if ( $_GET["isex2"] )
-	{
-		$isexist .= ", 2";
-		$ch2 = "checked";
-	}
-	if ( $_GET["prod1"] )
-	{
-		$product .= ", 1";
-		$ch3 = "checked";
-	}
-	if ( $_GET["prod2"] )
-	{
-		$product .= ", 2";
-		$ch4 = "checked";
-	}
-	$isexist = substr($isexist, 2);
-	$product = substr($product, 2);
+	$isexist = $_GET["isex"];
+	$product = $_GET["prod"];
 
 	$title = 'Ткань/пластик';
 	include "header.php";
@@ -60,22 +33,24 @@
 ?>
 	
 	<form method='get' style='display: flex;'>
-		Наличие:
-		<div class='btnset'>
-			<input type='checkbox' id='chbox0' name='isex0' value='1' <?=$ch0?>>
-				<label for='chbox0'>Нет</label>
-			<input type='checkbox' id='chbox1' name='isex1' value='1' <?=$ch1?>>
-				<label for='chbox1'>Заказано</label>
-			<input type='checkbox' id='chbox2' name='isex2' value='1' <?=$ch2?>>
-				<label for='chbox2'>В наличии</label>
+		<label for='isexist'>Наличие:</label>
+		<div class='btnset' id='isexist'>
+			<input type='radio' id='isex0' name='isex' value='0' <?= ($_GET["isex"] =="0" ? "checked" : "") ?> onchange="this.form.submit()">
+				<label for='isex0'>Нет</label>
+			<input type='radio' id='isex1' name='isex' value='1' <?= ($_GET["isex"] =="1" ? "checked" : "") ?> onchange="this.form.submit()">
+				<label for='isex1'>Заказано</label>
+			<input type='radio' id='isex2' name='isex' value='2' <?= ($_GET["isex"] =="2" ? "checked" : "") ?> onchange="this.form.submit()">
+				<label for='isex2'>В наличии</label>
 		</div>
+
 		<div class='spase'></div>
-		Материал:
-		<div class='btnset'>
-			<input type='checkbox' id='chbox3' name='prod1' value='1' <?=$ch3?>>
-				<label for='chbox3'>Ткань</label>
-			<input type='checkbox' id='chbox4' name='prod2' value='1' <?=$ch4?>>
-				<label for='chbox4'>Пластик</label>
+
+		<label for='material'>Материал:</label>
+		<div class='btnset' id='material'>
+			<input type='radio' id='prod1' name='prod' value='1' <?= ($_GET["prod"] =="1" ? "checked" : "") ?> onchange="this.form.submit()">
+				<label for='prod1'>Ткань</label>
+			<input type='radio' id='prod2' name='prod' value='2' <?= ($_GET["prod"] =="2" ? "checked" : "") ?> onchange="this.form.submit()">
+				<label for='prod2'>Пластик</label>
 		</div>
 		<div class='spase'></div>
 		Название:

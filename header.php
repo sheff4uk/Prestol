@@ -94,7 +94,7 @@
 	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$ischeckcount = " (".mysqli_result($result,0,'CNT').")";
 	  
-	$menu = array ("Ткань/пластик" => "/materials.php?isex0=1&prod1=1"
+	$menu = array ("Ткань/пластик" => "/materials.php?isex=0&prod=1"
 				  ,"Производство" => "/workers.php?worker=0&type=1&isready=0"
 				  ,"Свободные{$ischeckcount}" => "/orderdetail.php"
 				  ,"Заготовки" => "/blankstock.php"

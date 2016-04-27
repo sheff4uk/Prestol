@@ -10,7 +10,7 @@
 <?
 		// Формирование дропдауна со списком рабочих.
 		$selectworker = "<label for='worker'>Испонитель:</label>";
-		$selectworker .= "<select name='worker' id='worker'>";
+		$selectworker .= "<select name='worker' id='worker'  onchange='this.form.submit()'>";
 		$selectworker .= "<option value='0'>Не назначен</option>";
 		$query = "SELECT WD.WD_ID, WD.Name, IFNULL(SUM(ODD.Amount), 0) Amount
 				  FROM WorkersData WD
@@ -37,20 +37,21 @@
 		{
 			if( $_GET["type"] == $row["PT_ID"] ) {$checked = "checked";}
 			else {$checked = "";}
-			echo "<input type='radio' id='radiotype{$row["PT_ID"]}' name='type' value='{$row["PT_ID"]}' {$checked}>";
+			echo "<input type='radio' id='radiotype{$row["PT_ID"]}' name='type' value='{$row["PT_ID"]}' {$checked} onchange='this.form.submit()'>";
 			echo "<label for='radiotype{$row["PT_ID"]}'>{$row["Type"]}</label>";
 		}
 		$selecttype .= "</select>";
 		echo "</div>";
+
 		echo "<div class='spase'></div>";
 ?>
 		<label for='status'>Готовность:</label>
 		<div class='btnset' id='status'>
-			<input type='radio' id='radio0' name='isready' value='0,1' <?= ($_GET["isready"] =="0,1" ? "checked" : "") ?>>
+			<input type='radio' id='radio0' name='isready' value='0,1' <?= ($_GET["isready"] =="0,1" ? "checked" : "") ?> onchange="this.form.submit()">
 				<label for='radio0'>Все</label>
-			<input type='radio' id='radio1' name='isready' value='0' <?= ($_GET["isready"] =="0" ? "checked" : "") ?>>
+			<input type='radio' id='radio1' name='isready' value='0' <?= ($_GET["isready"] =="0" ? "checked" : "") ?> onchange="this.form.submit()">
 				<label for='radio1'>Не готово</label>
-			<input type='radio' id='radio2' name='isready' value='1' <?= ($_GET["isready"] =="1" ? "checked" : "") ?>>
+			<input type='radio' id='radio2' name='isready' value='1' <?= ($_GET["isready"] =="1" ? "checked" : "") ?> onchange="this.form.submit()">
 				<label for='radio2'>Готово</label>
 		</div>
 		<div class='spase'></div>
