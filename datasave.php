@@ -18,7 +18,46 @@ if( $_GET["oddid"] )
 	$inprogress = mysqli_result($res,0,'inprogress');
 	$color= mysqli_result($res,0,'Color');
 	$ispainting = mysqli_result($res,0,'IsPainting');
-	
+
+	// Обновляем информацию об изделии
+	$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
+	$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
+	$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
+	$Length = $_POST["Length"] ? "{$_POST["Length"]}" : "NULL";
+	$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
+	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
+	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
+	$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
+	$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
+	$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
+	$query = "UPDATE OrdersDataDetail
+			  SET PM_ID = {$Model}
+				 ,Length = {$Length}
+				 ,Width = {$Width}
+				 ,PF_ID = {$Form}
+				 ,PME_ID = {$Mechanism}
+				 ,Material = '{$Material}'
+				 ,IsExist = {$IsExist}
+				 ,Amount = {$_POST["Amount"]}
+				 ,Color = '{$Color}'
+				 ,is_check = 1
+				 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
+				 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
+			  WHERE ODD_ID = {$_GET["oddid"]}";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+	// Добавляем недостающие этапы после обновления данных
+	$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
+			SELECT {$_GET["oddid"]}
+				  ,ST.ST_ID
+				  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
+			FROM StepsTariffs ST
+			JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
+			LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
+			LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
+			WHERE ST.ST_ID NOT IN( SELECT ST_ID FROM OrdersDataSteps WHERE ODD_ID = {$_GET["oddid"]} )";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
 	// Если количество изделий уменьшено и изделие в работе, то переносим их на склад (свободные)
 	if( $amount > $_POST["Amount"] and $inprogress == 1)
 	{
@@ -33,36 +72,9 @@ if( $_GET["oddid"] )
 				  SELECT {$odd_id}, ST_ID, WD_ID, IsReady, Tariff FROM OrdersDataSteps
 				  WHERE ODD_ID = {$_GET["oddid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-        
-        $_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
-    }
-	
-	// Обновляем информацию об изделии
-	$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
-	$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
-	$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
-	$Length = $_POST["Length"] ? "{$_POST["Length"]}" : "NULL";
-	$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
-	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
-	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
-    $Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
-	$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
-	$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
-	$query = "UPDATE OrdersDataDetail
-			  SET PM_ID = {$Model}
-				 ,Length = {$Length}
-				 ,Width = {$Width}
-				 ,PF_ID = {$Form}
-				 ,PME_ID = {$Mechanism}
-				 ,Material = '{$Material}'
-				 ,IsExist = {$IsExist}
-				 ,Amount = {$_POST["Amount"]}
-				 ,Color = '{$Color}'
-                 ,is_check = 1
-                 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
-                 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
-			  WHERE ODD_ID = {$_GET["oddid"]}";
-	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		$_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
+	}
 
 	// TODO: Нужно помечать в базе тарифы измененные вручную
 	// пересчитывать тарифы при изменении параметров изделия (модель, форма, размер) кроме ручных
