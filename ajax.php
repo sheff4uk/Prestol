@@ -95,10 +95,10 @@ case "livesearch":
 					,ODD.Color
 					,ODD.Material
 					,ODD.IsExist
-                    ,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
-                    ,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
-                    ,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
-                    ,IF(ODD.is_check = 1, '', 'attention') is_check
+					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
+					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
+					,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
+					,IF(ODD.is_check = 1, '', 'attention') is_check
 					,SUM(IF(ODS.WD_ID IS NULL, 0, 1)) progress
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -115,6 +115,7 @@ case "livesearch":
 	
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	if( mysqli_num_rows($res) > 0) {
+		$hidden = "<input type='hidden' name='free' value='1'>";
 		$table = "<table><thead><tr>";
 		$table .= "<th></th>";
 		$table .= "<th>Кол-во</th>";
@@ -126,7 +127,7 @@ case "livesearch":
 		$table .= "<th>Прогресс</th>";
 		$table .= "<th>Цвет</th>";
 		$table .= ($pt == 1) ? "<th>Ткань</th>" : "<th>Пластик</th>";
-		$table .= "</tr></thead><tbody>";		
+		$table .= "</tr></thead><tbody>";
 	}
 		
 	$count = 0;
@@ -134,7 +135,7 @@ case "livesearch":
 	{
 		$count = $count + $row["Amount"];
 		$table .= "<tr class='{$row["is_check"]} nowrap free-amount'>";
-		$table .= "<td><input type='checkbox' value='1' class='chbox'><span><input type='number' min='1' max='{$row["Amount"]}' value='{$row["Amount"]}' name='{$row["ODD_ID"]}' autocomplete='off' title='Пожалуйста укажите требуемое количество изделий.'> из</span></td>";
+		$table .= "<td><input type='checkbox' value='1' class='chbox'><span><input type='number' min='1' max='{$row["Amount"]}' value='{$row["Amount"]}' name='amount{$row["ODD_ID"]}' autocomplete='off' title='Пожалуйста укажите требуемое количество изделий.'> из</span></td>";
 		$table .= "<td>{$row["Amount"]}</td>";
 		$table .= "<td>{$row["Model"]}</td>";
 		if( $pt == 2 ) {
@@ -182,8 +183,9 @@ case "livesearch":
 
 	$table .= "</tbody></table>";
 	$table = addcslashes($table, "'");
+	$hidden = addcslashes($hidden, "'");
 
-	echo "window.top.window.$('#{$_GET["this"]} .accordion div').html('{$table}');";
+	echo "window.top.window.$('#{$_GET["this"]} .accordion div').html('{$hidden}{$table}');";
 	echo "window.top.window.$('#{$_GET["this"]} .accordion h3 span').html('{$count}');";
 	// Скрипт блокировки формы при выборе изделия из списка "Свободных"
 	echo "window.top.window.$('.accordion .chbox, .accordion input[type=\"number\"]').change(function(){";

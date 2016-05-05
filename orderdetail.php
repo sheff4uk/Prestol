@@ -45,6 +45,8 @@
 	// Добавление в базу нового изделия. Заполнение этапов.
 	if ( $_GET["add"] )
 	{
+		if( strpos($k,"prod") === 0 )
+
 		// Добавление в базу нового изделия
 		$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 		$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";

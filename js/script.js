@@ -77,11 +77,13 @@ function materialonoff(element)
 }
 
 // Функция живого поиска в "Свободных" при вводе параметров в форму
-function livesearch(element) {
+function livesearch(element) { //alert('changed1');
 	if ( $(element).parents('form').find('.accordion').is(":visible") ) {
 		var line = "&model="+$(element).parents('form').find('select[name="Model"]').val()
-				 + "&form="+$(element).parents('form').find('select[name="Form"]').val()
-				 + "&size="+$(element).parents('form').find('select[name="Size"]').val()
+				 + "&form="+$(element).parents('form').find('input[name="Form"]:checked').val()
+				 + "&mechanism="+$(element).parents('form').find('input[name="Mechanism"]').val()
+				 + "&length="+$(element).parents('form').find('input[name="Length"]').val()
+				 + "&width="+$(element).parents('form').find('input[name="Width"]').val()
 				 + "&color="+$(element).parents('form').find('input[name="Color"]').val()
 				 + "&material="+$(element).parents('form').find('input[name="Material"]').val();
 		$.ajax({
@@ -384,7 +386,11 @@ $(function() {
 	});
 	
 	// Живой поиск в "Свободных" при вводе параметров в форму
-	$('select[name="Model"], input[name="Form"], input[name="Mechanism"], select[name="Length"], select[name="Width"]').change( function() { livesearch(this); });
+	$('select[name="Model"], input[name="Length"], input[name="Width"]').change( function() { livesearch(this); });
+	$('input[name="Form"], input[name="Mechanism"]').on("change", function(){
+		//alert('changed2');
+		livesearch(this);
+	});
 	$('input[name="Color"], input[name="Material"]').keyup( function() { livesearch(this); });
 	$('input[name="Color"], input[name="Material"]').on( 'autocompleteselect', function( event, ui ) { $(this).val( ui.item.value ); livesearch(this); } );
 });
