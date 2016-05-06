@@ -81,9 +81,7 @@ case "steps":
 // живой поиск в свободных изделиях
 case "livesearch":
 		
-	$query = "SELECT PT_ID FROM ProductModels WHERE PM_ID = {$_GET["model"]}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$pt = mysqli_result($res,0,'PT_ID');
+	$pt = $_GET["type"];
 		
 	// Таблица изделий
 	$query = "SELECT ODD.ODD_ID
@@ -105,20 +103,23 @@ case "livesearch":
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID";
-	$query .= " WHERE ODD.OD_ID IS NULL AND ODD.PM_ID = {$_GET["model"]}";
+	$query .= " WHERE ODD.OD_ID IS NULL AND PM.PT_ID = {$pt}";
+	$query .= ($_GET["model"] and $_GET["model"] <> "undefined") ? " AND ODD.PM_ID = {$_GET["model"]}" : "";
 	$query .= ($_GET["form"] and $_GET["form"] <> "undefined") ? " AND ODD.PF_ID = {$_GET["form"]}" : "";
-	$query .= ($_GET["size"] and $_GET["size"] <> "undefined") ? " AND ODD.PS_ID = {$_GET["size"]}" : "";
-	$query .= ($_GET["color"]) ? " AND ODD.Color LIKE '%{$_GET["color"]}%'" : "";
+	$query .= ($_GET["mechanism"] and $_GET["mechanism"] <> "undefined") ? " AND ODD.PME_ID = {$_GET["mechanism"]}" : "";
+//	$query .= ($_GET["length"] and $_GET["length"] <> "undefined") ? " AND ODD.Length = {$_GET["length"]}" : "";
+//	$query .= ($_GET["width"] and $_GET["width"] <> "undefined") ? " AND ODD.Width = {$_GET["width"]}" : "";
+//	$query .= ($_GET["color"]) ? " AND ODD.Color LIKE '%{$_GET["color"]}%'" : "";
 	$query .= ($_GET["material"]) ? " AND ODD.Material LIKE '%{$_GET["material"]}%'" : "";
 	$query .= " GROUP BY ODD.ODD_ID";
 	$query .= " ORDER BY progress DESC";
 	
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	if( mysqli_num_rows($res) > 0) {
-		$hidden = "<input type='hidden' name='free' value='1'>";
+		$hidden = "<input type='hidden' name='free'>";
 		$table = "<table><thead><tr>";
 		$table .= "<th></th>";
-		$table .= "<th>Кол-во</th>";
+		$table .= "<th class='nowrap'>Кол-во</th>";
 		$table .= "<th>Модель</th>";
 		if( $pt == 2 ) {
 			$table .= "<th>Форма</th>";
@@ -192,8 +193,8 @@ case "livesearch":
 	echo "var amount = 0;";
 	echo "$('#{$_GET["this"]} .accordion .chbox').each(function(){";
 	echo "if( $(this).prop('checked') ) { amount += parseInt($('~ span > input', this).val()); }});";
-	echo "if( amount ){ $('#{$_GET["this"]} fieldset').prop('disabled', true); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(amount); }";
-	echo "else{ $('#{$_GET["this"]} fieldset').prop('disabled', false); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(1); }";
+	echo "if( amount ){ $('#{$_GET["this"]} fieldset').prop('disabled', true); $( '#{$_GET["this"]} #forms, #{$_GET["this"]} #mechanisms' ).buttonset( 'option', 'disabled', true ); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(amount); $('#{$_GET["this"]} input[name=free]').val(1);}";
+	echo "else{ $('#{$_GET["this"]} fieldset').prop('disabled', false); $( '#{$_GET["this"]} #forms, #{$_GET["this"]} #mechanisms' ).buttonset( 'option', 'disabled', false ); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(1); $('#{$_GET["this"]} input[name=free]').val(0);}";
 	echo "materialonoff('#{$_GET["this"]}');";
 	echo "return false;";
 	echo "});";

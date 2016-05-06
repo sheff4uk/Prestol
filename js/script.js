@@ -77,15 +77,16 @@ function materialonoff(element)
 }
 
 // Функция живого поиска в "Свободных" при вводе параметров в форму
-function livesearch(element) { //alert('changed1');
+function livesearch(element) {
 	if ( $(element).parents('form').find('.accordion').is(":visible") ) {
 		var line = "&model="+$(element).parents('form').find('select[name="Model"]').val()
 				 + "&form="+$(element).parents('form').find('input[name="Form"]:checked').val()
-				 + "&mechanism="+$(element).parents('form').find('input[name="Mechanism"]').val()
+				 + "&mechanism="+$(element).parents('form').find('input[name="Mechanism"]:checked').val()
 				 + "&length="+$(element).parents('form').find('input[name="Length"]').val()
 				 + "&width="+$(element).parents('form').find('input[name="Width"]').val()
 				 + "&color="+$(element).parents('form').find('input[name="Color"]').val()
-				 + "&material="+$(element).parents('form').find('input[name="Material"]').val();
+				 + "&material="+$(element).parents('form').find('input[name="Material"]').val()
+				 + "&type="+$(element).parents('form').find('input[name="Type"]').val();
 		$.ajax({
 			url: "ajax.php?do=livesearch&this=" + $(element).parents('form').parent('div').attr('id') + line,
 			dataType: "script",
@@ -226,6 +227,8 @@ $(function() {
 			}
 		}
 
+		$('#addchair select[name="Model"]').change( function() { livesearch(this); });
+
 		// Если нет ткани, то кнопка наличия не активна
 		$('#addchair input[name="Material"]').keyup( function() {
 			materialonoff('#addchair');
@@ -345,6 +348,7 @@ $(function() {
 			else {
 				FormModelList($(this).val());
 			}
+			livesearch(this);
 		});
 		
 		// Если нет пластика, то кнопка наличия не активна
@@ -386,11 +390,9 @@ $(function() {
 	});
 	
 	// Живой поиск в "Свободных" при вводе параметров в форму
-	$('select[name="Model"], input[name="Length"], input[name="Width"]').change( function() { livesearch(this); });
-	$('input[name="Form"], input[name="Mechanism"]').on("change", function(){
-		//alert('changed2');
-		livesearch(this);
-	});
+//	$('select[name="Model"]').change( function() { livesearch(this); });
+//	$('input[name="Length"], input[name="Width"]').change( function() { livesearch(this); });
+	$('#forms, #mechanisms').on("change", function(){ livesearch(this); });
 	$('input[name="Color"], input[name="Material"]').keyup( function() { livesearch(this); });
 	$('input[name="Color"], input[name="Material"]').on( 'autocompleteselect', function( event, ui ) { $(this).val( ui.item.value ); livesearch(this); } );
 });

@@ -126,7 +126,7 @@
 		</div>
 		<div>
 			<label>Механизм:</label>
-			<div class="btnset">
+			<div class="btnset" id="mechanisms">
 			<?
 				$query = "SELECT PME_ID, Mechanism FROM ProductMechanism";
 				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
