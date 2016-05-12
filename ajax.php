@@ -136,7 +136,7 @@ case "livesearch":
 	{
 		$count = $count + $row["Amount"];
 		$table .= "<tr class='{$row["is_check"]} nowrap free-amount'>";
-		$table .= "<td><input type='checkbox' value='1' class='chbox'><span><input type='number' min='1' max='{$row["Amount"]}' value='{$row["Amount"]}' name='amount{$row["ODD_ID"]}' autocomplete='off' title='Пожалуйста укажите требуемое количество изделий.'> из</span></td>";
+		$table .= "<td><input type='checkbox' value='1' class='chbox'><span><input type='number' disabled min='1' max='{$row["Amount"]}' value='{$row["Amount"]}' name='amount{$row["ODD_ID"]}' autocomplete='off' title='Пожалуйста укажите требуемое количество изделий.'> из</span></td>";
 		$table .= "<td>{$row["Amount"]}</td>";
 		$table .= "<td>{$row["Model"]}</td>";
 		if( $pt == 2 ) {
@@ -192,7 +192,8 @@ case "livesearch":
 	echo "window.top.window.$('.accordion .chbox, .accordion input[type=\"number\"]').change(function(){";
 	echo "var amount = 0;";
 	echo "$('#{$_GET["this"]} .accordion .chbox').each(function(){";
-	echo "if( $(this).prop('checked') ) { amount += parseInt($('~ span > input', this).val()); }});";
+	echo "if( $(this).prop('checked') ) { amount += parseInt($('~ span > input', this).val()); $('~ span > input', this).prop( 'disabled', false );}";
+	echo "else { $('~ span > input', this).prop( 'disabled', true ); }});";
 	echo "if( amount ){ $('#{$_GET["this"]} fieldset').prop('disabled', true); $( '#{$_GET["this"]} #forms, #{$_GET["this"]} #mechanisms' ).buttonset( 'option', 'disabled', true ); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(amount); $('#{$_GET["this"]} input[name=free]').val(1);}";
 	echo "else{ $('#{$_GET["this"]} fieldset').prop('disabled', false); $( '#{$_GET["this"]} #forms, #{$_GET["this"]} #mechanisms' ).buttonset( 'option', 'disabled', false ); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(1); $('#{$_GET["this"]} input[name=free]').val(0);}";
 	echo "materialonoff('#{$_GET["this"]}');";

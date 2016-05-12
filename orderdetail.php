@@ -47,54 +47,92 @@
 	{
 		// Добавление в заказ свободных изделий
 		if( $_POST["free"] ) {
+			foreach( $_POST as $k => $v)
+			{
+				if( strpos($k,"amount") === 0 )
+				{
+					$prodid = (int)str_replace( "amount", "", $k );
 
+					// Узнаем общее количество свободных изделий в группе
+					$query = "SELECT Amount FROM OrdersDataDetail WHERE ODD_ID = {$prodid}";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					$amount = mysqli_result($res,0,'Amount');
+
+					if( $amount == $v ) {
+						$query = "UPDATE OrdersDataDetail SET OD_ID = {$id} WHERE ODD_ID = {$prodid}";
+						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					}
+					else {
+						// Изменяем количество изделий в свободных
+						$query = "UPDATE OrdersDataDetail SET Amount = {$amount} - {$v} WHERE ODD_ID = {$prodid}";
+						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+						// Добавляем указанное количество изделий в заказ
+						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Color, order_date, arrival_date)
+								SELECT {$id}, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, {$v}, Color, order_date, arrival_date FROM OrdersDataDetail WHERE ODD_ID = {$prodid}";
+						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						$odd_id = mysqli_insert_id( $mysqli );
+
+						// Копируем этапы
+						$query = "INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, WD_ID, IsReady, Tariff)
+									SELECT {$odd_id}, ST_ID, WD_ID, IsReady, Tariff
+									FROM OrdersDataSteps
+									WHERE ODD_ID = {$prodid}";
+						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						$prodid = $odd_id;
+					}
+				}
+			}
+			header( "Location: ".$location."#".$prodid );
+			die;
 		}
-
-		// Добавление в базу нового изделия
-		$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
-		$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
-		$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
-		$Length = $_POST["Length"] ? "{$_POST["Length"]}" : "NULL";
-		$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
-		$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
-		$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
-		$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
-		$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
-		$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
-		
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Color, order_date, arrival_date)
-				  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$Form}, {$Mechanism}, '{$Material}', {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$OrderDate}', '{$ArrivalDate}')";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$odd_id = mysqli_insert_id( $mysqli );
-
-		// Вычисляем тарифи для разных этапов и записываем их
-		if( $_POST["Model"] ) {
-			$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
-					SELECT {$odd_id}
-						  ,ST.ST_ID
-						  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
-					FROM StepsTariffs ST
-					JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
-					LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
-					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To";
-		}
-		// Если модель не указана - присваиваем дефолтные этапы
 		else {
-			$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
-					SELECT {$odd_id}
-						  ,ST.ST_ID
-						  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
-					FROM StepsTariffs ST
-					LEFT JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
-					LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
-					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
-					WHERE ST.Default = 1";
-		}
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			// Добавление в базу нового изделия
+			$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
+			$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
+			$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
+			$Length = $_POST["Length"] ? "{$_POST["Length"]}" : "NULL";
+			$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
+			$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
+			$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
+			$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
+			$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
+			$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
 
-		$_SESSION["odd_id"] = $odd_id; // Cохраняем в сессию id вставленной записи
-		header( "Location: ".$location."#".$odd_id ); // Перезагружаем экран
-		die;
+			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Color, order_date, arrival_date)
+					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$Form}, {$Mechanism}, '{$Material}', {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$OrderDate}', '{$ArrivalDate}')";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$odd_id = mysqli_insert_id( $mysqli );
+
+			// Вычисляем тарифи для разных этапов и записываем их
+			if( $_POST["Model"] ) {
+				$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
+						SELECT {$odd_id}
+							  ,ST.ST_ID
+							  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
+						FROM StepsTariffs ST
+						JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
+						LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
+						LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To";
+			}
+			// Если модель не указана - присваиваем дефолтные этапы
+			else {
+				$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
+						SELECT {$odd_id}
+							  ,ST.ST_ID
+							  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
+						FROM StepsTariffs ST
+						LEFT JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
+						LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
+						LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
+						WHERE ST.Default = 1";
+			}
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			$_SESSION["odd_id"] = $odd_id; // Cохраняем в сессию id вставленной записи
+			header( "Location: ".$location."#".$odd_id ); // Перезагружаем экран
+			die;
+		}
 	}
 	else
 	{
