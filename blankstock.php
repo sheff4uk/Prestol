@@ -75,6 +75,7 @@
 
 	<h1>Список заготовок</h1>
 	
+	<div class="log-blank">
 	<table>
 		<thead>
 		<tr>
@@ -112,6 +113,7 @@
 
 		</tbody>
 	</table>
+	</div>
 
 </body>
 </html>

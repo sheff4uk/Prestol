@@ -344,3 +344,19 @@ input.amount {
 .main_table th:hover {
 	color: #fff;
 }
+.log-blank {
+	position: relative;
+}
+.log-blank:after {
+	content: '';
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 30px;
+	background: -moz-linear-gradient(top, rgba(255,255,255, 0.2), #fff 100%);
+	background: -webkit-linear-gradient(top, rgba(255,255,255, 0.2), #fff 100%);
+	background: -o-linear-gradient(top, rgba(255,255,255, 0.2), #fff 100%);
+	background: -ms-linear-gradient(top, rgba(255,255,255, 0.2), #fff 100%);
+	background: linear-gradient(to bottom, rgba(255,255,255, 0.2), #fff 100%);
+}
