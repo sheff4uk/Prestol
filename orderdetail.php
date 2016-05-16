@@ -371,12 +371,11 @@
 		echo "{$row["Material"]}</span></td>";
 		if ($id == "NULL") echo "<td>{$row["Color"]}</td>"; // Цвет показываем только в свободных
 		echo "<td><a href='#' id='{$row["ODD_ID"]}' free='{$free}' class='button edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></a>";
-		$delmessage = "Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?";
 		
 		// Не показываем кнопку "Удалить" только в свободных если прогресс не 0
 		if( !($id == "NULL" && $row["inprogress"] != 0) )
 		{
-			//echo "<a href='?id={$id}&del={$row["ODD_ID"]}' class='button' onclick='if(confirm(\"{$delmessage}\")) return true; return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+			$delmessage = "Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?";
 			echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 		}
 		echo "<img hidden='true' src='/img/attention.png' class='attention' title='Требуется проверка данных после переноса изделий в \"Свободные\".'></td></tr>";

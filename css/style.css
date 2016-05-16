@@ -83,6 +83,9 @@ tbody tr:nth-child(even){ /* Задаем стили для четных ряд�
 	background: #e2f6f8;
 }
 
+.txtright {
+	text-align: right;
+}
 .addproduct > form > fieldset > div > label,
 .addproduct > form > fieldset > div > div > label {
 	display: block;
@@ -359,4 +362,12 @@ input.amount {
 	background: -o-linear-gradient(top, rgba(255,255,255, 0.2), #fff 100%);
 	background: -ms-linear-gradient(top, rgba(255,255,255, 0.2), #fff 100%);
 	background: linear-gradient(to bottom, rgba(255,255,255, 0.2), #fff 100%);
+}
+
+@media (min-width: 768px) {
+	.halfblock {
+		width: 49%;
+		display: inline-block;
+		vertical-align: top;
+	}
 }
