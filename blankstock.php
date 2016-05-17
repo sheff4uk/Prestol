@@ -91,9 +91,16 @@
 			</thead>
 			<tbody>
 			<?
-				$query = "SELECT BL.Name, SUM(BS.Amount) Amount
+				// Количество остатков заготовок
+				$query = "SELECT BL.Name,(SUM(BS.Amount) - SUM(IFNULL(SPB.Amount, 0))) Amount
 							FROM BlankList BL
 							LEFT JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID
+							LEFT JOIN (
+								SELECT PB.BL_ID, (ODD.Amount * PB.Amount) Amount
+								FROM OrdersDataDetail ODD
+								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
+								JOIN OrdersDataSteps ODS ON ODS.ST_ID = PB.ST_ID AND ODS.ODD_ID = ODD.ODD_ID AND ODS.WD_ID IS NOT NULL
+							) SPB ON SPB.BL_ID = BL.BL_ID
 							GROUP BY BL.BL_ID
 							ORDER BY BL.PT_ID, BL.Name DESC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
