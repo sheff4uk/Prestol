@@ -2,9 +2,9 @@
 	session_start();
 	include "config.php";
 
-	//$location = "blankctock.php";
+	$location = $_SERVER['REQUEST_URI'];
 
-	// Обновление основной информации о заказе
+	// Обновление/добавление заготовок
 	if( isset($_POST["Blank"]) )
 	{
         $Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
@@ -12,12 +12,23 @@
         $Amount = $_POST["Amount"] <> "" ? $_POST["Amount"] : "NULL";
         $Tariff = $_POST["Tariff"] <> "" ? $_POST["Tariff"] : "NULL";
         $Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
-		$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Tariff, Comment)
-				  VALUES ({$Worker}, {$Blank}, {$Amount}, {$Tariff}, '{$Comment}')";
+
+		// Редактирование
+		if( isset($_GET["id"]) ) {
+			$query = "UPDATE BlankStock
+					  SET WD_ID = {$Worker}, BL_ID = {$Blank}, Amount = {$Amount}, Tariff = {$Tariff}, Comment = '{$Comment}'
+					  WHERE Date = '{$_GET["id"]}'";
+			//echo $query;
+		}
+		// Добавление
+		else {
+			$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Tariff, Comment)
+					  VALUES ({$Worker}, {$Blank}, {$Amount}, {$Tariff}, '{$Comment}')";
+		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
-		//header( "Location: ".$location );
-		header( "Location: ".$_SERVER['REQUEST_URI'] );
+		header( "Location: ".$location );
+		//header( "Location: ".$_SERVER['REQUEST_URI'] );
 		die;
 	}
 
@@ -37,7 +48,7 @@
 					<select name='Worker'>
 						<option value="">-=Выберите работника=-</option>
 						<?
-						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD";
+						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD ORDER BY WD.Name";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{
@@ -75,7 +86,7 @@
 			</fieldset>
 			<div>
 				<hr>
-				<input type='submit' value='Сохранить' style='float: right;'>
+				<button type='submit' style='float: right;'>Сохранить</button>
 			</div>
 		</form>
 	</div>
@@ -92,16 +103,20 @@
 			<tbody>
 			<?
 				// Количество остатков заготовок
-				$query = "SELECT BL.Name,(SUM(BS.Amount) - SUM(IFNULL(SPB.Amount, 0))) Amount
+				$query = "SELECT BL.Name, (IFNULL(SBS.Amount, 0) - IFNULL(SPB.Amount, 0)) Amount
 							FROM BlankList BL
-							LEFT JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID
 							LEFT JOIN (
-								SELECT PB.BL_ID, (ODD.Amount * PB.Amount) Amount
+								SELECT BS.BL_ID, SUM(BS.Amount) Amount
+								FROM BlankStock BS
+								GROUP BY BS.BL_ID
+							) SBS ON SBS.BL_ID = BL.BL_ID
+							LEFT JOIN (
+								SELECT PB.BL_ID, SUM(ODD.Amount * PB.Amount) Amount
 								FROM OrdersDataDetail ODD
 								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
 								JOIN OrdersDataSteps ODS ON ODS.ST_ID = PB.ST_ID AND ODS.ODD_ID = ODD.ODD_ID AND ODS.WD_ID IS NOT NULL
+								GROUP BY PB.BL_ID
 							) SPB ON SPB.BL_ID = BL.BL_ID
-							GROUP BY BL.BL_ID
 							ORDER BY BL.PT_ID, BL.Name DESC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
@@ -134,7 +149,7 @@
 			<tbody>
 
 	<?
-			$query = "SELECT BS.Date DateKey, DATE_FORMAT(DATE(BS.Date), '%d.%m.%Y') Date, TIME(BS.Date) Time, WD.Name Worker, BL.Name Blank, BS.Amount, BS.Tariff, BS.Comment
+			$query = "SELECT BS.Date DateKey, DATE_FORMAT(DATE(BS.Date), '%d.%m.%Y') Date, TIME(BS.Date) Time, WD.Name Worker, BL.Name Blank, BS.Amount, BS.Tariff, BS.Comment, WD.WD_ID, BL.BL_ID
 						FROM BlankStock BS
 						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
 						LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
@@ -145,11 +160,11 @@
 				echo "<tr>";
 				echo "<td>{$row["Date"]}</td>";
 				echo "<td>{$row["Time"]}</td>";
-				echo "<td>{$row["Worker"]}</td>";
-				echo "<td>{$row["Blank"]}</td>";
-				echo "<td class='txtright'>{$row["Amount"]}</td>";
-				echo "<td class='txtright'>{$row["Tariff"]}</td>";
-				echo "<td>{$row["Comment"]}</td>";
+				echo "<td class='worker' val='{$row["WD_ID"]}'>{$row["Worker"]}</td>";
+				echo "<td class='blank' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>";
+				echo "<td class='amount txtright'>{$row["Amount"]}</td>";
+				echo "<td class='tariff txtright'>{$row["Tariff"]}</td>";
+				echo "<td class='comment'>{$row["Comment"]}</td>";
 				echo "<td><a href='#' id='{$row["DateKey"]}' class='button edit_blank' location='{$location}' title='Редактировать заготовки'><i class='fa fa-pencil fa-lg'></i></a></td>";
 				echo "</tr>";
 			}
@@ -164,6 +179,28 @@
 <script>
 	// Форма добавления заготовок
 	$('.edit_blank').click(function() {
+		var id = $(this).attr('id');
+		var worker = $(this).parents('tr').find('.worker').attr('val');
+		var blank = $(this).parents('tr').find('.blank').attr('val');
+		var amount = $(this).parents('tr').find('.amount').html();
+		var tariff = $(this).parents('tr').find('.tariff').html();
+		var comment = $(this).parents('tr').find('.comment').html();
+
+		// Очистка диалога
+		$('#addblank input, #addblank select, #addblank textarea').val('');
+		$('#addblank form').removeAttr('action');
+
+		// Заполнение
+		if( typeof id !== "undefined" )
+		{
+			$('#addblank select[name="Worker"]').val(worker);
+			$('#addblank select[name="Blank"]').val(blank);
+			$('#addblank input[name="Amount"]').val(amount);
+			$('#addblank input[name="Tariff"]').val(tariff);
+			$('#addblank textarea[name="Comment"]').val(comment);
+			$('#addblank form').attr('action', '<?=$location?>?id=' + id);
+		}
+
 		// Форма добавления/редактирования заготовок
 		$('#addblank').dialog({
 			width: 500,

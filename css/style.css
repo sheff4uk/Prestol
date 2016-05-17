@@ -364,7 +364,7 @@ input.amount {
 	background: linear-gradient(to bottom, rgba(255,255,255, 0.2), #fff 100%);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
 	.halfblock {
 		width: 49%;
 		display: inline-block;
