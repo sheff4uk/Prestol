@@ -121,9 +121,13 @@
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{
+					if( $row["Amount"] < 0 )
+						$color = ' bg-red';
+					else
+						$color = '';
 					echo "<tr>";
 					echo "<td>{$row["Name"]}</td>";
-					echo "<td class='txtright'>{$row["Amount"]}</td>";
+					echo "<td class='txtright'><span class='{$color}'>{$row["Amount"]}</span></td>";
 					echo "</tr>";
 				}
 			?>
@@ -153,7 +157,7 @@
 						FROM BlankStock BS
 						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
 						LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
-						ORDER BY BS.Date DESC";
+						ORDER BY BS.Date DESC LIMIT 50";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
