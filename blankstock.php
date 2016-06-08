@@ -7,18 +7,17 @@
 	// Обновление/добавление заготовок
 	if( isset($_POST["Blank"]) )
 	{
-        $Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
-        $Blank = $_POST["Blank"] <> "" ? $_POST["Blank"] : "NULL";
-        $Amount = $_POST["Amount"] <> "" ? $_POST["Amount"] : "NULL";
-        $Tariff = $_POST["Tariff"] <> "" ? $_POST["Tariff"] : "NULL";
-        $Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
+		$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
+		$Blank = $_POST["Blank"] <> "" ? $_POST["Blank"] : "NULL";
+		$Amount = $_POST["Amount"] <> "" ? $_POST["Amount"] : "NULL";
+		$Tariff = $_POST["Tariff"] <> "" ? $_POST["Tariff"] : "NULL";
+		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 
 		// Редактирование
-		if( isset($_GET["id"]) ) {
+		if( $_POST["id_date"] <> "" ) {
 			$query = "UPDATE BlankStock
 					  SET WD_ID = {$Worker}, BL_ID = {$Blank}, Amount = {$Amount}, Tariff = {$Tariff}, Comment = '{$Comment}'
-					  WHERE Date = '{$_GET["id"]}'";
-			//echo $query;
+					  WHERE Date = '{$_POST["id_date"]}'";
 		}
 		// Добавление
 		else {
@@ -43,6 +42,7 @@
 	<div id='addblank' title='Заготовки' class="addproduct" style='display:none'>
 		<form method="post">
 			<fieldset>
+				<input type='hidden' name='id_date'>
 				<div>
 					<label>Работник:</label>
 					<select name='Worker'>
@@ -117,7 +117,7 @@
 								JOIN OrdersDataSteps ODS ON ODS.ST_ID = PB.ST_ID AND ODS.ODD_ID = ODD.ODD_ID AND ODS.WD_ID IS NOT NULL
 								GROUP BY PB.BL_ID
 							) SPB ON SPB.BL_ID = BL.BL_ID
-							ORDER BY BL.PT_ID, BL.Name DESC";
+							ORDER BY BL.PT_ID DESC, BL.Name ASC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{
@@ -181,37 +181,38 @@
 </body>
 </html>
 <script>
-	// Форма добавления заготовок
-	$('.edit_blank').click(function() {
-		var id = $(this).attr('id');
-		var worker = $(this).parents('tr').find('.worker').attr('val');
-		var blank = $(this).parents('tr').find('.blank').attr('val');
-		var amount = $(this).parents('tr').find('.amount').html();
-		var tariff = $(this).parents('tr').find('.tariff').html();
-		var comment = $(this).parents('tr').find('.comment').html();
+	$(document).ready(function() {
+		// Форма добавления заготовок
+		$('.edit_blank').click(function() {
+			var id = $(this).attr('id');
+			var worker = $(this).parents('tr').find('.worker').attr('val');
+			var blank = $(this).parents('tr').find('.blank').attr('val');
+			var amount = $(this).parents('tr').find('.amount').html();
+			var tariff = $(this).parents('tr').find('.tariff').html();
+			var comment = $(this).parents('tr').find('.comment').html();
 
-		// Очистка диалога
-		$('#addblank input, #addblank select, #addblank textarea').val('');
-		$('#addblank form').removeAttr('action');
+			// Очистка диалога
+			$('#addblank input, #addblank select, #addblank textarea').val('');
 
-		// Заполнение
-		if( typeof id !== "undefined" )
-		{
-			$('#addblank select[name="Worker"]').val(worker);
-			$('#addblank select[name="Blank"]').val(blank);
-			$('#addblank input[name="Amount"]').val(amount);
-			$('#addblank input[name="Tariff"]').val(tariff);
-			$('#addblank textarea[name="Comment"]').val(comment);
-			$('#addblank form').attr('action', '<?=$location?>?id=' + id);
-		}
+			// Заполнение
+			if( typeof id !== "undefined" )
+			{
+				$('#addblank select[name="Worker"]').val(worker);
+				$('#addblank select[name="Blank"]').val(blank);
+				$('#addblank input[name="Amount"]').val(amount);
+				$('#addblank input[name="Tariff"]').val(tariff);
+				$('#addblank textarea[name="Comment"]').val(comment);
+				$('#addblank input[name="id_date"]').val(id);
+			}
 
-		// Форма добавления/редактирования заготовок
-		$('#addblank').dialog({
-			width: 500,
-			modal: true,
-			show: 'blind',
-			hide: 'explode',
+			// Форма добавления/редактирования заготовок
+			$('#addblank').dialog({
+				width: 500,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+			});
+			return false;
 		});
-		return false;
 	});
 </script>

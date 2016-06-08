@@ -98,6 +98,7 @@
 				  ,"Производство" => "/workers.php?worker=0&type=1&isready=0"
 				  ,"Свободные{$ischeckcount}" => "/orderdetail.php"
 				  ,"Заготовки" => "/blankstock.php"
+				  ,"Платежи" => "/paylog.php"
 				  ,"Печатные формы" => "/toprint.php");
 	echo "<ul class='navbar-nav'>";
 	foreach ($menu as $title=>$url) {
