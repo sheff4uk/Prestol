@@ -91,7 +91,7 @@
 					,OD.IsPainting
 					,IFNULL(OD.Color, '<a href=\"/orderdetail.php\">Свободные</a>') Color
 					,GROUP_CONCAT(CONCAT(ODD.Color, '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Color_archive
-					,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 1 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
+					,GROUP_CONCAT(CONCAT(IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
 						CASE ODD.IsExist
 							WHEN 0 THEN 'bg-red'
 							WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
@@ -110,6 +110,7 @@
 			  WHERE IFNULL(ODD.Material, '') <> ''
 			  	AND ODD.IsExist IN ({$isexist})
 				AND ODD.Material LIKE '%{$_GET["material"]}%'
+				AND OD.ReadyDate IS NULL
 			  GROUP BY OD.OD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
