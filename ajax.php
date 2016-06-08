@@ -103,8 +103,9 @@ case "livesearch":
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID";
-	$query .= " WHERE ODD.OD_ID IS NULL AND PM.PT_ID = {$pt}";
-	$query .= ($_GET["model"] and $_GET["model"] <> "undefined") ? " AND ODD.PM_ID = {$_GET["model"]}" : "";
+	$query .= " WHERE ODD.OD_ID IS NULL";
+	$query .= ( $pt == 1 ) ? " AND PM.PT_ID = {$pt}" : "";
+	$query .= ($_GET["model"] and $_GET["model"] <> "undefined") ? " AND (ODD.PM_ID = {$_GET["model"]} OR ODD.PM_ID IS NULL)" : "";
 	$query .= ($_GET["form"] and $_GET["form"] <> "undefined") ? " AND ODD.PF_ID = {$_GET["form"]}" : "";
 	$query .= ($_GET["mechanism"] and $_GET["mechanism"] <> "undefined") ? " AND ODD.PME_ID = {$_GET["mechanism"]}" : "";
 //	$query .= ($_GET["length"] and $_GET["length"] <> "undefined") ? " AND ODD.Length = {$_GET["length"]}" : "";

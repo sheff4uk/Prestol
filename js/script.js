@@ -150,6 +150,9 @@ $(function() {
 	// Форма добавления стульев
 	$('.edit_product1').click(function() {
 
+		// Активация формы если была неактивна
+		$('#addchair fieldset').prop('disabled', false);
+		$('#addchair input[name=free]').val(0);
 
 		var id = $(this).attr('id');
 		var free = $(this).attr('free');
@@ -251,6 +254,12 @@ $(function() {
 
 	// Форма добавления столов
 	$('.edit_product2').click(function() {
+
+		// Активация формы если была неактивна
+		$('#addtable fieldset').prop('disabled', false);
+		$('#addtable #forms, #addchair #mechanisms' ).buttonset( 'option', 'disabled', false );
+		$('#addtable input[name=free]').val(0);
+
 		var id = $(this).attr('id');
 		var free = $(this).attr('free');
 		var location = $(this).attr("location");
@@ -298,7 +307,8 @@ $(function() {
 		// Заполнение
 		if( id > 0 )
 		{
-			if( free != 1 ) {
+			// Если известна модель, то выводим соответствующий список форм
+			if( odd[id]['model'] ) {
 				FormModelList(odd[id]['model']);
 			}
 			$('#addtable input[name="Amount"]').val(odd[id]['amount']);
