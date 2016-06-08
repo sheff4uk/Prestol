@@ -33,7 +33,20 @@
 
 	$title = 'Заготовки';
 	include "header.php";
+
+	// Массив тарифов заготовок
+	$BlankTariff = array();
+	$query = "SELECT BL_ID, Tariff FROM BlankList";
+	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($result) ) {
+		$BlankTariff[$row["BL_ID"]] = [$row["Tariff"]];
+	}
 ?>
+	<script>
+		// Передаем в JavaScript массив тарифов заготовок
+		BlankTariff = <?= json_encode($BlankTariff); ?>;
+	</script>
+
 	<p>
 		<button class='edit_blank'>Добавить заготовки</button>
 	</p>

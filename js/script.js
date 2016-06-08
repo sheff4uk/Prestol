@@ -405,4 +405,15 @@ $(function() {
 	$('#forms, #mechanisms').on("change", function(){ livesearch(this); });
 	$('input[name="Color"], input[name="Material"]').keyup( function() { livesearch(this); });
 	$('input[name="Color"], input[name="Material"]').on( 'autocompleteselect', function( event, ui ) { $(this).val( ui.item.value ); livesearch(this); } );
+
+	// В форме заготовки при смене заготовки меняем тариф
+	$('#addblank select[name="Blank"]').change(function(){
+		var blank = $(this).val();
+		if( blank == "" ) {
+			$('#addblank input[name="Tariff"]').val('');
+		}
+		else {
+			$('#addblank input[name="Tariff"]').val( BlankTariff[blank] );
+		}
+	});
 });
