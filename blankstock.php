@@ -61,7 +61,7 @@
 					<select name='Worker'>
 						<option value="">-=Выберите работника=-</option>
 						<?
-						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD ORDER BY WD.Name";
+						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE WD.Hourly = 0 ORDER BY WD.Name";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{

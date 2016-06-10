@@ -16,6 +16,7 @@
 				  FROM WorkersData WD
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.WD_ID = WD.WD_ID AND ODS.IsReady = 0
 				  LEFT JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
+				  WHERE WD.Hourly = 0
 				  GROUP BY WD.WD_ID";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) )
@@ -170,6 +171,7 @@
 									WHERE ODS.WD_ID IS NOT NULL AND ODS.ST_ID = {$row["ST_ID"]}
 									LIMIT 100
 								  ) ODS ON ODS.WD_ID = WD.WD_ID
+								  WHERE WD.Hourly = 0
 								  GROUP BY WD.WD_ID
 								  ORDER BY CNT DESC";
 						$subsubres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

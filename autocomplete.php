@@ -18,10 +18,10 @@
 			source: availableTags
 		});
 
-		// Автокомплит работников
+		// Автокомплит работников (кроме почасовиков)
 		var WorkersTags = [
 		<?
-			$query = "SELECT Name FROM WorkersData";
+			$query = "SELECT Name FROM WorkersData WHERE Hourly = 0";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
