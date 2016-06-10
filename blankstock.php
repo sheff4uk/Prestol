@@ -127,7 +127,6 @@
 								SELECT PB.BL_ID, SUM(ODD.Amount * PB.Amount) Amount
 								FROM OrdersDataDetail ODD
 								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
-								JOIN OrdersDataSteps ODS ON ODS.ST_ID = PB.ST_ID AND ODS.ODD_ID = ODD.ODD_ID AND ODS.WD_ID IS NOT NULL
 								GROUP BY PB.BL_ID
 							) SPB ON SPB.BL_ID = BL.BL_ID
 							ORDER BY BL.PT_ID DESC, BL.Name ASC";
