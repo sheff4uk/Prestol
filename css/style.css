@@ -71,7 +71,7 @@ tr:target td {
     background: #dfb;
 }
 
-table tbody tr:hover {
+table tbody tr:hover, tbody td.hover {
 	background: #ffa; /* Цвет фона при наведении */
 }
 

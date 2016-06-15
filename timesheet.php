@@ -84,32 +84,49 @@
 	</form>
 </p>
 
-<table>
+<table id="timesheet">
 	<thead>
 		<tr>
 			<th>Работник</th>
 			<?
 				$i = 1;
 				while ($i <= $days) {
-					echo "<th width='20'>".$i++."</th>";
+					echo "<th>".$i++."</th>";
 				}
 			?>
-			<th width="40">&Sigma;</th>
+			<th>&Sigma;</th>
 		</tr>
 	</thead>
 	<tbody>
 		<?
+			// Получаем список работников
 			$query = "SELECT WD_ID, Name FROM WorkersData WHERE Hourly = 1";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "<tr><td>{$row["Name"]}</td>";
 				$i = 1;
-				while ($i <= $days) {
-					echo "<td></td>";
-					$i++;
+
+				// Получаем список часов по работнику за месяц
+				$query = "SELECT DAY(Date) Day, Hours, Tariff, Comment
+						  FROM TimeSheet
+						  WHERE YEAR(Date) = {$year} AND MONTH(Date) = {$month} AND WD_ID = {$row["WD_ID"]}";
+				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $subrow = mysqli_fetch_array($subres) ) {
+					while ($i <= $days and $i <= $subrow["Day"]) {
+						echo "<td><a href='#'></a></td>";
+						$i++;
+					}
+
 				}
+
 				echo "<td></td></tr>";
 			}
 		?>
 	</tbody>
 </table>
+
+<script>
+	$(document).ready(function(){
+		$('#timesheet').columnHover({eachCell:true, hoverClass:'hover', ignoreCols: [1]});
+	});
+</script>

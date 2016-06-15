@@ -12,6 +12,7 @@
 	<script src="js/modal.js"></script>
 	<script src="js/script.js" type="text/javascript"></script>
     <script src="js/jquery.printPage.js" type="text/javascript"></script>
+    <script src="js/jquery.columnhover.js" type="text/javascript"></script>
 	<script type="text/javascript" src="js/noty/packaged/jquery.noty.packaged.min.js"></script>
 
     <script>
