@@ -94,7 +94,7 @@
 					echo "<th>".$i++."</th>";
 				}
 			?>
-			<th>&Sigma;</th>
+			<th title="Сумма">&Sigma;</th>
 		</tr>
 	</thead>
 	<tbody>

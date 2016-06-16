@@ -99,6 +99,7 @@
 				  ,"Производство" => "/workers.php?worker=0&type=1&isready=0"
 				  ,"Свободные{$ischeckcount}" => "/orderdetail.php"
 				  ,"Заготовки" => "/blankstock.php"
+				  ,"Табель" => "/timesheet.php"
 				  ,"Платежи" => "/paylog.php"
 				  ,"Печатные формы" => "/toprint.php");
 	echo "<ul class='navbar-nav'>";
