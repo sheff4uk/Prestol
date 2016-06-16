@@ -188,7 +188,7 @@
 				$('#addpay input[name="id_date"]').val(id);
 			}
 
-			// Форма добавления/редактирования заготовок
+			// Вызов формы
 			$('#addpay').dialog({
 				width: 500,
 				modal: true,

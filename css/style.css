@@ -374,3 +374,10 @@ input.amount {
 		vertical-align: top;
 	}
 }
+
+td.tscell {
+	cursor: pointer;
+}
+td.tscell:hover {
+	background: #fca;
+}

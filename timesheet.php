@@ -104,29 +104,96 @@
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "<tr><td>{$row["Name"]}</td>";
-				$i = 1;
 
 				// Получаем список часов по работнику за месяц
 				$query = "SELECT DAY(Date) Day, Hours, Tariff, Comment
 						  FROM TimeSheet
 						  WHERE YEAR(Date) = {$year} AND MONTH(Date) = {$month} AND WD_ID = {$row["WD_ID"]}";
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				while( $subrow = mysqli_fetch_array($subres) ) {
-					while ($i <= $days and $i <= $subrow["Day"]) {
-						echo "<td><a href='#'></a></td>";
-						$i++;
-					}
 
+				$sigma = 0;
+				$day = 0;
+				if( $subrow = mysqli_fetch_array($subres) ) {
+					$day = $subrow["Day"];
 				}
 
-				echo "<td></td></tr>";
+				// Цикл по количеству дней в месяце
+				$i = 1;
+				while ($i <= $days) {
+					if( $i == $day ) {
+						echo "<td class='tscell' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$subrow["Hours"]}</td>";
+						$sigma = $sigma + $subrow["Hours"];
+						if( $subrow = mysqli_fetch_array($subres) ) {
+							$day = $subrow["Day"];
+						}
+					}
+					else {
+						echo "<td class='tscell'></td>";
+					}
+					$i++;
+				}
+
+				echo "<td>{$sigma}</td></tr>";
 			}
 		?>
 	</tbody>
 </table>
 
+	<!-- Форма ворклог -->
+	<div id='dayworklog' title='Дневной отчет' class="addproduct" style='display:none'>
+		<form method="post">
+			<fieldset>
+				<div>
+					<label>Часы:</label>
+					<input required type='number' name='Hours' step='0.5'>
+				</div>
+				<div>
+					<label>Тариф:</label>
+					<input required type='number' name='Tariff'>
+				</div>
+				<div>
+					<label>Примечание:</label>
+					<textarea name='Comment' rows='4' cols='25'></textarea>
+				</div>
+			</fieldset>
+			<div>
+				<hr>
+				<button type='submit' style='float: right;'>Сохранить</button>
+			</div>
+		</form>
+	</div>
+
 <script>
 	$(document).ready(function(){
 		$('#timesheet').columnHover({eachCell:true, hoverClass:'hover', ignoreCols: [1]});
+
+		// Форма добавления часов
+		$('.tscell').click(function() {
+//			var id = $(this).attr('id');
+//			var worker = $(this).parents('tr').find('.worker').attr('val');
+//			var pay = $(this).parents('tr').find('.pay').attr('val');
+//			var comment = $(this).parents('tr').find('.comment').html();
+//
+//			// Очистка диалога
+//			$('#addpay input, #addpay select, #addpay textarea').val('');
+//
+//			// Заполнение
+//			if( typeof id !== "undefined" )
+//			{
+//				$('#addpay select[name="Worker"]').val(worker);
+//				$('#addpay input[name="Pay"]').val(pay);
+//				$('#addpay textarea[name="Comment"]').val(comment);
+//				$('#addpay input[name="id_date"]').val(id);
+//			}
+
+			// Вызов формы
+			$('#dayworklog').dialog({
+				width: 400,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+			});
+			return false;
+		});
 	});
 </script>
