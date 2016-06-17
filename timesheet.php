@@ -103,7 +103,7 @@
 			$query = "SELECT WD_ID, Name FROM WorkersData WHERE Hourly = 1";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
-				echo "<tr><td>{$row["Name"]}</td>";
+				echo "<tr><td class='worker' val='{$row["WD_ID"]}'>{$row["Name"]}</td>";
 
 				// Получаем список часов по работнику за месяц
 				$query = "SELECT DAY(Date) Day, Hours, Tariff, Comment
@@ -120,15 +120,16 @@
 				// Цикл по количеству дней в месяце
 				$i = 1;
 				while ($i <= $days) {
+					$date = date('Y-m-d', strtotime($year.'-'.$month.'-'.$i));
 					if( $i == $day ) {
-						echo "<td class='tscell' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$subrow["Hours"]}</td>";
+						echo "<td class='tscell' id='{$date}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$subrow["Hours"]}</td>";
 						$sigma = $sigma + $subrow["Hours"];
 						if( $subrow = mysqli_fetch_array($subres) ) {
 							$day = $subrow["Day"];
 						}
 					}
 					else {
-						echo "<td class='tscell'></td>";
+						echo "<td class='tscell' id='{$date}'></td>";
 					}
 					$i++;
 				}
@@ -140,7 +141,7 @@
 </table>
 
 	<!-- Форма ворклог -->
-	<div id='dayworklog' title='Дневной отчет' class="addproduct" style='display:none'>
+	<div id='dayworklog' class="addproduct" style="display:none">
 		<form method="post">
 			<fieldset>
 				<div>
@@ -169,8 +170,9 @@
 
 		// Форма добавления часов
 		$('.tscell').click(function() {
-//			var id = $(this).attr('id');
-//			var worker = $(this).parents('tr').find('.worker').attr('val');
+			var workername = $(this).parents('tr').find('.worker').html();
+			var date = $(this).attr('id');
+			var worker = $(this).parents('tr').find('.worker').attr('val');
 //			var pay = $(this).parents('tr').find('.pay').attr('val');
 //			var comment = $(this).parents('tr').find('.comment').html();
 //
@@ -188,10 +190,11 @@
 
 			// Вызов формы
 			$('#dayworklog').dialog({
-				width: 400,
-				modal: true,
-				show: 'blind',
-				hide: 'explode',
+				title:	workername+' '+date,
+				width:	400,
+				modal:	true,
+				show:	'blind',
+				hide:	'explode',
 			});
 			return false;
 		});
