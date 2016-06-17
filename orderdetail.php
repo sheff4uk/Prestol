@@ -20,12 +20,12 @@
 	{
 		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
-        $ClientName = mysqli_real_escape_string( $mysqli,$_POST["ClientName"] );
-        $Shop = $_POST["Shop"] <> "" ? $_POST["Shop"] : "NULL";
-        $OrderNumber = mysqli_real_escape_string( $mysqli,$_POST["OrderNumber"] );
-        $Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
-        $IsPainting = $_POST["IsPainting"];
-        $Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
+		$ClientName = mysqli_real_escape_string( $mysqli,$_POST["ClientName"] );
+		$Shop = $_POST["Shop"] <> "" ? $_POST["Shop"] : "NULL";
+		$OrderNumber = mysqli_real_escape_string( $mysqli,$_POST["OrderNumber"] );
+		$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
+		$IsPainting = $_POST["IsPainting"];
+		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 		$query = "UPDATE OrdersData
 				  SET CLientName = '{$ClientName}'
 				     ,StartDate = $StartDate
