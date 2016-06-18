@@ -16,69 +16,70 @@
 	<script type="text/javascript" src="js/noty/packaged/jquery.noty.packaged.min.js"></script>
 
     <script>
-		$(function() {
-            $( 'input[type=submit], .button, button' ).button();
-            
-			// Календарь
-			$( "input.date" ).datepicker({
-                dateFormat: 'dd.mm.yy',
-                onClose: function( selectedDate ) {
-                    if( $(this).hasClass( "from" ) ) {
-                        $(this).parents( "form" ).find( ".to" ).datepicker( "option", "minDate", selectedDate );
-                    }
-                    if( $(this).hasClass( "to" ) ) {
-                        $(this).parents( "form" ).find( ".from" ).datepicker( "option", "maxDate", selectedDate );
-                    }
-                }
-            });
-		});
-		
-		// Диалог подтверждения действия
-		function confirm(text, href) {
-			var n = noty({
-				text        : text,
-				//dismissQueue: false,
-				modal		: true,
-				animation: {
-					open: 'animated bounce',
-					//close: 'animated flipOutX',
-				},
-				buttons     : [
-					{addClass: 'btn btn-primary', text: 'Ok', onClick: function ($noty) {
-						$noty.close();
-						//noty({timeout: 3000, text: 'Вы нажали кнопку "Ok"', type: 'success'});
-						window.location.href = href;
-					}
-					},
-					{addClass: 'btn btn-danger', text: 'Отмена', onClick: function ($noty) {
-						$noty.close();
-						noty({timeout: 3000, text: 'Вы нажали кнопку "Отмена"', type: 'error'});
-					}
-					}
-				],
-				closable: false,
-				timeout: false
-			});
-			return false;
-		}
-	</script>
-
-	<script>
-		// Плавная прокрутка к якорю
 		$(document).ready(function(){
-			var loc = window.location.hash.replace("#","");
-			if (loc == "") {loc = "main"}
+			$(function() {
+				$( 'input[type=submit], .button, button' ).button();
 
-			var destination = $("#"+loc).offset().top - 200;
-			$("body:not(:animated)").animate({ scrollTop: destination }, 500);
-			$("html").animate({ scrollTop: destination }, 500);
+				// Календарь
+				$( "input.date" ).datepicker({
+					dateFormat: 'dd.mm.yy',
+					onClose: function( selectedDate ) {
+						if( $(this).hasClass( "from" ) ) {
+							$(this).parents( "form" ).find( ".to" ).datepicker( "option", "minDate", selectedDate );
+						}
+						if( $(this).hasClass( "to" ) ) {
+							$(this).parents( "form" ).find( ".from" ).datepicker( "option", "maxDate", selectedDate );
+						}
+					}
+				});
+			});
+
+			// Диалог подтверждения действия
+			function confirm(text, href) {
+				var n = noty({
+					text        : text,
+					//dismissQueue: false,
+					modal		: true,
+					animation: {
+						open: 'animated bounce',
+						//close: 'animated flipOutX',
+					},
+					buttons     : [
+						{addClass: 'btn btn-primary', text: 'Ok', onClick: function ($noty) {
+							$noty.close();
+							//noty({timeout: 3000, text: 'Вы нажали кнопку "Ok"', type: 'success'});
+							window.location.href = href;
+						}
+						},
+						{addClass: 'btn btn-danger', text: 'Отмена', onClick: function ($noty) {
+							$noty.close();
+							noty({timeout: 3000, text: 'Вы нажали кнопку "Отмена"', type: 'error'});
+						}
+						}
+					],
+					closable: false,
+					timeout: false
+				});
+				return false;
+			}
+
+			// Плавная прокрутка к якорю
+			$(document).ready(function(){
+				var loc = window.location.hash.replace("#","");
+				if (loc == "") {loc = "main"}
+
+				var destination = $("#"+loc).offset().top - 200;
+				$("body:not(:animated)").animate({ scrollTop: destination }, 500);
+				$("html").animate({ scrollTop: destination }, 500);
+			});
 		});
 	</script>
+
 <?
-    if( $_SESSION["alert"] != '' ) {
-        echo "<script>alert('{$_SESSION["alert"]}');</script>";
-        $_SESSION["alert"] = '';
-    }
+	if( $_SESSION["alert"] != '' ) {
+		echo "<script>alert('{$_SESSION["alert"]}');</script>";
+		$_SESSION["alert"] = '';
+	}
 	$archive = ($_GET["archive"] == 1) ? 1 : 0;
 ?>
 

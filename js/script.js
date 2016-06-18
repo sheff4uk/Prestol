@@ -113,7 +113,7 @@ function FormModelList(model) {
 	}
 }
 
-$(function() {
+$(document).ready(function(){
 	$( '.checkstatus' ).button();
 	$( '.btnset' ).buttonset();
 		// Fix for http://bugs.jqueryui.com/ticket/7856

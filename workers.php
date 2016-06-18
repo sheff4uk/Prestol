@@ -223,6 +223,6 @@
 			echo "</table>";
 			echo "</p>";
 		}
-?>		
+?>
 </body>
 </html>

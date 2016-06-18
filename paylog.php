@@ -82,7 +82,7 @@
 			<tbody>
 			<?
 				// Баланс работников
-				$query = "SELECT WD.WD_ID, WD.Name, (IFNULL(SPL.Pay, 0) + IFNULL(SODS.Tariff, 0) + IFNULL(SBS.Tariff, 0)) Sum
+				$query = "SELECT WD.WD_ID, WD.Name, (IFNULL(SPL.Pay, 0) + IFNULL(SODS.Tariff, 0) + IFNULL(SBS.Tariff, 0) + IFNULL(STS.Tariff, 0)) Sum
 							FROM WorkersData WD
 							LEFT JOIN (
 								SELECT PL.WD_ID, SUM(PL.Pay) Pay
@@ -100,6 +100,11 @@
 								FROM BlankStock BS
 								GROUP BY BS.WD_ID
 							) SBS ON SBS.WD_ID = WD.WD_ID
+							LEFT JOIN (
+								SELECT TS.WD_ID, ROUND(SUM(TS.Hours * TS.Tariff)) Tariff
+								FROM TimeSheet TS
+								GROUP BY TS.WD_ID
+							) STS ON STS.WD_ID = WD.WD_ID
 							WHERE WD.IsActive = 1";
 				if( isset($_GET["worker"]) ) {
 					$query .= " AND WD.WD_ID = {$_GET["worker"]}";

@@ -393,20 +393,22 @@
 	</p>
 
 </body>
-	<script>
-		odid = <?= ($id == 'NULL') ? 0 : $id ?>;
-        
-		$('.attention img').show();
-				
-		// Открытие диалога этапов после добавления изделия
-//		if( '<?=$odd_id?>' != '' ) {
-//			$( document ).ready(function() {
-//				makeform(<?= $odd_id ? $odd_id : 0 ?>, '<?=$location?>');
-//				return false;
-//			});
-//		}
-	</script>
 </html>
+
 <script>
-	odd = <?= json_encode($ODD); ?>;
+	$(document).ready(function(){
+		odid = <?= ($id == 'NULL') ? 0 : $id ?>;
+
+		$('.attention img').show();
+
+		// Открытие диалога этапов после добавления изделия
+//			if( '<?=$odd_id?>' != '' ) {
+//				$( document ).ready(function() {
+//					makeform(<?= $odd_id ? $odd_id : 0 ?>, '<?=$location?>');
+//					return false;
+//				});
+//			}
+
+		odd = <?= json_encode($ODD); ?>;
+	});
 </script>

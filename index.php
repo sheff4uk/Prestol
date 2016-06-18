@@ -378,14 +378,16 @@
 	</form>
 	</table>
 </body>
-	<script>
-		// Открытие диалога печати
-        $(document).ready(function() {
-            $("#toprint").printPage();
-        });
-    </script>
+</html>
 
-	<script>
+<script>
+	$(document).ready(function(){
+
+		// Открытие диалога печати
+		$(document).ready(function() {
+			$("#toprint").printPage();
+		});
+
 		$(function() {
 			// Кнопка добавления заказа
 			$('#add_btn').click( function() {
@@ -398,7 +400,7 @@
 
 				// Автокомплит поверх диалога
 				$( ".colortags" ).autocomplete( "option", "appendTo", "#order_form" );
-				
+
 				return false;
 			});
 
@@ -418,9 +420,7 @@
 			$("#toprint").attr('href', '/toprint/main.php?' + data);
 			return false;
 		}
-	</script>
-</html>
 
-<script>
-    odd = <?= json_encode($ODD); ?>;
+		odd = <?= json_encode($ODD); ?>;
+	});
 </script>

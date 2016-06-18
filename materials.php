@@ -165,7 +165,10 @@
 	</form>
 
 </body>
-	<script>
+</html>
+
+<script>
+	$(document).ready(function(){
 		function selectall(ch)
 		{
 			$('.chbox').prop('checked', ch);
@@ -200,5 +203,5 @@
 				return false;
 			});
 		});
-	</script>
-</html>
+	});
+</script>

@@ -48,9 +48,10 @@
 		<p><a class='button btnPrint' href='toprint/other.php'>Лакировка+Обивка+Упаковка</a></p>
 	</div>
 </body>
-    <script>  
-        $(document).ready(function() {
-            $(".btnPrint").printPage();
-        });
-    </script>
 </html>
+
+<script>
+	$(document).ready(function() {
+		$(".btnPrint").printPage();
+	});
+</script>
