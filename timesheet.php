@@ -4,6 +4,23 @@
 
 	$location = $_SERVER['REQUEST_URI'];
 
+	// Обновление/добавление часов в табель
+	if( isset($_POST["date"]) )
+	{
+		$Date = '\''.date( 'Y-m-d', strtotime($_POST["date"]) ).'\'';
+		$Worker = $_POST["worker"];
+		$Hours = $_POST["hours"];
+		$Tariff = $_POST["tariff"];
+		$Comment = mysqli_real_escape_string( $mysqli,$_POST["comment"] );
+
+		$query = "REPLACE INTO TimeSheet(WD_ID, Date, Hours, Tariff, Comment)
+				  VALUES ({$Worker}, {$Date}, {$Hours}, {$Tariff}, '{$Comment}')";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		header( "Location: ".$location );
+		die;
+	}
+
 	$title = 'Табель';
 	include "header.php";
 
@@ -100,10 +117,16 @@
 	<tbody>
 		<?
 			// Получаем список работников
-			$query = "SELECT WD_ID, Name FROM WorkersData WHERE Hourly = 1";
+			$query = "SELECT WD.WD_ID, WD.Name, IF(COUNT(HT.WD_ID) = 1, HT.Tariff, '') deftariff
+						,IFNULL(GROUP_CONCAT(CONCAT('<a class=\"btn\" title=\"', HT.Comment, '\">', HT.Tariff, '</a>') SEPARATOR ' '), '&nbsp;') tariffs
+						FROM WorkersData WD
+						LEFT JOIN HourlyTariff HT ON HT.WD_ID = WD.WD_ID
+						WHERE WD.Hourly = 1
+						GROUP BY WD.WD_ID";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
-				echo "<tr><td class='worker' val='{$row["WD_ID"]}'>{$row["Name"]}</td>";
+				echo "<tr><td class='worker' val='{$row["WD_ID"]}' deftariff='{$row["deftariff"]}'><span>{$row["Name"]}</span>";
+				echo "<div class='tariffs' style='display: none;'>{$row["tariffs"]}</div></td>";
 
 				// Получаем список часов по работнику за месяц
 				$query = "SELECT DAY(Date) Day, Hours, Tariff, Comment
@@ -120,9 +143,9 @@
 				// Цикл по количеству дней в месяце
 				$i = 1;
 				while ($i <= $days) {
-					$date = date('Y-m-d', strtotime($year.'-'.$month.'-'.$i));
+					$date = date('d.m.Y', strtotime($year.'-'.$month.'-'.$i));
 					if( $i == $day ) {
-						echo "<td class='tscell' id='{$date}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$subrow["Hours"]}</td>";
+						echo "<td class='tscell' id='{$date}' tariff='{$subrow["Tariff"]}' comment='{$subrow["Comment"]}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$subrow["Hours"]}</td>";
 						$sigma = $sigma + $subrow["Hours"];
 						if( $subrow = mysqli_fetch_array($subres) ) {
 							$day = $subrow["Day"];
@@ -133,7 +156,6 @@
 					}
 					$i++;
 				}
-
 				echo "<td>{$sigma}</td></tr>";
 			}
 		?>
@@ -144,17 +166,23 @@
 	<div id='dayworklog' class="addproduct" style="display:none">
 		<form method="post">
 			<fieldset>
+				<input type="hidden" name="date">
+				<input type="hidden" name="worker">
 				<div>
 					<label>Часы:</label>
-					<input required type='number' name='Hours' step='0.5'>
+					<input required type='number' name='hours' step='0.5' min="0" max="24">
+				</div>
+				<div>
+					<label>Тарифы:</label>
+					<div class="tariffs"></div>
 				</div>
 				<div>
 					<label>Тариф:</label>
-					<input required type='number' name='Tariff'>
+					<input required type='number' name='tariff' min="0">
 				</div>
 				<div>
 					<label>Примечание:</label>
-					<textarea name='Comment' rows='4' cols='25'></textarea>
+					<textarea name='comment' rows='4' cols='25'></textarea>
 				</div>
 			</fieldset>
 			<div>
@@ -166,27 +194,42 @@
 
 <script>
 	$(document).ready(function(){
+
+		// Подсвечивание столбцов таблицы
 		$('#timesheet').columnHover({eachCell:true, hoverClass:'hover', ignoreCols: [1]});
 
 		// Форма добавления часов
 		$('.tscell').click(function() {
-			var workername = $(this).parents('tr').find('.worker').html();
+			var workername = $(this).parents('tr').find('.worker > span').html();
+			var workertariffs = $(this).parents('tr').find('.tariffs').html();
 			var date = $(this).attr('id');
 			var worker = $(this).parents('tr').find('.worker').attr('val');
-//			var pay = $(this).parents('tr').find('.pay').attr('val');
-//			var comment = $(this).parents('tr').find('.comment').html();
-//
-//			// Очистка диалога
-//			$('#addpay input, #addpay select, #addpay textarea').val('');
-//
-//			// Заполнение
-//			if( typeof id !== "undefined" )
-//			{
-//				$('#addpay select[name="Worker"]').val(worker);
-//				$('#addpay input[name="Pay"]').val(pay);
-//				$('#addpay textarea[name="Comment"]').val(comment);
-//				$('#addpay input[name="id_date"]').val(id);
-//			}
+			var deftariff = $(this).parents('tr').find('.worker').attr('deftariff');
+			var hours = $(this).html();
+			var tariff = $(this).attr('tariff');
+			var comment = $(this).attr('comment');
+
+			$('#dayworklog input[name="date"]').val(date);
+			$('#dayworklog input[name="worker"]').val(worker);
+
+			// Заполнение
+			if( hours != '' )
+			{
+				$('#dayworklog input[name="hours"]').val(hours);
+				$('#dayworklog input[name="tariff"]').val(tariff);
+				$('#dayworklog textarea[name="comment"]').val(comment);
+			}
+			else {
+				$('#dayworklog input[name="hours"]').val('8');
+				$('#dayworklog input[name="tariff"]').val(deftariff);
+				$('#dayworklog textarea[name="comment"]').val('');
+			}
+
+			$('#dayworklog div.tariffs').html(workertariffs);
+
+			$('.tariffs a').click(function() {
+				$('#dayworklog input[name="tariff"]').val($(this).html());
+			});
 
 			// Вызов формы
 			$('#dayworklog').dialog({
