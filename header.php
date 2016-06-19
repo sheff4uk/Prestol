@@ -11,11 +11,11 @@
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
 	<script src="js/modal.js"></script>
 	<script src="js/script.js" type="text/javascript"></script>
-    <script src="js/jquery.printPage.js" type="text/javascript"></script>
-    <script src="js/jquery.columnhover.js" type="text/javascript"></script>
+	<script src="js/jquery.printPage.js" type="text/javascript"></script>
+	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
 	<script type="text/javascript" src="js/noty/packaged/jquery.noty.packaged.min.js"></script>
 
-    <script>
+	<script>
 		$(document).ready(function(){
 			$(function() {
 				$( 'input[type=submit], .button, button' ).button();
@@ -34,45 +34,43 @@
 				});
 			});
 
-			// Диалог подтверждения действия
-			function confirm(text, href) {
-				var n = noty({
-					text        : text,
-					//dismissQueue: false,
-					modal		: true,
-					animation: {
-						open: 'animated bounce',
-						//close: 'animated flipOutX',
-					},
-					buttons     : [
-						{addClass: 'btn btn-primary', text: 'Ok', onClick: function ($noty) {
-							$noty.close();
-							//noty({timeout: 3000, text: 'Вы нажали кнопку "Ok"', type: 'success'});
-							window.location.href = href;
-						}
-						},
-						{addClass: 'btn btn-danger', text: 'Отмена', onClick: function ($noty) {
-							$noty.close();
-							noty({timeout: 3000, text: 'Вы нажали кнопку "Отмена"', type: 'error'});
-						}
-						}
-					],
-					closable: false,
-					timeout: false
-				});
-				return false;
-			}
-
 			// Плавная прокрутка к якорю
-			$(document).ready(function(){
-				var loc = window.location.hash.replace("#","");
-				if (loc == "") {loc = "main"}
+			var loc = window.location.hash.replace("#","");
+			if (loc == "") {loc = "main"}
 
-				var destination = $("#"+loc).offset().top - 200;
-				$("body:not(:animated)").animate({ scrollTop: destination }, 500);
-				$("html").animate({ scrollTop: destination }, 500);
-			});
+			var destination = $("#"+loc).offset().top - 200;
+			$("body:not(:animated)").animate({ scrollTop: destination }, 500);
+			$("html").animate({ scrollTop: destination }, 500);
 		});
+
+		// Диалог подтверждения действия
+		function confirm(text, href) {
+			var n = noty({
+				text        : text,
+				//dismissQueue: false,
+				modal		: true,
+				animation: {
+					open: 'animated bounce',
+					//close: 'animated flipOutX',
+				},
+				buttons     : [
+					{addClass: 'btn btn-primary', text: 'Ok', onClick: function ($noty) {
+						$noty.close();
+						//noty({timeout: 3000, text: 'Вы нажали кнопку "Ok"', type: 'success'});
+						window.location.href = href;
+					}
+					},
+					{addClass: 'btn btn-danger', text: 'Отмена', onClick: function ($noty) {
+						$noty.close();
+						noty({timeout: 3000, text: 'Вы нажали кнопку "Отмена"', type: 'error'});
+					}
+					}
+				],
+				closable: false,
+				timeout: false
+			});
+			return false;
+		}
 	</script>
 
 <?

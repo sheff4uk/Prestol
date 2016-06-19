@@ -202,5 +202,42 @@ case "livesearch":
 	echo "return false;";
 	echo "});";
 	break;
+
+// Смена статуса лакировки
+case "ispainting":
+
+	$id = $_GET["od_id"];
+	$val = $_GET["val"];
+	$val = ($val == 3) ? 1 : $val + 1;
+
+	// Обновляем статус лакировки
+	$query = "UPDATE OrdersData SET IsPainting = {$val} WHERE OD_ID = {$id}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+	// Получаем статус лакировки из базы
+	$query = "SELECT IsPainting FROM OrdersData WHERE OD_ID = {$id}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$val = mysqli_result($res,0,'IsPainting');
+
+	switch ($val) {
+		case 1:
+			$status = "Не в работе";
+			$pic = "<i class=\"fa fa-star-o fa-lg\" title=\"Не в работе\"></i>";
+			break;
+		case 2:
+			$pic = "<i class=\"fa fa-star-half-o fa-lg\" title=\"В работе\"></i>";
+			$status = "В работе";
+			break;
+		case 3:
+			$pic = "<i class=\"fa fa-star fa-lg\" title=\"Готово\"></i>";
+			$status = "Готово";
+			break;
+	}
+
+	echo "window.top.window.$('.main_table tr[id=\"{$id}\"] td.painting a').html('{$pic}');";
+	echo "window.top.window.$('.main_table tr[id=\"{$id}\"] td.painting a').attr('val', '{$val}');";
+	echo "noty({timeout: 3000, text: 'Статус лакировки изменен на \"{$status}\"', type: 'success'});";
+	break;
+
 }
 ?>

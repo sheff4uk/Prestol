@@ -318,7 +318,7 @@
 		}
 
 		echo "<td><span class='nowrap'>{$steps}</span></td>";
-		echo "<td>";
+		echo "<td class='painting'><a val='{$row["IsPainting"]}'>";
 			switch ($row["IsPainting"]) {
 				case 1:
 					echo "<i class='fa fa-star-o fa-lg' title='Не в работе'></i>";
@@ -330,7 +330,7 @@
 					echo "<i class='fa fa-star fa-lg' title='Готово'></i>";
 					break;
 			}
-		echo "</td>";
+		echo "</a></td>";
 		echo "<td><span class='nowrap material'>{$row["Textile"]}</span></td>";
 		echo "<td><span>{$row["Comment"]}</span></td>";
 		echo "<td><a href='./orderdetail.php?id={$row["OD_ID"]}' class='button' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
@@ -413,6 +413,12 @@
 			{
 				changelink();
 			});
+		});
+
+		$('.painting a').click(function() {
+			var id = $(this).parents('tr').attr('id');
+			var val = $(this).attr('val');
+			$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val, dataType: "script", async: false });
 		});
 
 		function changelink() {
