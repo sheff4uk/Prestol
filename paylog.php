@@ -90,9 +90,10 @@
 								GROUP BY PL.WD_ID
 							) SPL ON SPL.WD_ID = WD.WD_ID
 							LEFT JOIN (
-								SELECT ODS.WD_ID, SUM(ODS.Tariff) Tariff
+								SELECT ODS.WD_ID, SUM(ODD.Amount * ODS.Tariff) Tariff
 								FROM OrdersDataSteps ODS
-								WHERE IsReady = 1
+								JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
+								WHERE ODS.IsReady = 1
 								GROUP BY ODS.WD_ID
 							) SODS ON SODS.WD_ID = WD.WD_ID
 							LEFT JOIN (
