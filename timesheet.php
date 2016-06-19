@@ -118,7 +118,7 @@
 		<?
 			// Получаем список работников
 			$query = "SELECT WD.WD_ID, WD.Name, IF(COUNT(HT.WD_ID) = 1, HT.Tariff, '') deftariff
-						,IFNULL(GROUP_CONCAT(CONCAT('<a class=\"btn\" title=\"', HT.Comment, '\">', HT.Tariff, '</a>') SEPARATOR ' '), '&nbsp;') tariffs
+						,IFNULL(GROUP_CONCAT(CONCAT('<a class=\"btn\" title=\"', HT.Comment, '\">', HT.Tariff, '</a>') ORDER BY HT.Tariff SEPARATOR ' '), '&nbsp;') tariffs
 						FROM WorkersData WD
 						LEFT JOIN HourlyTariff HT ON HT.WD_ID = WD.WD_ID
 						WHERE WD.Hourly = 1
