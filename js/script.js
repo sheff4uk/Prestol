@@ -382,7 +382,7 @@ $(document).ready(function(){
 	});
 
 	// Если ткань/пластик заказан - отображается дата заказа и дата ожидания.
-	$('.radiostatus1 input').change(function(){
+	$('.radiostatus input').change(function(){
 		if( $(this).val() == 1 ) {
 			$(this).parents( "form" ).find('.order_material').show('fast');
 			$(this).parents( "form" ).find('.order_material input').attr("required", true);
