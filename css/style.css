@@ -99,7 +99,7 @@ tbody tr:nth-child(even){ /* Задаем стили для четных ряд�
 }
 
 :required {
-	box-shadow: 3px 3px 10px #911;
+	box-shadow: 0px 0px 10px #911;
 }
 
 .step {
@@ -383,4 +383,44 @@ td.tscell:hover {
 }
 .painting i {
 	cursor: pointer;
+}
+
+#login {
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	-ms-border-radius: 5px;
+	-o-border-radius: 5px;
+	border-radius: 5px;
+	border-color: transparent;
+	-webkit-box-shadow: 0 0 2px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2);
+	-moz-box-shadow: 0 0 2px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2);
+	-ms-box-shadow: 0 0 2px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2);
+	-o-box-shadow: 0 0 2px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2);
+	box-shadow: 0 0 2px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2);
+	padding: 25px 30px 25px;
+	background: #FAFAFA;
+	margin-top: 12em;
+	width: 400px;
+	margin-left: auto;
+	margin-right: auto;
+	color: #666;
+}
+#login H1, #login h3, #login p {
+	text-align: center;
+}
+#login form div {
+	margin: 15px 0;
+	text-align: right;
+}
+#login input {
+	width: 215px;
+	padding: 3px;
+	margin-left: 10px;
+	font-size: 1.2em;
+}
+#login label {
+	font-weight: bold;
+}
+#login p {
+	font-size: 0.8em;
 }
