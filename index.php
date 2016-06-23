@@ -1,5 +1,5 @@
 <?
-    session_start();
+	session_start();
 	include "config.php";
 	
 	$location = $_SERVER['REQUEST_URI'];
@@ -9,11 +9,11 @@
 	{
 		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
 		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
-        $ClientName = mysqli_real_escape_string( $mysqli, $_POST["ClientName"] );
-        $Shop = $_POST["Shop"] <> "" ? $_POST["Shop"] : "NULL";
-        $OrderNumber = mysqli_real_escape_string( $mysqli, $_POST["OrderNumber"] );
-        $Color = mysqli_real_escape_string( $mysqli, $_POST["Color"] );
-        $Comment = mysqli_real_escape_string( $mysqli, $_POST["Comment"] );
+		$ClientName = mysqli_real_escape_string( $mysqli, $_POST["ClientName"] );
+		$Shop = $_POST["Shop"] <> "" ? $_POST["Shop"] : "NULL";
+		$OrderNumber = mysqli_real_escape_string( $mysqli, $_POST["OrderNumber"] );
+		$Color = mysqli_real_escape_string( $mysqli, $_POST["Color"] );
+		$Comment = mysqli_real_escape_string( $mysqli, $_POST["Comment"] );
 		$query = "INSERT INTO OrdersData(CLientName, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment)
 				  VALUES ('{$ClientName}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}')";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -198,7 +198,7 @@
 					,OD.OrderNumber
 					,OD.Comment
 					,COUNT(ODD.ODD_ID) Child
-					,GROUP_CONCAT(CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' location=\'{$location}\' class=\'button edit_product', PM.PT_ID, '\'>', ODD.Amount, ' ', PM.Model, ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), ''), '</a><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Zakaz
+					,GROUP_CONCAT(CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' location=\'{$location}\' class=\'button edit_product', IFNULL(PM.PT_ID, 2), '\'>', ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), ''), '</a><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') Zakaz
 					,GROUP_CONCAT(CONCAT(ODD.Color, '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Color_archive
 					,OD.Color
 					,OD.IsPainting
@@ -209,13 +209,13 @@
 							WHEN 2 THEN 'bg-green'
 						END,
 					'\'>', IF(PM.PT_ID = 1, IFNULL(ODD.Material, ''), ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Textile
-					,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 2 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
+					,GROUP_CONCAT(CONCAT(IF(IFNULL(PM.PT_ID, 2) = 2 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
 						CASE ODD.IsExist
 							WHEN 0 THEN 'bg-red'
 							WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
 							WHEN 2 THEN 'bg-green'
 						END,
-					'\'>', IF(PM.PT_ID = 2, IFNULL(ODD.Material, ''), ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Plastic
+					'\'>', IF(PM.PT_ID = 2, IFNULL(ODD.Material, ''), ''), '</span><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') Plastic
 					,GROUP_CONCAT(CONCAT(ODS_WD.Name, '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Workers
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,BIT_AND(ODS_WD.IsReady) IsReady
@@ -309,7 +309,7 @@
 					LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 					JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 					GROUP BY ODD_ID
-					ORDER BY PM.PT_ID DESC, ODD.ODD_ID";
+					ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID";
 		$sub_res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$steps = "";
 		while( $sub_row = mysqli_fetch_array($sub_res) )
