@@ -129,6 +129,21 @@ input[type="checkbox"].isready:checked + label:before {
 input[type="checkbox"].isready + label:before {
 	content: "В работе";
 }
+input[type="checkbox"].nightshift:checked + label:before {
+	content: "Ночь";
+}
+input[type="checkbox"].nightshift + label {
+	width: 58px;
+	float: none;
+	display: inline-block;
+}
+.wr-nightbonus {
+	display: inline-block;
+}
+
+input[type="checkbox"].nightshift + label:before {
+	content: "День";
+}
 
 .edit_steps label{
 //	width: 100px;

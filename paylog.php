@@ -102,7 +102,7 @@
 								GROUP BY BS.WD_ID
 							) SBS ON SBS.WD_ID = WD.WD_ID
 							LEFT JOIN (
-								SELECT TS.WD_ID, ROUND(SUM(TS.Hours * TS.Tariff)) Tariff
+								SELECT TS.WD_ID, ROUND(SUM(TS.Hours * TS.Tariff) + IFNULL(TS.NightBonus, 0)) Tariff
 								FROM TimeSheet TS
 								GROUP BY TS.WD_ID
 							) STS ON STS.WD_ID = WD.WD_ID

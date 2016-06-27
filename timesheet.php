@@ -11,14 +11,16 @@
 		$Worker = $_POST["worker"];
 		$Hours = $_POST["hours"];
 		$Tariff = $_POST["tariff"];
+		$NightBonus = ($_POST["nightshift"] == 1) ? $_POST["nightbonus"] : 'NULL';
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["comment"] );
 
-		$query = "REPLACE INTO TimeSheet(WD_ID, Date, Hours, Tariff, Comment)
-				  VALUES ({$Worker}, {$Date}, {$Hours}, {$Tariff}, '{$Comment}')";
+		$query = "REPLACE INTO TimeSheet(WD_ID, Date, Hours, Tariff, NightBonus, Comment)
+				  VALUES ({$Worker}, {$Date}, {$Hours}, {$Tariff}, {$NightBonus}, '{$Comment}')";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		header( "Location: ".$location );
 		die;
+		//echo $query;
 	}
 
 	$title = 'Табель';
@@ -117,19 +119,23 @@
 	<tbody>
 		<?
 			// Получаем список работников
-			$query = "SELECT WD.WD_ID, WD.Name, IF(COUNT(HT.WD_ID) = 1, HT.Tariff, '') deftariff
-						,IFNULL(GROUP_CONCAT(CONCAT('<a class=\"btn\" title=\"', HT.Comment, '\">', HT.Tariff, '</a>') ORDER BY HT.Tariff SEPARATOR ' '), '&nbsp;') tariffs
+//			$query = "SELECT WD.WD_ID, WD.Name, IF(COUNT(HT.WD_ID) = 1, HT.Tariff, '') deftariff
+//						,IFNULL(GROUP_CONCAT(CONCAT('<a class=\"btn\" title=\"', HT.Comment, '\">', HT.Tariff, '</a>') ORDER BY HT.Tariff SEPARATOR ' '), '&nbsp;') tariffs
+//						FROM WorkersData WD
+//						LEFT JOIN HourlyTariff HT ON HT.WD_ID = WD.WD_ID
+//						WHERE WD.Hourly = 1
+//						GROUP BY WD.WD_ID";
+			$query = "SELECT WD.WD_ID, WD.Name, IFNULL(WD.HourlyTariff, 0) deftariff, IFNULL(WD.NightBonus, 0) defbonus
+						,CONCAT('<a class=\"btn\">', IFNULL(WD.HourlyTariff, 0), '</a>') tariffs
 						FROM WorkersData WD
-						LEFT JOIN HourlyTariff HT ON HT.WD_ID = WD.WD_ID
-						WHERE WD.Hourly = 1
-						GROUP BY WD.WD_ID";
+						WHERE WD.Hourly = 1";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
-				echo "<tr><td class='worker' val='{$row["WD_ID"]}' deftariff='{$row["deftariff"]}'><span>{$row["Name"]}</span>";
+				echo "<tr><td class='worker' val='{$row["WD_ID"]}' deftariff='{$row["deftariff"]}' defbonus='{$row["defbonus"]}'><span>{$row["Name"]}</span>";
 				echo "<div class='tariffs' style='display: none;'>{$row["tariffs"]}</div></td>";
 
 				// Получаем список часов по работнику за месяц
-				$query = "SELECT DAY(Date) Day, Hours, Tariff, Comment
+				$query = "SELECT DAY(Date) Day, Hours, Tariff, IFNULL(NightBonus, 0) NightBonus, Comment
 						  FROM TimeSheet
 						  WHERE YEAR(Date) = {$year} AND MONTH(Date) = {$month} AND WD_ID = {$row["WD_ID"]}";
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -145,14 +151,17 @@
 				while ($i <= $days) {
 					$date = date('d.m.Y', strtotime($year.'-'.$month.'-'.$i));
 					if( $i == $day ) {
-						echo "<td class='tscell' id='{$date}' tariff='{$subrow["Tariff"]}' comment='{$subrow["Comment"]}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$subrow["Hours"]}</td>";
+						// значек ночной смены
+						$nighticon = ($subrow["NightBonus"] > 0) ? "<i class='fa fa-moon-o' aria-hidden='true'></i>" : "";
+
+						echo "<td class='tscell nowrap' id='{$date}' tariff='{$subrow["Tariff"]}' bonus='{$subrow["NightBonus"]}' comment='{$subrow["Comment"]}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$nighticon}<span>{$subrow["Hours"]}</span></td>";
 						$sigma = $sigma + $subrow["Hours"];
 						if( $subrow = mysqli_fetch_array($subres) ) {
 							$day = $subrow["Day"];
 						}
 					}
 					else {
-						echo "<td class='tscell' id='{$date}'></td>";
+						echo "<td class='tscell' id='{$date}'><span></span></td>";
 					}
 					$i++;
 				}
@@ -172,13 +181,18 @@
 					<label>Часы:</label>
 					<input required type='number' name='hours' step='0.5' min="0" max="24">
 				</div>
-				<div>
+				<div style="display: none;">
 					<label>Тарифы:</label>
 					<div class="tariffs"></div>
 				</div>
 				<div>
 					<label>Тариф:</label>
-					<input required type='number' name='tariff' min="0">
+					<input required type='number' name='tariff' min="0" max="9999">
+				</div>
+				<div>
+					<label>Смена:</label>
+					<input type='checkbox' name='nightshift' id='nightshift' class='button nightshift' value='1'><label for="nightshift"></label>
+					<div class='wr-nightbonus'> + <input required type='number' name='nightbonus' min="0" max="9999"></div>
 				</div>
 				<div>
 					<label>Примечание:</label>
@@ -195,6 +209,20 @@
 </html>
 
 <script>
+	// Функция активирует/деактивирует инпут ночной премии
+	function bonusonoff(bonus, defbonus) {
+		if( bonus > 0 ) {
+			$('.nightshift').prop( "checked", true );
+			$('.wr-nightbonus').show();
+		}
+		else {
+			$('.nightshift').prop( "checked", false );
+			$('.wr-nightbonus').hide();
+		}
+
+		$( '.nightshift' ).button("refresh");
+	}
+
 	$(document).ready(function(){
 
 		// Подсвечивание столбцов таблицы
@@ -207,30 +235,50 @@
 			var date = $(this).attr('id');
 			var worker = $(this).parents('tr').find('.worker').attr('val');
 			var deftariff = $(this).parents('tr').find('.worker').attr('deftariff');
-			var hours = $(this).html();
+			var defbonus = $(this).parents('tr').find('.worker').attr('defbonus');
+			var hours = $(this).find('span').html();
 			var tariff = $(this).attr('tariff');
+			var bonus = $(this).attr('bonus');
 			var comment = $(this).attr('comment');
 
 			$('#dayworklog input[name="date"]').val(date);
 			$('#dayworklog input[name="worker"]').val(worker);
 
 			// Заполнение
-			if( hours != '' )
+			if( hours != '' ) // Редактирование
 			{
 				$('#dayworklog input[name="hours"]').val(hours);
 				$('#dayworklog input[name="tariff"]').val(tariff);
+				if( bonus > 0 ) {
+					$('#dayworklog input[name="nightbonus"]').val(bonus);
+				}
+				else {
+					$('#dayworklog input[name="nightbonus"]').val(defbonus);
+				}
 				$('#dayworklog textarea[name="comment"]').val(comment);
+				bonusonoff(bonus);
 			}
-			else {
+			else { // Добавление
 				$('#dayworklog input[name="hours"]').val('8');
 				$('#dayworklog input[name="tariff"]').val(deftariff);
+				$('#dayworklog input[name="nightbonus"]').val(defbonus);
 				$('#dayworklog textarea[name="comment"]').val('');
+				bonusonoff(0);
 			}
 
 			$('#dayworklog div.tariffs').html(workertariffs);
 
 			$('.tariffs a').click(function() {
 				$('#dayworklog input[name="tariff"]').val($(this).html());
+			});
+
+			$(".nightshift").change(function() {
+				if(this.checked) {
+					bonusonoff(1);
+				}
+				else {
+					bonusonoff(0);
+				}
 			});
 
 			// Вызов формы
