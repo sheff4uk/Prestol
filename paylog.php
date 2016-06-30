@@ -2,6 +2,8 @@
 	session_start();
 	include "config.php";
 
+	$datediff = 60; // Максимальный период отображения данных
+
 	$location = $_SERVER['REQUEST_URI'];
 
 	// Обновление/добавление платежа
@@ -147,11 +149,12 @@
 	<?
 			$query = "SELECT PL.Date DateKey, DATE_FORMAT(DATE(PL.Date), '%d.%m.%Y') Date, TIME(PL.Date) Time, WD.Name Worker, PL.Pay, PL.Comment, WD.WD_ID
 						FROM PayLog PL
-						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID";
+						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
+						WHERE DATEDIFF(NOW(), PL.Date) <= {$datediff}";
 			if( isset($_GET["worker"]) ) {
-				$query .= " WHERE PL.WD_ID = {$_GET["worker"]}";
+				$query .= " AND PL.WD_ID = {$_GET["worker"]}";
 			}
-			$query .= " ORDER BY PL.Date DESC LIMIT 50";
+			$query .= " ORDER BY PL.Date DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{

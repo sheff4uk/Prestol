@@ -366,6 +366,7 @@ input.amount {
 	position: relative;
 }
 .log-blank:after, .log-pay:after {
+/*
 	content: '';
 	position: absolute;
 	right: 0;
@@ -377,6 +378,7 @@ input.amount {
 	background: -o-linear-gradient(top, rgba(255,255,255, 0.2), #fff 100%);
 	background: -ms-linear-gradient(top, rgba(255,255,255, 0.2), #fff 100%);
 	background: linear-gradient(to bottom, rgba(255,255,255, 0.2), #fff 100%);
+*/
 }
 .log-blank .button, .log-pay .button {
 	z-index: 1;

@@ -1,6 +1,8 @@
 <?
 	session_start();
 	include "config.php";
+
+	$datediff = 60; // Максимальный период отображения данных
 	
 	$location = $_SERVER['REQUEST_URI'];
 	
@@ -233,7 +235,7 @@
 
 			  WHERE TRUE";
 			  if( $archive ) {
-				  $query .= " AND OD.ReadyDate IS NOT NULL";
+				  $query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
 			  }
 			  else {
 				  $query .= " AND OD.ReadyDate IS NULL";

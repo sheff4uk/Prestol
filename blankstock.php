@@ -2,6 +2,8 @@
 	session_start();
 	include "config.php";
 
+	$datediff = 60; // Максимальный период отображения данных
+
 	$location = $_SERVER['REQUEST_URI'];
 
 	// Обновление/добавление заготовок
@@ -169,7 +171,8 @@
 						FROM BlankStock BS
 						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
 						LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
-						ORDER BY BS.Date DESC LIMIT 50";
+						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff}
+						ORDER BY BS.Date DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
