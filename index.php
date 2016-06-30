@@ -125,7 +125,7 @@
 		</form>
 	</div>
 	
-	<div id='add_btn' title="Добавить новый заказ"></div> <!-- Кнопка добавления заказа -->
+	<div id="add_btn" title="Добавить новый заказ"></div> <!-- Кнопка добавления заказа -->
 	
 	<div id="print_btn" href="#print_tbl" class="open_modal" title="Распечатать таблицу"> <!-- Кнопка печати -->
 		<a id="toprint"></a>
@@ -138,7 +138,7 @@
 			<th width="5%"><input type='text' name='f_CN' size='8' value='<?= $_SESSION["f_CN"] ?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>'></th>
 			<th width="5%"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>'></th>
-			<th width="5%"><input type='text' name='f_SH' size='8' class='tags' value='<?= $_SESSION["f_SH"] ?>'></th>
+			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags' value='<?= $_SESSION["f_SH"] ?>'></th>
 			<th width="5%"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>'></th>
 			<th width="15%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>'></th>
 			<th><input type='text' name='f_P' size='8' class='plastictags' value='<?= $_SESSION["f_P"] ?>'></th>
@@ -165,7 +165,7 @@
 		</thead>
 		</form>
 	</table>
-	<!-- ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
+	<!-- //ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
 
 	<!-- Главная таблица -->
 	<table id="print_tbl" class="main_table">
@@ -384,6 +384,12 @@
 
 <script>
 	$(document).ready(function(){
+
+		$( ".main_table .shopstags" ).on( "autocompleteselect", function( event, ui ) { $(event.target.form).submit(); });
+		$( ".main_table .plastictags" ).on( "autocompleteselect", function( event, ui ) { $(event.target.form).submit(); });
+		$( ".main_table .colortags" ).on( "autocompleteselect", function( event, ui ) { $(event.target.form).submit(); });
+		$( ".main_table .workerstags" ).on( "autocompleteselect", function( event, ui ) { $(event.target.form).submit(); });
+		$( ".main_table .textiletags" ).on( "autocompleteselect", function( event, ui ) { $(event.target.form).submit(); });
 
 		// Открытие диалога печати
 		$(document).ready(function() {

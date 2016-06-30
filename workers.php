@@ -57,7 +57,7 @@
 		</div>
 		<div class='spase'></div>
 
-		<input type='submit' value='Фильтр'>
+		<button>Фильтр</button>
 	</form>
 
 	<p>

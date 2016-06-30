@@ -2,7 +2,7 @@
 	$(document).ready(function(){
 		$(function() {
 			// Автокомплит салонов
-			var availableTags = [
+			var ShopsTags = [
 			<?
 				$query = "(SELECT CT.City AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID GROUP BY CT.CT_ID)
 						  UNION
@@ -14,9 +14,9 @@
 				}
 			?>
 			""];
-			$( ".tags" ).autocomplete({
+			$( ".shopstags" ).autocomplete({
 	//			autoFocus: true,
-				source: availableTags
+				source: ShopsTags
 			});
 
 			// Автокомплит работников (кроме почасовиков)

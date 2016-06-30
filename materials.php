@@ -56,7 +56,7 @@
 		Название:
 		<input type="text" name="material" class="textileplastictags" value="<?=$_GET["material"]?>" style="height: 18px;" autocomplete="off">
 		<div class='spase'></div>
-		<input type='submit' value='Фильтр'>
+<!--		<button>Фильтр</button>-->
 	</form>
 
 	<form method='post'>
