@@ -2,7 +2,7 @@
 	session_start();
 	// Проверяем, пусты ли переменные логина и id пользователя
 	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {
-		if( !strpos($_SERVER["REQUEST_URI"], 'login.php') and !strpos($_SERVER["REQUEST_URI"], 'reg.php') ) {
+		if( !strpos($_SERVER["REQUEST_URI"], 'login.php') and !strpos($_SERVER["REQUEST_URI"], 'reg.php') and !strpos($_SERVER["REQUEST_URI"], 'save_user.php') and !strpos($_SERVER["REQUEST_URI"], 'mailconfirm.php') ) {
 			header('Location: login.php');
 		}
 	}
