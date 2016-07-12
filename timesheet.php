@@ -1,5 +1,5 @@
 <?
-	session_start();
+//	session_start();
 	include "config.php";
 
 	$location = $_SERVER['REQUEST_URI'];

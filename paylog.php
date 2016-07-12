@@ -1,5 +1,5 @@
 <?
-	session_start();
+//	session_start();
 	include "config.php";
 
 	$datediff = 60; // Максимальный период отображения данных

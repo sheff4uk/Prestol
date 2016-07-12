@@ -1,3 +1,12 @@
+<?
+	session_start();
+	// Проверяем, пусты ли переменные логина и id пользователя
+	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {
+		if( !strpos($_SERVER["REQUEST_URI"], 'login.php') and !strpos($_SERVER["REQUEST_URI"], 'reg.php') ) {
+			header('Location: login.php');
+		}
+	}
+?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title><?=$title?></title>
@@ -93,18 +102,25 @@
 	$query = "SELECT COUNT(1) CNT FROM `OrdersDataDetail` WHERE OD_ID IS NULL AND is_check = 0";
 	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$ischeckcount = " (".mysqli_result($result,0,'CNT').")";
-	  
-	$menu = array ("Ткань/пластик" => "/materials.php?isex=0&prod=1"
-				  ,"Производство" => "/workers.php?worker=0&type=1&isready=0"
-				  ,"Свободные{$ischeckcount}" => "/orderdetail.php"
-				  ,"Заготовки" => "/blankstock.php"
-				  ,"Табель" => "/timesheet.php"
-				  ,"Платежи" => "/paylog.php"
-				  ,"Печатные формы" => "/toprint.php");
+
+	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {
+		$menu = array ("Вход" => "login.php"
+					  ,"Регистрация" => "reg.php");
+	}
+	else {
+		$menu = array ("Ткань/пластик" => "materials.php?isex=0&prod=1"
+//					  ,"Производство" => "workers.php?worker=0&type=1&isready=0"
+					  ,"Свободные{$ischeckcount}" => "/orderdetail.php"
+					  ,"Заготовки" => "blankstock.php"
+					  ,"Табель" => "timesheet.php"
+					  ,"Платежи" => "paylog.php"
+					  ,"Печатные формы" => "toprint.php"
+					  ,"Выход ({$_SESSION['name']})" => "exit.php");
+	}
 	echo "<ul class='navbar-nav'>";
 	foreach ($menu as $title=>$url) {
-	   $class = strpos($_SERVER["REQUEST_URI"], $url) !== false ? " class='active'" : "";
-	   echo "<li$class><a href='$url'>$title</a><li>";
+		$class = strpos($_SERVER["REQUEST_URI"], $url) !== false ? "class='active'" : "";
+		echo "<li $class><a href='$url'>$title</a></li>";
 	}
 	echo "</ul>";
 ?>

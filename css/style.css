@@ -311,22 +311,31 @@ input[type="checkbox"].nightshift + label:before {
 }
 .navbar-nav > li {
 	float: left;
+	display: flex;
 }
 .navbar-nav > li > a {
 	color: #9d9d9d;
 	line-height: 20px;
 	position: relative;
-    display: block;
-    padding: 15px 15px;
+	display: block;
+	padding: 15px 15px;
 	font-size: 14px;
 }
-.navbar-nav > li > a:hover, .navbar-nav > li > a:focus {
-    color: #fff;
-    background-color: transparent;
+.navbar-nav > li > div {
+	color: #fff;
+	line-height: 20px;
+	position: relative;
+	display: block;
+	padding: 15px 0px 15px 15px;
+	font-size: 14px;
+}
+.navbar-nav > li > a:hover, .navbar-nav > li > a:hover {
+	color: #fff;
+	background-color: transparent;
 }
 .navbar-nav > .active > a, .navbar-nav > .active > a:hover, .navbar-nav > .active > a:focus {
-    color: #fff;
-    background-color: #080808;
+	color: #fff;
+	background-color: #080808;
 }
 select {
 	background: #ffffff;
@@ -416,21 +425,23 @@ td.tscell:hover {
 	box-shadow: 0 0 2px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2);
 	padding: 25px 30px 25px;
 	background: #FAFAFA;
-	margin-top: 12em;
+	margin-top: 8em;
 	width: 400px;
 	margin-left: auto;
 	margin-right: auto;
 	color: #666;
 }
-#login H1, #login h3, #login p {
+#login H1, #login h3, #login p, #login a {
 	text-align: center;
+	display: block;
 }
 #login form div {
 	margin: 15px 0;
 	text-align: right;
+	white-space: nowrap;
 }
 #login input {
-	width: 215px;
+	width: 250px;
 	padding: 3px;
 	margin-left: 10px;
 	font-size: 1.2em;

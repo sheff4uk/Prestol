@@ -1,5 +1,5 @@
 <?
-	session_start();
+//	session_start();
 	include "config.php";
 
 	if( (int)$_GET["id"] > 0 )
