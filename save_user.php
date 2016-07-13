@@ -67,7 +67,7 @@
 		$message = "Здравствуйте! Вы зарегистрировались в Корпоративной Информационной Системе ПРЕСТОЛ\nВаш логин: {$login}\nПерейдите по ссылке, чтобы подтвердить Ваш E-mail:\nhttps://kis.fabrikaprestol.ru/mailconfirm.php?login={$login}&code={$mailconfirm}\n\nДля активации учетной записи свяжитесь с администрацией: admin@fabrikaprestol.ru\n\nС уважением,\nАдминистрация КИС Престол";//содержание сообщения
 
 		// Отправляем письмо на указанный ящик пользователя через PHPMailer
-		require "/PHPMailer/PHPMailerAutoload.php";
+		require "PHPMailer/PHPMailerAutoload.php";
 		$mail = new PHPMailer(true);
 		$mail->isSMTP();
 		$mail->SMTPAuth = true;
