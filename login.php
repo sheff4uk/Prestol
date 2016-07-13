@@ -2,7 +2,7 @@
 	include "config.php";
 	$title = 'Вход в личный кабинет';
 	include "header.php";
-	header('Location: /reg.php');
+	echo '<meta http-equiv="refresh" content="0; url=/reg.php">';
 	// Проверяем, не пусты ли переменные логина и id пользователя
 	if (!empty($_SESSION['login']) and !empty($_SESSION['id'])) {
 		header('Location: /');
