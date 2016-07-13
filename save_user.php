@@ -68,22 +68,22 @@
 
 		// Отправляем письмо на указанный ящик пользователя через PHPMailer
 		require "PHPMailer/PHPMailerAutoload.php";
-//		$mail = new PHPMailer(true);
-//		$mail->isSMTP();
-//		$mail->SMTPAuth = true;
-//		$mail->SMTPSecure = "tls";
-//		$mail->Host = "smtp.yandex.ru";
-//		$mail->Port = "25";
-//		$mail->Username = "admin@fabrikaprestol.ru";
-//		$mail->Password = "GmvN6*D%";
-//		$mail->CharSet = "UTF-8";
-//		$mail->ContentType = 'text/plain';
-//		$mail->addAddress($email);
-//		$mail->addReplyTo($from);
-//		$mail->setFrom($from);
-//		$mail->Subject = $subject;
-//		$mail->Body = $message;
-//
+		$mail = new PHPMailer(true);
+		$mail->isSMTP();
+		$mail->SMTPAuth = true;
+		$mail->SMTPSecure = "tls";
+		$mail->Host = "smtp.yandex.ru";
+		$mail->Port = "25";
+		$mail->Username = "admin@fabrikaprestol.ru";
+		$mail->Password = "GmvN6*D%";
+		$mail->CharSet = "UTF-8";
+		$mail->ContentType = 'text/plain';
+		$mail->addAddress($email);
+		$mail->addReplyTo($from);
+		$mail->setFrom($from);
+		$mail->Subject = $subject;
+		$mail->Body = $message;
+
 //		if ($mail->send()) {//отправляем сообщение
 //			echo "На Ваш E-mail {$email} выслано письмо со cсылкой, для подтверждения регистрации. Внимание! Ссылка действительна 1 час. <a href='/'>Главная страница</a>"; //говорим об отправленном письме пользователю
 //		}
