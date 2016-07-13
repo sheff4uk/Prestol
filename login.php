@@ -2,10 +2,9 @@
 	include "config.php";
 	$title = 'Вход в личный кабинет';
 	include "header.php";
-	echo '<meta http-equiv="refresh" content="0; url=/reg.php">';
 	// Проверяем, не пусты ли переменные логина и id пользователя
 	if (!empty($_SESSION['login']) and !empty($_SESSION['id'])) {
-		header('Location: /');
+		echo '<meta http-equiv="refresh" content="0; url=/">';
 	}
 
 	if (isset($_POST['login']) and isset($_POST['password'])) {
@@ -42,8 +41,7 @@
 				$_SESSION['login']=$myrow['Login'];
 				$_SESSION['id']=$myrow['USR_ID'];
 				$_SESSION['name']=$myrow['Name'];
-//				echo "Вы успешно вошли на сайт! <a href='/'>Главная страница</a>";
-				header('Location: /');
+				echo '<meta http-equiv="refresh" content="0; url=/">';
 			}
 			else {
 				//если пароли не сошлись

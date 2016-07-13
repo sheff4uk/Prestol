@@ -10,7 +10,6 @@
 	unset($_SESSION['login']);
 	unset($_SESSION['id']);// уничтожаем переменные в сессиях
 	unset($_SESSION['name']);// уничтожаем переменные в сессиях
-//	exit("<html><head><meta http-equiv='Refresh' content='0; URL=/'></head></html>");
-	header('Location: /');
+	exit("<html><head><meta http-equiv='Refresh' content='0; URL=/'></head></html>");
 	// отправляем пользователя на главную страницу.
 ?>

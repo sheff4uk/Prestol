@@ -4,7 +4,7 @@
 	include "header.php";
 	// Проверяем, не пусты ли переменные логина и id пользователя
 	if (!empty($_SESSION['login']) and !empty($_SESSION['id'])) {
-		header('Location: /');
+		echo '<meta http-equiv="refresh" content="0; url=/">';
 	}
 ?>
 
