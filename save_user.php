@@ -61,15 +61,31 @@
 		$query = "SELECT USR_ID FROM Users WHERE Login='{$login}'";
 		$result3 = mysqli_query( $mysqli, $query ); //извлекаем идентификатор пользователя. Благодаря ему у нас и будет уникальный код активации, ведь двух одинаковых идентификаторов быть не может.
 		$myrow3 = mysqli_fetch_array($result3);
-		$activation = md5($myrow3['USR_ID']).md5($login);//код активации аккаунта. Зашифруем через функцию md5 идентификатор и логин. Такое сочетание пользователь вряд лисможет подобрать вручную через адресную строку.
-		$subject = "Подтверждение регистрации Престол";//тема сообщения
-		$message = "Здравствуйте! Вы зарегистрировались в Корпоративной Информационной Системе ПРЕСТОЛ\nВаш логин: {$login}\nПерейдите по ссылке, чтобы подтвердить Ваш E-mail:\nhttp://kis.fabrikaprestol.ru/mailconfirm.php?login={$login}&code={$activation}\nДля активации учетной записи свяжитесь с администрацией: admin@fabrikaprestol.ru\n\nС уважением,\nАдминистрация КИС Престол";//содержание сообщения
+		$mailconfirm = md5($myrow3['USR_ID']).md5($login);//код подтверждения почты. Зашифруем через функцию md5 идентификатор и логин.
+		$from = "admin@fabrikaprestol.ru";
+		$subject = "[КИС Престол] подтверждение E-mail";//тема сообщения
+		$message = "Здравствуйте! Вы зарегистрировались в Корпоративной Информационной Системе ПРЕСТОЛ\nВаш логин: {$login}\nПерейдите по ссылке, чтобы подтвердить Ваш E-mail:\nhttp://kis.fabrikaprestol.ru/mailconfirm.php?login={$login}&code={$mailconfirm}\n\nДля активации учетной записи свяжитесь с администрацией: admin@fabrikaprestol.ru\n\nС уважением,\nАдминистрация КИС Престол";//содержание сообщения
 
-		$headers= "Content-type:text/plane; Charset=windows-1251\r\n";
-		$headers .= "From: КИС Престол <admin@fabrikaprestol.ru>\r\n";
+		// Отправляем письмо на указанный ящик пользователя через PHPMailer
+		require "PHPMailer/PHPMailerAutoload.php";
+		$mail = new PHPMailer(true);
+		$mail->isSMTP();
+		$mail->SMTPAuth = true;
+		$mail->SMTPSecure = "tls";
+		$mail->Host = "smtp.yandex.ru";
+		$mail->Port = "25";
+		$mail->Username = "admin@fabrikaprestol.ru";
+		$mail->Password = "GmvN6*D%";
+		$mail->CharSet = "UTF-8";
+		$mail->ContentType = 'text/plain';
+		$mail->addAddress($email);
+		$mail->addReplyTo($from);
+		$mail->setFrom($from);
+		$mail->Subject = $subject;
+		$mail->Body = $message;
 
-		if (mail($email, $subject, $message, $headers)) {//отправляем сообщение
-			echo "На Ваш E-mail {$email} выслано письмо со cсылкой, для подтверждения регистрации. Внимание! Ссылка действительна 1 час. <a href='/'>Главная страница</a>"; //говорим о отправленном письме пользователю
+		if ($mail->send()) {//отправляем сообщение
+			echo "На Ваш E-mail {$email} выслано письмо со cсылкой, для подтверждения регистрации. Внимание! Ссылка действительна 1 час. <a href='/'>Главная страница</a>"; //говорим об отправленном письме пользователю
 		}
 		else {
 			exit ("Ошибка! Письмо не отправлено. Свяжитесь с администрацией admin@fabrikaprestol.ru");

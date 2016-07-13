@@ -1,1 +1,4 @@
 php_flag register_globals Off
+RewriteEngine On
+RewriteCond %{HTTP:SSL} !1
+RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L,R=301]

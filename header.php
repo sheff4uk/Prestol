@@ -1,8 +1,9 @@
 <?
+	ini_set("session.gc_maxlifetime",10) ;
 	session_start();
 	// Проверяем, пусты ли переменные логина и id пользователя
 	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {
-		if( !strpos($_SERVER["REQUEST_URI"], 'login.php') and !strpos($_SERVER["REQUEST_URI"], 'reg.php') and !strpos($_SERVER["REQUEST_URI"], 'save_user.php') and !strpos($_SERVER["REQUEST_URI"], 'mailconfirm.php') ) {
+		if( !strpos($_SERVER["REQUEST_URI"], 'login.php') and !strpos($_SERVER["REQUEST_URI"], 'reg.php') and !strpos($_SERVER["REQUEST_URI"], 'save_user.php') and !strpos($_SERVER["REQUEST_URI"], 'mailconfirm.php') and !strpos($_SERVER["REQUEST_URI"], 'activation.php') ) {
 			header('Location: login.php');
 		}
 	}
