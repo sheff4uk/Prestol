@@ -71,9 +71,9 @@
 		$mail = new PHPMailer(true);
 		$mail->isSMTP();
 		$mail->SMTPAuth = true;
-		$mail->SMTPSecure = "tls";
+		$mail->SMTPSecure = "ssl";
 		$mail->Host = "smtp.yandex.ru";
-		$mail->Port = "25";
+		$mail->Port = "465";
 		$mail->Username = "admin@fabrikaprestol.ru";
 		$mail->Password = "GmvN6*D%";
 		$mail->CharSet = "UTF-8";
