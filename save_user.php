@@ -66,30 +66,30 @@
 		$subject = "[КИС Престол] подтверждение E-mail";//тема сообщения
 		$message = "Здравствуйте! Вы зарегистрировались в Корпоративной Информационной Системе ПРЕСТОЛ\nВаш логин: {$login}\nПерейдите по ссылке, чтобы подтвердить Ваш E-mail:\nhttps://kis.fabrikaprestol.ru/mailconfirm.php?login={$login}&code={$mailconfirm}\n\nДля активации учетной записи свяжитесь с администрацией: admin@fabrikaprestol.ru\n\nС уважением,\nАдминистрация КИС Престол";//содержание сообщения
 
-		// Отправляем письмо на указанный ящик пользователя через PHPMailer
-		require "PHPMailer/PHPMailerAutoload.php";
-		$mail = new PHPMailer(true);
-		$mail->isSMTP();
-		$mail->SMTPAuth = true;
-		$mail->SMTPSecure = "tls";
-		$mail->Host = "smtp.yandex.ru";
-		$mail->Port = "25";
-		$mail->Username = "admin@fabrikaprestol.ru";
-		$mail->Password = "GmvN6*D%";
-		$mail->CharSet = "UTF-8";
-		$mail->ContentType = 'text/plain';
-		$mail->addAddress($email);
-		$mail->addReplyTo($from);
-		$mail->setFrom($from);
-		$mail->Subject = $subject;
-		$mail->Body = $message;
-
-		if ($mail->send()) {//отправляем сообщение
-			echo "На Ваш E-mail {$email} выслано письмо со cсылкой, для подтверждения регистрации. Внимание! Ссылка действительна 1 час. <a href='/'>Главная страница</a>"; //говорим об отправленном письме пользователю
-		}
-		else {
-			exit ("Ошибка! Письмо не отправлено. Свяжитесь с администрацией admin@fabrikaprestol.ru");
-		}
+//		// Отправляем письмо на указанный ящик пользователя через PHPMailer
+//		require "PHPMailer/PHPMailerAutoload.php";
+//		$mail = new PHPMailer(true);
+//		$mail->isSMTP();
+//		$mail->SMTPAuth = true;
+//		$mail->SMTPSecure = "tls";
+//		$mail->Host = "smtp.yandex.ru";
+//		$mail->Port = "25";
+//		$mail->Username = "admin@fabrikaprestol.ru";
+//		$mail->Password = "GmvN6*D%";
+//		$mail->CharSet = "UTF-8";
+//		$mail->ContentType = 'text/plain';
+//		$mail->addAddress($email);
+//		$mail->addReplyTo($from);
+//		$mail->setFrom($from);
+//		$mail->Subject = $subject;
+//		$mail->Body = $message;
+//
+//		if ($mail->send()) {//отправляем сообщение
+//			echo "На Ваш E-mail {$email} выслано письмо со cсылкой, для подтверждения регистрации. Внимание! Ссылка действительна 1 час. <a href='/'>Главная страница</a>"; //говорим об отправленном письме пользователю
+//		}
+//		else {
+//			exit ("Ошибка! Письмо не отправлено. Свяжитесь с администрацией admin@fabrikaprestol.ru");
+//		}
 	}
 	else {
 		echo "Ошибка! Вы не зарегистрированы.";
