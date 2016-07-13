@@ -1,8 +1,8 @@
 <?
 	include "config.php";
 	$title = 'Вход в личный кабинет';
-	header('Location: /reg.php');
 	include "header.php";
+	header('Location: /reg.php');
 	// Проверяем, не пусты ли переменные логина и id пользователя
 	if (!empty($_SESSION['login']) and !empty($_SESSION['id'])) {
 		header('Location: /');
