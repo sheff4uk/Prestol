@@ -24,7 +24,7 @@
 	if ($mailconfirm == $code) {//сравниваем полученный из url и сгенерированный код
 		$query = "UPDATE Users SET Mailconfirm = 1 WHERE Login = '{$login}'";
 		mysqli_query( $mysqli, $query ); //если равны, то активируем пользователя
-		echo "Ваш E-mail подтвержден! Для активации учетной записи свяжитесь с администрацией: admin@fabrikaprestol.ru";
+		echo "Ваш E-mail подтвержден! Для активации учетной записи свяжитесь с администрацией: <b>admin@fabrikaprestol.ru</b>";
 
 		// АКТИВАЦИЯ ПОЛЬЗОВАТЕЛЯ
 		$activation = md5($myrow['USR_ID'].$login).md5($login.$myrow['USR_ID']);//код активации аккаунта. Зашифруем через функцию md5 идентификатор + логин и логин + идентификатор.
