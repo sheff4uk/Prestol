@@ -78,7 +78,7 @@
 			<fieldset>
 				<div>
 					<label>Заказчик:</label>
-					<input type='text' name='ClientName' size='40'>
+					<input type='text' name='ClientName' size='38'>
 				</div>
 				<div>
 					<label>Дата приема:</label>
@@ -111,7 +111,7 @@
 				</div>
 				<div>
 					<label>Цвет:</label>
-					<input required type='text' class='colortags' name='Color' size='40' autocomplete='off'>
+					<input required type='text' class='colortags' name='Color' size='38' autocomplete='off'>
 				</div>
 				<div>
 					<label>Примечание:</label>
@@ -400,7 +400,7 @@
 			// Кнопка добавления заказа
 			$('#add_btn').click( function() {
 				$('#order_form').dialog({
-					width: 475,
+					width: 500,
 					modal: true,
 					show: 'blind',
 					hide: 'explode',

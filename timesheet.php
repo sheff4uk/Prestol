@@ -4,28 +4,6 @@
 
 	$location = $_SERVER['REQUEST_URI'];
 
-	// Обновление/добавление часов в табель
-	if( isset($_POST["date"]) )
-	{
-		$Date = '\''.date( 'Y-m-d', strtotime($_POST["date"]) ).'\'';
-		$Worker = $_POST["worker"];
-		$Hours = $_POST["hours"];
-		$Tariff = $_POST["tariff"];
-		$NightBonus = ($_POST["nightshift"] == 1) ? $_POST["nightbonus"] : 'NULL';
-		$Comment = mysqli_real_escape_string( $mysqli,$_POST["comment"] );
-
-		$query = "REPLACE INTO TimeSheet(WD_ID, Date, Hours, Tariff, NightBonus, Comment)
-				  VALUES ({$Worker}, {$Date}, {$Hours}, {$Tariff}, {$NightBonus}, '{$Comment}')";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		header( "Location: ".$location );
-		die;
-		//echo $query;
-	}
-
-	$title = 'Табель';
-	include "header.php";
-
 	if( isset($_GET["year"]) ) {
 		$year = $_GET["year"];
 	}
@@ -40,15 +18,55 @@
 		$month = date('n');
 	}
 
+	// Обновление/добавление часов в табель
+	if( isset($_POST["date"]) )
+	{
+		$Date = '\''.date( 'Y-m-d', strtotime($_POST["date"]) ).'\'';
+		$Worker = $_POST["worker"];
+		$Hours = $_POST["hours"];
+		$Tariff = $_POST["tariff"];
+		$NightBonus = ($_POST["nightshift"] == 1) ? $_POST["nightbonus"] : 'NULL';
+		$DayBonus = ($_POST["daybonus"]) ? $_POST["daybonus"] : 'NULL';
+		$Comment = mysqli_real_escape_string( $mysqli,$_POST["comment"] );
+
+		$query = "REPLACE INTO TimeSheet(WD_ID, Date, Hours, Tariff, NightBonus, DayBonus, Comment)
+				  VALUES ({$Worker}, {$Date}, {$Hours}, {$Tariff}, {$NightBonus}, {$DayBonus}, '{$Comment}')";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		header( "Location: ".$location );
+		die;
+	}
+
+	// Обновление/добавление нормы часов за месяц
+	if( isset($_POST["normhours"]) ) {
+		$NormHours = ($_POST["normhours"]) ? $_POST["normhours"] : 'NULL';
+		$query = "REPLACE INTO MonthlyNormHours (Year, Month, Hours)
+				  VALUES ({$year}, {$month}, {$NormHours})";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		header( "Location: ".$location );
+		die;
+	}
+
+	$title = 'Табель';
+	include "header.php";
+
+	// Узнаем норму часов на этот месяц
+	$query = "SELECT IFNULL(Hours, '') Hours FROM MonthlyNormHours WHERE Year = {$year} AND Month = {$month}";
+	($result = mysqli_query( $mysqli, $query )) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$myrow = mysqli_fetch_array($result);
+	$NormHours = $myrow['Hours'];
+
 	// Узнаем кол-во дней в выбранном месяце
 	$strdate = '01.'.$month.'.'.$year;
 	$timestamp = strtotime($strdate);
 	$days = date('t', $timestamp);
 ?>
 
-<p>
-	<form method="get" style="display: flex;">
-		<label for="year">Год:</label>
+<div style="overflow: auto;">
+	<!-- Форма выбора месяца -->
+	<form method="get" style="display: flex; float: left;">
+		<label for="year">Год:&nbsp;</label>
 		<script>
 			$( document ).ready(function() {
 				$("#year option[value='<?=$year?>']").prop('selected', true);
@@ -76,7 +94,7 @@
 
 		<div class='spase'></div>
 
-		<label for="month">Месяц:</label>
+		<label for="month">Месяц:&nbsp;</label>
 		<script>
 			$( document ).ready(function() {
 				$("#month option[value='<?=$month?>']").prop('selected', true);
@@ -101,7 +119,15 @@
 
 		<button>Применить</button>
 	</form>
-</p>
+
+	<!-- Форма изменения нормы часов -->
+	<form method="post" style="display: flex; float: right;">
+		<label for="normhours">Норма часов за месяц:&nbsp;</label>
+		<input type="number" name="normhours" value="<?=$NormHours?>" min="0" max="300">
+		<div class='spase'></div>
+		<button>Сохранить</button>
+	</form>
+</div>
 
 <table id="timesheet">
 	<thead>
@@ -113,7 +139,12 @@
 					echo "<th>".$i++."</th>";
 				}
 			?>
-			<th title="Сумма">&Sigma;</th>
+			<th>Часы</th>
+			<th>Сумма</th>
+			<th>%</th>
+			<th>Свой %</th>
+			<th title="Не учитывать месячную норму часов">НЧ</th>
+			<th>Премия</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -125,8 +156,11 @@
 //						LEFT JOIN HourlyTariff HT ON HT.WD_ID = WD.WD_ID
 //						WHERE WD.Hourly = 1
 //						GROUP BY WD.WD_ID";
-			$query = "SELECT WD.WD_ID, WD.Name, IFNULL(WD.HourlyTariff, 0) deftariff, IFNULL(WD.NightBonus, 0) defbonus
+			$query = "SELECT WD.WD_ID, WD.Name
+						,IFNULL(WD.HourlyTariff, 0) deftariff
+						,IFNULL(WD.NightBonus, 0) defbonus
 						,CONCAT('<a class=\"btn\">', IFNULL(WD.HourlyTariff, 0), '</a>') tariffs
+						,IFNULL(PremiumPercent, 0) PremiumPercent
 						FROM WorkersData WD
 						WHERE WD.Hourly = 1";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -135,12 +169,13 @@
 				echo "<div class='tariffs' style='display: none;'>{$row["tariffs"]}</div></td>";
 
 				// Получаем список часов по работнику за месяц
-				$query = "SELECT DAY(Date) Day, Hours, Tariff, IFNULL(NightBonus, 0) NightBonus, Comment
+				$query = "SELECT DAY(Date) Day, Hours, Tariff, IFNULL(NightBonus, 0) NightBonus, IFNULL(DayBonus, 0) DayBonus, Comment
 						  FROM TimeSheet
 						  WHERE YEAR(Date) = {$year} AND MONTH(Date) = {$month} AND WD_ID = {$row["WD_ID"]}";
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-				$sigma = 0;
+				$sigmahours = 0; // Сумма отработанных дней по работнику
+				$sigmamoney = 0; // Сумма заработанных денег по работнику
 				$day = 0;
 				if( $subrow = mysqli_fetch_array($subres) ) {
 					$day = $subrow["Day"];
@@ -154,8 +189,9 @@
 						// значек ночной смены
 						$nighticon = ($subrow["NightBonus"] > 0) ? "<i class='fa fa-moon-o' aria-hidden='true'></i>" : "";
 
-						echo "<td class='tscell nowrap' id='{$date}' tariff='{$subrow["Tariff"]}' bonus='{$subrow["NightBonus"]}' comment='{$subrow["Comment"]}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$nighticon}<span>{$subrow["Hours"]}</span></td>";
-						$sigma = $sigma + $subrow["Hours"];
+						echo "<td class='tscell nowrap' id='{$date}' tariff='{$subrow["Tariff"]}' bonus='{$subrow["NightBonus"]}' daybonus='{$subrow["DayBonus"]}' comment='{$subrow["Comment"]}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$nighticon}<span>{$subrow["Hours"]}</span></td>";
+						$sigmahours = $sigmahours + $subrow["Hours"];
+						$sigmamoney = $sigmamoney + ($subrow["Hours"] * $subrow["Tariff"] + $subrow["NightBonus"] + $subrow["DayBonus"]);
 						if( $subrow = mysqli_fetch_array($subres) ) {
 							$day = $subrow["Day"];
 						}
@@ -165,7 +201,15 @@
 					}
 					$i++;
 				}
-				echo "<td>{$sigma}</td></tr>";
+				$percent = $row["PremiumPercent"];
+				$premium = round($sigmamoney * $row["PremiumPercent"] / 100);
+				echo "<td class='txtright'>{$sigmahours}</td>";				// Сумма часов
+				echo "<td class='txtright'>{$sigmamoney}</td>";				// Сумма денег
+				echo "<td class='txtright'>{$percent}%</td>";							// Процент
+				echo "<td><input type='number' min='0' max='100'></td>";	// Свой процент
+				echo "<td><input type='checkbox'></td>";					// Не учитывать норматив
+				echo "<td class='txtright'>{$premium}</td>";							// Премия
+				echo "</tr>";
 			}
 		?>
 	</tbody>
@@ -193,6 +237,10 @@
 					<label>Смена:</label>
 					<input type='checkbox' name='nightshift' id='nightshift' class='button nightshift' value='1'><label for="nightshift"></label>
 					<div class='wr-nightbonus'> + <input required type='number' name='nightbonus' min="0" max="9999"></div>
+				</div>
+				<div>
+					<label>Надбавка:</label>
+					<input type='number' name='daybonus' min="-9999" max="9999">
 				</div>
 				<div>
 					<label>Примечание:</label>
@@ -239,6 +287,7 @@
 			var hours = $(this).find('span').html();
 			var tariff = $(this).attr('tariff');
 			var bonus = $(this).attr('bonus');
+			var daybonus = $(this).attr('daybonus');
 			var comment = $(this).attr('comment');
 
 			$('#dayworklog input[name="date"]').val(date);
@@ -255,6 +304,7 @@
 				else {
 					$('#dayworklog input[name="nightbonus"]').val(defbonus);
 				}
+				$('#dayworklog input[name="daybonus"]').val(daybonus);
 				$('#dayworklog textarea[name="comment"]').val(comment);
 				bonusonoff(bonus);
 			}
@@ -262,6 +312,7 @@
 				$('#dayworklog input[name="hours"]').val('8');
 				$('#dayworklog input[name="tariff"]').val(deftariff);
 				$('#dayworklog input[name="nightbonus"]').val(defbonus);
+				$('#dayworklog input[name="daybonus"]').val('');
 				$('#dayworklog textarea[name="comment"]').val('');
 				bonusonoff(0);
 			}

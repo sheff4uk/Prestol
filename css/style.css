@@ -86,6 +86,9 @@ tbody tr:nth-child(even){ /* Задаем стили для четных ряд�
 .txtright {
 	text-align: right;
 }
+.txtleft {
+	text-align: left;
+}
 .addproduct > form > fieldset > div > label,
 .addproduct > form > fieldset > div > div > label {
 	display: block;
@@ -441,7 +444,7 @@ td.tscell:hover {
 	white-space: nowrap;
 }
 #login input {
-	width: 250px;
+	width: 235px;
 	padding: 3px;
 	margin-left: 10px;
 	font-size: 1.2em;
@@ -451,4 +454,8 @@ td.tscell:hover {
 }
 #login p {
 	font-size: 0.8em;
+}
+
+#timesheet {
+	margin-top: 15px;
 }
