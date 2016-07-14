@@ -4,7 +4,7 @@
 	include "header.php";
 	// Проверяем, не пусты ли переменные логина и id пользователя
 	if (!empty($_SESSION['login']) and !empty($_SESSION['id'])) {
-		echo '<meta http-equiv="refresh" content="0; url=/">';
+		exit ('<meta http-equiv="refresh" content="0; url=/">');
 	}
 
 	if (isset($_POST['login']) and isset($_POST['password'])) {
@@ -41,7 +41,7 @@
 				$_SESSION['login']=$myrow['Login'];
 				$_SESSION['id']=$myrow['USR_ID'];
 				$_SESSION['name']=$myrow['Name'];
-				echo '<meta http-equiv="refresh" content="0; url=/">';
+				exit ('<meta http-equiv="refresh" content="0; url=/">');
 			}
 			else {
 				//если пароли не сошлись
