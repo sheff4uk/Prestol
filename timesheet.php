@@ -202,8 +202,15 @@
 					$i++;
 				}
 				$percent = $row["PremiumPercent"];
-				$premium = round($sigmamoney * $row["PremiumPercent"] / 100);
-				echo "<td class='txtright'>{$sigmahours}</td>";				// Сумма часов
+				if ($sigmahours > $NormHours) {
+					$premium = round($sigmamoney * $row["PremiumPercent"] / 100);
+					$green = "style='color: #191;'";
+				}
+				else {
+					$premium = 0;
+					$green = '';
+				}
+				echo "<td class='txtright' {$green}>{$sigmahours}</td>";				// Сумма часов
 				echo "<td class='txtright'>{$sigmamoney}</td>";				// Сумма денег
 				echo "<td class='txtright'>{$percent}%</td>";							// Процент
 				echo "<td><input type='number' min='0' max='100'></td>";	// Свой процент
