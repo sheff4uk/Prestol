@@ -160,7 +160,7 @@
 			$query = "SELECT PL.Date DateKey, DATE_FORMAT(DATE(PL.Date), '%d.%m.%Y') Date, TIME(PL.Date) Time, WD.Name Worker, PL.Pay, PL.Comment, WD.WD_ID
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
-						WHERE DATEDIFF(NOW(), PL.Date) <= {$datediff}";
+						WHERE DATEDIFF(NOW(), PL.Date) <= {$datediff} AND PL.Pay <> 0";
 			if( isset($_GET["worker"]) ) {
 				$query .= " AND PL.WD_ID = {$_GET["worker"]}";
 			}
