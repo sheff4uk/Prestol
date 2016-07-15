@@ -48,6 +48,29 @@
 		die;
 	}
 
+	// Сохранение данных из таблицы табеля
+	if( isset($_POST["TYear"]) and isset($_POST["TMonth"]) )
+	{
+		$tyear = $_POST["TYear"];
+		$tmonth = $_POST["TMonth"];
+		foreach( $_POST as $k => $v)
+		{
+			if( strpos($k,"MP") === 0 ) // Сохраняем ручной процент премии
+			{
+				$worker = (int)str_replace( "MP", "", $k );
+				$ManPercent = $v <> '' ? $v : 'NULL' ;
+				$DNH = $_POST["DNH".$worker] ? $_POST["DNH".$worker] : 'NULL';
+				$query = "REPLACE INTO MonthlyPremiumPercent (Year, Month, WD_ID, PremiumPercent, DisableNormHours)
+						  VALUES ({$year}, {$month}, {$worker}, {$ManPercent}, {$DNH})";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			}
+			$query = "DELETE FROM MonthlyPremiumPercent WHERE PremiumPercent IS NULL AND DisableNormHours IS NULL";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+		header( "Location: ".$_SERVER['REQUEST_URI'] );
+		die;
+	}
+
 	$title = 'Табель';
 	include "header.php";
 
@@ -145,9 +168,14 @@
 			<th>Свой %</th>
 			<th title="Не учитывать месячную норму часов">НЧ</th>
 			<th>Премия</th>
+			<th>Итого</th>
 		</tr>
 	</thead>
 	<tbody>
+		<form method="post"> <!-- Форма в табеле -->
+			<input type="hidden" name="TYear" value="<?=$year?>">
+			<input type="hidden" name="TMonth" value="<?=$month?>">
+			<button id="timesheetbutton">Сохранить</button>
 		<?
 			// Получаем список работников
 //			$query = "SELECT WD.WD_ID, WD.Name, IF(COUNT(HT.WD_ID) = 1, HT.Tariff, '') deftariff
@@ -160,8 +188,11 @@
 						,IFNULL(WD.HourlyTariff, 0) deftariff
 						,IFNULL(WD.NightBonus, 0) defbonus
 						,CONCAT('<a class=\"btn\">', IFNULL(WD.HourlyTariff, 0), '</a>') tariffs
-						,IFNULL(PremiumPercent, 0) PremiumPercent
+						,IFNULL(WD.PremiumPercent, 0) PremiumPercent
+						,IFNULL(MPP.PremiumPercent, '') ManPercent
+						,IF(MPP.DisableNormHours = 1, 'checked', '') DNHcheck
 						FROM WorkersData WD
+						LEFT JOIN MonthlyPremiumPercent MPP ON MPP.WD_ID = WD.WD_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
 						WHERE WD.Hourly = 1";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
@@ -201,24 +232,27 @@
 					}
 					$i++;
 				}
-				$percent = $row["PremiumPercent"];
-				if ($sigmahours > $NormHours) {
-					$premium = round($sigmamoney * $row["PremiumPercent"] / 100);
+				$percent = $row["ManPercent"] == '' ? $row["PremiumPercent"] : $row["ManPercent"];
+				if ($sigmahours > $NormHours or $row["DNHcheck"] == 'checked') {
+					$premium = round($sigmamoney * $percent / 100);
 					$green = "style='color: #191;'";
 				}
 				else {
 					$premium = 0;
 					$green = '';
 				}
-				echo "<td class='txtright' {$green}>{$sigmahours}</td>";				// Сумма часов
-				echo "<td class='txtright'>{$sigmamoney}</td>";				// Сумма денег
-				echo "<td class='txtright'>{$percent}%</td>";							// Процент
-				echo "<td><input type='number' min='0' max='100'></td>";	// Свой процент
-				echo "<td><input type='checkbox'></td>";					// Не учитывать норматив
-				echo "<td class='txtright'>{$premium}</td>";							// Премия
+				$total = $sigmamoney + $premium;
+				echo "<td class='txtright' {$green}>{$sigmahours}</td>";					// Сумма часов
+				echo "<td class='txtright'>{$sigmamoney}</td>";								// Сумма денег
+				echo "<td class='txtright'>{$row["PremiumPercent"]}%</td>";					// Процент
+				echo "<td><input type='number' name='MP{$row["WD_ID"]}' value='{$row["ManPercent"]}' min='0' max='100'></td>";// Свой процент
+				echo "<td><input type='checkbox' name='DNH{$row["WD_ID"]}' {$row["DNHcheck"]} value='1'></td>";	// Не учитывать норматив
+				echo "<td class='txtright'>{$premium}</td>";								// Премия
+				echo "<td class='txtright'>{$total}</td>";								// Премия + Сумма
 				echo "</tr>";
 			}
 		?>
+		</form>
 	</tbody>
 </table>
 
@@ -348,6 +382,11 @@
 				hide:	'explode',
 			});
 			return false;
+		});
+
+		// Показывать кнопку сохранить при изменении данных в форме табеля
+		$('#timesheet input').change(function() {
+			$('#timesheetbutton').css("display", "block");
 		});
 	});
 </script>
