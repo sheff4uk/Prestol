@@ -233,7 +233,7 @@
 					$i++;
 				}
 				$percent = $row["ManPercent"] == '' ? $row["PremiumPercent"] : $row["ManPercent"];
-				if ($sigmahours > $NormHours or $row["DNHcheck"] == 'checked') {
+				if ($sigmahours >= $NormHours or $row["DNHcheck"] == 'checked') {
 					$premium = round($sigmamoney * $percent / 100);
 					$green = "style='color: #191;'";
 				}
