@@ -286,7 +286,7 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		echo "<tr id='{$row["OD_ID"]}'>";
+		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
 		echo "<td><span>{$row["StartDate"]}</span></td>";
 		if( $archive ) {

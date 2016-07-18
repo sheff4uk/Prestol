@@ -187,7 +187,7 @@
 
 	<? include "forms.php"; ?>
 
-	<p><a href='/#<?= $_GET["id"] ?>' class='button'><< На главную</a></p>
+	<p><a href='/#ord<?= $_GET["id"] ?>' class='button'><< На главную</a></p>
 
 <?
 	if( $id != "NULL" )
