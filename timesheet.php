@@ -159,7 +159,13 @@
 			<?
 				$i = 1;
 				while ($i <= $days) {
-					echo "<th>".$i++."</th>";
+					$date = $year.'-'.$month.'-'.$i;
+					if (date('N', strtotime($date)) >= 6) { // Выделяем цветом выходные дни
+						echo "<th style='background: chocolate;'>".$i++."</th>";
+					}
+					else {
+						echo "<th>".$i++."</th>";
+					}
 				}
 			?>
 			<th>Часы</th>

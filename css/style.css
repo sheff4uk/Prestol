@@ -406,9 +406,16 @@ input.amount {
 
 td.tscell {
 	cursor: pointer;
+	position: relative;
 }
 td.tscell:hover {
 	background: #fca;
+}
+td.tscell > i {
+	position: absolute;
+	top: 0;
+	right: 0;
+	font-size: 10px;
 }
 .painting i {
 	cursor: pointer;

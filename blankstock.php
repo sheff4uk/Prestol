@@ -113,6 +113,7 @@
 			<tr>
 				<th>Заготовка</th>
 				<th>Кол-во</th>
+<!--				<th>Резерв</th>-->
 			</tr>
 			</thead>
 			<tbody>
@@ -142,6 +143,7 @@
 					echo "<tr>";
 					echo "<td>{$row["Name"]}</td>";
 					echo "<td class='txtright'><span class='{$color}'>{$row["Amount"]}</span></td>";
+//					echo "<td class='txtright'><span class='{$color}'>{$row["Amount"]}</span></td>";
 					echo "</tr>";
 				}
 			?>
