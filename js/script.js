@@ -372,7 +372,7 @@ $(document).ready(function(){
 
 		$("#addtable").dialog(
 		{
-			width: 800,
+			width: 850,
 			modal: true,
 			show: 'blind',
 			hide: 'explode',
