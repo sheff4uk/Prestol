@@ -96,11 +96,12 @@
 			$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 			$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 			$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
+			$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 			$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
 			$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
 
-			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Color, order_date, arrival_date)
-					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$Form}, {$Mechanism}, '{$Material}', {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$OrderDate}', '{$ArrivalDate}')";
+			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Color, Comment, order_date, arrival_date)
+					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$Form}, {$Mechanism}, '{$Material}', {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$Comment}', '{$OrderDate}', '{$ArrivalDate}')";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$odd_id = mysqli_insert_id( $mysqli );
 
