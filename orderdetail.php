@@ -279,9 +279,9 @@
 		<tr>
 			<th>Кол-во</th>
 			<th>Модель</th>
+			<th>Размер</th>
 			<th>Форма</th>
 			<th>Механизм</th>
-			<th>Размер</th>
 			<th>Прогресс</th>
 			<th>Ткань/пластик</th>
 			<?= ($id == "NULL") ? "<th>Цвет</th>" : "" ?>
@@ -330,9 +330,9 @@
 		echo "<tr class='{$row["is_check"]}' id='{$row["ODD_ID"]}'>";
 		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
 		echo "<td>{$row["Model"]}</td>";
+		echo "<td>{$row["Size"]}</td>";
 		echo "<td>{$row["Form"]}</td>";
 		echo "<td>{$row["Mechanism"]}</td>";
-		echo "<td>{$row["Size"]}</td>";
 
 		// Формируем список этапов
 		$query = "SELECT ST.Step
