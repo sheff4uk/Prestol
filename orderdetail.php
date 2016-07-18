@@ -285,6 +285,7 @@
 			<th>Прогресс</th>
 			<th>Ткань/пластик</th>
 			<?= ($id == "NULL") ? "<th>Цвет</th>" : "" ?>
+			<th>Примечание</th>
 			<th>Действие</th>
 		</tr>
 		</thead>
@@ -305,6 +306,8 @@
 					,ODD.IsExist
 					,ODD.Amount
 					,ODD.Color
+					,ODD.Comment
+					,ODD.Comment
                     ,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
                     ,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
                     ,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
@@ -370,6 +373,7 @@
 		}
 		echo "{$row["Material"]}</span></td>";
 		if ($id == "NULL") echo "<td>{$row["Color"]}</td>"; // Цвет показываем только в свободных
+		echo "<td>{$row["Comment"]}</td>";
 		echo "<td><a href='#' id='{$row["ODD_ID"]}' free='{$free}' class='button edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></a>";
 		
 		// Не показываем кнопку "Удалить" только в свободных если прогресс не 0
@@ -380,7 +384,7 @@
 		}
 		echo "<img hidden='true' src='/img/attention.png' class='attention' title='Требуется проверка данных после переноса изделий в \"Свободные\".'></td></tr>";
 
-		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "color"=>$row["Color"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
+		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "color"=>$row["Color"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
 	}
 ?>
 		</tbody>

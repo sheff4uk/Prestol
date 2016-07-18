@@ -28,6 +28,7 @@ if( $_GET["oddid"] )
 	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 	$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
+	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 	$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
 	$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
 	$query = "UPDATE OrdersDataDetail
@@ -40,6 +41,7 @@ if( $_GET["oddid"] )
 				 ,IsExist = {$IsExist}
 				 ,Amount = {$_POST["Amount"]}
 				 ,Color = '{$Color}'
+				 ,Comment = '{$Comment}'
 				 ,is_check = 1
 				 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
 				 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')

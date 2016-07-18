@@ -63,12 +63,16 @@
 			</div>
 			<br>
 		</div>
-        <div class='order_material' style='text-align: center; display: none;'>
-            <span>Дата заказа:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Ожидается:</span><br>
-            <input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>">
-            &nbsp;&nbsp;-&nbsp;&nbsp;
-            <input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>">
-        </div>
+		<div class='order_material' style='text-align: center; display: none;'>
+			<span>Дата заказа:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Ожидается:</span><br>
+			<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>">
+			&nbsp;&nbsp;-&nbsp;&nbsp;
+			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>">
+		</div>
+		<div>
+			<label>Примечание:</label>
+			<textarea name='Comment' rows='3' cols='38'></textarea>
+		</div>
 		</fieldset>
 
 		<div class="accordion">
@@ -164,12 +168,16 @@
 			</div>
 		</div>
 		<br>
-        <div class='order_material' style='text-align: center; display: none;'>
-            <span>Заказано:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Ожидается:</span><br>
-            <input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>">
-            &nbsp;&nbsp;-&nbsp;&nbsp;
-            <input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>">
-        </div>
+		<div class='order_material' style='text-align: center; display: none;'>
+			<span>Заказано:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Ожидается:</span><br>
+			<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>">
+			&nbsp;&nbsp;-&nbsp;&nbsp;
+			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>">
+		</div>
+		<div>
+			<label>Примечание:</label>
+			<textarea name='Comment' rows='3' cols='38'></textarea>
+		</div>
 		</fieldset>
 
 		<div class="accordion">

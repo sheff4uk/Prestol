@@ -161,6 +161,7 @@ $(document).ready(function(){
 		// Очистка диалога
 		$('#addchair input, #addchair select').prop('disabled', false);
 		$('#addchair input[type="text"]').val('');
+		$('#addchair textarea').val('');
 		$('#addchair input[name="Amount"]').val('1');
 		$('#addchair select[name="Model"]').val('');
 		$('#1radio0').prop('checked', true);
@@ -197,6 +198,7 @@ $(document).ready(function(){
 			$('#addchair input[name="Amount"]').val(odd[id]['amount']);
 			$('#addchair select[name="Model"]').val(odd[id]['model']);
 			$('#addchair input[name="Color"]').val(odd[id]['color']);
+			$('#addchair textarea[name="Comment"]').val(odd[id]['comment']);
 			$('#addchair input[name="Material"]').val(odd[id]['material']);
 			$('#1radio'+odd[id]['isexist']).prop('checked', true);
 			$('#addchair .radiostatus input[type="radio"]').button('refresh');
@@ -267,6 +269,7 @@ $(document).ready(function(){
 		// Очистка диалога
 		$('#addtable input, #addtable select').prop('disabled', false);
 		$('#addtable input[type="text"]').val('');
+		$('#addtable textarea').val('');
 		$('#addtable input[name="Amount"]').val('1');
 		$('#addtable select[name="Model"]').val('');
 		$('#addtable select[name="Form"]').val('');
@@ -321,6 +324,7 @@ $(document).ready(function(){
 			$('#addtable input[name="Width"]').val(odd[id]['width']);
 
 			$('#addtable input[name="Color"]').val(odd[id]['color']);
+			$('#addtable textarea[name="Comment"]').val(odd[id]['comment']);
 			$('#addtable input[name="Material"]').val(odd[id]['material']);
 			$('#2radio'+odd[id]['isexist']).prop('checked', true);
 			$('#addtable .radiostatus input[type="radio"]').button('refresh');
@@ -368,7 +372,7 @@ $(document).ready(function(){
 
 		$("#addtable").dialog(
 		{
-			width: 700,
+			width: 800,
 			modal: true,
 			show: 'blind',
 			hide: 'explode',

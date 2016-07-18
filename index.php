@@ -360,6 +360,7 @@
 						,ODD.Length
 						,ODD.Width
 						,ODD.Color
+						,ODD.Comment
 						,ODD.Material
 						,ODD.IsExist
                         ,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
@@ -372,7 +373,7 @@
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $sub_row = mysqli_fetch_array($result) )
 		{
-			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "color"=>$sub_row["Color"], "material"=>$sub_row["Material"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"] );
+			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "color"=>$sub_row["Color"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"] );
 		}
 	}
 ?>
