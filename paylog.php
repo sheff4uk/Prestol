@@ -34,7 +34,8 @@
 	include "header.php";
 ?>
 	<p>
-		<button class='edit_pay'>Создать платеж</button>
+		<button class='edit_pay' sign=''>Начислить</button>
+		<button class='edit_pay' sign='-'>Выдать</button>
 	</p>
 
 	<!-- Форма добавления платежа -->
@@ -42,9 +43,10 @@
 		<form method="post">
 			<fieldset>
 				<input type='hidden' name='id_date'>
+				<input type='hidden' name='sign'>
 				<div>
 					<label>Работник:</label>
-					<select name='Worker'>
+					<select required name='Worker'>
 						<option value="">-=Выберите работника=-</option>
 						<?
 						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD ORDER BY WD.Name";
@@ -58,7 +60,7 @@
 				</div>
 				<div>
 					<label>Сумма:</label>
-					<input required type='number' name='Pay' style="text-align:right;">
+					<input required type='number' name='Pay' min='0' style="text-align:right;">
 				</div>
 				<div>
 					<label>Примечание:</label>
@@ -157,7 +159,7 @@
 			<tbody>
 
 	<?
-			$query = "SELECT PL.Date DateKey, DATE_FORMAT(DATE(PL.Date), '%d.%m.%Y') Date, TIME(PL.Date) Time, WD.Name Worker, PL.Pay, PL.Comment, WD.WD_ID
+			$query = "SELECT PL.Date DateKey, DATE_FORMAT(DATE(PL.Date), '%d.%m.%Y') Date, TIME(PL.Date) Time, WD.Name Worker, PL.Pay, PL.Comment, WD.WD_ID, IF(PL.Pay < 0, '-', '') Sign
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
 						WHERE DATEDIFF(NOW(), PL.Date) <= {$datediff} AND PL.Pay <> 0";
@@ -175,7 +177,7 @@
 				echo "<td class='worker' val='{$row["WD_ID"]}'>{$row["Worker"]}</td>";
 				echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
 				echo "<td class='comment'>{$row["Comment"]}</td>";
-				echo "<td><a href='#' id='{$row["DateKey"]}' class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a></td>";
+				echo "<td><a href='#' id='{$row["DateKey"]}' sign='{$row["Sign"]}' class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a></td>";
 				echo "</tr>";
 			}
 	?>
@@ -191,6 +193,7 @@
 		// Форма добавления платежа
 		$('.edit_pay').click(function() {
 			var id = $(this).attr('id');
+			var sign = $(this).attr('sign');
 			var worker = $(this).parents('tr').find('.worker').attr('val');
 			var pay = $(this).parents('tr').find('.pay').attr('val');
 			var comment = $(this).parents('tr').find('.comment').html();
@@ -202,6 +205,7 @@
 			if( typeof id !== "undefined" )
 			{
 				$('#addpay select[name="Worker"]').val(worker);
+				$('#addpay input[name="sign"]').val(sign);
 				$('#addpay input[name="Pay"]').val(pay);
 				$('#addpay textarea[name="Comment"]').val(comment);
 				$('#addpay input[name="id_date"]').val(id);

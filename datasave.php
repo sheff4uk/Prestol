@@ -23,8 +23,8 @@ if( $_GET["oddid"] )
 	$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 	$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
 	$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
-	$Length = $_POST["Length"];
-	$Width = $_POST["Width"];
+	$Length = $_POST["Length"] ? "{$_POST["Length"]}" : "0";
+	$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "0";
 	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 	$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
