@@ -394,5 +394,8 @@
 		$('#timesheet input').change(function() {
 			$('#timesheetbutton').css("display", "block");
 		});
+		$('#timesheet input').keyup(function() {
+			$('#timesheetbutton').css("display", "block");
+		});
 	});
 </script>
