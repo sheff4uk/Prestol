@@ -144,6 +144,12 @@
 			<th><input type='text' name='f_P' size='8' class='plastictags' value='<?= $_SESSION["f_P"] ?>'></th>
 			<th><input type='text' name='f_CR' size='8' class='colortags' value='<?= $_SESSION["f_CR"] ?>'></th>
 			<th width="10%"><input type='text' name='f_PR' size='8' class='workerstags' value='<?= $_SESSION["f_PR"] ?>'></th>
+			<th width="40">
+				<select name="f_X" style="width: 100%;" onchange="this.form.submit()">
+					<option></option>
+					<option value="1" <?= ($_SESSION["f_X"] == 1) ? 'selected' : '' ?>>X</option>
+				</select>
+			</th>
 			<th width="45">
 				<style>
 					.IsPainting {
@@ -182,9 +188,10 @@
 			<th><input type="checkbox" disabled value="7" checked name="P" class="print_col" id="P"><label for="P">Пластик</label></th>
 			<th><input type="checkbox" disabled value="8" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
 			<th width="10%"><input type="checkbox" disabled value="9" checked name="PR" class="print_col" id="PR"><label for="PR">Прогресс</label></th>
-			<th width="45"><input type="checkbox" disabled value="10" checked name="IP" class="print_col" id="IP"><label for="IP">Лакировка</label></th>
-			<th><input type="checkbox" disabled value="11" checked name="T" class="print_col" id="T"><label for="T">Ткань</label></th>
-			<th><input type="checkbox" disabled value="12" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
+			<th width="40"><input type="checkbox" disabled value="10" checked name="X" class="print_col" id="X"><label for="X">X</label></th>
+			<th width="45"><input type="checkbox" disabled value="11" checked name="IP" class="print_col" id="IP"><label for="IP">Лакировка</label></th>
+			<th><input type="checkbox" disabled value="12" checked name="T" class="print_col" id="T"><label for="T">Ткань</label></th>
+			<th><input type="checkbox" disabled value="13" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
 			<th width="80">Действие</th>
 		</tr>
 		</thead>
@@ -203,6 +210,7 @@
 					,GROUP_CONCAT(CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' location=\'{$location}\' class=\'button edit_product', IFNULL(PM.PT_ID, 2), '\'>', ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') Zakaz
 					,GROUP_CONCAT(CONCAT(ODD.Color, '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Color_archive
 					,OD.Color
+					,OD.X
 					,OD.IsPainting
 					,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 1 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
 						CASE ODD.IsExist
@@ -271,16 +279,19 @@
 			  }
 			  $query .= " GROUP BY OD.OD_ID HAVING TRUE";
 			  if( $_SESSION["f_Z"] != "" ) {
-				  $query .= " AND Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
+				  $query .= " AND OD.Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
 			  }
 			  if( $_SESSION["f_T"] != "" ) {
-				  $query .= " AND Textile LIKE '%{$_SESSION["f_T"]}%'";
+				  $query .= " AND OD.Textile LIKE '%{$_SESSION["f_T"]}%'";
 			  }
 			  if( $_SESSION["f_P"] != "" ) {
-				  $query .= " AND Plastic LIKE '%{$_SESSION["f_P"]}%'";
+				  $query .= " AND OD.Plastic LIKE '%{$_SESSION["f_P"]}%'";
 			  }
 			  if( $_SESSION["f_PR"] != "" ) {
-				  $query .= " AND Workers LIKE '%{$_SESSION["f_PR"]}%'";
+				  $query .= " AND OD.Workers LIKE '%{$_SESSION["f_PR"]}%'";
+			  }
+			  if( $_SESSION["f_X"] == "1" ) {
+				  $query .= " AND OD.X = {$_SESSION["f_X"]}";
 			  }
               $query .= " ORDER BY OD.OD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -320,6 +331,8 @@
 		}
 
 		echo "<td><span class='nowrap'>{$steps}</span></td>";
+		$checkedX = $row["X"] == 1 ? 'checked' : '';
+		echo "<td class='X'><input type='checkbox' {$checkedX} value='1'></td>";
 		echo "<td class='painting'><a val='{$row["IsPainting"]}'>";
 			switch ($row["IsPainting"]) {
 				case 1:
@@ -442,8 +455,21 @@
 
 		$('.painting a').click(function() {
 			var id = $(this).parents('tr').attr('id');
+			id = id.replace('ord', '');
 			var val = $(this).attr('val');
 			$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val, dataType: "script", async: false });
+		});
+
+		$('.X input[type="checkbox"]').change(function() {
+			var id = $(this).parents('tr').attr('id');
+			id = id.replace('ord', '');
+			if ( this.checked ) {
+				var val = 1;
+			}
+			else {
+				var val = 0;
+			}
+			$.ajax({ url: "ajax.php?do=Xlabel&od_id="+id+"&val="+val, dataType: "script", async: false });
 		});
 
 		function changelink() {

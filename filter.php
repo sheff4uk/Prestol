@@ -11,6 +11,7 @@
 	$_SESSION["f_ON"] = $_GET["f_ON"];	// № квитанции
 	$_SESSION["f_N"] = $_GET["f_N"];	// Примечание
 	$_SESSION["f_Z"] = $_GET["f_Z"];	// Заказ
+	$_SESSION["f_X"] = $_GET["f_X"];	// Пометка X
 	$_SESSION["f_IP"] = $_GET["f_IP"];	// Cтатус лакировки
 	$_SESSION["f_CR"] = $_GET["f_CR"];	// Цвет
 	$_SESSION["f_T"] = $_GET["f_T"];	// Ткань

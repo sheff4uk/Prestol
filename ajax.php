@@ -234,9 +234,21 @@ case "ispainting":
 			break;
 	}
 
-	echo "window.top.window.$('.main_table tr[id=\"{$id}\"] td.painting a').html('{$pic}');";
-	echo "window.top.window.$('.main_table tr[id=\"{$id}\"] td.painting a').attr('val', '{$val}');";
+	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting a').html('{$pic}');";
+	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting a').attr('val', '{$val}');";
 	echo "noty({timeout: 3000, text: 'Статус лакировки изменен на \"{$status}\"', type: 'success'});";
+	break;
+
+// Помечаем X в главной таблице
+case "Xlabel":
+
+	$id = $_GET["od_id"];
+	$val = $_GET["val"];
+
+	// Обновляем статус лакировки
+	$query = "UPDATE OrdersData SET X = {$val} WHERE OD_ID = {$id}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
 	break;
 
 }
