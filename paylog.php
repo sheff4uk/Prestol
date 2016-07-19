@@ -12,17 +12,18 @@
 		$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
 		$Pay = $_POST["Pay"] <> "" ? $_POST["Pay"] : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
+		$Sign = $_POST["sign"];
 
 		// Редактирование
 		if( $_POST["id_date"] <> "" ) {
 			$query = "UPDATE PayLog
-					  SET WD_ID = {$Worker}, Pay = {$Pay}, Comment = '{$Comment}'
+					  SET WD_ID = {$Worker}, Pay = {$Sign}{$Pay}, Comment = '{$Comment}'
 					  WHERE Date = '{$_POST["id_date"]}'";
 		}
 		// Добавление
 		else {
 			$query = "INSERT INTO PayLog(WD_ID, Pay, Comment)
-					  VALUES ({$Worker}, {$Pay}, '{$Comment}')";
+					  VALUES ({$Worker}, {$Sign}{$Pay}, '{$Comment}')";
 		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -39,7 +40,7 @@
 	</p>
 
 	<!-- Форма добавления платежа -->
-	<div id='addpay' title='Платеж' class="addproduct" style='display:none'>
+	<div id='addpay' class="addproduct" style='display:none'>
 		<form method="post">
 			<fieldset>
 				<input type='hidden' name='id_date'>
@@ -159,7 +160,7 @@
 			<tbody>
 
 	<?
-			$query = "SELECT PL.Date DateKey, DATE_FORMAT(DATE(PL.Date), '%d.%m.%Y') Date, TIME(PL.Date) Time, WD.Name Worker, PL.Pay, PL.Comment, WD.WD_ID, IF(PL.Pay < 0, '-', '') Sign
+			$query = "SELECT PL.Date DateKey, DATE_FORMAT(DATE(PL.Date), '%d.%m.%Y') Date, TIME(PL.Date) Time, WD.Name Worker, ABS(PL.Pay) Pay, PL.Comment, WD.WD_ID, IF(PL.Pay < 0, '-', '') Sign
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
 						WHERE DATEDIFF(NOW(), PL.Date) <= {$datediff} AND PL.Pay <> 0";
@@ -170,7 +171,7 @@
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
-				$format_pay = number_format($row["Pay"], 0, '', ' ');
+				$format_pay = number_format($row["Sign"].$row["Pay"], 0, '', ' ');
 				echo "<tr>";
 				echo "<td>{$row["Date"]}</td>";
 				echo "<td>{$row["Time"]}</td>";
@@ -202,10 +203,10 @@
 			$('#addpay input, #addpay select, #addpay textarea').val('');
 
 			// Заполнение
+			$('#addpay input[name="sign"]').val(sign);
 			if( typeof id !== "undefined" )
 			{
 				$('#addpay select[name="Worker"]').val(worker);
-				$('#addpay input[name="sign"]').val(sign);
 				$('#addpay input[name="Pay"]').val(pay);
 				$('#addpay textarea[name="Comment"]').val(comment);
 				$('#addpay input[name="id_date"]').val(id);
@@ -218,6 +219,12 @@
 				show: 'blind',
 				hide: 'explode',
 			});
+			if (sign == '-') {
+				$('#addpay').dialog('option', 'title', 'Выдать');
+			}
+			else {
+				$('#addpay').dialog('option', 'title', 'Начислить');
+			}
 			return false;
 		});
 	});
