@@ -144,9 +144,9 @@
 		</div>
 		<div>
 			<label>Размер:</label>
-			<input required type='number' min='0' step='50' name='Length' style='width: 80px;' autocomplete='off' title="Длина">
+			<input required type='number' min='0' step='10' name='Length' style='width: 80px;' autocomplete='off' title="Длина">
 			<span>&nbsp;х&nbsp;</span>
-			<input required type='number' min='0' step='50' name='Width' style='width: 80px;' autocomplete='off' title="Ширина">
+			<input required type='number' min='0' step='10' name='Width' style='width: 80px;' autocomplete='off' title="Ширина">
 		</div>
 		<div>
 			<label>Цвет:</label>
