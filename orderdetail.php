@@ -268,10 +268,10 @@
 	</table>
 <?
 	}
-?>	
+?>
 	<p>
-		<button class='edit_product1'<?=($id == 'NULL')?' id=\'0\'':''?> free='<?=$free?>'>Добавить стулья</button>
-		<button class='edit_product2'<?=($id == 'NULL')?' id=\'0\'':''?> free='<?=$free?>'>Добавить столы</button>
+		<button class='edit_product1'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
+		<button class='edit_product2'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
 	</p>
 
 	<!-- Таблица изделий -->
@@ -393,8 +393,8 @@
 	<!-- Конец таблицы изделий -->
 	
 	<p>
-		<button class='edit_product1'<?=($id == 'NULL')?' id=\'0\'':''?> free='<?=$free?>'>Добавить стулья</button>
-		<button class='edit_product2'<?=($id == 'NULL')?' id=\'0\'':''?> free='<?=$free?>'>Добавить столы</button>
+		<button class='edit_product1'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
+		<button class='edit_product2'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
 	</p>
 
 </body>
@@ -402,7 +402,7 @@
 
 <script>
 	$(document).ready(function(){
-		odid = <?= ($id == 'NULL') ? 0 : $id ?>;
+//		odid = <?= ($id == 'NULL') ? 0 : $id ?>;
 
 		$('.attention img').show();
 

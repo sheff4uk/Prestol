@@ -1,5 +1,5 @@
 $.fx.speeds._default = 300;
-var odid;
+//var odid;
 
 // Функция генерирует форму с этапами производства
 function makeform(id, location)
@@ -157,6 +157,7 @@ $(document).ready(function(){
 		var id = $(this).attr('id');
 		var free = $(this).attr('free');
 		var location = $(this).attr("location");
+		var odid = $(this).attr("odid");
 		
 		// Очистка диалога
 		$('#addchair input, #addchair select').prop('disabled', false);
@@ -265,6 +266,7 @@ $(document).ready(function(){
 		var id = $(this).attr('id');
 		var free = $(this).attr('free');
 		var location = $(this).attr("location");
+		var odid = $(this).attr("odid");
 
 		// Очистка диалога
 		$('#addtable input, #addtable select').prop('disabled', false);
