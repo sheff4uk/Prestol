@@ -474,6 +474,7 @@ td.tscell > i {
 	height: 100px;
 	box-shadow: 0px 0px 20px #911;
 	display: none;
+	z-index: 1;
 }
 #timesheet td {
 	border-right: 1px solid #bbb;
