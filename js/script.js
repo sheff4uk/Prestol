@@ -239,6 +239,13 @@ $(document).ready(function(){
 		$('#addchair input[name="Material"]').keyup( function() {
 			materialonoff('#addchair');
 		});
+		// Костыль для активации кнопок наличия материала при вставке из буфера
+		$('#addchair input[name="Material"]').bind('paste', function(e) {
+			var pastedData = e.originalEvent.clipboardData.getData('text');
+			$(this).val(' ');
+			materialonoff('#addchair');
+			$(this).val('');
+		});
 		
 		// Форма добавления/редактирования стульев
 		$('#addchair').dialog({
@@ -370,6 +377,13 @@ $(document).ready(function(){
 		// Если нет пластика, то кнопка наличия не активна
 		$('#addtable input[name="Material"]').keyup( function() {
 			materialonoff('#addtable');
+		});
+		// Костыль для активации кнопок наличия материала при вставке из буфера
+		$('#addtable input[name="Material"]').bind('paste', function(e) {
+			var pastedData = e.originalEvent.clipboardData.getData('text');
+			$(this).val(' ');
+			materialonoff('#addtable');
+			$(this).val('');
 		});
 
 		$("#addtable").dialog(

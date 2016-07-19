@@ -388,23 +388,23 @@
 
 		// Фильтрация таблицы при автокомплите
 		$( ".main_table .shopstags" ).on( "autocompleteselect", function( event, ui ) {
-			$(".main_table .shopstags").val(ui.item.value);
+			$(this).val(ui.item.value);
 			$(event.target.form).submit();
 		});
 		$( ".main_table .plastictags" ).on( "autocompleteselect", function( event, ui ) {
-			$(".main_table .plastictags").val(ui.item.value);
+			$(this).val(ui.item.value);
 			$(event.target.form).submit();
 		});
 		$( ".main_table .colortags" ).on( "autocompleteselect", function( event, ui ) {
-			$(".main_table .colortags").val(ui.item.value);
+			$(this).val(ui.item.value);
 			$(event.target.form).submit();
 		});
 		$( ".main_table .workerstags" ).on( "autocompleteselect", function( event, ui ) {
-			$(".main_table .workerstags").val(ui.item.value);
+			$(this).val(ui.item.value);
 			$(event.target.form).submit();
 		});
 		$( ".main_table .textiletags" ).on( "autocompleteselect", function( event, ui ) {
-			$(".main_table .textiletags").val(ui.item.value);
+			$(this).val(ui.item.value);
 			$(event.target.form).submit();
 		});
 
