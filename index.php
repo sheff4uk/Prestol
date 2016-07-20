@@ -177,6 +177,7 @@
 	<table id="print_tbl" class="main_table">
 		
 		<form id='printtable'>
+		<input type="text" id="print_title" name="print_title" placeholder="Введите заголовок таблицы">
 		<thead>
 		<tr>
 			<th width="5%"><input type="checkbox" disabled value="1" checked name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
@@ -279,16 +280,16 @@
 			  }
 			  $query .= " GROUP BY OD.OD_ID HAVING TRUE";
 			  if( $_SESSION["f_Z"] != "" ) {
-				  $query .= " AND OD.Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
+				  $query .= " AND Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
 			  }
 			  if( $_SESSION["f_T"] != "" ) {
-				  $query .= " AND OD.Textile LIKE '%{$_SESSION["f_T"]}%'";
+				  $query .= " AND Textile LIKE '%{$_SESSION["f_T"]}%'";
 			  }
 			  if( $_SESSION["f_P"] != "" ) {
-				  $query .= " AND OD.Plastic LIKE '%{$_SESSION["f_P"]}%'";
+				  $query .= " AND Plastic LIKE '%{$_SESSION["f_P"]}%'";
 			  }
 			  if( $_SESSION["f_PR"] != "" ) {
-				  $query .= " AND OD.Workers LIKE '%{$_SESSION["f_PR"]}%'";
+				  $query .= " AND Workers LIKE '%{$_SESSION["f_PR"]}%'";
 			  }
 			  if( $_SESSION["f_X"] == "1" ) {
 				  $query .= " AND OD.X = {$_SESSION["f_X"]}";
@@ -422,9 +423,7 @@
 		});
 
 		// Открытие диалога печати
-		$(document).ready(function() {
-			$("#toprint").printPage();
-		});
+		$("#toprint").printPage();
 
 		$(function() {
 			// Кнопка добавления заказа
@@ -442,15 +441,10 @@
 				return false;
 			});
 
-			$('.print_col, .print_row').change( function()
-			{
-				changelink();
-			});
+			$('.print_col, .print_row').change( function() { changelink(); });
 
-			$('#print_btn').click( function()
-			{
-				changelink();
-			});
+			$('#print_btn').click( function() { changelink(); });
+			$('#print_title').change( function() { changelink(); });
 		});
 
 		$('.painting a').click(function() {
@@ -472,7 +466,7 @@
 			$.ajax({ url: "ajax.php?do=Xlabel&od_id="+id+"&val="+val, dataType: "script", async: false });
 		});
 
-		function changelink() {
+		function changelink() { // Добавляем к ссылке печати столбцы и строки которые будем печатать
 			var data = $('#printtable').serialize();
 			$("#toprint").attr('href', '/toprint/main.php?' + data);
 			return false;

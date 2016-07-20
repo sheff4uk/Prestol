@@ -13,6 +13,7 @@ $(document).ready(function() {
 		$('.print_col').button();
 		$('.print_row').button();
 		$('#print_btn > a').css('display', 'block');
+		$('#print_title').css('display', 'block');
 		$(div)
 			.css('z-index', '11')
 			.css('position', 'absolute');
@@ -34,7 +35,8 @@ $(document).ready(function() {
 	close.click( function(){
 			overlay.fadeOut(400,
 			function() {
-			$('#print_btn > a').css('display', 'none');
+				$('#print_btn > a').css('display', 'none');
+				$('#print_title').css('display', 'none');
 				modal.css('z-index', '').css('position', '');
 				$('.print_col').button('destroy');
 				$('.print_row').button('destroy');

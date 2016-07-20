@@ -9,8 +9,8 @@
         body, td {
             margin: 20px;
             color: #333;
-            font-family: Verdana;
-            font-size: 9pt;
+            font-family: Verdana, Trebuchet MS, Tahoma, Arial, sans-serif;
+            font-size: 12pt;
         }
         table {
             border-collapse: collapse;
@@ -43,9 +43,10 @@
 		}
 	}
 ?>
-    <table>
-        <thead>
-            <tr>
+	<h3><?=$_GET["print_title"]?></h3>
+	<table>
+		<thead>
+			<tr>
 				<?
 					if(isset($_GET["CN"])) echo "<th>Заказчик</th>";
 					if(isset($_GET["SD"])) echo "<th>Дата приема</th>";

@@ -479,3 +479,14 @@ td.tscell > i {
 #timesheet td {
 	border-right: 1px solid #bbb;
 }
+
+#print_title {
+	display: none;
+	position: fixed;
+	top: 50px;
+	width: 50%;
+	left: 25%;
+	z-index: 12;
+	text-align: center;
+	box-shadow: 0 0 10px #666;
+}
