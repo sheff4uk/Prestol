@@ -135,17 +135,17 @@
 		<form method='get' action='filter.php'>
 		<thead>
 		<tr>
-			<th width="5%"><input type='text' name='f_CN' size='8' value='<?= $_SESSION["f_CN"] ?>' autocomplete='off'></th>
-			<th width="5%"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>'></th>
-			<th width="5%"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>'></th>
-			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags' value='<?= $_SESSION["f_SH"] ?>'></th>
-			<th width="5%"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>'></th>
-			<th width="15%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>'></th>
-			<th><input type='text' name='f_P' size='8' class='plastictags' value='<?= $_SESSION["f_P"] ?>'></th>
-			<th><input type='text' name='f_CR' size='8' class='colortags' value='<?= $_SESSION["f_CR"] ?>'></th>
-			<th width="10%"><input type='text' name='f_PR' size='8' class='workerstags' value='<?= $_SESSION["f_PR"] ?>'></th>
+			<th width="5%"><input type='text' name='f_CN' size='8' value='<?= $_SESSION["f_CN"] ?>' class='<?=($_SESSION["f_CN"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
+			<th width="5%"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>' class='<?=($_SESSION["f_SD"] != "") ? "filtered" : ""?>'></th>
+			<th width="5%"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>' class='<?=($_SESSION["f_ED"] != "") ? "filtered" : ""?>'></th>
+			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags <?=($_SESSION["f_SH"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_SH"] ?>'></th>
+			<th width="5%"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>' class="<?=($_SESSION["f_ON"] != "") ? "filtered" : ""?>"></th>
+			<th width="15%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class="<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>"></th>
+			<th><input type='text' name='f_P' size='8' class='plastictags <?=($_SESSION["f_P"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_P"] ?>'></th>
+			<th><input type='text' name='f_CR' size='8' class='colortags <?=($_SESSION["f_CR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_CR"] ?>'></th>
+			<th width="10%"><input type='text' name='f_PR' size='8' class='workerstags <?=($_SESSION["f_PR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_PR"] ?>'></th>
 			<th width="40">
-				<select name="f_X" style="width: 100%;" onchange="this.form.submit()">
+				<select name="f_X" style="width: 100%;" onchange="this.form.submit()" class="<?=($_SESSION["f_X"] != "") ? "filtered" : ""?>">
 					<option></option>
 					<option value="1" <?= ($_SESSION["f_X"] == 1) ? 'selected' : '' ?>>X</option>
 				</select>
@@ -157,15 +157,15 @@
 						font-family: FontAwesome;
 					}
 				</style>
-				<select name="f_IP" class="IsPainting" onchange="this.form.submit()">
+				<select name="f_IP" class="IsPainting <?=($_SESSION["f_IP"] != "") ? "filtered" : ""?>" onchange="this.form.submit()">
 					<option></option>
 					<option value="1" <?= ($_SESSION["f_IP"] == 1) ? 'selected' : '' ?>>&#xf006 - Не в работе</option>
 					<option value="2" <?= ($_SESSION["f_IP"] == 2) ? 'selected' : '' ?>>&#xf123 - В работе</option>
 					<option value="3" <?= ($_SESSION["f_IP"] == 3) ? 'selected' : '' ?>>&#xf005 - Готово</option>
 				</select>
 			</th>
-			<th><input type='text' name='f_T' size='8' class='textiletags' value='<?= $_SESSION["f_T"] ?>'></th>
-			<th><input type='text' name='f_N' value='<?= $_SESSION["f_N"] ?>'></th>
+			<th><input type='text' name='f_T' size='8' class='textiletags <?=($_SESSION["f_T"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_T"] ?>'></th>
+			<th><input type='text' name='f_N' value='<?= $_SESSION["f_N"] ?>' class="<?=($_SESSION["f_N"] != "") ? "filtered" : ""?>"></th>
 			<th width="80"><button title="Фильтр"><i class="fa fa-filter fa-lg"></i></button><a href="filter.php?location=<?=$location?>" class="button" title="Сброс"><i class="fa fa-times fa-lg"></i></a><input type='hidden' name='location' value='<?=$location?>'></th>
 		</tr>
 		</thead>

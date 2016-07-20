@@ -490,3 +490,7 @@ td.tscell > i {
 	text-align: center;
 	box-shadow: 0 0 10px #666;
 }
+
+.filtered {
+	background: #eded00;
+}
