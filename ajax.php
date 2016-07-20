@@ -127,7 +127,7 @@ case "livesearch":
 			$table .= "<th>Форма</th>";
 			$table .= "<th>Размер</th>";
 		}
-		$table .= "<th>Прогресс</th>";
+		$table .= "<th>Этапы</th>";
 		$table .= "<th>Цвет</th>";
 		$table .= ($pt == 1) ? "<th>Ткань</th>" : "<th>Пластик</th>";
 		$table .= "</tr></thead><tbody>";

@@ -188,7 +188,7 @@
 			<th width="15%"><input type="checkbox" disabled value="6" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
 			<th><input type="checkbox" disabled value="7" checked name="P" class="print_col" id="P"><label for="P">Пластик</label></th>
 			<th><input type="checkbox" disabled value="8" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
-			<th width="10%"><input type="checkbox" disabled value="9" checked name="PR" class="print_col" id="PR"><label for="PR">Прогресс</label></th>
+			<th width="10%"><input type="checkbox" disabled value="9" checked name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
 			<th width="40"><input type="checkbox" disabled value="10" checked name="X" class="print_col" id="X"><label for="X">X</label></th>
 			<th width="45"><input type="checkbox" disabled value="11" checked name="IP" class="print_col" id="IP"><label for="IP">Лакировка</label></th>
 			<th><input type="checkbox" disabled value="12" checked name="T" class="print_col" id="T"><label for="T">Ткань</label></th>

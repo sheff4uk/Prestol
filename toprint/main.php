@@ -56,7 +56,7 @@
 					if(isset($_GET["Z"])) echo "<th>Заказ</th>";
 					if(isset($_GET["P"])) echo "<th>Пластик</th>";
 					if(isset($_GET["CR"])) echo "<th>Цвет</th>";
-					if(isset($_GET["PR"])) echo "<th>Прогресс</th>";
+					if(isset($_GET["PR"])) echo "<th>Этапы</th>";
 					if(isset($_GET["IP"])) echo "<th>Лак.</th>";
 					if(isset($_GET["T"])) echo "<th>Ткань</th>";
 					if(isset($_GET["N"])) echo "<th>Примечание</th>";
@@ -86,7 +86,7 @@
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  LEFT JOIN (SELECT ODS.ODD_ID
-			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', SUBSTR(ST.STEP, 1, 2), '</b>'), SUBSTR(ST.STEP, 1, 2)), '(<i>', IFNULL(SUBSTR(WD.Name, 1, 3), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR ' | ') Steps
+			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', SUBSTR(ST.STEP, 1, 2), '</b>'), SUBSTR(ST.STEP, 1, 2)), '(<i>', IFNULL(SUBSTR(WD.Name, 1, 30), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR ' | ') Steps
 						FROM OrdersDataSteps ODS
 						LEFT JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
