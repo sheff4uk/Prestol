@@ -25,6 +25,8 @@ if( $_GET["oddid"] )
 	$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
 	$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
 	$Width = $_POST["Type"] == 2 ? "{$_POST["Width"]}" : "NULL";
+	$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
+	$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
 	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 	$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
@@ -35,6 +37,8 @@ if( $_GET["oddid"] )
 			  SET PM_ID = {$Model}
 				 ,Length = {$Length}
 				 ,Width = {$Width}
+				 ,PieceAmount = {$PieceAmount}
+				 ,PieceSize = {$PieceSize}
 				 ,PF_ID = {$Form}
 				 ,PME_ID = {$Mechanism}
 				 ,Material = '{$Material}'

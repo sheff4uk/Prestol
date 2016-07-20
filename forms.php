@@ -147,6 +147,10 @@
 			<input required type='number' min='0' step='10' name='Length' style='width: 80px;' autocomplete='off' title="Длина">
 			<span>&nbsp;х&nbsp;</span>
 			<input required type='number' min='0' step='10' name='Width' style='width: 80px;' autocomplete='off' title="Ширина">
+			<span>&nbsp;/&nbsp;</span>
+			<input type="number" name="PieceAmount" min="1" max="3" autocomplete="off" title="Кол-во вставок">
+			<span>&nbsp;х&nbsp;</span>
+			<input type="number" name="PieceSize" min="300" max="550" step="10" autocomplete="off" title="Размер вставки">
 		</div>
 		<div>
 			<label>Цвет:</label>

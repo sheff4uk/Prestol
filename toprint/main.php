@@ -71,7 +71,7 @@
 					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
 					,CONCAT(CT.City, '/', SH.Shop) AS Shop
 					,OD.OrderNumber
-					,GROUP_CONCAT(CONCAT(ODD.Amount, ' ', PM.Model, ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Zakaz
+					,GROUP_CONCAT(CONCAT(ODD.Amount, ' ', PM.Model, ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Zakaz
 					,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 2, IFNULL(ODD.Material, ''), ''), '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Plastic
 					,OD.Color
 					,OD.IsPainting
@@ -86,7 +86,7 @@
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  LEFT JOIN (SELECT ODS.ODD_ID
-			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', SUBSTR(ST.STEP, 1, 2), '</b>'), SUBSTR(ST.STEP, 1, 2)), '(<i>', IFNULL(SUBSTR(WD.Name, 1, 30), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR ' | ') Steps
+			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(SUBSTR(WD.Name, 1, 30), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR ' | ') Steps
 						FROM OrdersDataSteps ODS
 						LEFT JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID

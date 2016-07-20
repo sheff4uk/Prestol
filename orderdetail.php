@@ -91,8 +91,10 @@
 			$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 			$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
 			$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
-			$Length = $_POST["Length"] ? "{$_POST["Length"]}" : "NULL";
-			$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
+			$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
+			$Width = $_POST["Type"] == 2 ? "{$_POST["Width"]}" : "NULL";
+			$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
+			$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
 			$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 			$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 			$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
@@ -100,8 +102,8 @@
 			$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
 			$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
 
-			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Color, Comment, order_date, arrival_date)
-					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$Form}, {$Mechanism}, '{$Material}', {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$Comment}', '{$OrderDate}', '{$ArrivalDate}')";
+			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, Material, IsExist, Amount, Color, Comment, order_date, arrival_date)
+					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, '{$Material}', {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$Comment}', '{$OrderDate}', '{$ArrivalDate}')";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$odd_id = mysqli_insert_id( $mysqli );
 
@@ -295,12 +297,14 @@
 	$query = "SELECT ODD.ODD_ID
 					,IFNULL(PM.PT_ID, 2) PT_ID
 					,PM.Model
-					,CONCAT(ODD.Length, 'х', ODD.Width) Size
+					,CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')) Size
 					,PF.Form
 					,PME.Mechanism
 					,ODD.PM_ID
 					,ODD.Length
 					,ODD.Width
+					,ODD.PieceAmount
+					,ODD.PieceSize
 					,ODD.PF_ID
 					,ODD.PME_ID
 					,ODD.Material
@@ -385,7 +389,7 @@
 		}
 		echo "<img hidden='true' src='/img/attention.png' class='attention' title='Требуется проверка данных после переноса изделий в \"Свободные\".'></td></tr>";
 
-		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "color"=>$row["Color"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
+		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "color"=>$row["Color"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
 	}
 ?>
 		</tbody>

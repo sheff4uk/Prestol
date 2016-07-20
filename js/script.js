@@ -331,6 +331,8 @@ $(document).ready(function(){
 			$('#addtable input[name="Mechanism"]').button("refresh");
 			$('#addtable input[name="Length"]').val(odd[id]['length']);
 			$('#addtable input[name="Width"]').val(odd[id]['width']);
+			$('#addtable input[name="PieceAmount"]').val(odd[id]['PieceAmount']);
+			$('#addtable input[name="PieceSize"]').val(odd[id]['PieceSize']);
 
 			$('#addtable input[name="Color"]').val(odd[id]['color']);
 			$('#addtable textarea[name="Comment"]').val(odd[id]['comment']);

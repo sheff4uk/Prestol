@@ -208,7 +208,7 @@
 					,OD.OrderNumber
 					,OD.Comment
 					,COUNT(ODD.ODD_ID) Child
-					,GROUP_CONCAT(CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' location=\'{$location}\' class=\'button edit_product', IFNULL(PM.PT_ID, 2), '\'>', ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') Zakaz
+					,GROUP_CONCAT(CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' location=\'{$location}\' class=\'button edit_product', IFNULL(PM.PT_ID, 2), '\'>', ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') Zakaz
 					,GROUP_CONCAT(CONCAT(ODD.Color, '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Color_archive
 					,OD.Color
 					,OD.X
@@ -373,6 +373,8 @@
 						,ODD.PME_ID
 						,ODD.Length
 						,ODD.Width
+						,ODD.PieceAmount
+						,ODD.PieceSize
 						,ODD.Color
 						,ODD.Comment
 						,ODD.Material
@@ -387,7 +389,7 @@
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $sub_row = mysqli_fetch_array($result) )
 		{
-			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "color"=>$sub_row["Color"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"] );
+			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "PieceAmount"=>$sub_row["PieceAmount"], "PieceSize"=>$sub_row["PieceSize"], "color"=>$sub_row["Color"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"] );
 		}
 	}
 ?>
