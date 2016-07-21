@@ -141,8 +141,8 @@
 			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags <?=($_SESSION["f_SH"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_SH"] ?>'></th>
 			<th width="5%"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>' class="<?=($_SESSION["f_ON"] != "") ? "filtered" : ""?>"></th>
 			<th width="15%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class="<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>"></th>
-			<th><input type='text' name='f_P' size='8' class='plastictags <?=($_SESSION["f_P"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_P"] ?>'></th>
-			<th><input type='text' name='f_CR' size='8' class='colortags <?=($_SESSION["f_CR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_CR"] ?>'></th>
+			<th width="15%"><input type='text' name='f_P' size='8' class='plastictags <?=($_SESSION["f_P"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_P"] ?>'></th>
+			<th width="15%"><input type='text' name='f_CR' size='8' class='colortags <?=($_SESSION["f_CR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_CR"] ?>'></th>
 			<th width="10%"><input type='text' name='f_PR' size='8' class='workerstags <?=($_SESSION["f_PR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_PR"] ?>'></th>
 			<th width="40">
 				<select name="f_X" style="width: 100%;" onchange="this.form.submit()" class="<?=($_SESSION["f_X"] != "") ? "filtered" : ""?>">
@@ -164,19 +164,19 @@
 					<option value="3" <?= ($_SESSION["f_IP"] == 3) ? 'selected' : '' ?>>&#xf005 - Готово</option>
 				</select>
 			</th>
-			<th><input type='text' name='f_T' size='8' class='textiletags <?=($_SESSION["f_T"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_T"] ?>'></th>
-			<th><input type='text' name='f_N' value='<?= $_SESSION["f_N"] ?>' class="<?=($_SESSION["f_N"] != "") ? "filtered" : ""?>"></th>
+			<th width="15%"><input type='text' name='f_T' size='8' class='textiletags <?=($_SESSION["f_T"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_T"] ?>'></th>
+			<th width="15%"><input type='text' name='f_N' value='<?= $_SESSION["f_N"] ?>' class="<?=($_SESSION["f_N"] != "") ? "filtered" : ""?>"></th>
 			<th width="80"><button title="Фильтр"><i class="fa fa-filter fa-lg"></i></button><a href="filter.php?location=<?=$location?>" class="button" title="Сброс"><i class="fa fa-times fa-lg"></i></a><input type='hidden' name='location' value='<?=$location?>'></th>
 		</tr>
 		</thead>
 		</form>
 	</table>
 	<!-- //ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
-
+<div id="print_tbl">
 	<!-- Главная таблица -->
-	<table id="print_tbl" class="main_table">
-		
-		<form id='printtable'>
+	<form id='printtable'>
+	<div class="wr_main_table_head"> <!-- Обертка шапки -->
+	<table class="main_table">
 		<input type="text" id="print_title" name="print_title" placeholder="Введите заголовок таблицы">
 		<thead>
 		<tr>
@@ -186,17 +186,38 @@
 			<th width="5%"><input type="checkbox" disabled value="4" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
 			<th width="5%"><input type="checkbox" disabled value="5" checked name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>
 			<th width="15%"><input type="checkbox" disabled value="6" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
-			<th><input type="checkbox" disabled value="7" checked name="P" class="print_col" id="P"><label for="P">Пластик</label></th>
-			<th><input type="checkbox" disabled value="8" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
+			<th width="15%"><input type="checkbox" disabled value="7" checked name="P" class="print_col" id="P"><label for="P">Пластик</label></th>
+			<th width="15%"><input type="checkbox" disabled value="8" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
 			<th width="10%"><input type="checkbox" disabled value="9" checked name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
 			<th width="40"><input type="checkbox" disabled value="10" checked name="X" class="print_col" id="X"><label for="X">X</label></th>
 			<th width="45"><input type="checkbox" disabled value="11" checked name="IP" class="print_col" id="IP"><label for="IP">Лакировка</label></th>
-			<th><input type="checkbox" disabled value="12" checked name="T" class="print_col" id="T"><label for="T">Ткань</label></th>
-			<th><input type="checkbox" disabled value="13" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
+			<th width="15%"><input type="checkbox" disabled value="12" checked name="T" class="print_col" id="T"><label for="T">Ткань</label></th>
+			<th width="15%"><input type="checkbox" disabled value="13" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
 			<th width="80">Действие</th>
 		</tr>
 		</thead>
-		
+	</table>
+	</div>
+	<div class="wr_main_table_body"> <!-- Обертка тела таблицы -->
+	<table class="main_table">
+		<thead style="">
+		<tr>
+			<th width="5%"></th>
+			<th width="5%"></th>
+			<th width="5%"></th>
+			<th width="5%"></th>
+			<th width="5%"></th>
+			<th width="15%"></th>
+			<th width="15%"></th>
+			<th width="15%"></th>
+			<th width="10%"></th>
+			<th width="40"></th>
+			<th width="45"></th>
+			<th width="15%"></th>
+			<th width="15%"></th>
+			<th width="80"></th>
+		</tr>
+		</thead>
 		<tbody>
 <?
 	$query = "SELECT OD.OD_ID
@@ -401,8 +422,10 @@
 	}
 ?>
 	</tbody>
-	</form>
 	</table>
+	</div>
+	</form>
+</div>
 </body>
 </html>
 

@@ -43,7 +43,7 @@
 		}
 	}
 ?>
-	<h3><?=$_GET["print_title"]?></h3>
+	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
 	<table>
 		<thead>
 			<tr>
