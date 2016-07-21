@@ -292,7 +292,15 @@
 				  $query .= " AND Workers LIKE '%{$_SESSION["f_PR"]}%'";
 			  }
 			  if( $_SESSION["f_X"] == "1" ) {
-				  $query .= " AND OD.X = {$_SESSION["f_X"]}";
+				  $X_ord = '0';
+				  foreach( $_SESSION as $k => $v)
+				  {
+					  if( strpos($k,"X_") === 0 )
+					  {
+						  $X_ord .= ','.str_replace( "X_", "", $k );
+					  }
+				  }
+				  $query .= " AND OD.OD_ID IN ({$X_ord})";
 			  }
               $query .= " ORDER BY OD.OD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -332,7 +340,7 @@
 		}
 
 		echo "<td><span class='nowrap'>{$steps}</span></td>";
-		$checkedX = $row["X"] == 1 ? 'checked' : '';
+		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		echo "<td class='X'><input type='checkbox' {$checkedX} value='1'></td>";
 		echo "<td class='painting'><a val='{$row["IsPainting"]}'>";
 			switch ($row["IsPainting"]) {

@@ -242,13 +242,15 @@ case "ispainting":
 // Помечаем X в главной таблице
 case "Xlabel":
 
+	session_start();
 	$id = $_GET["od_id"];
 	$val = $_GET["val"];
-
-	// Обновляем статус лакировки
-	$query = "UPDATE OrdersData SET X = {$val} WHERE OD_ID = {$id}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
+	if ($val == 1) {
+		$_SESSION["X_".$id] = $val;
+	}
+	else {
+		unset($_SESSION["X_".$id]);
+	}
 	break;
 
 }
