@@ -107,7 +107,7 @@
 								GROUP BY BS.WD_ID
 							) SBS ON SBS.WD_ID = WD.WD_ID
 							LEFT JOIN (
-								SELECT STS.WD_ID, SUM(STS.Tariff + STS.Premium) Tariff FROM
+								SELECT STS.WD_ID, SUM(STS.Tariff + STS.Premium*0) Tariff FROM
 								(
 								SELECT TS.WD_ID
 									,SUM(ROUND(TS.Hours * TS.Tariff) + IFNULL(TS.NightBonus, 0) + IFNULL(TS.DayBonus, 0)) Tariff

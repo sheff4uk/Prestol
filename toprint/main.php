@@ -86,7 +86,7 @@
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  LEFT JOIN (SELECT ODS.ODD_ID
-			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(SUBSTR(WD.Name, 1, 30), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR ' | ') Steps
+			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(IFNULL(WD.ShortName, WD.Name), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR ' | ') Steps
 						FROM OrdersDataSteps ODS
 						LEFT JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
