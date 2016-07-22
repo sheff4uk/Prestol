@@ -71,6 +71,7 @@
 			var id = $(this).attr('id');
 			var location = $(this).attr('location');
 			var sign = $(this).attr('sign');
+			var worker = $(this).attr('worker');
 
 			// Очистка диалога
 			$('#addpay input, #addpay select, #addpay textarea').val('');
@@ -79,21 +80,21 @@
 			$('#addpay input[name="sign"]').val(sign);
 			$('#addpay input[name="location"]').val(location);
 
+			if( typeof worker !== "undefined" ) {
+				$('#addpay select[name="Worker"]').val(worker);
+			}
+
 			if( typeof id !== "undefined" ) // Редактирование платежа
 			{
-				var worker = $(this).parents('tr').find('.worker').attr('val');
 				var pay = $(this).parents('tr').find('.pay').attr('val');
 				var comment = $(this).parents('tr').find('.comment').html();
-				$('#addpay select[name="Worker"]').val(worker);
 				$('#addpay input[name="Pay"]').val(pay);
 				$('#addpay textarea[name="Comment"]').val(comment);
 				$('#addpay input[name="id_date"]').val(id);
 			}
 			if( typeof $(this).attr('comment') !== "undefined" ) { // Добавление премии из табеля
-				var worker = $(this).parents('tr').find('.worker').attr('val');
 				var pay = $(this).attr('pay');
 				var comment = $(this).attr('comment');
-				$('#addpay select[name="Worker"]').val(worker);
 				$('#addpay input[name="Pay"]').val(pay);
 				$('#addpay textarea[name="Comment"]').val(comment);
 			}

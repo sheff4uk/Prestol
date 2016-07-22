@@ -10,8 +10,8 @@
 	include "header.php";
 ?>
 	<p>
-		<button class='edit_pay' sign='' location='<?=$location?>'>Начислить</button>
-		<button class='edit_pay' sign='-' location='<?=$location?>'>Выдать</button>
+		<button class='edit_pay' sign='' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> location='<?=$location?>'>Начислить</button>
+		<button class='edit_pay' sign='-' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> location='<?=$location?>'>Выдать</button>
 	</p>
 
 	<? include "form_addpay.php"; ?>
@@ -119,7 +119,7 @@
 				echo "<td class='worker' val='{$row["WD_ID"]}'>{$row["Worker"]}</td>";
 				echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
 				echo "<td class='comment'>{$row["Comment"]}</td>";
-				echo "<td><a href='#' id='{$row["DateKey"]}' sign='{$row["Sign"]}' class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a></td>";
+				echo "<td><a href='#' id='{$row["DateKey"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a></td>";
 				echo "</tr>";
 			}
 	?>
