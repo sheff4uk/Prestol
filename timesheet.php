@@ -18,6 +18,8 @@
 		$month = date('n');
 	}
 
+	$MONTHS = array(1=>'Январь', 2=>'Февраль', 3=>'Март', 4=>'Апрель', 5=>'Май', 6=>'Июнь', 7=>'Июль', 8=>'Август', 9=>'Сентябрь', 10=>'Октябрь', 11=>'Ноябрь', 12=>'Декабрь');
+
 	// Обновление/добавление часов в табель
 	if( isset($_POST["date"]) )
 	{
@@ -124,18 +126,18 @@
 			});
 		</script>
 		<select name="month" id="month">
-			<option value="1">Январь</option>
-			<option value="2">Февраль</option>
-			<option value="3">Март</option>
-			<option value="4">Апрель</option>
-			<option value="5">Май</option>
-			<option value="6">Июнь</option>
-			<option value="7">Июль</option>
-			<option value="8">Август</option>
-			<option value="9">Сентябрь</option>
-			<option value="10">Октябрь</option>
-			<option value="11">Ноябрь</option>
-			<option value="12">Декабрь</option>
+			<option value="1"><?=$MONTHS[1]?></option>
+			<option value="2"><?=$MONTHS[2]?></option>
+			<option value="3"><?=$MONTHS[3]?></option>
+			<option value="4"><?=$MONTHS[4]?></option>
+			<option value="5"><?=$MONTHS[5]?></option>
+			<option value="6"><?=$MONTHS[6]?></option>
+			<option value="7"><?=$MONTHS[7]?></option>
+			<option value="8"><?=$MONTHS[8]?></option>
+			<option value="9"><?=$MONTHS[9]?></option>
+			<option value="10"><?=$MONTHS[10]?></option>
+			<option value="11"><?=$MONTHS[11]?></option>
+			<option value="12"><?=$MONTHS[12]?></option>
 		</select>
 
 		<div class='spase'></div>
@@ -184,12 +186,6 @@
 			<button id="timesheetbutton">Сохранить</button>
 		<?
 			// Получаем список работников
-//			$query = "SELECT WD.WD_ID, WD.Name, IF(COUNT(HT.WD_ID) = 1, HT.Tariff, '') deftariff
-//						,IFNULL(GROUP_CONCAT(CONCAT('<a class=\"btn\" title=\"', HT.Comment, '\">', HT.Tariff, '</a>') ORDER BY HT.Tariff SEPARATOR ' '), '&nbsp;') tariffs
-//						FROM WorkersData WD
-//						LEFT JOIN HourlyTariff HT ON HT.WD_ID = WD.WD_ID
-//						WHERE WD.Hourly = 1
-//						GROUP BY WD.WD_ID";
 			$query = "SELECT WD.WD_ID, WD.Name
 						,IFNULL(WD.HourlyTariff, 0) deftariff
 						,IFNULL(WD.NightBonus, 0) defbonus
@@ -253,7 +249,7 @@
 				echo "<td class='txtright'>{$row["PremiumPercent"]}%</td>";					// Процент
 				echo "<td><input type='number' name='MP{$row["WD_ID"]}' value='{$row["ManPercent"]}' min='0' max='100'></td>";// Свой процент
 				echo "<td><input type='checkbox' name='DNH{$row["WD_ID"]}' {$row["DNHcheck"]} value='1'></td>";	// Не учитывать норматив
-				echo "<td class='txtright'>{$premium}</td>";								// Премия
+				echo "<td><button sign='' class='button edit_pay txtright' location='{$location}' title='Начислить премию' style='width: 100%;' comment='Премия за {$MONTHS[$month]} {$year} {$percent}%' pay='{$premium}'>{$premium}</button></td>";						// Премия
 				echo "<td class='txtright'>{$total}</td>";								// Премия + Сумма
 				echo "</tr>";
 			}
@@ -261,6 +257,8 @@
 		</form>
 	</tbody>
 </table>
+
+	<? include "form_addpay.php"; // форма начисления платежа ?>
 
 	<!-- Форма ворклог -->
 	<div id='dayworklog' class="addproduct" style="display:none">
