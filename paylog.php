@@ -39,7 +39,7 @@
 								SELECT ODS.WD_ID, SUM(ODD.Amount * ODS.Tariff) Tariff
 								FROM OrdersDataSteps ODS
 								JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
-								WHERE ODS.IsReady = 1
+								WHERE ODS.IsReady = 1 AND ODS.Visible = 1
 								GROUP BY ODS.WD_ID
 							) SODS ON SODS.WD_ID = WD.WD_ID
 							LEFT JOIN (

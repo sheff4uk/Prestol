@@ -125,6 +125,7 @@
 				  JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 										AND IFNULL(ODS.WD_ID, 0) = {$_GET["worker"]}
 										AND ODS.IsReady IN ({$_GET["isready"]})
+										AND ODS.Visible = 1
 				  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 				  JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = {$_GET["type"]}
 				  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
@@ -152,6 +153,7 @@
 													AND IFNULL(ODS.WD_ID, 0) = {$_GET["worker"]}
 													AND ODS.IsReady IN ({$_GET["isready"]})
 													AND ODS.ST_ID = {$row["ST_ID"]}
+													AND ODS.Visible = 1
 							JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = {$_GET["type"]}
 							WHERE ODD.OD_ID = {$row["OD_ID"]}
 							ORDER BY PM.PT_ID, ODD.ODD_ID";

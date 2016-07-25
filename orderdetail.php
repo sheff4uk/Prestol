@@ -74,8 +74,8 @@
 						$odd_id = mysqli_insert_id( $mysqli );
 
 						// Копируем этапы
-						$query = "INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, WD_ID, IsReady, Tariff)
-									SELECT {$odd_id}, ST_ID, WD_ID, IsReady, Tariff
+						$query = "INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, WD_ID, IsReady, Tariff, Visible)
+									SELECT {$odd_id}, ST_ID, WD_ID, IsReady, Tariff, Visible
 									FROM OrdersDataSteps
 									WHERE ODD_ID = {$prodid}";
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -151,7 +151,7 @@
         $query = "SELECT IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress, OD.Color, IFNULL(OD.IsPainting, 0) IsPainting
                   FROM OrdersDataDetail ODD
 				  LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
-                  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+                  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
                   WHERE ODD.ODD_ID = {$odd_id}";
         $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
         $inprogress = mysqli_result($res,0,'inprogress');
@@ -313,13 +313,13 @@
 					,ODD.Color
 					,ODD.Comment
 					,ODD.Comment
-                    ,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
-                    ,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
-                    ,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
-                    ,IF(ODD.is_check = 1, '', 'attention') is_check
+					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
+					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
+					,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
+					,IF(ODD.is_check = 1, '', 'attention') is_check
 					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 			  FROM OrdersDataDetail ODD
-			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID";
@@ -353,7 +353,7 @@
 				  FROM OrdersDataSteps ODS
 				  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 				  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-				  WHERE ODD_ID = {$row["ODD_ID"]}
+				  WHERE ODD_ID = {$row["ODD_ID"]} AND ODS.Visible = 1
 				  ORDER BY ST.Sort";
 		$sub_res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$steps = "<a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap' location='{$location}'>";

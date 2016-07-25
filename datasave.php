@@ -11,7 +11,7 @@ if( $_GET["oddid"] )
 					,IFNULL(OD.IsPainting, 0) IsPainting
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
-			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 			  WHERE ODD.ODD_ID = {$_GET["oddid"]}";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$amount = mysqli_result($res,0,'Amount');
@@ -74,8 +74,8 @@ if( $_GET["oddid"] )
 		$odd_id = mysqli_insert_id( $mysqli );
 
 		// Копирование производственных этапов
-		$query = "INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, WD_ID, IsReady, Tariff)
-				  SELECT {$odd_id}, ST_ID, WD_ID, IsReady, Tariff FROM OrdersDataSteps
+		$query = "INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, WD_ID, IsReady, Tariff, Visible)
+				  SELECT {$odd_id}, ST_ID, WD_ID, IsReady, Tariff, Visible FROM OrdersDataSteps
 				  WHERE ODD_ID = {$_GET["oddid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -105,8 +105,8 @@ if( $_GET["oddid"] )
 // Обновление в базе производственных этапов
 if( isset($_POST["ODD_ID"]) )
 {
-	// Обнуление статуса готовности
-	$query = "UPDATE OrdersDataSteps SET IsReady = 0 WHERE ODD_ID = {$_POST["ODD_ID"]}";
+	// Обнуление статуса готовности и видимости
+	$query = "UPDATE OrdersDataSteps SET IsReady = 0, Visible = 0 WHERE ODD_ID = {$_POST["ODD_ID"]}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	foreach( $_POST as $k => $v) 
@@ -135,6 +135,14 @@ if( isset($_POST["ODD_ID"]) )
 		{
 			$sid = (int)str_replace( "IsReady", "", $k );
 			$query = "UPDATE OrdersDataSteps SET IsReady = $v WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+
+		// Обновление статуса видимости этапа
+		if( strpos($k,"Visible") === 0 )
+		{
+			$sid = (int)str_replace( "Visible", "", $k );
+			$query = "UPDATE OrdersDataSteps SET Visible = $v WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 	}

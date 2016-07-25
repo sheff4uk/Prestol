@@ -45,12 +45,12 @@
 			});
 
 			// Плавная прокрутка к якорю
-			var loc = window.location.hash.replace("#","");
-			if (loc == "") {loc = "main"}
-
-			var destination = $("#"+loc).offset().top - 200;
-			$("body:not(:animated)").animate({ scrollTop: destination }, 500);
-			$("html").animate({ scrollTop: destination }, 500);
+//			var loc = window.location.hash.replace("#","");
+//			if (loc == "") {loc = "main"}
+//
+//			var destination = $("#"+loc).offset().top - 200;
+//			$("body:not(:animated)").animate({ scrollTop: destination }, 500);
+//			$("html").animate({ scrollTop: destination }, 500);
 		});
 
 		// Диалог подтверждения действия
@@ -115,7 +115,7 @@
 					  ,"Заготовки" => "blankstock.php"
 					  ,"Табель" => "timesheet.php"
 					  ,"Платежи" => "paylog.php"
-					  ,"Печатные формы" => "toprint.php"
+//					  ,"Печатные формы" => "toprint.php"
 					  ,"Выход ({$_SESSION['name']})" => "exit.php");
 	}
 	echo "<ul class='navbar-nav'>";

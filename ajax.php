@@ -28,7 +28,7 @@ case "steps":
 	$product = "<img src=\'/img/product_{$pt}.png\'>x{$amount}&nbsp;{$model}&nbsp;{$size}&nbsp;{$form}";
 	
 	// Получение информации об этапах производства
-	$query = "SELECT ST.ST_ID, ST.Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady
+	$query = "SELECT ST.ST_ID, ST.Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible
 			  FROM OrdersDataSteps ODS
 			  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 			  WHERE ODS.ODD_ID = $odd_id
@@ -41,7 +41,8 @@ case "steps":
 	$text .= "<tr><th>Этап</th>";
 	$text .= "<th>Работник</th>";
 	$text .= "<th>Тариф</th>";
-	$text .= "<th>Готовность</th></tr>";
+	$text .= "<th>Готовность</th>";
+	$text .= "<th title=\'Видимые\'><i class=\'fa fa-eye\' aria-hidden=\'true\'></i></th></tr>";
 	$text .= "</thead><tbody>";
 
 	while( $row = mysqli_fetch_array($result) )
@@ -73,7 +74,8 @@ case "steps":
 		$text .= "<tr><td><b>{$row["Step"]}</b></td>";
 		$text .= "<td>{$selectworker}</td>";
 		$text .= "<td><input type=\'number\' min=\'0\' step=\'10\' name=\'Tariff{$row["ST_ID"]}\' class=\'tariff\' value=\'{$row["Tariff"]}\'></td>";
-		$text .= "<td><input type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}><label for=\'IsReady{$row["ST_ID"]}\'></label></td></tr>";
+		$text .= "<td><input type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}><label for=\'IsReady{$row["ST_ID"]}\'></label></td>";
+		$text .= "<td><input type=\'checkbox\' name=\'Visible{$row["ST_ID"]}\' value=\'1\' {$row["Visible"]}></td></tr>";
 	}
 	$text .= "</tbody></table>";
 	echo "window.top.window.$('#formsteps').html('{$text}');";
@@ -103,7 +105,7 @@ case "livesearch":
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID";
+			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1";
 	$query .= " WHERE ODD.OD_ID IS NULL";
 	$query .= ( $pt == 1 ) ? " AND PM.PT_ID = {$pt}" : "";
 	$query .= ($_GET["model"] and $_GET["model"] <> "undefined") ? " AND (ODD.PM_ID = {$_GET["model"]} OR ODD.PM_ID IS NULL)" : "";
@@ -157,7 +159,7 @@ case "livesearch":
 				  FROM OrdersDataSteps ODS
 				  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 				  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-				  WHERE ODS.ODD_ID = {$row["ODD_ID"]}
+				  WHERE ODS.ODD_ID = {$row["ODD_ID"]} AND ODS.Visible = 1
 				  ORDER BY ST.Sort";
 		$sub_res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$steps = "<a class='nowrap'>";

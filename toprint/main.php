@@ -76,7 +76,7 @@
 					,OD.Color
 					,OD.IsPainting
 					,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 1, IFNULL(ODD.Material, ''), ''), '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Textile
-					,GROUP_CONCAT(CONCAT(ODS_WD.Steps, '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Steps
+					,GROUP_CONCAT(CONCAT(IFNULL(ODS_WD.Steps, ''), '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Steps
 					,IFNULL(OD.Comment, '') Comment
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -85,14 +85,14 @@
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			  LEFT JOIN (SELECT ODS.ODD_ID
+			  LEFT JOIN (SELECT ODD.ODD_ID
 			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(IFNULL(WD.ShortName, WD.Name), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR ' | ') Steps
-						FROM OrdersDataSteps ODS
-						LEFT JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
+						FROM OrdersDataDetail ODD
+						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-						JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-						GROUP BY ODS.ODD_ID
+						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+						GROUP BY ODD.ODD_ID
 						ORDER BY PM.PT_ID DESC, ODD.ODD_ID) ODS_WD ON ODS_WD.ODD_ID = ODD.ODD_ID
 			  WHERE OD.OD_ID IN ({$id_list})
 			  GROUP BY OD.OD_ID

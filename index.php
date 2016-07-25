@@ -22,8 +22,8 @@
 		
 		// Перенаправление на экран деталей заказа
 		$id = mysqli_insert_id( $mysqli );
-		header( "Location: orderdetail.php?id=".$id );
-//		header( "Location: /#".$id );
+//		header( "Location: orderdetail.php?id=".$id );
+		exit ('<meta http-equiv="refresh" content="0; url=/orderdetail.php?id='.$id.'">');
 		die;
 	}
 
@@ -260,8 +260,8 @@
 			  LEFT JOIN (SELECT ODS.ODD_ID, GROUP_CONCAT(WD.Name) Name, BIT_AND(ODS.IsReady) IsReady
 						FROM OrdersDataSteps ODS
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+						WHERE ODS.Visible = 1
 						GROUP BY ODS.ODD_ID) ODS_WD ON ODS_WD.ODD_ID = ODD.ODD_ID
-
 			  WHERE TRUE";
 			  if( $archive ) {
 				  $query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
@@ -342,15 +342,15 @@
 		echo "<td><span>{$row["Color"]}</span></td>";
 		
 		// Получаем данные по этамам производства
-		$query = "SELECT ODS.ODD_ID
-							,GROUP_CONCAT(CONCAT('<input type=\'checkbox\' class=\'checkstatus\' ', IF(ODS.IsReady, 'checked', ''), ' ', IF(ODS.WD_ID IS NULL, 'disabled', ''), ' id=\'', ODS.ODD_ID, ODS.ST_ID, '\'><label class=\'step\' style=\'width:', ST.Size * 30, 'px;\' for=\'', ODS.ODD_ID, ODS.ST_ID, '\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</label>') ORDER BY ST.Sort SEPARATOR '') Steps
-							,IF(ODS.WD_ID IS NULL, 'disabled', '') disabled
-					FROM OrdersDataSteps ODS
-					JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID AND ODD.OD_ID = {$row["OD_ID"]}
+		$query = "SELECT ODD.ODD_ID
+						,GROUP_CONCAT(CONCAT('<input type=\'checkbox\' class=\'checkstatus\' ', IF(ODS.IsReady, 'checked', ''), ' ', IF(ODS.WD_ID IS NULL, 'disabled', ''), ' id=\'', ODS.ODD_ID, ODS.ST_ID, '\'><label class=\'step\' style=\'width:', ST.Size * 30, 'px;\' for=\'', ODS.ODD_ID, ODS.ST_ID, '\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</label>') ORDER BY ST.Sort SEPARATOR '') Steps
+					FROM OrdersDataDetail ODD
+					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 					LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-					JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-					GROUP BY ODD_ID
+					LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+					WHERE ODD.OD_ID = {$row["OD_ID"]}
+					GROUP BY ODD.ODD_ID
 					ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID";
 		$sub_res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$steps = "";
@@ -411,7 +411,7 @@
                         ,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
 						,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 				  FROM OrdersDataDetail ODD
-				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 				  WHERE ODD.OD_ID = {$row["OD_ID"]}
 				  GROUP BY ODD.ODD_ID";
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

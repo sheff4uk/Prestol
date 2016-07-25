@@ -504,4 +504,5 @@ td.tscell > i {
 	height: calc(100% - 200px);
 	position: absolute;
 	overflow-y: scroll;
+	background: #fff;
 }
