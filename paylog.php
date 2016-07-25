@@ -28,7 +28,7 @@
 			<tbody>
 			<?
 				// Баланс работников
-				$query = "SELECT WD.WD_ID, WD.Name, (IFNULL(SPL.Pay, 0) + IFNULL(SODS.Tariff, 0) + IFNULL(SBS.Tariff, 0) + IFNULL(SSTS.Tariff, 0)) Sum
+				$query = "SELECT WD.WD_ID, WD.Name, (IFNULL(SPL.Pay, 0) + IFNULL(SODS.Tariff, 0) + IFNULL(SBS.Tariff, 0) + IFNULL(STS.Tariff, 0)) Sum
 							FROM WorkersData WD
 							LEFT JOIN (
 								SELECT PL.WD_ID, SUM(PL.Pay) Pay
@@ -48,20 +48,10 @@
 								GROUP BY BS.WD_ID
 							) SBS ON SBS.WD_ID = WD.WD_ID
 							LEFT JOIN (
-								SELECT STS.WD_ID, SUM(STS.Tariff + STS.Premium*0) Tariff FROM
-								(
-								SELECT TS.WD_ID
-									,SUM(ROUND(TS.Hours * TS.Tariff) + IFNULL(TS.NightBonus, 0) + IFNULL(TS.DayBonus, 0)) Tariff
-									,IF(SUM(TS.Hours) >= MNH.Hours OR MPP.DisableNormHours = 1, ROUND(SUM(TS.Hours * TS.Tariff + IFNULL(TS.NightBonus, 0) + IFNULL(TS.DayBonus, 0)) * IF(MPP.PremiumPercent IS NULL, WD.PremiumPercent, MPP.PremiumPercent) / 100), 0) Premium
+								SELECT TS.WD_ID, SUM(ROUND(TS.Hours * TS.Tariff) + IFNULL(TS.NightBonus, 0) + IFNULL(TS.DayBonus, 0)) Tariff
 								FROM TimeSheet TS
-								LEFT JOIN MonthlyNormHours MNH ON MNH.Year = YEAR(TS.Date) AND MNH.Month = MONTH(TS.Date)
-								LEFT JOIN MonthlyPremiumPercent MPP ON MPP.Year = YEAR(TS.Date) AND MPP.Month = MONTH(TS.Date) AND MPP.WD_ID = TS.WD_ID
-								LEFT JOIN WorkersData WD ON WD.WD_ID = TS.WD_ID
-								GROUP BY TS.WD_ID, YEAR(TS.Date), MONTH(TS.Date)
-								) STS
-								GROUP BY STS.WD_ID
-
-							) SSTS ON SSTS.WD_ID = WD.WD_ID
+								GROUP BY TS.WD_ID
+							) STS ON STS.WD_ID = WD.WD_ID
 							WHERE WD.IsActive = 1";
 				if( isset($_GET["worker"]) ) {
 					$query .= " AND WD.WD_ID = {$_GET["worker"]}";

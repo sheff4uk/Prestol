@@ -11,7 +11,7 @@ case "steps":
 	// Получение информации об изделии
 	$query = "SELECT IFNULL(PM.PT_ID, 2) PT_ID
 					,PM.Model
-					,CONCAT(ODD.Length, 'х', ODD.Width) Size
+					,IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), '') Size
 					,CONCAT(PF.Form, ' ', PME.Mechanism) Form
 					,ODD.Amount
 			  FROM OrdersDataDetail ODD
@@ -25,7 +25,7 @@ case "steps":
 	$size = mysqli_result($res,0,'Size');
 	$form = mysqli_result($res,0,'Form');
 	$amount = mysqli_result($res,0,'Amount');
-	$product = "<img src=\'/img/product_{$pt}.png\'>x{$amount}&nbsp;{$model}&nbsp;{$form}&nbsp;{$size}";
+	$product = "<img src=\'/img/product_{$pt}.png\'>x{$amount}&nbsp;{$model}&nbsp;{$size}&nbsp;{$form}";
 	
 	// Получение информации об этапах производства
 	$query = "SELECT ST.ST_ID, ST.Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady

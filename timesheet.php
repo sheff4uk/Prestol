@@ -256,6 +256,30 @@
 		?>
 		</form>
 	</tbody>
+	<thead>
+		<tr>
+			<th>Работник</th>
+			<?
+				$i = 1;
+				while ($i <= $days) {
+					$date = $year.'-'.$month.'-'.$i;
+					if (date('N', strtotime($date)) >= 6) { // Выделяем цветом выходные дни
+						echo "<th style='background: chocolate;'>".$i++."</th>";
+					}
+					else {
+						echo "<th>".$i++."</th>";
+					}
+				}
+			?>
+			<th>Часы</th>
+			<th>Сумма</th>
+			<th>%</th>
+			<th>Свой %</th>
+			<th title="Не учитывать месячную норму часов">НЧ</th>
+			<th>Премия</th>
+			<th>Итого</th>
+		</tr>
+	</thead>
 </table>
 
 	<? include "form_addpay.php"; // форма начисления платежа ?>
