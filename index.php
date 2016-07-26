@@ -16,6 +16,11 @@
 		$OrderNumber = mysqli_real_escape_string( $mysqli, $_POST["OrderNumber"] );
 		$Color = mysqli_real_escape_string( $mysqli, $_POST["Color"] );
 		$Comment = mysqli_real_escape_string( $mysqli, $_POST["Comment"] );
+		// Удаляем лишние пробелы
+		$ClientName = trim($ClientName);
+		$OrderNumber = trim($OrderNumber);
+		$Color = trim($Color);
+		$Comment = trim($Comment);
 		$query = "INSERT INTO OrdersData(CLientName, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment)
 				  VALUES ('{$ClientName}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}')";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

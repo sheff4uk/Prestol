@@ -26,6 +26,11 @@
 		$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
 		$IsPainting = $_POST["IsPainting"];
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
+		// Удаляем лишние пробелы
+		$ClientName = trim($ClientName);
+		$OrderNumber = trim($OrderNumber);
+		$Color = trim($Color);
+		$Comment = trim($Comment);
 		$query = "UPDATE OrdersData
 				  SET CLientName = '{$ClientName}'
 				     ,StartDate = $StartDate
@@ -99,6 +104,10 @@
 			$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 			$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
 			$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
+			// Удаляем лишние пробелы
+			$Material = trim($Material);
+			$Color = trim($Color);
+			$Comment = trim($Comment);
 			$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
 			$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
 
