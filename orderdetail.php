@@ -185,7 +185,7 @@
 		$title = 'Свободные изделия';
 	}
 	include "header.php";
-	include "autocomplete.php"; //JavaScript
+//	include "autocomplete.php"; //JavaScript
 ?>
 
 	<? include "forms.php"; ?>

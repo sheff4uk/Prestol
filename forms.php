@@ -7,7 +7,7 @@
 		$ModelForm[$row["PM_ID"]][$row["PF_ID"]] = [$row["Form"]];
 	}
 
-	include "autocomplete.php"; //JavaScript
+//	include "autocomplete.php"; //JavaScript
 ?>
 	<script>
 		// Передаем в JavaScript массив форм столешниц

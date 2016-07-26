@@ -53,7 +53,7 @@
 
 	$title = 'Престол главная';
 	include "header.php";
-	include "autocomplete.php"; //JavaScript
+//	include "autocomplete.php"; //JavaScript
 ?>
 	
 	<div id="overlay"></div>

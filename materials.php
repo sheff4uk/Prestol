@@ -29,7 +29,7 @@
 
 	$title = 'Ткань/пластик';
 	include "header.php";
-	include "autocomplete.php"; //JavaScript
+//	include "autocomplete.php"; //JavaScript
 ?>
 	
 	<form method='get' style='display: flex;'>

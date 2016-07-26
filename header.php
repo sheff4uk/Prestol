@@ -127,3 +127,6 @@
 ?>
 	</nav>
 	<!-- END NAVBAR -->
+<?
+	include "autocomplete.php"; //JavaScript
+?>
