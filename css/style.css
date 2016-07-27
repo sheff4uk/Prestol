@@ -171,6 +171,10 @@ input[type="checkbox"].nightshift + label:before {
 	font-weight: bold;
 }
 
+.bold {
+	font-weight: bold;
+}
+
 #add_btn {
 	background: url("../img/bt_speed_dial_1x.png") no-repeat scroll center center transparent;
 	bottom: 100px;

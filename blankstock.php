@@ -76,14 +76,36 @@
 					<label>Заготовка:</label>
 					<select required name='Blank'>
 						<option value="">-=Выберите заготовку=-</option>
-						<?
-						$query = "SELECT BL.BL_ID, BL.Name FROM BlankList BL ORDER BY BL.Name";
-						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						while( $row = mysqli_fetch_array($res) )
-						{
-							echo "<option value='{$row["BL_ID"]}'>{$row["Name"]}</option>";
-						}
-						?>
+						<optgroup label="Стулья">
+							<?
+							$query = "SELECT BL.BL_ID, BL.Name, IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
+									  FROM BlankList BL
+									  LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
+									  WHERE BL.PT_ID = 1
+									  GROUP BY BL.BL_ID
+									  ORDER BY BL.Name";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["BL_ID"]}' class='{$row["Bold"]}'>{$row["Name"]}</option>";
+							}
+							?>
+						</optgroup>
+						<optgroup label="Столы">
+							<?
+							$query = "SELECT BL.BL_ID, BL.Name, IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
+									  FROM BlankList BL
+									  LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
+									  WHERE BL.PT_ID = 2
+									  GROUP BY BL.BL_ID
+									  ORDER BY BL.Name";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["BL_ID"]}' class='{$row["Bold"]}'>{$row["Name"]}</option>";
+							}
+							?>
+						</optgroup>
 					</select>
 				</div>
 				<div>
@@ -113,13 +135,18 @@
 			<tr>
 				<th>Заготовка</th>
 				<th>Кол-во</th>
-<!--				<th>Резерв</th>-->
+				<th>Кол-во до покраски</th>
 			</tr>
 			</thead>
 			<tbody>
 			<?
 				// Количество остатков заготовок
-				$query = "SELECT BL.Name, (IFNULL(SBS.Amount, 0) - IFNULL(SPB.Amount, 0)) Amount
+				$query = "SELECT BL.PT_ID
+								,BL.Name
+								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.Amount, 0) - IFNULL(SBLL.Amount, 0)) Amount
+								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.AmountPainting, 0) - IFNULL(SBLL.Amount, 0)) AmountPainting
+								,IFNULL(SODD.AmountPainting, 0) AmountPainting_
+								,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
 							FROM BlankList BL
 							LEFT JOIN (
 								SELECT BS.BL_ID, SUM(BS.Amount) Amount
@@ -127,23 +154,36 @@
 								GROUP BY BS.BL_ID
 							) SBS ON SBS.BL_ID = BL.BL_ID
 							LEFT JOIN (
-								SELECT PB.BL_ID, SUM(ODD.Amount * PB.Amount) Amount
+								SELECT PB.BL_ID
+										,SUM(ODD.Amount * PB.Amount) Amount
+										,SUM(IF(OD.IsPainting = 1 OR (OD.OD_ID IS NULL AND IFNULL(ODD.Color, '') = ''), 0, ODD.Amount) * PB.Amount) AmountPainting
 								FROM OrdersDataDetail ODD
+								LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
 								GROUP BY PB.BL_ID
-							) SPB ON SPB.BL_ID = BL.BL_ID
-							ORDER BY BL.PT_ID DESC, BL.Name ASC";
+							) SODD ON SODD.BL_ID = BL.BL_ID
+							LEFT JOIN (
+								SELECT BLL.BLL_ID, SUM(BS.Amount * BLL.Amount) Amount
+								FROM BlankLink BLL
+								LEFT JOIN BlankStock BS ON BS.BL_ID = BLL.BL_ID
+								GROUP BY BLL.BLL_ID
+							) SBLL ON SBLL.BLL_ID = BL.BL_ID
+							LEFT JOIN (
+								SELECT BL.BL_ID, BLL.BLL_ID
+								FROM BlankList BL
+								LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
+								GROUP BY BL.BL_ID
+							) BLL ON BLL.BL_ID = BL.BL_ID
+							ORDER BY BL.PT_ID ASC, BL.Name ASC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{
-					if( $row["Amount"] < 0 )
-						$color = ' bg-red';
-					else
-						$color = '';
+					$color = ( $row["Amount"] < 0 ) ? ' bg-red' : '';
+					$colorP = ( $row["AmountPainting"] < 0 ) ? ' bg-red' : '';
 					echo "<tr>";
-					echo "<td>{$row["Name"]}</td>";
+					echo "<td class='{$row["Bold"]}'><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'> {$row["Name"]}</td>";
 					echo "<td class='txtright'><span class='{$color}'>{$row["Amount"]}</span></td>";
-//					echo "<td class='txtright'><span class='{$color}'>{$row["Amount"]}</span></td>";
+					echo "<td class='txtright'><span class='{$colorP}'>{$row["AmountPainting"]}</span></td>";
 					echo "</tr>";
 				}
 			?>
@@ -169,11 +209,27 @@
 			<tbody>
 
 	<?
-			$query = "SELECT BS.Date DateKey, DATE_FORMAT(DATE(BS.Date), '%d.%m.%Y') Date, TIME(BS.Date) Time, WD.Name Worker, BL.Name Blank, BS.Amount, BS.Tariff, BS.Comment, WD.WD_ID, BL.BL_ID
+			$query = "SELECT BS.Date DateKey
+							,DATE_FORMAT(DATE(BS.Date), '%d.%m.%Y') Date
+							,TIME(BS.Date) Time
+							,WD.Name Worker
+							,BL.Name Blank
+							,BS.Amount
+							,BS.Tariff
+							,BS.Comment
+							,WD.WD_ID
+							,BL.BL_ID
+							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
 						FROM BlankStock BS
 						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
 						LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
-						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff}
+						LEFT JOIN (
+							SELECT BL.BL_ID, BLL.BLL_ID
+							FROM BlankList BL
+							LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
+							GROUP BY BL.BL_ID
+						) BLL ON BLL.BL_ID = BL.BL_ID
+						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0
 						ORDER BY BS.Date DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
@@ -182,7 +238,7 @@
 				echo "<td>{$row["Date"]}</td>";
 				echo "<td>{$row["Time"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'>{$row["Worker"]}</td>";
-				echo "<td class='blank' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>";
+				echo "<td class='blank {$row["Bold"]}' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>";
 				echo "<td class='amount txtright'>{$row["Amount"]}</td>";
 				echo "<td class='tariff txtright'>{$row["Tariff"]}</td>";
 				echo "<td class='comment'>{$row["Comment"]}</td>";
