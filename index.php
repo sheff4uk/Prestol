@@ -98,14 +98,16 @@
 					<select required name='Shop' style="width: 150px;">
 						<option value="">-=Выберите салон=-</option>
 						<?
-						$query = "SELECT Shops.SH_ID, CONCAT(Cities.City, '/', Shops.Shop) AS Shop
+						$query = "SELECT Shops.SH_ID
+										,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
+										,Cities.Color
 									FROM Shops
 									JOIN Cities ON Cities.CT_ID = Shops.CT_ID
 									ORDER BY Cities.City, Shops.Shop";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{
-							echo "<option value='{$row["SH_ID"]}'>{$row["Shop"]}</option>";
+							echo "<option value='{$row["SH_ID"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
 						}
 						?>
 					</select>
@@ -231,6 +233,7 @@
 					,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
 					,CONCAT(CT.City, '/', SH.Shop) AS Shop
+					,CT.Color CTColor
 					,OD.OrderNumber
 					,OD.Comment
 					,COUNT(ODD.ODD_ID) Child
@@ -340,7 +343,7 @@
 		else {
 			echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
 		}
-		echo "<td><span>{$row["Shop"]}</span></td>";
+		echo "<td style='background: {$row["CTColor"]};'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
 		echo "<td><span>{$row["OrderNumber"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 		echo "<td><span class='nowrap material'>{$row["Plastic"]}</span></td>";

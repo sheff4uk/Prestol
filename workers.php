@@ -86,6 +86,7 @@
 						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 						,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 						,CONCAT(CT.City, '/', SH.Shop) AS Shop
+						,CT.Color CTColor
 						,OD.OrderNumber
 						,OD.Comment
 						,ODS.ST_ID
@@ -216,7 +217,7 @@
 				echo "<td>{$row["ClientName"]}</td>";
 				echo "<td>{$row["StartDate"]}</td>";
 				echo "<td>{$row["EndDate"]}</td>";
-				echo "<td>{$row["Shop"]}</td>";
+				echo "<td style='background: {$row["CTColor"]};'>{$row["Shop"]}</td>";
 				echo "<td>{$row["OrderNumber"]}</td>";
 				echo "<td>{$row["Comment"]}</td>";
 				echo "</tr>";

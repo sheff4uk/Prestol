@@ -220,15 +220,18 @@
 		</tr>
 		</thead>
 <?
-	$query = "SELECT ClientName
-					,DATE_FORMAT(StartDate, '%d.%m.%Y') StartDate
-					,DATE_FORMAT(EndDate, '%d.%m.%Y') EndDate
-					,IFNULL(SH_ID, 0) SH_ID
-					,OrderNumber
-					,Color
-					,IsPainting
-					,Comment
-			  FROM OrdersData
+	$query = "SELECT OD.ClientName
+					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
+					,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
+					,IFNULL(OD.SH_ID, 0) SH_ID
+					,OD.OrderNumber
+					,OD.Color
+					,OD.IsPainting
+					,OD.Comment
+					,CT.Color CTColor
+			  FROM OrdersData OD
+			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 			  WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$ClientName = mysqli_result($res,0,'ClientName');
@@ -239,6 +242,7 @@
 	$Color = mysqli_result($res,0,'Color');
 	$IsPainting = mysqli_result($res,0,'IsPainting');
 	$Comment = mysqli_result($res,0,'Comment');
+	$CTColor = mysqli_result($res,0,'CTColor');
 ?>
 		<form method='post'>
 		<tbody>
@@ -246,18 +250,21 @@
 			<td><input type='text' name='ClientName' size='10' value='<?=$ClientName?>'></td>
 			<td><input required type='text' name='StartDate' size='8' class='date' value='<?=$StartDate?>'></td>
 			<td><input type='text' name='EndDate' size='8' class='date' value='<?=$EndDate?>'></td>
-			<td>
+			<td style='background: <?=$CTColor?>;'>
 				<select name='Shop' style="width: 150px;">
 					<option value="">-=Выберите салон=-</option>
 					<?
-					$query = "SELECT Shops.SH_ID, CONCAT(Cities.City, '/', Shops.Shop) AS Shop, IF(Shops.SH_ID = {$Shop}, 'selected', '') AS selected
+					$query = "SELECT Shops.SH_ID
+									,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
+									,IF(Shops.SH_ID = {$Shop}, 'selected', '') AS selected
+									,Cities.Color CTColor
 								FROM Shops
 								JOIN Cities ON Cities.CT_ID = Shops.CT_ID
 								ORDER BY Cities.City, Shops.Shop";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) )
 					{
-						echo "<option value='{$row["SH_ID"]}' {$row["selected"]}>{$row["Shop"]}</option>";
+						echo "<option value='{$row["SH_ID"]}' {$row["selected"]} style='background: {$row["CTColor"]};'>{$row["Shop"]}</option>";
 					}
 					?>
 				</select>
