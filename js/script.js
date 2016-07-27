@@ -300,7 +300,7 @@ $(document).ready(function(){
 		}
 		else {
 			$('#addtable input[name="Color"]').parent('div').hide('fast');
-			$('#addtable select[name="Model"]').attr('required', 'true');
+			//$('#addtable select[name="Model"]').attr('required', 'true');
 		}
 		// Очистка инпутов дат заказа пластика
 		$('#addtable .order_material').hide('fast');
