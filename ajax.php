@@ -223,21 +223,22 @@ case "ispainting":
 
 	switch ($val) {
 		case 1:
+			$background = "background: #fff;";
 			$status = "Не в работе";
-			$pic = "<i class=\"fa fa-star-o fa-lg\" title=\"Не в работе\"></i>";
 			break;
 		case 2:
-			$pic = "<i class=\"fa fa-star-half-o fa-lg\" title=\"В работе\"></i>";
+			$background = "background: #bd362f;";
 			$status = "В работе";
 			break;
 		case 3:
-			$pic = "<i class=\"fa fa-star fa-lg\" title=\"Готово\"></i>";
+			$background = "background: #3bec00;";
 			$status = "Готово";
 			break;
 	}
 
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting a').html('{$pic}');";
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting a').attr('val', '{$val}');";
+	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('style', '{$background}');";
+	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('title', '{$status}');";
+	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('val', '{$val}');";
 	echo "noty({timeout: 3000, text: 'Статус лакировки изменен на \"{$status}\"', type: 'success'});";
 	break;
 

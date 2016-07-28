@@ -370,19 +370,19 @@
 		echo "<td><span class='nowrap'>{$steps}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		echo "<td class='X'><input type='checkbox' {$checkedX} value='1'></td>";
-		echo "<td class='painting'><a val='{$row["IsPainting"]}'>";
+		echo "<td class='painting' val='{$row["IsPainting"]}'";
 			switch ($row["IsPainting"]) {
 				case 1:
-					echo "<i class='fa fa-star-o fa-lg' title='Не в работе'></i>";
+					echo " style='background: #fff;' title='Не в работе'";
 					break;
 				case 2:
-					echo "<i class='fa fa-star-half-o fa-lg' title='В работе'></i>";
+					echo " style='background: #bd362f;' title='В работе'";
 					break;
 				case 3:
-					echo "<i class='fa fa-star fa-lg' title='Готово'></i>";
+					echo " style='background: #3bec00;' title='Готово'";
 					break;
 			}
-		echo "</a></td>";
+		echo "></td>";
 		echo "<td><span class='nowrap material'>{$row["Textile"]}</span></td>";
 		echo "<td><span>{$row["Comment"]}</span></td>";
 		echo "<td><a href='./orderdetail.php?id={$row["OD_ID"]}' class='button' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
@@ -487,7 +487,7 @@
 			$('#print_title').change( function() { changelink(); });
 		});
 
-		$('.painting a').click(function() {
+		$('.painting').click(function() {
 			var id = $(this).parents('tr').attr('id');
 			id = id.replace('ord', '');
 			var val = $(this).attr('val');
