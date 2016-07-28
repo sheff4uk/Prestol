@@ -134,8 +134,9 @@
 			<thead>
 			<tr>
 				<th>Заготовка</th>
-				<th>Cобрано</th>
-				<th>Свободно</th>
+				<th>Свободные</th>
+				<th>В заказах<br>до покраски</th>
+				<th>Свободные +<br>В заказах<br>до покраски</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -144,8 +145,8 @@
 				$query = "SELECT BL.PT_ID
 								,BL.Name
 								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.Amount, 0) - IFNULL(SBLL.Amount, 0)) Amount
-								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.AmountPainting, 0) - IFNULL(SBLL.Amount, 0)) AmountPainting
-								,IFNULL(SODD.AmountPainting, 0) AmountPainting_
+								,IFNULL(SODD.Amount, 0) - IFNULL(SODD.Painting, 0) BeforePainting
+								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SBLL.Amount, 0)) AmountBeforePainting
 								,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
 							FROM BlankList BL
 							LEFT JOIN (
@@ -156,7 +157,7 @@
 							LEFT JOIN (
 								SELECT PB.BL_ID
 										,SUM(ODD.Amount * PB.Amount) Amount
-										,SUM(IF(OD.IsPainting = 1 OR (OD.OD_ID IS NULL AND IFNULL(ODD.Color, '') = ''), 0, ODD.Amount) * PB.Amount) AmountPainting
+										,SUM(IF(OD.IsPainting = 1 OR (OD.OD_ID IS NULL AND IFNULL(ODD.Color, '') = ''), 0, ODD.Amount) * PB.Amount) Painting
 								FROM OrdersDataDetail ODD
 								LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
@@ -179,11 +180,12 @@
 				while( $row = mysqli_fetch_array($res) )
 				{
 					$color = ( $row["Amount"] < 0 ) ? ' bg-red' : '';
-					$colorP = ( $row["AmountPainting"] < 0 ) ? ' bg-red' : '';
+					$colorP = ( $row["AmountBeforePainting"] < 0 ) ? ' bg-red' : '';
 					echo "<tr>";
 					echo "<td class='{$row["Bold"]}'><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'> {$row["Name"]}</td>";
 					echo "<td class='txtright'><span class='{$color}'>{$row["Amount"]}</span></td>";
-					echo "<td class='txtright'><span class='{$colorP}'>{$row["AmountPainting"]}</span></td>";
+					echo "<td class='txtright'><span>{$row["BeforePainting"]}</span></td>";
+					echo "<td class='txtright'><span class='{$colorP}'>{$row["AmountBeforePainting"]}</span></td>";
 					echo "</tr>";
 				}
 			?>

@@ -1,4 +1,10 @@
-<input type="color" value="цвет" name="имя">
+<?
+	echo $_GET["file"];
+?>
+<form>
+	<input type="file" name="file">
+	<button>Send</button>
+</form>
 <?
 //	$from = "admin@fabrikaprestol.ru";
 //	$to = "sheff4uk@gmail.com";
