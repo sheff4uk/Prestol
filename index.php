@@ -166,9 +166,9 @@
 				</style>
 				<select name="f_IP" class="IsPainting <?=($_SESSION["f_IP"] != "") ? "filtered" : ""?>" onchange="this.form.submit()">
 					<option></option>
-					<option value="1" <?= ($_SESSION["f_IP"] == 1) ? 'selected' : '' ?>>&#xf006 - Не в работе</option>
-					<option value="2" <?= ($_SESSION["f_IP"] == 2) ? 'selected' : '' ?>>&#xf123 - В работе</option>
-					<option value="3" <?= ($_SESSION["f_IP"] == 3) ? 'selected' : '' ?>>&#xf005 - Готово</option>
+					<option value="1" <?= ($_SESSION["f_IP"] == 1) ? 'selected' : '' ?> style="background: #fff;">&#xf006 - Не в работе</option>
+					<option value="2" <?= ($_SESSION["f_IP"] == 2) ? 'selected' : '' ?> style="background: #bd362f;">&#xf123 - В работе</option>
+					<option value="3" <?= ($_SESSION["f_IP"] == 3) ? 'selected' : '' ?> style="background: #3bec00;">&#xf005 - Готово</option>
 				</select>
 			</th>
 			<th width="15%"><input type='text' name='f_T' size='8' class='textiletags <?=($_SESSION["f_T"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_T"] ?>'></th>

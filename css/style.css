@@ -380,6 +380,10 @@ input.amount {
 .main_table th:hover {
 	color: #fff;
 }
+.main_table .X input[type="checkbox"] {
+	width: 20px;
+	height: 20px;
+}
 .log-blank, .log-pay {
 	position: relative;
 }
