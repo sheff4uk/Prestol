@@ -109,20 +109,32 @@ if( $_GET["oddid"] )
 // Обновление в базе производственных этапов
 if( isset($_POST["ODD_ID"]) )
 {
-	// Обнуление статуса готовности и видимости
-	$query = "UPDATE OrdersDataSteps SET IsReady = 0, Visible = 0 WHERE ODD_ID = {$_POST["ODD_ID"]}";
-	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//	// Обнуление статуса готовности и видимости
+//	$query = "UPDATE OrdersDataSteps SET IsReady = 0, Visible = 0 WHERE ODD_ID = {$_POST["ODD_ID"]}";
+//	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	foreach( $_POST as $k => $v) 
 	{
-		$val = $v ? "$v" : "NULL";
+//		$val = $v ? "$v" : "NULL";
+
+		if( strpos($k,"Tariff") === 0 ) {
+			$sid = (int)str_replace( "Tariff", "", $k ); // ID этапа
+			$tariff = $v ? "$v" : "NULL";
+			$worker = $_POST["WD_ID".$sid] ? $_POST["WD_ID".$sid] : "NULL";
+			$isready = $_POST["IsReady".$sid] ? $_POST["IsReady".$sid] : 0;
+			$visible = $_POST["Visible".$sid] ? $_POST["Visible".$sid] : 0;
+			$query = "UPDATE OrdersDataSteps
+					  SET WD_ID = {$worker}, Tariff = {$tariff}, IsReady = {$isready}, Visible = {$visible}
+					  WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
 
 		// Обновление работника
 		if( strpos($k,"WD_ID") === 0 ) 
 		{
 			$sid = (int)str_replace( "WD_ID", "", $k );
 			$query = "UPDATE OrdersDataSteps SET WD_ID = $val WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
 		// Обновление тарифа
@@ -131,7 +143,7 @@ if( isset($_POST["ODD_ID"]) )
 			$sid = (int)str_replace( "Tariff", "", $k );
 			$tariff = $v ? "$v" : "NULL";
 			$query = "UPDATE OrdersDataSteps SET Tariff = $val WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
 		// Обновление статуса готовности
@@ -139,7 +151,7 @@ if( isset($_POST["ODD_ID"]) )
 		{
 			$sid = (int)str_replace( "IsReady", "", $k );
 			$query = "UPDATE OrdersDataSteps SET IsReady = $v WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
 		// Обновление статуса видимости этапа
@@ -147,7 +159,7 @@ if( isset($_POST["ODD_ID"]) )
 		{
 			$sid = (int)str_replace( "Visible", "", $k );
 			$query = "UPDATE OrdersDataSteps SET Visible = $v WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 	}
 
