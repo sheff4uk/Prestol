@@ -66,7 +66,8 @@
 				<th>Дата</th>
 				<th>Время</th>
 				<th>Работник</th>
-				<th>Сумма</th>
+				<th>Начислено</th>
+				<th>Выдано</th>
 				<th>Примечание</th>
 				<th>Действие</th>
 			</tr>
@@ -85,12 +86,19 @@
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
-				$format_pay = number_format($row["Sign"].$row["Pay"], 0, '', ' ');
+				$format_pay = number_format($row["Pay"], 0, '', ' ');
 				echo "<tr>";
 				echo "<td>{$row["Date"]}</td>";
 				echo "<td>{$row["Time"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'>{$row["Worker"]}</td>";
-				echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
+				if ($row["Sign"] == '-') {
+					echo "<td></td>";
+					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
+				}
+				else {
+					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
+					echo "<td></td>";
+				}
 				echo "<td class='comment'><pre>{$row["Comment"]}</pre></td>";
 				echo "<td>";
 				if ($row["Link"] == '') {
