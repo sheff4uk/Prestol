@@ -1,11 +1,4 @@
 <?
-	echo $_GET["file"];
-?>
-<form>
-	<input type="file" name="file">
-	<button>Send</button>
-</form>
-<?
 //	$from = "admin@fabrikaprestol.ru";
 //	$to = "sheff4uk@gmail.com";
 //	$subject = "Подтверждение регистрации Престол";
@@ -30,7 +23,7 @@
 //	$mail->Subject = $subject;
 //	$mail->Body = $text;
 //	$mail->send();
-//	echo phpinfo();
+	echo phpinfo();
 
 //include "config.php";
 //$query = "SELECT ODD.ODD_ID, ODD.PM_ID, ODD.PME_ID, ODD.Length
@@ -60,4 +53,14 @@
 //			LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To";
 //	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 //}
+
+//	$query = "SELECT Date FROM PayLog ORDER BY Date";
+//	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//	$i = 1;
+//	while( $row = mysqli_fetch_array($res) )
+//	{
+//		$query = "UPDATE PayLog SET PL_ID = {$i} WHERE Date = '{$row["Date"]}'";
+//		mysqli_query( $mysqli, $query );
+//		$i++;
+//	}
 ?>

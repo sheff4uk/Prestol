@@ -84,6 +84,10 @@ tbody tr:nth-child(even){ /* Задаем стили для четных ряд�
 //	background: #e2f6f8;
 }
 
+pre {
+	margin: 0;
+}
+
 .txtright {
 	text-align: right;
 }

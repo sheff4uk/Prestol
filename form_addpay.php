@@ -10,10 +10,10 @@
 		$location = $_POST["location"];
 
 		// Редактирование
-		if( $_POST["id_date"] <> "" ) {
+		if( $_POST["PL_ID"] <> "" ) {
 			$query = "UPDATE PayLog
 					  SET WD_ID = {$Worker}, Pay = {$Sign}{$Pay}, Comment = '{$Comment}'
-					  WHERE Date = '{$_POST["id_date"]}'";
+					  WHERE PL_ID = '{$_POST["PL_ID"]}'";
 		}
 		// Добавление
 		else {
@@ -31,7 +31,7 @@
 <div id='addpay' class="addproduct" style='display:none'>
 	<form method="post" action="form_addpay.php">
 		<fieldset>
-			<input type='hidden' name='id_date'>
+			<input type='hidden' name='PL_ID'>
 			<input type='hidden' name='sign'>
 			<input type='hidden' name='location'>
 			<div>
@@ -87,10 +87,10 @@
 			if( typeof id !== "undefined" ) // Редактирование платежа
 			{
 				var pay = $(this).parents('tr').find('.pay').attr('val');
-				var comment = $(this).parents('tr').find('.comment').html();
+				var comment = $(this).parents('tr').find('.comment > pre').html();
 				$('#addpay input[name="Pay"]').val(pay);
 				$('#addpay textarea[name="Comment"]').val(comment);
-				$('#addpay input[name="id_date"]').val(id);
+				$('#addpay input[name="PL_ID"]').val(id);
 			}
 			if( typeof $(this).attr('comment') !== "undefined" ) { // Добавление премии из табеля
 				var pay = $(this).attr('pay');

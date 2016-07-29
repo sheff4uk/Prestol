@@ -16,10 +16,10 @@
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 
 		// Редактирование
-		if( $_POST["id_date"] <> "" ) {
+		if( $_POST["BS_ID"] <> "" ) {
 			$query = "UPDATE BlankStock
 					  SET WD_ID = {$Worker}, BL_ID = {$Blank}, Amount = {$Amount}, Tariff = {$Tariff}, Comment = '{$Comment}'
-					  WHERE Date = '{$_POST["id_date"]}'";
+					  WHERE BS_ID = '{$_POST["BS_ID"]}'";
 		}
 		// Добавление
 		else {
@@ -57,7 +57,7 @@
 	<div id='addblank' title='Заготовки' class="addproduct" style='display:none'>
 		<form method="post">
 			<fieldset>
-				<input type='hidden' name='id_date'>
+				<input type='hidden' name='BS_ID'>
 				<div>
 					<label>Работник:</label>
 					<select name='Worker'>
@@ -211,7 +211,7 @@
 			<tbody>
 
 	<?
-			$query = "SELECT BS.Date DateKey
+			$query = "SELECT BS.BS_ID
 							,DATE_FORMAT(DATE(BS.Date), '%d.%m.%Y') Date
 							,TIME(BS.Date) Time
 							,WD.Name Worker
@@ -243,8 +243,8 @@
 				echo "<td class='blank {$row["Bold"]}' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>";
 				echo "<td class='amount txtright'>{$row["Amount"]}</td>";
 				echo "<td class='tariff txtright'>{$row["Tariff"]}</td>";
-				echo "<td class='comment'>{$row["Comment"]}</td>";
-				echo "<td><a href='#' id='{$row["DateKey"]}' class='button edit_blank' location='{$location}' title='Редактировать заготовки'><i class='fa fa-pencil fa-lg'></i></a></td>";
+				echo "<td class='comment'><pre>{$row["Comment"]}</pre></td>";
+				echo "<td><a href='#' id='{$row["BS_ID"]}' class='button edit_blank' location='{$location}' title='Редактировать заготовки'><i class='fa fa-pencil fa-lg'></i></a></td>";
 				echo "</tr>";
 			}
 	?>
@@ -264,7 +264,7 @@
 			var blank = $(this).parents('tr').find('.blank').attr('val');
 			var amount = $(this).parents('tr').find('.amount').html();
 			var tariff = $(this).parents('tr').find('.tariff').html();
-			var comment = $(this).parents('tr').find('.comment').html();
+			var comment = $(this).parents('tr').find('.comment > pre').html();
 
 			// Очистка диалога
 			$('#addblank input, #addblank select, #addblank textarea').val('');
@@ -277,7 +277,7 @@
 				$('#addblank input[name="Amount"]').val(amount);
 				$('#addblank input[name="Tariff"]').val(tariff);
 				$('#addblank textarea[name="Comment"]').val(comment);
-				$('#addblank input[name="id_date"]').val(id);
+				$('#addblank input[name="BS_ID"]').val(id);
 			}
 
 			// Форма добавления/редактирования заготовок

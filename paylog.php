@@ -33,6 +33,7 @@
 							LEFT JOIN (
 								SELECT PL.WD_ID, SUM(PL.Pay) Pay
 								FROM PayLog PL
+								WHERE PL.Link IS NULL
 								GROUP BY PL.WD_ID
 							) SPL ON SPL.WD_ID = WD.WD_ID
 							LEFT JOIN (
@@ -91,7 +92,7 @@
 			<tbody>
 
 	<?
-			$query = "SELECT PL.Date DateKey, DATE_FORMAT(DATE(PL.Date), '%d.%m.%Y') Date, TIME(PL.Date) Time, WD.Name Worker, ABS(PL.Pay) Pay, PL.Comment, WD.WD_ID, IF(PL.Pay < 0, '-', '') Sign
+			$query = "SELECT PL.PL_ID, DATE_FORMAT(DATE(PL.Date), '%d.%m.%Y') Date, TIME(PL.Date) Time, WD.Name Worker, ABS(PL.Pay) Pay, PL.Comment, WD.WD_ID, IF(PL.Pay < 0, '-', '') Sign
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
 						WHERE DATEDIFF(NOW(), PL.Date) <= {$datediff} AND PL.Pay <> 0";
@@ -108,8 +109,8 @@
 				echo "<td>{$row["Time"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'>{$row["Worker"]}</td>";
 				echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
-				echo "<td class='comment'>{$row["Comment"]}</td>";
-				echo "<td><a href='#' id='{$row["DateKey"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a></td>";
+				echo "<td class='comment'><pre>{$row["Comment"]}</pre></td>";
+				echo "<td><a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a></td>";
 				echo "</tr>";
 			}
 	?>
