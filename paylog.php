@@ -23,18 +23,26 @@
 			<tr>
 				<th>Работник</th>
 				<th>Баланс</th>
+				<th>Начислено</th>
+				<th>Выдано</th>
 			</tr>
 			</thead>
 			<tbody>
 			<?
 				// Баланс работников
-				$query = "SELECT WD.WD_ID, WD.Name, IFNULL(SPL.Pay, 0) Sum
+				$query = "SELECT WD.WD_ID, WD.Name, IFNULL(SMP.Pay, 0) Sum, SMPM.PayIn, SMPM.PayOut
 							FROM WorkersData WD
 							LEFT JOIN (
-								SELECT PL.WD_ID, SUM(PL.Pay) Pay
-								FROM PayLog PL
-								GROUP BY PL.WD_ID
-							) SPL ON SPL.WD_ID = WD.WD_ID
+								SELECT MPIO.WD_ID, SUM(MPIO.PayIn - MPIO.PayOut) Pay
+								FROM MonthlyPayInOut MPIO
+								GROUP BY MPIO.WD_ID
+							) SMP ON SMP.WD_ID = WD.WD_ID
+							LEFT JOIN (
+								SELECT MPIO.WD_ID, MPIO.PayIn, MPIO.PayOut
+								FROM MonthlyPayInOut MPIO
+								WHERE Year = YEAR(NOW()) AND Month = MONTH(NOW())
+								GROUP BY MPIO.WD_ID
+							) SMPM ON SMPM.WD_ID = WD.WD_ID
 							WHERE WD.IsActive = 1";
 				if( isset($_GET["worker"]) ) {
 					$query .= " AND WD.WD_ID = {$_GET["worker"]}";
@@ -48,9 +56,13 @@
 					else
 						$color = '';
 					$format_sum = number_format($row["Sum"], 0, '', ' ');
+					$format_MPI = number_format($row["PayIn"], 0, '', ' ');
+					$format_MPO = number_format($row["PayOut"], 0, '', ' ');
 					echo "<tr>";
 					echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
 					echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
+					echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
+					echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
 					echo "</tr>";
 				}
 			?>
