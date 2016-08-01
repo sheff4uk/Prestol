@@ -249,7 +249,8 @@
 				echo "<td class='txtright'>{$row["PremiumPercent"]}%</td>";					// Процент
 				echo "<td><input type='number' name='MP{$row["WD_ID"]}' value='{$row["ManPercent"]}' min='0' max='100'></td>";// Свой процент
 				echo "<td><input type='checkbox' name='DNH{$row["WD_ID"]}' {$row["DNHcheck"]} value='1'></td>";	// Не учитывать норматив
-				echo "<td><button sign='' class='button edit_pay txtright' location='{$location}' title='Начислить премию' style='width: 100%;' worker='{$row["WD_ID"]}' comment='Премия за {$MONTHS[$month]} {$year} {$percent}%' pay='{$premium}'>{$premium}</button></td>";						// Премия
+				$today = date("d.m.Y");
+				echo "<td><button sign='' class='button edit_pay txtright' location='{$location}' title='Начислить премию' style='width: 100%;' worker='{$row["WD_ID"]}' date='{$today}' comment='Премия за {$MONTHS[$month]} {$year} {$percent}%' pay='{$premium}'>{$premium}</button></td>";						// Премия
 				echo "<td class='txtright'>{$total}</td>";								// Премия + Сумма
 				echo "</tr>";
 			}

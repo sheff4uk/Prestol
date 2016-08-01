@@ -3,6 +3,7 @@
 	if( isset($_POST["Pay"]) )
 	{
 		include "config.php";
+		$ManDate = '\''.date( 'Y-m-d', strtotime($_POST["ManDate"]) ).'\'';
 		$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
 		$Pay = $_POST["Pay"] <> "" ? $_POST["Pay"] : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
@@ -12,13 +13,13 @@
 		// Редактирование
 		if( $_POST["PL_ID"] <> "" ) {
 			$query = "UPDATE PayLog
-					  SET WD_ID = {$Worker}, Pay = {$Sign}{$Pay}, Comment = '{$Comment}'
+					  SET ManDate = {$ManDate}, WD_ID = {$Worker}, Pay = {$Sign}{$Pay}, Comment = '{$Comment}'
 					  WHERE PL_ID = '{$_POST["PL_ID"]}'";
 		}
 		// Добавление
 		else {
-			$query = "INSERT INTO PayLog(WD_ID, Pay, Comment)
-					  VALUES ({$Worker}, {$Sign}{$Pay}, '{$Comment}')";
+			$query = "INSERT INTO PayLog(ManDate, WD_ID, Pay, Comment)
+					  VALUES ({$ManDate}, {$Worker}, {$Sign}{$Pay}, '{$Comment}')";
 		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -49,6 +50,10 @@
 				</select>
 			</div>
 			<div>
+				<label>Дата:</label>
+				<input required type='text' name='ManDate' class='date' size='12' autocomplete='off' readonly>
+			</div>
+			<div>
 				<label>Сумма:</label>
 				<input required type='number' name='Pay' min='0' style="text-align:right;">
 			</div>
@@ -72,6 +77,7 @@
 			var location = $(this).attr('location');
 			var sign = $(this).attr('sign');
 			var worker = $(this).attr('worker');
+			var date = $(this).attr('date');
 
 			// Очистка диалога
 			$('#addpay input, #addpay select, #addpay textarea').val('');
@@ -79,6 +85,7 @@
 			// Заполнение
 			$('#addpay input[name="sign"]').val(sign);
 			$('#addpay input[name="location"]').val(location);
+			$('#addpay input[name="ManDate"]').val(date);
 
 			if( typeof worker !== "undefined" ) {
 				$('#addpay select[name="Worker"]').val(worker);

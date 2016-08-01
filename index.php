@@ -87,11 +87,11 @@
 				</div>
 				<div>
 					<label>Дата приема:</label>
-					<input required type='text' name='StartDate' class='date from' size='12' value='<?= date("d.m.Y") ?>' autocomplete='off'>
+					<input required type='text' name='StartDate' class='date from' size='12' value='<?= date("d.m.Y") ?>' autocomplete='off' readonly>
 				</div>
 				<div>
 					<label>Дата сдачи:</label>
-					<input type='text' name='EndDate' class='date to' size='12' autocomplete='off'>
+					<input type='text' name='EndDate' class='date to' size='12' autocomplete='off' readonly>
 				</div>
 				<div>
 					<label>Салон:</label>

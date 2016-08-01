@@ -17,8 +17,8 @@
 	include "header.php";
 ?>
 	<p>
-		<button class='edit_pay' sign='' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> location='<?=$location?>'>Начислить</button>
-		<button class='edit_pay' sign='-' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> location='<?=$location?>'>Выдать</button>
+		<button class='edit_pay' sign='' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Начислить</button>
+		<button class='edit_pay' sign='-' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Выдать</button>
 	</p>
 
 	<? include "form_addpay.php"; ?>
@@ -126,7 +126,6 @@
 			<thead>
 			<tr>
 				<th>Дата</th>
-				<th>Время</th>
 				<th>Работник</th>
 				<th>Начислено</th>
 				<th>Выдано</th>
@@ -137,7 +136,13 @@
 			<tbody>
 
 	<?
-			$query = "SELECT PL.PL_ID, IFNULL(PL.Link, '') Link, DATE_FORMAT(DATE(PL.Date), '%d.%m.%Y') Date, TIME(PL.Date) Time, WD.Name Worker, ABS(PL.Pay) Pay, PL.Comment, WD.WD_ID, IF(PL.Pay < 0, '-', '') Sign
+			$query = "SELECT PL.PL_ID
+							,IFNULL(PL.Link, '') Link
+							,DATE_FORMAT(PL.ManDate, '%d.%m.%Y') ManDate
+							,WD.Name Worker
+							,ABS(PL.Pay) Pay
+							,PL.Comment
+							,WD.WD_ID, IF(PL.Pay < 0, '-', '') Sign
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
 						WHERE DATEDIFF(NOW(), PL.Date) <= {$datediff} AND PL.Pay <> 0";
@@ -150,8 +155,7 @@
 			{
 				$format_pay = number_format($row["Pay"], 0, '', ' ');
 				echo "<tr>";
-				echo "<td>{$row["Date"]}</td>";
-				echo "<td>{$row["Time"]}</td>";
+				echo "<td>{$row["ManDate"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'>{$row["Worker"]}</td>";
 				if ($row["Sign"] == '-') {
 					echo "<td></td>";
@@ -164,7 +168,7 @@
 				echo "<td class='comment'><pre>{$row["Comment"]}</pre></td>";
 				echo "<td>";
 				if ($row["Link"] == '') {
-					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
+					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' {$row["ManDate"]} class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
 				}
 				echo "</td>";
 				echo "</tr>";
