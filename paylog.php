@@ -6,6 +6,13 @@
 
 	$location = $_SERVER['REQUEST_URI'];
 
+	$year = date("Y");
+	$month = date("n");
+	$lastyear = date("Y",strtotime("-1 months"));
+	$lastmonth = date("n",strtotime("-1 months"));
+
+	$MONTHS = array(1=>'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь');
+
 	$title = 'Платежи';
 	include "header.php";
 ?>
@@ -21,16 +28,22 @@
 		<table>
 			<thead>
 			<tr>
-				<th>Работник</th>
-				<th>Баланс</th>
+				<th rowspan="2">Работник</th>
+				<th rowspan="2">Баланс</th>
+				<th colspan="2" class="nowrap"><?=$MONTHS[$month]?> <?=$year?></th>
+				<th colspan="2" class="nowrap"><?=$MONTHS[$lastmonth]?> <?=$lastyear?></th>
+			</tr>
 				<th>Начислено</th>
 				<th>Выдано</th>
+				<th>Начислено</th>
+				<th>Выдано</th>
+			<tr>
 			</tr>
 			</thead>
 			<tbody>
 			<?
 				// Баланс работников
-				$query = "SELECT WD.WD_ID, WD.Name, IFNULL(SMP.Pay, 0) Sum, SMPM.PayIn, SMPM.PayOut
+				$query = "SELECT WD.WD_ID, WD.Name, IFNULL(SMP.Pay, 0) Sum, SMPM.PayIn, SMPM.PayOut, SMPML.PayIn LastPayIn, SMPML.PayOut LastPayOut
 							FROM WorkersData WD
 							LEFT JOIN (
 								SELECT MPIO.WD_ID, SUM(MPIO.PayIn - MPIO.PayOut) Pay
@@ -40,9 +53,15 @@
 							LEFT JOIN (
 								SELECT MPIO.WD_ID, MPIO.PayIn, MPIO.PayOut
 								FROM MonthlyPayInOut MPIO
-								WHERE Year = YEAR(NOW()) AND Month = MONTH(NOW())
+								WHERE Year = {$year} AND Month = {$month}
 								GROUP BY MPIO.WD_ID
 							) SMPM ON SMPM.WD_ID = WD.WD_ID
+							LEFT JOIN (
+								SELECT MPIO.WD_ID, MPIO.PayIn, MPIO.PayOut
+								FROM MonthlyPayInOut MPIO
+								WHERE Year = {$lastyear} AND Month = {$lastmonth}
+								GROUP BY MPIO.WD_ID
+							) SMPML ON SMPML.WD_ID = WD.WD_ID
 							WHERE WD.IsActive = 1";
 				if( isset($_GET["worker"]) ) {
 					$query .= " AND WD.WD_ID = {$_GET["worker"]}";
@@ -58,11 +77,15 @@
 					$format_sum = number_format($row["Sum"], 0, '', ' ');
 					$format_MPI = number_format($row["PayIn"], 0, '', ' ');
 					$format_MPO = number_format($row["PayOut"], 0, '', ' ');
+					$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
+					$format_LMPO = number_format($row["LastPayOut"], 0, '', ' ');
 					echo "<tr>";
 					echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
 					echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
 					echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
 					echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
+					echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
+					echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
 					echo "</tr>";
 				}
 			?>
