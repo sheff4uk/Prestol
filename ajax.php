@@ -59,7 +59,7 @@ case "steps":
 					WHERE ODS.WD_ID IS NOT NULL AND ODS.ST_ID = {$row["ST_ID"]}
 					LIMIT 100
 				  ) ODS ON ODS.WD_ID = WD.WD_ID
-				  WHERE WD.Hourly = 0
+				  WHERE WD.Type = 1
 				  GROUP BY WD.WD_ID
 				  ORDER BY CNT DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
