@@ -42,6 +42,12 @@
 			</thead>
 			<tbody>
 			<?
+				$total_sum = 0;
+				$total_MPI = 0;
+				$total_MPO = 0;
+				$total_LMPI = 0;
+				$total_LMPO = 0;
+
 				// Баланс работников
 				$query = "SELECT WD.WD_ID, WD.Name, IFNULL(SMP.Pay, 0) Sum, SMPM.PayIn, SMPM.PayOut, SMPML.PayIn LastPayIn, SMPML.PayOut LastPayOut
 							FROM WorkersData WD
@@ -86,6 +92,27 @@
 					echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
 					echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
 					echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
+					echo "</tr>";
+					$total_sum = $total_sum + $row["Sum"];
+					$total_MPI = $total_MPI + $row["PayIn"];
+					$total_MPO = $total_MPO + $row["PayOut"];
+					$total_LMPI = $total_LMPI + $row["LastPayIn"];
+					$total_LMPO = $total_LMPO + $row["LastPayOut"];
+				}
+				$total_sum = number_format($total_sum, 0, '', ' ');
+				$total_MPI = number_format($total_MPI, 0, '', ' ');
+				$total_MPO = number_format($total_MPO, 0, '', ' ');
+				$total_LMPI = number_format($total_LMPI, 0, '', ' ');
+				$total_LMPO = number_format($total_LMPO, 0, '', ' ');
+
+				if( !isset($_GET["worker"]) ) {
+					echo "<tr>";
+					echo "<td class='txtright'><b>Сумма:</b></td>";
+					echo "<td class='txtright'><b>{$total_sum}</b></td>";
+					echo "<td class='txtright'><b>{$total_MPI}</b></td>";
+					echo "<td class='txtright'><b>{$total_MPO}</b></td>";
+					echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
+					echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
 					echo "</tr>";
 				}
 			?>
@@ -143,7 +170,6 @@
 				echo "</tr>";
 			}
 	?>
-
 			</tbody>
 		</table>
 	</div>
