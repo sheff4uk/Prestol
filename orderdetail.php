@@ -426,19 +426,7 @@
 	</table>
 	<!-- Конец таблицы изделий -->
 
-<br><br>
-
 	<!-- Таблица заготовок -->
-	<table>
-		<thead>
-		<tr>
-			<th>Кол-во</th>
-			<th>Заготовка</th>
-			<th>Примечание</th>
-			<th>Действие</th>
-		</tr>
-		</thead>
-		<tbody>
 <?
 	$query = "SELECT ODB.ODB_ID, ODB.Amount, ODB.BL_ID, BL.Name, ODB.Comment
 			  FROM OrdersDataBlank ODB
@@ -452,6 +440,23 @@
 		$query .= " WHERE ODB.OD_ID IS NULL";
 	}
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+	if( mysqli_num_rows($res) ) {
+	?>
+		<br><br>
+		<table>
+			<thead>
+			<tr>
+				<th>Кол-во</th>
+				<th>Заготовка</th>
+				<th>Примечание</th>
+				<th>Действие</th>
+			</tr>
+			</thead>
+			<tbody>
+	<?
+	}
+
 	while( $row = mysqli_fetch_array($res) )
 	{
 		echo "<tr id='{$row["ODB_ID"]}'>";

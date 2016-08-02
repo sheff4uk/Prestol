@@ -336,7 +336,7 @@
 							,WD.WD_ID, IF(PL.Pay < 0, '-', '') Sign
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
-						WHERE DATEDIFF(NOW(), PL.Date) <= {$datediff} AND PL.Pay <> 0";
+						WHERE DATEDIFF(NOW(), PL.ManDate) <= {$datediff} AND PL.Pay <> 0";
 			if( isset($_GET["worker"]) ) {
 				$query .= " AND PL.WD_ID = {$_GET["worker"]}";
 			}
