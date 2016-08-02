@@ -146,10 +146,30 @@
 			die;
 		}
 	}
-	else
-	{
+	else {
 		$odd_id = $_SESSION["odd_id"]; // Читаем из сессии id вставленной записи
 		unset($_SESSION["odd_id"]); // Очищаем сессию
+	}
+
+	// Добавление к заказу заготовки
+	if ( $_GET["addblank"] ) {
+		$Blank = $_POST["Blank"] ? "{$_POST["Blank"]}" : "NULL";
+		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
+		// Удаляем лишние пробелы
+		$Comment = trim($Comment);
+
+		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Amount, Comment)
+				  VALUES ({$id}, {$Blank}, {$_POST["Amount"]}, '{$Comment}')";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		$odb_id = mysqli_insert_id( $mysqli );
+		$_SESSION["odb_id"] = $odb_id; // Cохраняем в сессию id вставленной записи
+		header( "Location: ".$location."#".$odb_id ); // Перезагружаем экран
+		die;
+	}
+	else {
+		$odb_id = $_SESSION["odb_id"]; // Читаем из сессии id вставленной записи
+		unset($_SESSION["odb_id"]); // Очищаем сессию
 	}
 
 	// Удаление изделия (перемещение в свободные)
@@ -180,6 +200,17 @@
             
             $_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
         }
+
+		header( "Location: ".$location ); // Перезагружаем экран
+		die;
+	}
+
+	// Удаление заготовки из заказа
+	if( $_GET["delblank"] ) {
+		$odb_id = (int)$_GET["delblank"];
+
+		$query = "DELETE FROM OrdersDataBlank WHERE ODB_ID={$odb_id}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		header( "Location: ".$location ); // Перезагружаем экран
 		die;
@@ -290,6 +321,7 @@
 	<p>
 		<button class='edit_product1'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
 		<button class='edit_product2'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
+		<button class='edit_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки</button>
 	</p>
 
 	<!-- Таблица изделий -->
@@ -334,7 +366,7 @@
 					,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
 					,IF(ODD.is_check = 1, '', 'attention') is_check
 					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
-					,GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR '') Steps
+					,GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR '') Steps
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -393,10 +425,54 @@
 		</tbody>
 	</table>
 	<!-- Конец таблицы изделий -->
-	
+
+<br><br>
+
+	<!-- Таблица заготовок -->
+	<table>
+		<thead>
+		<tr>
+			<th>Кол-во</th>
+			<th>Заготовка</th>
+			<th>Примечание</th>
+			<th>Действие</th>
+		</tr>
+		</thead>
+		<tbody>
+<?
+	$query = "SELECT ODB.ODB_ID, ODB.Amount, ODB.BL_ID, BL.Name, ODB.Comment
+			  FROM OrdersDataBlank ODB
+			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID";
+	if( $id != "NULL" )
+	{
+		$query .= " WHERE ODB.OD_ID = {$id}";
+	}
+	else
+	{
+		$query .= " WHERE ODB.OD_ID IS NULL";
+	}
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) )
+	{
+		echo "<tr id='{$row["ODB_ID"]}'>";
+		echo "<td>{$row["Amount"]}</td>";
+		echo "<td>{$row["Name"]}</td>";
+		echo "<td>{$row["Comment"]}</td>";
+		echo "<td><a href='#' id='{$row["ODB_ID"]}' class='button edit_blank' location='{$location}' title='Редактировать заготовку'><i class='fa fa-pencil fa-lg'></i></a>";
+		$delmessage = "Удалить {$row["Name"]}({$row["Amount"]} шт.)?";
+		echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+
+		$ODB[$row["ODB_ID"]] = array( "amount"=>$row["Amount"], "blank"=>$row["BL_ID"], "comment"=>$row["Comment"] );
+	}
+?>
+		</tbody>
+	</table>
+	<!-- Конец таблицы заготовок -->
+
 	<p>
 		<button class='edit_product1'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
 		<button class='edit_product2'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
+		<button class='edit_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки</button>
 	</p>
 
 </body>
@@ -417,5 +493,6 @@
 //			}
 
 		odd = <?= json_encode($ODD); ?>;
+		odb = <?= json_encode($ODB); ?>;
 	});
 </script>

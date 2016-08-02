@@ -199,6 +199,63 @@
 </div>
 <!-- Конец формы добавения стола -->
 
+<!-- Форма добавления заготовки -->
+<div id='addblank' title='Параметры заготовки' class='addproduct' style='display:none'>
+	<form method='post'>
+		<fieldset>
+			<div>
+				<label>Kол-во:</label>
+				<input required type='number' min='1' value='1' style='width: 50px;' name='Amount' autocomplete="off">
+			</div>
+			<div>
+				<label>Заготовка:</label>
+				<select required name='Blank'>
+					<option value="">-=Выберите заготовку=-</option>
+					<optgroup label="Стулья">
+						<?
+						$query = "SELECT BL.BL_ID, BL.Name, IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
+								  FROM BlankList BL
+								  LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
+								  WHERE BL.PT_ID = 1
+								  GROUP BY BL.BL_ID
+								  ORDER BY BL.Name";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option value='{$row["BL_ID"]}' class='{$row["Bold"]}'>{$row["Name"]}</option>";
+						}
+						?>
+					</optgroup>
+					<optgroup label="Столы">
+						<?
+						$query = "SELECT BL.BL_ID, BL.Name, IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
+								  FROM BlankList BL
+								  LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
+								  WHERE BL.PT_ID = 2
+								  GROUP BY BL.BL_ID
+								  ORDER BY BL.Name";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option value='{$row["BL_ID"]}' class='{$row["Bold"]}'>{$row["Name"]}</option>";
+						}
+						?>
+					</optgroup>
+				</select>
+			</div>
+			<div>
+				<label>Примечание:</label>
+				<textarea name='Comment' rows='3' cols='38'></textarea>
+			</div>
+		</fieldset>
+		<div>
+			<hr>
+			<button style='float: right;'>Сохранить</button>
+		</div>
+	</form>
+</div>
+<!-- Конец формы добавления заготовки -->
+
 <!-- Форма добавления этапов производства -->
 <div id='steps' title='Этапы производства' style='display:none'>
 	<form method='post'>

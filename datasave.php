@@ -106,6 +106,27 @@ if( $_GET["oddid"] )
 	die;
 }
 
+// Обновление параметров заготовки
+if( $_GET["odbid"] )
+{
+	$Blank = $_POST["Blank"] ? "{$_POST["Blank"]}" : "NULL";
+	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
+	// Удаляем лишние пробелы
+	$Comment = trim($Comment);
+
+	$query = "UPDATE OrdersDataBlank
+			  SET BL_ID = {$Blank}
+				 ,Amount = {$_POST["Amount"]}
+				 ,Comment = '{$Comment}'
+			  WHERE ODB_ID = {$_GET["odbid"]}";
+
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+	header( "Location: ".$_GET["location"]."#".$_GET["odbid"] ); // Перезагружаем экран
+	die;
+
+}
+
 // Обновление в базе производственных этапов
 if( isset($_POST["ODD_ID"]) )
 {

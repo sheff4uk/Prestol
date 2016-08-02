@@ -403,6 +403,39 @@ $(document).ready(function(){
 		return false;
 	});
 
+	// Форма добавления заготовок
+	$('.edit_blank').click(function() {
+		var id = $(this).attr('id');
+		var location = $(this).attr("location");
+		var odid = $(this).attr("odid");
+
+		// Очистка диалога
+		$('#addblank input').val('1');
+		$('#addblank textarea, #addblank select').val('');
+
+		// Заполнение
+		if( id > 0 )
+		{
+			$('#addblank input[name="Amount"]').val(odb[id]['amount']);
+			$('#addblank select[name="Blank"]').val(odb[id]['blank']);
+			$('#addblank textarea[name="Comment"]').val(odb[id]['comment']);
+			$("#addblank form").attr("action", "datasave.php?odbid="+id+"&location="+location);
+		}
+		else // Иначе добавляем новую заготовку
+		{
+			$('#addblank form').attr('action', 'orderdetail.php?id='+odid+'&addblank=1');
+		}
+
+		$("#addblank").dialog(
+		{
+			width: 500,
+			modal: true,
+			show: 'blind',
+			hide: 'explode',
+		});
+	});
+
+
 	// Если ткань/пластик заказан - отображается дата заказа и дата ожидания.
 	$('.radiostatus input').change(function(){
 		if( $(this).val() == 1 ) {

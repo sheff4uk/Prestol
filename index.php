@@ -351,7 +351,7 @@
 		
 		// Получаем данные по этамам производства
 		$query = "SELECT ODD.ODD_ID
-						,GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR '') Steps
+						,GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR '') Steps
 					FROM OrdersDataDetail ODD
 					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
