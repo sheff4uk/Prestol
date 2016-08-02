@@ -120,19 +120,17 @@
 		echo "<td>{$row["Checkbox"]}</td>";
 		echo "<td><span class='nowrap'>{$row["Material"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
-		echo "<td>";
 			switch ($row["IsPainting"]) {
 				case 1:
-					echo "<i class='fa fa-star-o fa-lg' title='Не в работе'></i>";
+					echo "<td class='notready' title='Не в работе'></td>";
 					break;
 				case 2:
-					echo "<i class='fa fa-star-half-o fa-lg' title='В работе'></i>";
+					echo "<td class='inwork' title='В работе'></td>";
 					break;
 				case 3:
-					echo "<i class='fa fa-star fa-lg' title='Готово'></i>";
+					echo "<td class='ready' title='Готово'></td>";
 					break;
 			}
-		echo "</td>";
 		echo "<td>{$row["Color"]}</td>";
 		echo "<td>{$row["ClientName"]}</td>";
 		echo "<td>{$row["StartDate"]}</td>";

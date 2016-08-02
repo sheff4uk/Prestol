@@ -87,7 +87,15 @@ tbody tr:nth-child(even){ /* Задаем стили для четных ряд�
 pre {
 	margin: 0;
 }
-
+.notready {
+	background: #fff;
+}
+.inwork {
+	background: #bd362f;
+}
+.ready {
+	background: #3bec00;
+}
 .txtright {
 	text-align: right;
 }
@@ -111,7 +119,15 @@ pre {
 }
 
 .step {
-	margin: 0 !important;
+//	margin: 0 !important;
+	display: inline-block;
+	text-align: center;
+//	border: 1px solid #999;
+	color: #333;
+}
+
+.edit_steps {
+	box-shadow: 0 0 10px #666;
 }
 
 //#formsteps label {

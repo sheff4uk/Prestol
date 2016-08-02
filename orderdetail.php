@@ -251,7 +251,7 @@
 			<td><input required type='text' name='StartDate' size='8' class='date' value='<?=$StartDate?>'></td>
 			<td><input type='text' name='EndDate' size='8' class='date' value='<?=$EndDate?>'></td>
 			<td style='background: <?=$CTColor?>;'>
-				<select name='Shop' style="width: 150px;">
+				<select name='Shop'>
 					<option value="">-=Выберите салон=-</option>
 					<?
 					$query = "SELECT Shops.SH_ID
@@ -334,11 +334,15 @@
 					,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
 					,IF(ODD.is_check = 1, '', 'attention') is_check
 					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
+					,GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR '') Steps
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID";
+			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+			  ";
 	if( $id != "NULL" )
 	{
 		$query .= " WHERE ODD.OD_ID = {$id}";
@@ -347,7 +351,7 @@
 	{
 		$query .= " WHERE ODD.OD_ID IS NULL";
 	}
-	$query .= " GROUP BY ODD.ODD_ID ORDER BY PT_ID DESC, PM.Model, ODD.ODD_ID";
+	$query .= " GROUP BY ODD.ODD_ID ORDER BY IFNULL(PM.PT_ID, 2) DESC, PM.Model, ODD.ODD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
@@ -357,29 +361,7 @@
 		echo "<td>{$row["Size"]}</td>";
 		echo "<td>{$row["Form"]}</td>";
 		echo "<td>{$row["Mechanism"]}</td>";
-
-		// Формируем список этапов
-		$query = "SELECT ST.Step
-						,ST.Short
-						,(30 * ST.Size) Size
-						,IFNULL(WD.Name, 'Не назначен!') Name
-						,IF(ODS.IsReady, 'checked', '') IsReady
-						,ODS.ST_ID
-						,IF(ODS.WD_ID IS NULL, 'disabled', '') disabled
-				  FROM OrdersDataSteps ODS
-				  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-				  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-				  WHERE ODD_ID = {$row["ODD_ID"]} AND ODS.Visible = 1
-				  ORDER BY ST.Sort";
-		$sub_res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$steps = "<a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap' location='{$location}'>";
-		while( $sub_row = mysqli_fetch_array($sub_res) )
-		{
-			$steps .= "<input type='checkbox' class='checkstatus' {$sub_row["IsReady"]} id='{$row["ODD_ID"]}{$sub_row["ST_ID"]}' {$sub_row["disabled"]}><label class='step' style='width:{$sub_row["Size"]}px;' for='{$row["ODD_ID"]}{$sub_row["ST_ID"]}' title='{$sub_row["Step"]} ({$sub_row["Name"]})'>{$sub_row["Short"]}</label>";
-		}
-		$steps .= "</a>";
-		echo "<td>{$steps}</td>";
-
+		echo "<td><a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td>";
 		switch ($row["IsExist"]) {
 			case 0:

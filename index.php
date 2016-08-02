@@ -166,9 +166,9 @@
 				</style>
 				<select name="f_IP" class="IsPainting <?=($_SESSION["f_IP"] != "") ? "filtered" : ""?>" onchange="this.form.submit()">
 					<option></option>
-					<option value="1" <?= ($_SESSION["f_IP"] == 1) ? 'selected' : '' ?> style="background: #fff;">&#xf006 - Не в работе</option>
-					<option value="2" <?= ($_SESSION["f_IP"] == 2) ? 'selected' : '' ?> style="background: #bd362f;">&#xf123 - В работе</option>
-					<option value="3" <?= ($_SESSION["f_IP"] == 3) ? 'selected' : '' ?> style="background: #3bec00;">&#xf005 - Готово</option>
+					<option value="1" <?= ($_SESSION["f_IP"] == 1) ? 'selected' : '' ?> class="notready">&#xf006 - Не в работе</option>
+					<option value="2" <?= ($_SESSION["f_IP"] == 2) ? 'selected' : '' ?> class="inwork">&#xf123 - В работе</option>
+					<option value="3" <?= ($_SESSION["f_IP"] == 3) ? 'selected' : '' ?> class="ready">&#xf005 - Готово</option>
 				</select>
 			</th>
 			<th width="15%"><input type='text' name='f_T' size='8' class='textiletags <?=($_SESSION["f_T"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_T"] ?>'></th>
@@ -351,7 +351,7 @@
 		
 		// Получаем данные по этамам производства
 		$query = "SELECT ODD.ODD_ID
-						,GROUP_CONCAT(CONCAT('<input type=\'checkbox\' class=\'checkstatus\' ', IF(ODS.IsReady, 'checked', ''), ' ', IF(ODS.WD_ID IS NULL, 'disabled', ''), ' id=\'', ODS.ODD_ID, ODS.ST_ID, '\'><label class=\'step\' style=\'width:', ST.Size * 30, 'px;\' for=\'', ODS.ODD_ID, ODS.ST_ID, '\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</label>') ORDER BY ST.Sort SEPARATOR '') Steps
+						,GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR '') Steps
 					FROM OrdersDataDetail ODD
 					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -370,19 +370,22 @@
 		echo "<td><span class='nowrap'>{$steps}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		echo "<td class='X'><input type='checkbox' {$checkedX} value='1'></td>";
-		echo "<td class='painting' val='{$row["IsPainting"]}'";
+		echo "<td val='{$row["IsPainting"]}'";
 			switch ($row["IsPainting"]) {
 				case 1:
-					echo " style='background: #fff;' title='Не в работе'";
+					$class = "notready";
+					$title = "Не в работе";
 					break;
 				case 2:
-					echo " style='background: #bd362f;' title='В работе'";
+					$class = "inwork";
+					$title = "В работе";
 					break;
 				case 3:
-					echo " style='background: #3bec00;' title='Готово'";
+					$class = "ready";
+					$title = "Готово";
 					break;
 			}
-		echo "></td>";
+		echo " class='painting {$class}' title='{$title}'></td>";
 		echo "<td><span class='nowrap material'>{$row["Textile"]}</span></td>";
 		echo "<td><span>{$row["Comment"]}</span></td>";
 		echo "<td><a href='./orderdetail.php?id={$row["OD_ID"]}' class='button' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
