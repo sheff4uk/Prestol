@@ -159,53 +159,53 @@
 					$total_MPO = 0;
 					$total_LMPI = 0;
 					$total_LMPO = 0;
-			}
-			while( $row = mysqli_fetch_array($res) )
-			{
-				if( $row["Sum"] < 0 )
-					$color = ' bg-red';
-				else
-					$color = '';
-				$format_sum = number_format($row["Sum"], 0, '', ' ');
-				$format_MPI = number_format($row["PayIn"], 0, '', ' ');
-				$format_MPO = number_format($row["PayOut"], 0, '', ' ');
-				$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
-				$format_LMPO = number_format($row["LastPayOut"], 0, '', ' ');
-				echo "<tr>";
-				echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
-				echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
-				echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
-				echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
-				echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
-				echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
-				echo "</tr>";
-				$total_sum = $total_sum + $row["Sum"];
-				$total_MPI = $total_MPI + $row["PayIn"];
-				$total_MPO = $total_MPO + $row["PayOut"];
-				$total_LMPI = $total_LMPI + $row["LastPayIn"];
-				$total_LMPO = $total_LMPO + $row["LastPayOut"];
-			}
-			$total_sum = number_format($total_sum, 0, '', ' ');
-			$total_MPI = number_format($total_MPI, 0, '', ' ');
-			$total_MPO = number_format($total_MPO, 0, '', ' ');
-			$total_LMPI = number_format($total_LMPI, 0, '', ' ');
-			$total_LMPO = number_format($total_LMPO, 0, '', ' ');
 
-			if( !isset($_GET["worker"]) ) {
-				echo "<tr>";
-				echo "<td class='txtright'><b>Сумма:</b></td>";
-				echo "<td class='txtright'><b>{$total_sum}</b></td>";
-				echo "<td class='txtright'><b>{$total_MPI}</b></td>";
-				echo "<td class='txtright'><b>{$total_MPO}</b></td>";
-				echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
-				echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
-				echo "</tr>";
-			}
-		?>
-		</tbody>
-	</table>
+					while( $row = mysqli_fetch_array($res) )
+					{
+						if( $row["Sum"] < 0 )
+							$color = ' bg-red';
+						else
+							$color = '';
+						$format_sum = number_format($row["Sum"], 0, '', ' ');
+						$format_MPI = number_format($row["PayIn"], 0, '', ' ');
+						$format_MPO = number_format($row["PayOut"], 0, '', ' ');
+						$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
+						$format_LMPO = number_format($row["LastPayOut"], 0, '', ' ');
+						echo "<tr>";
+						echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
+						echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
+						echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
+						echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
+						echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
+						echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
+						echo "</tr>";
+						$total_sum = $total_sum + $row["Sum"];
+						$total_MPI = $total_MPI + $row["PayIn"];
+						$total_MPO = $total_MPO + $row["PayOut"];
+						$total_LMPI = $total_LMPI + $row["LastPayIn"];
+						$total_LMPO = $total_LMPO + $row["LastPayOut"];
+					}
+					$total_sum = number_format($total_sum, 0, '', ' ');
+					$total_MPI = number_format($total_MPI, 0, '', ' ');
+					$total_MPO = number_format($total_MPO, 0, '', ' ');
+					$total_LMPI = number_format($total_LMPI, 0, '', ' ');
+					$total_LMPO = number_format($total_LMPO, 0, '', ' ');
 
-	<?
+					if( !isset($_GET["worker"]) ) {
+						echo "<tr>";
+						echo "<td class='txtright'><b>Сумма:</b></td>";
+						echo "<td class='txtright'><b>{$total_sum}</b></td>";
+						echo "<td class='txtright'><b>{$total_MPI}</b></td>";
+						echo "<td class='txtright'><b>{$total_MPO}</b></td>";
+						echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
+						echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
+						echo "</tr>";
+					}
+				?>
+				</tbody>
+			</table>
+			<?
+			}
 		// Баланс работников ИТР
 		$query = "SELECT WD.WD_ID
 						,WD.Name
@@ -248,53 +248,54 @@
 					$total_MPO = 0;
 					$total_LMPI = 0;
 					$total_LMPO = 0;
-			}
 
-			while( $row = mysqli_fetch_array($res) )
-			{
-				if( $row["Sum"] < 0 )
-					$color = ' bg-red';
-				else
-					$color = '';
-				$format_sum = number_format($row["Sum"], 0, '', ' ');
-				$format_MPI = number_format($row["PayIn"], 0, '', ' ');
-				$format_MPO = number_format($row["PayOut"], 0, '', ' ');
-				$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
-				$format_LMPO = number_format($row["LastPayOut"], 0, '', ' ');
-				echo "<tr>";
-				echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
-				echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
-				echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
-				echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
-				echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
-				echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
-				echo "</tr>";
-				$total_sum = $total_sum + $row["Sum"];
-				$total_MPI = $total_MPI + $row["PayIn"];
-				$total_MPO = $total_MPO + $row["PayOut"];
-				$total_LMPI = $total_LMPI + $row["LastPayIn"];
-				$total_LMPO = $total_LMPO + $row["LastPayOut"];
-			}
-			$total_sum = number_format($total_sum, 0, '', ' ');
-			$total_MPI = number_format($total_MPI, 0, '', ' ');
-			$total_MPO = number_format($total_MPO, 0, '', ' ');
-			$total_LMPI = number_format($total_LMPI, 0, '', ' ');
-			$total_LMPO = number_format($total_LMPO, 0, '', ' ');
+					while( $row = mysqli_fetch_array($res) )
+					{
+						if( $row["Sum"] < 0 )
+							$color = ' bg-red';
+						else
+							$color = '';
+						$format_sum = number_format($row["Sum"], 0, '', ' ');
+						$format_MPI = number_format($row["PayIn"], 0, '', ' ');
+						$format_MPO = number_format($row["PayOut"], 0, '', ' ');
+						$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
+						$format_LMPO = number_format($row["LastPayOut"], 0, '', ' ');
+						echo "<tr>";
+						echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
+						echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
+						echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
+						echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
+						echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
+						echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
+						echo "</tr>";
+						$total_sum = $total_sum + $row["Sum"];
+						$total_MPI = $total_MPI + $row["PayIn"];
+						$total_MPO = $total_MPO + $row["PayOut"];
+						$total_LMPI = $total_LMPI + $row["LastPayIn"];
+						$total_LMPO = $total_LMPO + $row["LastPayOut"];
+					}
+					$total_sum = number_format($total_sum, 0, '', ' ');
+					$total_MPI = number_format($total_MPI, 0, '', ' ');
+					$total_MPO = number_format($total_MPO, 0, '', ' ');
+					$total_LMPI = number_format($total_LMPI, 0, '', ' ');
+					$total_LMPO = number_format($total_LMPO, 0, '', ' ');
 
-			if( !isset($_GET["worker"]) ) {
-				echo "<tr>";
-				echo "<td class='txtright'><b>Сумма:</b></td>";
-				echo "<td class='txtright'><b>{$total_sum}</b></td>";
-				echo "<td class='txtright'><b>{$total_MPI}</b></td>";
-				echo "<td class='txtright'><b>{$total_MPO}</b></td>";
-				echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
-				echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
-				echo "</tr>";
+					if( !isset($_GET["worker"]) ) {
+						echo "<tr>";
+						echo "<td class='txtright'><b>Сумма:</b></td>";
+						echo "<td class='txtright'><b>{$total_sum}</b></td>";
+						echo "<td class='txtright'><b>{$total_MPI}</b></td>";
+						echo "<td class='txtright'><b>{$total_MPO}</b></td>";
+						echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
+						echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
+						echo "</tr>";
+					}
+				?>
+				</tbody>
+			</table>
+			<?
 			}
-		?>
-		</tbody>
-	</table>
-
+			?>
 	</div>
 
 	<div class="log-pay halfblock">
