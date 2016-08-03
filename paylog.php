@@ -24,56 +24,50 @@
 	<? include "form_addpay.php"; ?>
 
 	<div class="halfblock">
-		<h1>Баланс сдельных работников</h1>
-		<table>
-			<thead>
-			<tr>
-				<th rowspan="2">Работник</th>
-				<th rowspan="2">Баланс</th>
-				<th colspan="2" class="nowrap"><?=$MONTHS[$month]?> <?=$year?></th>
-				<th colspan="2" class="nowrap"><?=$MONTHS[$lastmonth]?> <?=$lastyear?></th>
-			</tr>
-				<th>Начислено</th>
-				<th>Выдано</th>
-				<th>Начислено</th>
-				<th>Выдано</th>
-			<tr>
-			</tr>
-			</thead>
-			<tbody>
-			<?
+		<?
+			// Баланс сдельных работников
+			$query = "SELECT WD.WD_ID
+							,WD.Name
+							,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
+							,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
+							,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
+							,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
+							,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
+					  FROM WorkersData WD
+					  LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
+					  WHERE WD.IsActive = 1 AND WD.Type = 1";
+			if( isset($_GET["worker"]) ) {
+				$query .= " AND WD.WD_ID = {$_GET["worker"]}";
+			}
+			$query .= " GROUP BY WD.WD_ID ORDER BY WD.Name";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			if( mysqli_num_rows($res) ) {
+				?>
+				<h1>Баланс сдельных работников</h1>
+				<table>
+					<thead>
+					<tr>
+						<th rowspan="2">Работник</th>
+						<th rowspan="2">Баланс</th>
+						<th colspan="2" class="nowrap"><?=$MONTHS[$month]?> <?=$year?></th>
+						<th colspan="2" class="nowrap"><?=$MONTHS[$lastmonth]?> <?=$lastyear?></th>
+					</tr>
+						<th>Начислено</th>
+						<th>Выдано</th>
+						<th>Начислено</th>
+						<th>Выдано</th>
+					<tr>
+					</tr>
+					</thead>
+					<tbody>
+				<?
 				$total_sum = 0;
 				$total_MPI = 0;
 				$total_MPO = 0;
 				$total_LMPI = 0;
 				$total_LMPO = 0;
 
-				// Баланс работников
-				$query = "SELECT WD.WD_ID, WD.Name, IFNULL(SMP.Pay, 0) Sum, SMPM.PayIn, SMPM.PayOut, SMPML.PayIn LastPayIn, SMPML.PayOut LastPayOut
-							FROM WorkersData WD
-							LEFT JOIN (
-								SELECT MPIO.WD_ID, SUM(MPIO.PayIn - MPIO.PayOut) Pay
-								FROM MonthlyPayInOut MPIO
-								GROUP BY MPIO.WD_ID
-							) SMP ON SMP.WD_ID = WD.WD_ID
-							LEFT JOIN (
-								SELECT MPIO.WD_ID, MPIO.PayIn, MPIO.PayOut
-								FROM MonthlyPayInOut MPIO
-								WHERE Year = {$year} AND Month = {$month}
-								GROUP BY MPIO.WD_ID
-							) SMPM ON SMPM.WD_ID = WD.WD_ID
-							LEFT JOIN (
-								SELECT MPIO.WD_ID, MPIO.PayIn, MPIO.PayOut
-								FROM MonthlyPayInOut MPIO
-								WHERE Year = {$lastyear} AND Month = {$lastmonth}
-								GROUP BY MPIO.WD_ID
-							) SMPML ON SMPML.WD_ID = WD.WD_ID
-							WHERE WD.IsActive = 1 AND WD.Type = 1";
-				if( isset($_GET["worker"]) ) {
-					$query .= " AND WD.WD_ID = {$_GET["worker"]}";
-				}
-				$query .= " ORDER BY WD.Name";
-				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{
 					if( $row["Sum"] < 0 )
@@ -115,199 +109,191 @@
 					echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
 					echo "</tr>";
 				}
-			?>
-			</tbody>
-		</table>
+				?>
+				</tbody>
+			</table>
 
-		<h1>Баланс повременных работников</h1>
-		<table>
-			<thead>
-			<tr>
-				<th rowspan="2">Работник</th>
-				<th rowspan="2">Баланс</th>
-				<th colspan="2" class="nowrap"><?=$MONTHS[$month]?> <?=$year?></th>
-				<th colspan="2" class="nowrap"><?=$MONTHS[$lastmonth]?> <?=$lastyear?></th>
-			</tr>
-				<th>Начислено</th>
-				<th>Выдано</th>
-				<th>Начислено</th>
-				<th>Выдано</th>
-			<tr>
-			</tr>
-			</thead>
-			<tbody>
 			<?
-				$total_sum = 0;
-				$total_MPI = 0;
-				$total_MPO = 0;
-				$total_LMPI = 0;
-				$total_LMPO = 0;
+			}
 
-				// Баланс работников
-				$query = "SELECT WD.WD_ID, WD.Name, IFNULL(SMP.Pay, 0) Sum, SMPM.PayIn, SMPM.PayOut, SMPML.PayIn LastPayIn, SMPML.PayOut LastPayOut
-							FROM WorkersData WD
-							LEFT JOIN (
-								SELECT MPIO.WD_ID, SUM(MPIO.PayIn - MPIO.PayOut) Pay
-								FROM MonthlyPayInOut MPIO
-								GROUP BY MPIO.WD_ID
-							) SMP ON SMP.WD_ID = WD.WD_ID
-							LEFT JOIN (
-								SELECT MPIO.WD_ID, MPIO.PayIn, MPIO.PayOut
-								FROM MonthlyPayInOut MPIO
-								WHERE Year = {$year} AND Month = {$month}
-								GROUP BY MPIO.WD_ID
-							) SMPM ON SMPM.WD_ID = WD.WD_ID
-							LEFT JOIN (
-								SELECT MPIO.WD_ID, MPIO.PayIn, MPIO.PayOut
-								FROM MonthlyPayInOut MPIO
-								WHERE Year = {$lastyear} AND Month = {$lastmonth}
-								GROUP BY MPIO.WD_ID
-							) SMPML ON SMPML.WD_ID = WD.WD_ID
-							WHERE WD.IsActive = 1 AND WD.Type = 2";
-				if( isset($_GET["worker"]) ) {
-					$query .= " AND WD.WD_ID = {$_GET["worker"]}";
-				}
-				$query .= " ORDER BY WD.Name";
-				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				while( $row = mysqli_fetch_array($res) )
-				{
-					if( $row["Sum"] < 0 )
-						$color = ' bg-red';
-					else
-						$color = '';
-					$format_sum = number_format($row["Sum"], 0, '', ' ');
-					$format_MPI = number_format($row["PayIn"], 0, '', ' ');
-					$format_MPO = number_format($row["PayOut"], 0, '', ' ');
-					$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
-					$format_LMPO = number_format($row["LastPayOut"], 0, '', ' ');
-					echo "<tr>";
-					echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
-					echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
-					echo "</tr>";
-					$total_sum = $total_sum + $row["Sum"];
-					$total_MPI = $total_MPI + $row["PayIn"];
-					$total_MPO = $total_MPO + $row["PayOut"];
-					$total_LMPI = $total_LMPI + $row["LastPayIn"];
-					$total_LMPO = $total_LMPO + $row["LastPayOut"];
-				}
-				$total_sum = number_format($total_sum, 0, '', ' ');
-				$total_MPI = number_format($total_MPI, 0, '', ' ');
-				$total_MPO = number_format($total_MPO, 0, '', ' ');
-				$total_LMPI = number_format($total_LMPI, 0, '', ' ');
-				$total_LMPO = number_format($total_LMPO, 0, '', ' ');
+			// Баланс повременных работников
+			$query = "SELECT WD.WD_ID
+							,WD.Name
+							,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
+							,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
+							,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
+							,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
+							,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
+					  FROM WorkersData WD
+					  LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
+					  WHERE WD.IsActive = 1 AND WD.Type = 2";
 
-				if( !isset($_GET["worker"]) ) {
-					echo "<tr>";
-					echo "<td class='txtright'><b>Сумма:</b></td>";
-					echo "<td class='txtright'><b>{$total_sum}</b></td>";
-					echo "<td class='txtright'><b>{$total_MPI}</b></td>";
-					echo "<td class='txtright'><b>{$total_MPO}</b></td>";
-					echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
-					echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
-					echo "</tr>";
-				}
-			?>
-			</tbody>
-		</table>
+			if( isset($_GET["worker"]) ) {
+				$query .= " AND WD.WD_ID = {$_GET["worker"]}";
+			}
+			$query .= " GROUP BY WD.WD_ID ORDER BY WD.Name";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		<h1>Баланс работников ИТР</h1>
-		<table>
-			<thead>
-			<tr>
-				<th rowspan="2">Работник</th>
-				<th rowspan="2">Баланс</th>
-				<th colspan="2" class="nowrap"><?=$MONTHS[$month]?> <?=$year?></th>
-				<th colspan="2" class="nowrap"><?=$MONTHS[$lastmonth]?> <?=$lastyear?></th>
-			</tr>
-				<th>Начислено</th>
-				<th>Выдано</th>
-				<th>Начислено</th>
-				<th>Выдано</th>
-			<tr>
-			</tr>
-			</thead>
-			<tbody>
-			<?
-				$total_sum = 0;
-				$total_MPI = 0;
-				$total_MPO = 0;
-				$total_LMPI = 0;
-				$total_LMPO = 0;
+			if( mysqli_num_rows($res) ) {
+				?>
+				<h1>Баланс повременных работников</h1>
+				<table>
+					<thead>
+					<tr>
+						<th rowspan="2">Работник</th>
+						<th rowspan="2">Баланс</th>
+						<th colspan="2" class="nowrap"><?=$MONTHS[$month]?> <?=$year?></th>
+						<th colspan="2" class="nowrap"><?=$MONTHS[$lastmonth]?> <?=$lastyear?></th>
+					</tr>
+						<th>Начислено</th>
+						<th>Выдано</th>
+						<th>Начислено</th>
+						<th>Выдано</th>
+					<tr>
+					</tr>
+					</thead>
+					<tbody>
+					<?
+					$total_sum = 0;
+					$total_MPI = 0;
+					$total_MPO = 0;
+					$total_LMPI = 0;
+					$total_LMPO = 0;
+			}
+			while( $row = mysqli_fetch_array($res) )
+			{
+				if( $row["Sum"] < 0 )
+					$color = ' bg-red';
+				else
+					$color = '';
+				$format_sum = number_format($row["Sum"], 0, '', ' ');
+				$format_MPI = number_format($row["PayIn"], 0, '', ' ');
+				$format_MPO = number_format($row["PayOut"], 0, '', ' ');
+				$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
+				$format_LMPO = number_format($row["LastPayOut"], 0, '', ' ');
+				echo "<tr>";
+				echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
+				echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
+				echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
+				echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
+				echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
+				echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
+				echo "</tr>";
+				$total_sum = $total_sum + $row["Sum"];
+				$total_MPI = $total_MPI + $row["PayIn"];
+				$total_MPO = $total_MPO + $row["PayOut"];
+				$total_LMPI = $total_LMPI + $row["LastPayIn"];
+				$total_LMPO = $total_LMPO + $row["LastPayOut"];
+			}
+			$total_sum = number_format($total_sum, 0, '', ' ');
+			$total_MPI = number_format($total_MPI, 0, '', ' ');
+			$total_MPO = number_format($total_MPO, 0, '', ' ');
+			$total_LMPI = number_format($total_LMPI, 0, '', ' ');
+			$total_LMPO = number_format($total_LMPO, 0, '', ' ');
 
-				// Баланс работников
-				$query = "SELECT WD.WD_ID, WD.Name, IFNULL(SMP.Pay, 0) Sum, SMPM.PayIn, SMPM.PayOut, SMPML.PayIn LastPayIn, SMPML.PayOut LastPayOut
-							FROM WorkersData WD
-							LEFT JOIN (
-								SELECT MPIO.WD_ID, SUM(MPIO.PayIn - MPIO.PayOut) Pay
-								FROM MonthlyPayInOut MPIO
-								GROUP BY MPIO.WD_ID
-							) SMP ON SMP.WD_ID = WD.WD_ID
-							LEFT JOIN (
-								SELECT MPIO.WD_ID, MPIO.PayIn, MPIO.PayOut
-								FROM MonthlyPayInOut MPIO
-								WHERE Year = {$year} AND Month = {$month}
-								GROUP BY MPIO.WD_ID
-							) SMPM ON SMPM.WD_ID = WD.WD_ID
-							LEFT JOIN (
-								SELECT MPIO.WD_ID, MPIO.PayIn, MPIO.PayOut
-								FROM MonthlyPayInOut MPIO
-								WHERE Year = {$lastyear} AND Month = {$lastmonth}
-								GROUP BY MPIO.WD_ID
-							) SMPML ON SMPML.WD_ID = WD.WD_ID
-							WHERE WD.IsActive = 1 AND WD.Type = 3";
-				if( isset($_GET["worker"]) ) {
-					$query .= " AND WD.WD_ID = {$_GET["worker"]}";
-				}
-				$query .= " ORDER BY WD.Name";
-				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				while( $row = mysqli_fetch_array($res) )
-				{
-					if( $row["Sum"] < 0 )
-						$color = ' bg-red';
-					else
-						$color = '';
-					$format_sum = number_format($row["Sum"], 0, '', ' ');
-					$format_MPI = number_format($row["PayIn"], 0, '', ' ');
-					$format_MPO = number_format($row["PayOut"], 0, '', ' ');
-					$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
-					$format_LMPO = number_format($row["LastPayOut"], 0, '', ' ');
-					echo "<tr>";
-					echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
-					echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
-					echo "</tr>";
-					$total_sum = $total_sum + $row["Sum"];
-					$total_MPI = $total_MPI + $row["PayIn"];
-					$total_MPO = $total_MPO + $row["PayOut"];
-					$total_LMPI = $total_LMPI + $row["LastPayIn"];
-					$total_LMPO = $total_LMPO + $row["LastPayOut"];
-				}
-				$total_sum = number_format($total_sum, 0, '', ' ');
-				$total_MPI = number_format($total_MPI, 0, '', ' ');
-				$total_MPO = number_format($total_MPO, 0, '', ' ');
-				$total_LMPI = number_format($total_LMPI, 0, '', ' ');
-				$total_LMPO = number_format($total_LMPO, 0, '', ' ');
+			if( !isset($_GET["worker"]) ) {
+				echo "<tr>";
+				echo "<td class='txtright'><b>Сумма:</b></td>";
+				echo "<td class='txtright'><b>{$total_sum}</b></td>";
+				echo "<td class='txtright'><b>{$total_MPI}</b></td>";
+				echo "<td class='txtright'><b>{$total_MPO}</b></td>";
+				echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
+				echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
+				echo "</tr>";
+			}
+		?>
+		</tbody>
+	</table>
 
-				if( !isset($_GET["worker"]) ) {
-					echo "<tr>";
-					echo "<td class='txtright'><b>Сумма:</b></td>";
-					echo "<td class='txtright'><b>{$total_sum}</b></td>";
-					echo "<td class='txtright'><b>{$total_MPI}</b></td>";
-					echo "<td class='txtright'><b>{$total_MPO}</b></td>";
-					echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
-					echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
-					echo "</tr>";
-				}
-			?>
-			</tbody>
-		</table>
+	<?
+		// Баланс работников ИТР
+		$query = "SELECT WD.WD_ID
+						,WD.Name
+						,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
+						,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
+						,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
+						,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
+						,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
+				  FROM WorkersData WD
+				  LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
+				  WHERE WD.IsActive = 1 AND WD.Type = 3";
+			if( isset($_GET["worker"]) ) {
+				$query .= " AND WD.WD_ID = {$_GET["worker"]}";
+			}
+			$query .= " GROUP BY WD.WD_ID ORDER BY WD.Name";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			if( mysqli_num_rows($res) ) {
+				?>
+				<h1>Баланс работников ИТР</h1>
+				<table>
+					<thead>
+					<tr>
+						<th rowspan="2">Работник</th>
+						<th rowspan="2">Баланс</th>
+						<th colspan="2" class="nowrap"><?=$MONTHS[$month]?> <?=$year?></th>
+						<th colspan="2" class="nowrap"><?=$MONTHS[$lastmonth]?> <?=$lastyear?></th>
+					</tr>
+						<th>Начислено</th>
+						<th>Выдано</th>
+						<th>Начислено</th>
+						<th>Выдано</th>
+					<tr>
+					</tr>
+					</thead>
+					<tbody>
+					<?
+					$total_sum = 0;
+					$total_MPI = 0;
+					$total_MPO = 0;
+					$total_LMPI = 0;
+					$total_LMPO = 0;
+			}
+
+			while( $row = mysqli_fetch_array($res) )
+			{
+				if( $row["Sum"] < 0 )
+					$color = ' bg-red';
+				else
+					$color = '';
+				$format_sum = number_format($row["Sum"], 0, '', ' ');
+				$format_MPI = number_format($row["PayIn"], 0, '', ' ');
+				$format_MPO = number_format($row["PayOut"], 0, '', ' ');
+				$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
+				$format_LMPO = number_format($row["LastPayOut"], 0, '', ' ');
+				echo "<tr>";
+				echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
+				echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
+				echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
+				echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
+				echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
+				echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
+				echo "</tr>";
+				$total_sum = $total_sum + $row["Sum"];
+				$total_MPI = $total_MPI + $row["PayIn"];
+				$total_MPO = $total_MPO + $row["PayOut"];
+				$total_LMPI = $total_LMPI + $row["LastPayIn"];
+				$total_LMPO = $total_LMPO + $row["LastPayOut"];
+			}
+			$total_sum = number_format($total_sum, 0, '', ' ');
+			$total_MPI = number_format($total_MPI, 0, '', ' ');
+			$total_MPO = number_format($total_MPO, 0, '', ' ');
+			$total_LMPI = number_format($total_LMPI, 0, '', ' ');
+			$total_LMPO = number_format($total_LMPO, 0, '', ' ');
+
+			if( !isset($_GET["worker"]) ) {
+				echo "<tr>";
+				echo "<td class='txtright'><b>Сумма:</b></td>";
+				echo "<td class='txtright'><b>{$total_sum}</b></td>";
+				echo "<td class='txtright'><b>{$total_MPI}</b></td>";
+				echo "<td class='txtright'><b>{$total_MPO}</b></td>";
+				echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
+				echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
+				echo "</tr>";
+			}
+		?>
+		</tbody>
+	</table>
 
 	</div>
 

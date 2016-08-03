@@ -404,7 +404,7 @@ $(document).ready(function(){
 	});
 
 	// Форма добавления заготовок
-	$('.edit_blank').click(function() {
+	$('.edit_order_blank').click(function() {
 		var id = $(this).attr('id');
 		var location = $(this).attr("location");
 		var odid = $(this).attr("odid");
