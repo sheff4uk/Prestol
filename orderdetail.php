@@ -373,8 +373,7 @@
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-			  ";
+			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID";
 	if( $id != "NULL" )
 	{
 		$query .= " WHERE ODD.OD_ID = {$id}";

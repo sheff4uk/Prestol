@@ -236,40 +236,61 @@
 					,CT.Color CTColor
 					,OD.OrderNumber
 					,OD.Comment
-					,COUNT(ODD.ODD_ID) Child
-					,GROUP_CONCAT(CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' location=\'{$location}\' class=\'button edit_product', IFNULL(PM.PT_ID, 2), '\'>', ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') Zakaz
-					,GROUP_CONCAT(CONCAT(ODD.Color, '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Color_archive
+					,COUNT(ODD_ODB.itemID) Child
+					,GROUP_CONCAT(ODD_ODB.Zakaz ORDER BY ODD_ODB.PT_ID DESC, ODD_ODB.itemID SEPARATOR '') Zakaz
 					,OD.Color
 					,OD.IsPainting
-					,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 1 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
-						CASE ODD.IsExist
-							WHEN 0 THEN 'bg-red'
-							WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
-							WHEN 2 THEN 'bg-green'
-						END,
-					'\'>', IF(PM.PT_ID = 1, IFNULL(ODD.Material, ''), ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Textile
-					,GROUP_CONCAT(CONCAT(IF(IFNULL(PM.PT_ID, 2) = 2 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
-						CASE ODD.IsExist
-							WHEN 0 THEN 'bg-red'
-							WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
-							WHEN 2 THEN 'bg-green'
-						END,
-					'\'>', IF(IFNULL(PM.PT_ID, 2) = 2, IFNULL(ODD.Material, ''), ''), '</span><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') Plastic
-					,GROUP_CONCAT(CONCAT(ODS_WD.Name, '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Workers
+					,GROUP_CONCAT(ODD_ODB.Textile ORDER BY ODD_ODB.PT_ID DESC, ODD_ODB.itemID SEPARATOR '') Textile
+					,GROUP_CONCAT(ODD_ODB.Plastic ORDER BY ODD_ODB.PT_ID DESC, ODD_ODB.itemID SEPARATOR '') Plastic
+					,GROUP_CONCAT(ODS_WD.Name) Workers
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,BIT_AND(ODS_WD.IsReady) IsReady
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-			  LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
-			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			  LEFT JOIN (SELECT ODS.ODD_ID, GROUP_CONCAT(WD.Name) Name, BIT_AND(ODS.IsReady) IsReady
+			  LEFT JOIN (
+			  			SELECT ODD.OD_ID
+							  ,IFNULL(PM.PT_ID, 2) PT_ID
+							  ,ODD.ODD_ID itemID
+							  ,CONCAT(
+							  	'<a href=\'#\' id=\'', ODD.ODD_ID, '\' location=\'{$location}\' class=\'button edit_product', IFNULL(PM.PT_ID, 2), '\'>', ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a><br>') Zakaz
+							  ,CONCAT(
+							  	IF(PM.PT_ID = 1 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
+								CASE ODD.IsExist
+									WHEN 0 THEN 'bg-red'
+									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
+									WHEN 2 THEN 'bg-green'
+								END,
+								'\'>', IF(PM.PT_ID = 1, IFNULL(ODD.Material, ''), ''), '</span><br>') Textile
+							  ,CONCAT(
+								IF(IFNULL(PM.PT_ID, 2) = 2 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
+								CASE ODD.IsExist
+									WHEN 0 THEN 'bg-red'
+									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
+									WHEN 2 THEN 'bg-green'
+								END,
+								'\'>', IF(IFNULL(PM.PT_ID, 2) = 2, IFNULL(ODD.Material, ''), ''), '</span><br>') Plastic
+			  			FROM OrdersDataDetail ODD
+			  			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+						UNION
+						SELECT ODB.OD_ID
+							  ,0 PT_ID
+							  ,ODB.ODB_ID itemID
+							  ,CONCAT(
+								'<a href=\'#\' id=\'', ODB.ODB_ID, '\'', 'class=\'button edit_order_blank\' location=\'{$location}\'>', ODB.Amount, ' ', BL.Name, '</a><br>') Zakaz
+							  ,'<br>' Textile
+							  ,'<br>' Plastic
+						FROM OrdersDataBlank ODB
+						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+			  ) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+			  LEFT JOIN (
+						SELECT ODS.ODD_ID, GROUP_CONCAT(WD.Name) Name, BIT_AND(ODS.IsReady) IsReady
 						FROM OrdersDataSteps ODS
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						WHERE ODS.Visible = 1
-						GROUP BY ODS.ODD_ID) ODS_WD ON ODS_WD.ODD_ID = ODD.ODD_ID
+						GROUP BY ODS.ODD_ID) ODS_WD ON ODS_WD.ODD_ID = ODD_ODB.itemID
 			  WHERE TRUE";
 			  if( $archive ) {
 				  $query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
@@ -350,8 +371,9 @@
 		echo "<td><span>{$row["Color"]}</span></td>";
 		
 		// Получаем данные по этамам производства
-		$query = "SELECT ODD.ODD_ID
-						,GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR '') Steps
+		$query = "SELECT IFNULL(PM.PT_ID, 2) PT_ID
+						,ODD.ODD_ID itemID
+						,CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' class=\'edit_steps\' location=\'{$location}\'>', GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
 					FROM OrdersDataDetail ODD
 					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -359,12 +381,15 @@
 					LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 					WHERE ODD.OD_ID = {$row["OD_ID"]}
 					GROUP BY ODD.ODD_ID
-					ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID";
+					UNION
+					SELECT 0 PT_ID, ODB.ODB_ID itemID, '<br>' Steps
+					FROM OrdersDataBlank ODB
+					ORDER BY PT_ID DESC, itemID";
 		$sub_res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$steps = "";
 		while( $sub_row = mysqli_fetch_array($sub_res) )
 		{
-			$steps .= "<a href='#' id='{$sub_row["ODD_ID"]}' class='edit_steps' location='{$location}'>{$sub_row["Steps"]}</a><br>";
+			$steps .= $sub_row["Steps"];
 		}
 
 		echo "<td><span class='nowrap'>{$steps}</span></td>";
@@ -429,6 +454,15 @@
 		while( $sub_row = mysqli_fetch_array($result) )
 		{
 			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "PieceAmount"=>$sub_row["PieceAmount"], "PieceSize"=>$sub_row["PieceSize"], "color"=>$sub_row["Color"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"] );
+		}
+
+		$query = "SELECT ODB.ODB_ID, ODB.Amount, ODB.BL_ID, ODB.Comment
+				  FROM OrdersDataBlank ODB
+				  WHERE ODB.OD_ID = {$row["OD_ID"]}";
+		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $sub_row = mysqli_fetch_array($result) )
+		{
+			$ODB[$sub_row["ODB_ID"]] = array( "amount"=>$sub_row["Amount"], "blank"=>$sub_row["BL_ID"], "comment"=>$sub_row["Comment"] );
 		}
 	}
 ?>
@@ -515,6 +549,7 @@
 			return false;
 		}
 
-		odd = <?= json_encode($ODD); ?>;
+		odd = <?= json_encode($ODD) ?>;
+		odb = <?= json_encode($ODB) ?>;
 	});
 </script>
