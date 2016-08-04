@@ -85,8 +85,8 @@
 						,OD.ClientName
 						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 						,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
-						,CONCAT(CT.City, '/', SH.Shop) AS Shop
-						,CT.Color CTColor
+						,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
+						,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 						,OD.OrderNumber
 						,OD.Comment
 						,ODS.ST_ID

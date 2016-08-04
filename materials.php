@@ -66,6 +66,7 @@
 		<tr>
 			<th></th>
 			<th>Ткань/пластик</th>
+			<th>Примечание к изделию</th>
 			<th>Заказ</th>
 			<th>Лакировка</th>
 			<th>Цвет</th>
@@ -83,11 +84,12 @@
 					,OD.ClientName
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 					,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
-					,CONCAT(CT.City, '/', SH.Shop) AS Shop
-					,CT.Color CTColor
+					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
+					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,OD.OrderNumber
 					,OD.Comment
 					,COUNT(ODD.ODD_ID) Child
+					,GROUP_CONCAT(CONCAT(IFNULL(ODD.Comment, ''), '<br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') ZakazComment
 					,GROUP_CONCAT(CONCAT(ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '<br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') Zakaz
 					,OD.IsPainting
 					,IFNULL(OD.Color, '<a href=\"/orderdetail.php\">Свободные</a>') Color
@@ -119,6 +121,7 @@
 		echo "<tr>";
 		echo "<td>{$row["Checkbox"]}</td>";
 		echo "<td><span class='nowrap'>{$row["Material"]}</span></td>";
+		echo "<td><span class='nowrap'>{$row["ZakazComment"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 			switch ($row["IsPainting"]) {
 				case 1:

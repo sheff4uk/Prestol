@@ -21,7 +21,7 @@
 		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli,$_POST["ClientName"] );
-		$Shop = $_POST["Shop"] <> "" ? $_POST["Shop"] : "NULL";
+		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 		$OrderNumber = mysqli_real_escape_string( $mysqli,$_POST["OrderNumber"] );
 		$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
 		$IsPainting = $_POST["IsPainting"];
@@ -259,7 +259,7 @@
 					,OD.Color
 					,OD.IsPainting
 					,OD.Comment
-					,CT.Color CTColor
+					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -282,8 +282,9 @@
 			<td><input required type='text' name='StartDate' size='8' class='date' value='<?=$StartDate?>'></td>
 			<td><input type='text' name='EndDate' size='8' class='date' value='<?=$EndDate?>'></td>
 			<td style='background: <?=$CTColor?>;'>
-				<select name='Shop'>
+				<select required name='Shop'>
 					<option value="">-=Выберите салон=-</option>
+					<option value="0" selected style="background: #999;">Свободные</option>
 					<?
 					$query = "SELECT Shops.SH_ID
 									,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
