@@ -130,10 +130,6 @@ if( $_GET["odbid"] )
 // Обновление в базе производственных этапов
 if( isset($_POST["ODD_ID"]) )
 {
-//	// Обнуление статуса готовности и видимости
-//	$query = "UPDATE OrdersDataSteps SET IsReady = 0, Visible = 0 WHERE ODD_ID = {$_POST["ODD_ID"]}";
-//	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
 	foreach( $_POST as $k => $v) 
 	{
 //		$val = $v ? "$v" : "NULL";

@@ -29,21 +29,19 @@
 
 	<script>
 		$(document).ready(function(){
-			$(function() {
-				$( 'input[type=submit], .button, button' ).button();
+			$( 'input[type=submit], .button, button' ).button();
 
-				// Календарь
-				$( "input.date" ).datepicker({
-					dateFormat: 'dd.mm.yy',
-					onClose: function( selectedDate ) {
-						if( $(this).hasClass( "from" ) ) {
-							$(this).parents( "form" ).find( ".to" ).datepicker( "option", "minDate", selectedDate );
-						}
-						if( $(this).hasClass( "to" ) ) {
-							$(this).parents( "form" ).find( ".from" ).datepicker( "option", "maxDate", selectedDate );
-						}
+			// Календарь
+			$( "input.date" ).datepicker({
+				dateFormat: 'dd.mm.yy',
+				onClose: function( selectedDate ) {
+					if( $(this).hasClass( "from" ) ) {
+						$(this).parents( "form" ).find( ".to" ).datepicker( "option", "minDate", selectedDate );
 					}
-				});
+					if( $(this).hasClass( "to" ) ) {
+						$(this).parents( "form" ).find( ".from" ).datepicker( "option", "maxDate", selectedDate );
+					}
+				}
 			});
 
 			// Плавная прокрутка к якорю

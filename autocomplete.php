@@ -5,7 +5,9 @@
 			<?
 				$query = "(SELECT CT.City AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID GROUP BY CT.CT_ID)
 						  UNION
-						  (SELECT CONCAT(CT.City, '/', SH.Shop) AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID)";
+						  (SELECT CONCAT(CT.City, '/', SH.Shop) AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID)
+						  UNION
+						  (SELECT 'Свободные' AS Shop)";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{

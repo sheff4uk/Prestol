@@ -65,7 +65,7 @@
         </thead>
         <tbody>
 	<?
-	$query = "SELECT IF(IFNULL(OD.ClientName, '') = '', '-', OD.ClientName) ClientName
+	$query = "SELECT IFNULL(OD.ClientName, '') ClientName
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 					,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate

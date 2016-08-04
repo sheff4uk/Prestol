@@ -4,6 +4,7 @@
 	include "config.php";
 	
 	// Запись в сессию параметров фильтра
+	$_SESSION["f_CD"] = $_GET["f_CD"];	// Код
 	$_SESSION["f_CN"] = $_GET["f_CN"];	// Заказчик
 	$_SESSION["f_SD"] = $_GET["f_SD"];	// дата приема
 	$_SESSION["f_ED"] = $_GET["f_ED"];	// Дата сдачи

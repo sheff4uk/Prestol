@@ -37,7 +37,8 @@
 	{
 		$id = (int)$_GET["del"];
 
-		$query = "DELETE FROM OrdersData WHERE OD_ID={$id}";
+//		$query = "DELETE FROM OrdersData WHERE OD_ID={$id}";
+		$query = "UPDATE OrdersData SET Del = 1 WHERE OD_ID={$id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		header( "Location: /" ); // Перезагружаем экран
@@ -143,6 +144,7 @@
 		<form method='get' action='filter.php'>
 		<thead>
 		<tr>
+			<th width="40"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_CN' size='8' value='<?= $_SESSION["f_CN"] ?>' class='<?=($_SESSION["f_CN"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>' class='<?=($_SESSION["f_SD"] != "") ? "filtered" : ""?>'></th>
 			<th width="5%"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>' class='<?=($_SESSION["f_ED"] != "") ? "filtered" : ""?>'></th>
@@ -188,19 +190,20 @@
 		<input type="text" id="print_title" name="print_title" placeholder="Введите заголовок таблицы">
 		<thead>
 		<tr>
-			<th width="5%"><input type="checkbox" disabled value="1" checked name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
-			<th width="5%"><input type="checkbox" disabled value="2" checked name="SD" class="print_col" id="SD"><label for="SD">Дата<br>приема</label></th>
-			<th width="5%"><input type="checkbox" disabled value="3" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br>сдачи</label></th>
-			<th width="5%"><input type="checkbox" disabled value="4" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
-			<th width="5%"><input type="checkbox" disabled value="5" checked name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>
-			<th width="15%"><input type="checkbox" disabled value="6" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
-			<th width="15%"><input type="checkbox" disabled value="7" checked name="P" class="print_col" id="P"><label for="P">Пластик</label></th>
-			<th width="15%"><input type="checkbox" disabled value="8" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
-			<th width="10%"><input type="checkbox" disabled value="9" checked name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
-			<th width="40"><input type="checkbox" disabled value="10" checked name="X" class="print_col" id="X"><label for="X">X</label></th>
-			<th width="45"><input type="checkbox" disabled value="11" checked name="IP" class="print_col" id="IP"><label for="IP">Лакировка</label></th>
-			<th width="15%"><input type="checkbox" disabled value="12" checked name="T" class="print_col" id="T"><label for="T">Ткань</label></th>
-			<th width="15%"><input type="checkbox" disabled value="13" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
+			<th width="40"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
+			<th width="5%"><input type="checkbox" disabled value="2" checked name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
+			<th width="5%"><input type="checkbox" disabled value="3" checked name="SD" class="print_col" id="SD"><label for="SD">Дата<br>приема</label></th>
+			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br>сдачи</label></th>
+			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
+			<th width="5%"><input type="checkbox" disabled value="6" checked name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>
+			<th width="15%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
+			<th width="15%"><input type="checkbox" disabled value="8" checked name="P" class="print_col" id="P"><label for="P">Пластик</label></th>
+			<th width="15%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
+			<th width="10%"><input type="checkbox" disabled value="10" checked name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
+			<th width="40"><input type="checkbox" disabled value="11" checked name="X" class="print_col" id="X"><label for="X">X</label></th>
+			<th width="45"><input type="checkbox" disabled value="12" checked name="IP" class="print_col" id="IP"><label for="IP">Лакировка</label></th>
+			<th width="15%"><input type="checkbox" disabled value="13" checked name="T" class="print_col" id="T"><label for="T">Ткань</label></th>
+			<th width="15%"><input type="checkbox" disabled value="14" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
 			<th width="80">Действие</th>
 		</tr>
 		</thead>
@@ -210,6 +213,7 @@
 	<table class="main_table">
 		<thead style="">
 		<tr>
+			<th width="40"></th>
 			<th width="5%"></th>
 			<th width="5%"></th>
 			<th width="5%"></th>
@@ -229,7 +233,8 @@
 		<tbody>
 <?
 	$query = "SELECT OD.OD_ID
-					,IF(IFNULL(OD.ClientName, '') = '', '-', OD.ClientName) ClientName
+					,OD.Code
+					,IFNULL(OD.ClientName, '') ClientName
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 					,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
@@ -272,12 +277,15 @@
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						WHERE ODS.Visible = 1
 						GROUP BY ODS.ODD_ID) ODS_WD ON ODS_WD.ODD_ID = ODD.ODD_ID
-			  WHERE TRUE";
+			  WHERE OD.Del = 0";
 			  if( $archive ) {
 				  $query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
 			  }
 			  else {
 				  $query .= " AND OD.ReadyDate IS NULL";
+			  }
+			  if( $_SESSION["f_CD"] != "" ) {
+				  $query .= " AND OD.Code LIKE '%{$_SESSION["f_CD"]}%'";
 			  }
 			  if( $_SESSION["f_CN"] != "" ) {
 				  $query .= " AND OD.ClientName LIKE '%{$_SESSION["f_CN"]}%'";
@@ -294,7 +302,11 @@
 				  }
 			  }
 			  if( $_SESSION["f_SH"] != "" ) {
-				  $query .= " AND CONCAT(CT.City, '/', SH.Shop) LIKE '%{$_SESSION["f_SH"]}%'";
+				  $query .= " AND (CONCAT(CT.City, '/', SH.Shop) LIKE '%{$_SESSION["f_SH"]}%'";
+				  if( stripos("Свободные", $_SESSION["f_SH"]) !== false ) {
+					  $query .= " OR OD.SH_ID IS NULL";
+				  }
+				  $query .= ")";
 			  }
 			  if( $_SESSION["f_ON"] != "" ) {
 				  $query .= " AND OD.OrderNumber LIKE '%{$_SESSION["f_ON"]}%'";
@@ -333,10 +345,12 @@
 				  $query .= " AND OD.OD_ID IN ({$X_ord})";
 			  }
               $query .= " ORDER BY OD.OD_ID";
+
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
 		echo "<tr id='ord{$row["OD_ID"]}'>";
+		echo "<td><span>{$row["Code"]}</span></td>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
 		echo "<td><span>{$row["StartDate"]}</span></td>";
 		if( $archive ) {

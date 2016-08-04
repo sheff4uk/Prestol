@@ -16,9 +16,9 @@
 	}
 
 	// Обновление основной информации о заказе
-	if( isset($_POST["StartDate"]) )
+	if( isset($_POST["Shop"]) )
 	{
-		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
+//		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli,$_POST["ClientName"] );
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
@@ -33,7 +33,6 @@
 		$Comment = trim($Comment);
 		$query = "UPDATE OrdersData
 				  SET CLientName = '{$ClientName}'
-				     ,StartDate = $StartDate
 				     ,EndDate = $EndDate
 				     ,SH_ID = $Shop
 				     ,OrderNumber = '{$OrderNumber}'
@@ -236,6 +235,7 @@
 	if( $id != "NULL" )
 	{
 ?>
+	<form method='post'>
 	<table>
 		<thead>
 		<tr>
@@ -275,12 +275,11 @@
 	$Comment = mysqli_result($res,0,'Comment');
 	$CTColor = mysqli_result($res,0,'CTColor');
 ?>
-		<form method='post'>
 		<tbody>
 		<tr>
 			<td><input type='text' name='ClientName' size='10' value='<?=$ClientName?>'></td>
-			<td><input required type='text' name='StartDate' size='8' class='date' value='<?=$StartDate?>'></td>
-			<td><input type='text' name='EndDate' size='8' class='date' value='<?=$EndDate?>'></td>
+			<td><input required type='text' name='StartDate' size='8' class='date from' value='<?=$StartDate?>' readonly></td>
+			<td><input type='text' name='EndDate' size='8' class='date to' value='<?=$EndDate?>' readonly></td>
 			<td style='background: <?=$CTColor?>;'>
 				<select required name='Shop'>
 					<option value="">-=Выберите салон=-</option>
@@ -314,8 +313,8 @@
 			<td><input type='submit' value='Сохранить'></td>
 		</tr>
 		</tbody>
-		</form>
 	</table>
+	</form>
 <?
 	}
 ?>
@@ -499,5 +498,8 @@
 
 		odd = <?= json_encode($ODD); ?>;
 		odb = <?= json_encode($ODB); ?>;
+
+		$("input.from").datepicker("disable");
+		$( "input.to" ).datepicker( "option", "minDate", "<?=$StartDate?>" );
 	});
 </script>

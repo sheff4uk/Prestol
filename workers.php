@@ -131,6 +131,7 @@
 				  JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = {$_GET["type"]}
 				  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 				  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+				  WHERE OD.Del = 0
 				  GROUP BY OD.OD_ID, ODS.ST_ID
 				  ORDER BY ST.Sort";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
