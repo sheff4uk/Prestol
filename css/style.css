@@ -88,13 +88,13 @@ pre {
 	margin: 0;
 }
 .notready {
-	background: #fff;
+	background: #fff !important;
 }
 .inwork {
-	background: #bd362f;
+	background: #bd362f !important;
 }
 .ready {
-	background: #3bec00;
+	background: #3bec00 !important;
 }
 .txtright {
 	text-align: right;

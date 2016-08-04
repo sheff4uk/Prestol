@@ -48,6 +48,7 @@
 		<thead>
 			<tr>
 				<?
+					if(isset($_GET["CD"])) echo "<th>Код</th>";
 					if(isset($_GET["CN"])) echo "<th>Заказчик</th>";
 					if(isset($_GET["SD"])) echo "<th>Дата приема</th>";
 					if(isset($_GET["ED"])) echo "<th>Дата сдачи</th>";
@@ -65,7 +66,8 @@
         </thead>
         <tbody>
 	<?
-	$query = "SELECT IFNULL(OD.ClientName, '') ClientName
+	$query = "SELECT IFNULL(OD.Code, '') Code
+					,IFNULL(OD.ClientName, '') ClientName
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 					,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
@@ -102,6 +104,7 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		echo "<tr>";
+		if(isset($_GET["CD"])) echo "<td>{$row["Code"]}</td>";
 		if(isset($_GET["CN"])) echo "<td>{$row["ClientName"]}</td>";
 		if(isset($_GET["SD"])) echo "<td>{$row["StartDate"]}</td>";
 		if(isset($_GET["ED"])) {
