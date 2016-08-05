@@ -96,6 +96,16 @@ pre {
 .ready {
 	background: #3bec00 !important;
 }
+
+.unvisible {
+	text-decoration: line-through;
+	filter: grayscale(1) brightness(0.7);
+	-webkit-filter: grayscale(1) brightness(0.7);
+	-moz-filter: grayscale(1) brightness(0.7);
+	-ms-filter: grayscale(1) brightness(0.7);
+	-o-filter: grayscale(1) brightness(0.7);
+}
+
 .txtright {
 	text-align: right;
 }

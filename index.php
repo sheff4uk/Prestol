@@ -242,24 +242,24 @@
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,OD.OrderNumber
 					,OD.Comment
-					,COUNT(ODD.ODD_ID) Child
+					,COUNT(ODD.ODD_ID) + COUNT(ODB.ODB_ID) Child
 					,CONCAT(IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' location=\'{$location}\' class=\'button edit_product', IFNULL(PM.PT_ID, 2), '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR ''), ''), IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<a href=\'#\' id=\'', ODB.ODB_ID, '\'', 'class=\'button edit_order_blank\' location=\'{$location}\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', BL.Name, '</a><br>') ORDER BY ODB.ODB_ID SEPARATOR ''), '')) Zakaz
 					,OD.Color
 					,OD.IsPainting
-					,CONCAT(IFNULL(GROUP_CONCAT(DISTINCT CONCAT(IF(PM.PT_ID = 1 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
+					,CONCAT(IFNULL(GROUP_CONCAT(DISTINCT CONCAT(IF(PM.PT_ID = 1 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'t', ODD.ODD_ID, '\' class=\'',
 						CASE ODD.IsExist
 							WHEN 0 THEN 'bg-red'
 							WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
 							WHEN 2 THEN 'bg-green'
 						END,
-					'\'>', IF(PM.PT_ID = 1, IFNULL(ODD.Material, ''), ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR ''), ''), IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<div style=\'display: none;\'>', ODB.ODB_ID, '</div><br>') ORDER BY ODB.ODB_ID SEPARATOR ''), '')) Textile
-					,CONCAT(IFNULL(GROUP_CONCAT(DISTINCT CONCAT(IF(IFNULL(PM.PT_ID, 2) = 2 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
+					'\'>', IF(PM.PT_ID = 1, IFNULL(ODD.Material, ''), ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR ''), ''), IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<i id=\'t', ODB.ODB_ID, '\'></i><br>') ORDER BY ODB.ODB_ID SEPARATOR ''), '')) Textile
+					,CONCAT(IFNULL(GROUP_CONCAT(DISTINCT CONCAT(IF(IFNULL(PM.PT_ID, 2) = 2 AND DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'p', ODD.ODD_ID, '\' class=\'',
 						CASE ODD.IsExist
 							WHEN 0 THEN 'bg-red'
 							WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
 							WHEN 2 THEN 'bg-green'
 						END,
-					'\'>', IF(IFNULL(PM.PT_ID, 2) = 2, IFNULL(ODD.Material, ''), ''), '</span><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR ''), ''), IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<div style=\'display: none;\'>', ODB.ODB_ID, '</div><br>') ORDER BY ODB.ODB_ID SEPARATOR ''), '')) Plastic
+					'\'>', IF(IFNULL(PM.PT_ID, 2) = 2, IFNULL(ODD.Material, ''), ''), '</span><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR ''), ''), IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<i id=\'p', ODB.ODB_ID, '\'></i><br>') ORDER BY ODB.ODB_ID SEPARATOR ''), '')) Plastic
 					,GROUP_CONCAT(CONCAT(ODS_WD.Name, '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Workers
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,BIT_AND(ODS_WD.IsReady) IsReady
@@ -350,7 +350,7 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		echo "<tr id='ord{$row["OD_ID"]}'>";
-		echo "<td><span>{$row["Code"]}</span></td>";
+		echo "<td><span class='nowrap'>{$row["Code"]}</span></td>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
 		echo "<td><span>{$row["StartDate"]}</span></td>";
 		if( $archive ) {
@@ -368,9 +368,9 @@
 		// Получаем данные по этамам производства
 		$query = "SELECT IFNULL(PM.PT_ID, 2) PT_ID
 						,ODD.ODD_ID itemID
-						,CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' class=\'edit_steps\' location=\'{$location}\'>', GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
+						,CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' class=\'edit_steps\' location=\'{$location}\'>', GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
 					FROM OrdersDataDetail ODD
-					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
+					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 					LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 					LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID

@@ -73,12 +73,24 @@
 					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
 					,OD.OrderNumber
-					,GROUP_CONCAT(CONCAT(ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' (', ODD.Comment, ')')), '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Zakaz
-					,GROUP_CONCAT(CONCAT(IF(IFNULL(PM.PT_ID, 2) = 2, IFNULL(ODD.Material, ''), ''), '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Plastic
+					,CONCAT(IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<i id=\'',ODD.ODD_ID, '\'></i>', ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' (', ODD.Comment, ')')), '<br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR ''), ''), IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<i id=\'',ODB.ODB_ID, '\'></i>', ODB.Amount, ' ', BL.Name, IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' (', ODB.Comment, ')')), '<br>') ORDER BY ODB.ODB_ID SEPARATOR ''), '')) Zakaz
 					,OD.Color
 					,OD.IsPainting
-					,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 1, IFNULL(ODD.Material, ''), ''), '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Textile
-					,GROUP_CONCAT(CONCAT(IFNULL(ODS_WD.Steps, ''), '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Steps
+					,CONCAT(IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<i id=\'t', ODD.ODD_ID, '\'></i>', IF(IFNULL(PM.PT_ID, 2) = 2, IFNULL(CONCAT(ODD.Material,
+						CASE ODD.IsExist
+							WHEN 0 THEN ' <b>(нет)</b>'
+							WHEN 1 THEN ' <b>(заказано)</b>'
+							WHEN 2 THEN ' <b>(есть)</b>'
+						END
+					), ''), ''), '<br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR ''), ''), IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<i id=\'t', ODB.ODB_ID, '\'></i><br>') ORDER BY ODB.ODB_ID SEPARATOR ''), '')) Plastic
+					,CONCAT(IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<i id=\'t', ODD.ODD_ID, '\'></i>', IF(PM.PT_ID = 1, IFNULL(CONCAT(ODD.Material,
+						CASE ODD.IsExist
+							WHEN 0 THEN ' <b>(нет)</b>'
+							WHEN 1 THEN ' <b>(заказано)</b>'
+							WHEN 2 THEN ' <b>(есть)</b>'
+						END
+					), ''), ''), '<br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR ''), ''), IFNULL(GROUP_CONCAT(DISTINCT CONCAT('<i id=\'t', ODB.ODB_ID, '\'></i><br>') ORDER BY ODB.ODB_ID SEPARATOR ''), '')) Textile
+					,GROUP_CONCAT(DISTINCT CONCAT('<i id=\'s', ODS_WD.itemID, '\'></i>', IFNULL(ODS_WD.Steps, ''), '<br>') ORDER BY ODS_WD.PT_ID DESC, ODS_WD.itemID SEPARATOR '') Steps
 					,IFNULL(OD.Comment, '') Comment
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -87,7 +99,11 @@
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			  LEFT JOIN (SELECT ODD.ODD_ID
+			  LEFT JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID
+			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+			  LEFT JOIN (SELECT ODD.OD_ID
+			  				   ,ODD.ODD_ID itemID
+			  				   ,IFNULL(PM.PT_ID, 2) PT_ID
 			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(IFNULL(WD.ShortName, WD.Name), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR ' | ') Steps
 						FROM OrdersDataDetail ODD
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
@@ -95,7 +111,13 @@
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 						GROUP BY ODD.ODD_ID
-						ORDER BY PM.PT_ID DESC, ODD.ODD_ID) ODS_WD ON ODS_WD.ODD_ID = ODD.ODD_ID
+						UNION
+						SELECT ODB.OD_ID
+							  ,ODB.ODB_ID itemID
+							  ,0 PT_ID
+							  ,'' Steps
+						FROM OrdersDataBlank ODB
+						) ODS_WD ON ODS_WD.OD_ID = OD.OD_ID
 			  WHERE OD.OD_ID IN ({$id_list})
 			  GROUP BY OD.OD_ID
 			  ORDER BY OD.OD_ID";
@@ -104,7 +126,7 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		echo "<tr>";
-		if(isset($_GET["CD"])) echo "<td>{$row["Code"]}</td>";
+		if(isset($_GET["CD"])) echo "<td class='nowrap'>{$row["Code"]}</td>";
 		if(isset($_GET["CN"])) echo "<td>{$row["ClientName"]}</td>";
 		if(isset($_GET["SD"])) echo "<td>{$row["StartDate"]}</td>";
 		if(isset($_GET["ED"])) {
