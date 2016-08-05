@@ -359,7 +359,7 @@
 		else {
 			echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
 		}
-		echo "<td style='background: {$row["CTColor"]};'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
+		echo "<td><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
 		echo "<td><span>{$row["OrderNumber"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 		echo "<td><span class='nowrap material'>{$row["Plastic"]}</span></td>";
