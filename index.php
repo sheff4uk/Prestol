@@ -144,7 +144,7 @@
 		<form method='get' action='filter.php'>
 		<thead>
 		<tr>
-			<th width="40"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
+			<th width="45"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_CN' size='8' value='<?= $_SESSION["f_CN"] ?>' class='<?=($_SESSION["f_CN"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>' class='<?=($_SESSION["f_SD"] != "") ? "filtered" : ""?>'></th>
 			<th width="5%"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>' class='<?=($_SESSION["f_ED"] != "") ? "filtered" : ""?>'></th>
@@ -190,7 +190,7 @@
 		<input type="text" id="print_title" name="print_title" placeholder="Введите заголовок таблицы">
 		<thead>
 		<tr>
-			<th width="40"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
+			<th width="45"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
 			<th width="5%"><input type="checkbox" disabled value="2" checked name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
 			<th width="5%"><input type="checkbox" disabled value="3" checked name="SD" class="print_col" id="SD"><label for="SD">Дата<br>приема</label></th>
 			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br>сдачи</label></th>
@@ -213,7 +213,7 @@
 	<table class="main_table">
 		<thead style="">
 		<tr>
-			<th width="40"></th>
+			<th width="45"></th>
 			<th width="5%"></th>
 			<th width="5%"></th>
 			<th width="5%"></th>
