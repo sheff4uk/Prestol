@@ -392,7 +392,7 @@
 		echo "<td>{$row["Size"]}</td>";
 		echo "<td>{$row["Form"]}</td>";
 		echo "<td>{$row["Mechanism"]}</td>";
-		echo "<td><a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td><a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap shadow' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td>";
 		switch ($row["IsExist"]) {
 			case 0:

@@ -22,6 +22,7 @@
 	</p>
 
 	<? include "form_addpay.php"; ?>
+	<? include "forms.php"; ?>
 
 	<div class="halfblock">
 		<?
@@ -347,6 +348,12 @@
 				echo "<td>";
 				if ($row["Link"] == '') {
 					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' {$row["ManDate"]} class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
+				}
+				if( strpos($row["Link"],"ODS") === 0 ) { // Если запись из этапов производства - редактируем
+					$odd = substr($row["Link"], 4);
+					$pos = strpos($odd, '_');
+					$odd = substr($odd, 0, $pos);
+					echo "<a href='#' id='{$odd}' class='button edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
 				}
 				echo "</td>";
 				echo "</tr>";
