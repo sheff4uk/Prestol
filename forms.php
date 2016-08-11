@@ -40,8 +40,7 @@
 			?>
 			</select>
 			&nbsp;&nbsp;&nbsp;
-			<img src='/img/attention.png' class='attention' id='Model' title='Изделие в работе. Изменения невозможны.'>
-			<input type='hidden' id='Model'>
+			<img src='/img/attention.png' class='attention' id='Model' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 		</div>
 		<div>
 			<label>Цвет:</label>
@@ -65,9 +64,9 @@
 		</div>
 		<div class='order_material' style='text-align: center; display: none;'>
 			<span>Дата заказа:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Ожидается:</span><br>
-			<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>">
+			<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>" readonly>
 			&nbsp;&nbsp;-&nbsp;&nbsp;
-			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>">
+			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 		</div>
 		<div>
 			<label>Примечание:</label>
@@ -113,18 +112,13 @@
 				}
 			?>
 			</select>
+			&nbsp;&nbsp;&nbsp;
+			<img src='/img/attention.png' class='attention' id='Model' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 		</div>
 		<div>
 			<label>Форма:</label>
 			<div class="btnset" id="forms">
-			<?
-				$query = "SELECT PF_ID, Form FROM ProductForms";
-				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				while( $row = mysqli_fetch_array($result) ) {
-					echo "<input type='radio' id='form{$row["PF_ID"]}' name='Form' value='{$row["PF_ID"]}'>";
-					echo "<label for='form{$row["PF_ID"]}'>{$row["Form"]}</label>";
-				}
-			?>
+				<!--Список формируется в js-->
 			</div>
 			<br>
 		</div>
@@ -140,11 +134,14 @@
 				}
 			?>
 			</div>
+			&nbsp;&nbsp;&nbsp;
+			<img src='/img/attention.png' class='attention' id='Mechanism' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 			<br>
 		</div>
 		<div>
 			<label>Размер:</label>
 			<input required type='number' min='0' step='10' name='Length' style='width: 80px;' autocomplete='off' title="Длина">
+			<img src='/img/attention.png' class='attention' id='Length' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 			<span>&nbsp;х&nbsp;</span>
 			<input required type='number' min='0' step='10' name='Width' style='width: 80px;' autocomplete='off' title="Ширина">
 			<span>&nbsp;/&nbsp;</span>
@@ -174,9 +171,9 @@
 		<br>
 		<div class='order_material' style='text-align: center; display: none;'>
 			<span>Заказано:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Ожидается:</span><br>
-			<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>">
+			<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>" readonly>
 			&nbsp;&nbsp;-&nbsp;&nbsp;
-			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>">
+			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 		</div>
 		<div>
 			<label>Примечание:</label>

@@ -125,7 +125,12 @@ pre {
 }
 
 :required {
-	box-shadow: 0px 0px 10px #911;
+	//box-shadow: 0px 0px 10px #911;
+	box-shadow: 0px 0px 8px 2px #f00;
+}
+
+.edit_steps.attention {
+	box-shadow: 0px 0px 8px 4px #f00 !important;
 }
 
 .step {

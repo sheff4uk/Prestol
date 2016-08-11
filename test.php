@@ -23,7 +23,7 @@
 //	$mail->Subject = $subject;
 //	$mail->Body = $text;
 //	$mail->send();
-	echo phpinfo();
+//	echo phpinfo();
 
 //include "config.php";
 //$query = "SELECT ODD.ODD_ID, ODD.PM_ID, ODD.PME_ID, ODD.Length

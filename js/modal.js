@@ -26,6 +26,7 @@ $(document).ready(function() {
 		col.each(function() {
 			if (!$(this).prop('checked')) {
 				$('#print_tbl td:nth-child('+$(this).val()+')').css('background', 'rgba(0,0,0,.5)');
+				$('#print_tbl td:nth-child('+$(this).val()+')').css('opacity', '.5');
 			}
 		});
 		row.each(function() {
@@ -49,6 +50,7 @@ $(document).ready(function() {
 	 		}
 		);
 		$('#print_tbl td').css('background', '');
+		$('#print_tbl td').css('opacity', '');
 		$('#print_tbl tr').css('opacity', '');
 		$('#print_tbl td:last-child, #print_tbl th:last-child').css('display', '');
 		col.prop( "disabled", true );
@@ -57,9 +59,11 @@ $(document).ready(function() {
 	col.change(function() {
 		if ($(this).prop('checked')) {
 			$('#print_tbl td:nth-child('+$(this).val()+')').css('background', '');
+			$('#print_tbl td:nth-child('+$(this).val()+')').css('opacity', '');
 		}
 		else {
 			$('#print_tbl td:nth-child('+$(this).val()+')').css('background', 'rgba(0,0,0,.5)');
+			$('#print_tbl td:nth-child('+$(this).val()+')').css('opacity', '.5');
 		}
 	});
 

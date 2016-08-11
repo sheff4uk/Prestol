@@ -28,11 +28,11 @@ case "steps":
 	$product = "<img src=\'/img/product_{$pt}.png\'>x{$amount}&nbsp;{$model}&nbsp;{$size}&nbsp;{$form}";
 	
 	// Получение информации об этапах производства
-	$query = "SELECT ST.ST_ID, ST.Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible
+	$query = "SELECT ST.ST_ID, ST.Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible, ODS.Old
 			  FROM OrdersDataSteps ODS
 			  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 			  WHERE ODS.ODD_ID = $odd_id
-			  ORDER BY ST.Sort";
+			  ORDER BY ODS.Old DESC, ST.Sort";
 	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	$text = "<input type=\'hidden\' name=\'ODD_ID\' value=\'$odd_id\'>";
@@ -48,8 +48,7 @@ case "steps":
 	while( $row = mysqli_fetch_array($result) )
 	{
 		// Формирование дропдауна со списком рабочих. Сортировка по релевантности.
-		$selectworker = "<select name=\'WD_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\'>";
-		$selectworker .= "<option value=\'\'>-=Выберите работника=-</option>";
+		$selectworker = "<option value=\'\'>-=Выберите работника=-</option>";
 		$query = "SELECT WD.WD_ID, WD.Name, SUM(IFNULL(ODS.Amount, 0)) CNT
 				  FROM WorkersData WD
 				  LEFT JOIN (
@@ -68,14 +67,22 @@ case "steps":
 			$selected = ( $row["WD_ID"] == $subrow["WD_ID"] ) ? "selected" : "";
 			$selectworker .= "<option {$selected} value=\'{$subrow["WD_ID"]}\'>{$subrow["Name"]}</option>";
 		}
-		$selectworker .= "</select>";
 		// Конец дропдауна со списком рабочих
 		
-		$text .= "<tr><td><b>{$row["Step"]}</b></td>";
-		$text .= "<td>{$selectworker}</td>";
-		$text .= "<td><input type=\'number\' min=\'0\' name=\'Tariff{$row["ST_ID"]}\' class=\'tariff\' value=\'{$row["Tariff"]}\'></td>";
-		$text .= "<td><input type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}><label for=\'IsReady{$row["ST_ID"]}\'></label></td>";
-		$text .= "<td><input type=\'checkbox\' name=\'Visible{$row["ST_ID"]}\' value=\'1\' {$row["Visible"]}></td></tr>";
+		if( $row["Old"] == 1 ) {
+			$text .= "<tr style=\'background: #999;\'><td><b>{$row["Step"]}</b></td>";
+			$text .= "<td><select disabled class=\'selectwr\'>{$selectworker}</select></td>";
+			$text .= "<td><input disabled type=\'number\' class=\'tariff\' value=\'{$row["Tariff"]}\'></td>";
+			$text .= "<td><input disabled type=\'checkbox\' id=\'OldIsReady{$row["ST_ID"]}\' class=\'isready\' {$row["IsReady"]}><label for=\'OldIsReady{$row["ST_ID"]}\'></label></td>";
+			$text .= "<td><input disabled type=\'checkbox\' {$row["Visible"]}></td></tr>";
+		}
+		else {
+			$text .= "<tr><td><b>{$row["Step"]}</b></td>";
+			$text .= "<td><select name=\'WD_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\'>{$selectworker}</select></td>";
+			$text .= "<td><input type=\'number\' min=\'0\' name=\'Tariff{$row["ST_ID"]}\' class=\'tariff\' value=\'{$row["Tariff"]}\'></td>";
+			$text .= "<td><input type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}><label for=\'IsReady{$row["ST_ID"]}\'></label></td>";
+			$text .= "<td><input type=\'checkbox\' name=\'Visible{$row["ST_ID"]}\' value=\'1\' {$row["Visible"]}></td></tr>";
+		}
 	}
 	$text .= "</tbody></table>";
 	echo "window.top.window.$('#formsteps').html('{$text}');";
@@ -101,7 +108,8 @@ case "livesearch":
 					,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
 					,IF(ODD.is_check = 1, '', 'attention') is_check
 					,SUM(IF(ODS.WD_ID IS NULL, 0, 1)) progress
-					,GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR '') Steps
+					,GROUP_CONCAT(IF(ODS.Old = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
+					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
@@ -150,7 +158,7 @@ case "livesearch":
 			$table .= "<td>{$row["Form"]}</td>";
 			$table .= "<td>{$row["Size"]}</td>";
 		}
-		$table .= "<td><a class='nowrap'>{$row["Steps"]}</a></td>";
+		$table .= "<td><a class='edit_steps nowrap shadow{$row["Attention"]}'>{$row["Steps"]}</a></td>";
 		$table .= "<td>{$row["Color"]}</td>";
 		$table .= "<td>";
 		switch ($row["IsExist"]) {

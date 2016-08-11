@@ -366,7 +366,8 @@
 					,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
 					,IF(ODD.is_check = 1, '', 'attention') is_check
 					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
-					,GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR '') Steps
+					,GROUP_CONCAT(IF(ODS.Old = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
+					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -392,7 +393,7 @@
 		echo "<td>{$row["Size"]}</td>";
 		echo "<td>{$row["Form"]}</td>";
 		echo "<td>{$row["Mechanism"]}</td>";
-		echo "<td><a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap shadow' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td><a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td>";
 		switch ($row["IsExist"]) {
 			case 0:
@@ -488,18 +489,10 @@
 
 		$('.attention img').show();
 
-		// Открытие диалога этапов после добавления изделия
-//			if( '<?=$odd_id?>' != '' ) {
-//				$( document ).ready(function() {
-//					makeform(<?= $odd_id ? $odd_id : 0 ?>, '<?=$location?>');
-//					return false;
-//				});
-//			}
-
 		odd = <?= json_encode($ODD); ?>;
 		odb = <?= json_encode($ODB); ?>;
 
-		$("input.from").datepicker("disable");
+		$("input.from[name='StartDate']").datepicker("disable");
 		$( "input.to" ).datepicker( "option", "minDate", "<?=$StartDate?>" );
 	});
 </script>

@@ -169,8 +169,6 @@ $(document).ready(function(){
 		$('#addchair .radiostatus input[type="radio"]').prop('disabled', true);
 		$('#addchair .radiostatus input[type="radio"]').button('refresh');
 		$('#addchair input[name="Amount"]').removeAttr('max');
-		$('#addchair input[id="Model"]').val('');
-		$('#addchair input[id="Model"]').removeAttr('name');
 		// В свободных показываем цвет
 		if( free == 1 ) {
 			$('#addchair input[name="Color"]').parent('div').show('fast');
@@ -210,15 +208,12 @@ $(document).ready(function(){
 				$('#addchair .order_material input.to' ).val( odd[id]['arrival_date'] );
 			}
 			
-			// Если изделие в работе, то нельзя изменить модель и увеличить кол-во
+			// Если изделие в работе, то выводим предупреждения
 			if( odd[id]['inprogress'] == 1 )
 			{
 				$('#addchair img[id="Amount"]').show();
 				$('#addchair img[id="Model"]').show();
 				$('#addchair input[name="Amount"]').attr('max', odd[id]['amount']);
-				$('#addchair select[name="Model"]').prop('disabled', true);
-				$('#addchair input[id="Model"]').attr('name', 'Model');
-				$('#addchair input[id="Model"]').val(odd[id]['model']);
 			}
 
 			materialonoff('#addchair');
@@ -267,7 +262,7 @@ $(document).ready(function(){
 
 		// Активация формы если была неактивна
 		$('#addtable fieldset').prop('disabled', false);
-		$('#addtable #forms, #addchair #mechanisms' ).buttonset( 'option', 'disabled', false );
+		$('#addtable .btnset').buttonset( 'option', 'disabled', false );
 		$('#addtable input[name=free]').val(0);
 
 		var id = $(this).attr('id');
@@ -281,17 +276,14 @@ $(document).ready(function(){
 		$('#addtable textarea').val('');
 		$('#addtable input[name="Amount"]').val('1');
 		$('#addtable select[name="Model"]').val('');
-		$('#addtable select[name="Form"]').val('');
-		$('#addtable select[name="Mechanism"]').val('');
 		$('#addtable input[name="Length"]').val('1300');
 		$('#addtable input[name="Width"]').val('800');
 		$('#2radio2').prop('checked', true);
-		$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
-		$('#addtable input[name="Form"]').button('refresh');
-		$('#addtable input[name="Mechanism"]:nth-child(1)').prop('checked', true);
-		$('#addtable input[name="Mechanism"]').button('refresh');
-		$('#addtable .radiostatus input[type="radio"]').prop('disabled', true);
+		$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
 		$('#addtable .radiostatus input[type="radio"]').button('refresh');
+		$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
+		$('#addtable input[name="Mechanism"]:nth-child(1)').prop('checked', true);
+		$('#addtable input[type="radio"]').button("refresh");
 		$('#addtable input[name="Amount"]').removeAttr('max');
 		// В свободных показываем цвет
 		if( free == 1 ) {
@@ -310,11 +302,15 @@ $(document).ready(function(){
 		$('#addtable .order_material input.to').datepicker( "option", "minDate", null );
 		// Прячем картинки-треугольники
 		$('#addtable img[id="Amount"]').hide();
+		$('#addtable img[id="Model"]').hide();
+		$('#addtable img[id="Mechanism"]').hide();
+		$('#addtable img[id="Length"]').hide();
 		// Сворачиваем акордион, очищаем
 		$('#addtable .accordion').accordion( "option", "active", false );
 		$('#addtable .accordion div').html('');
 		$('#addtable .accordion h3 span').html('0');
 		$('#addtable .accordion').hide(); // Прячем акордион
+		FormModelList(0);
 
 		// Заполнение
 		if( id > 0 )
@@ -346,10 +342,13 @@ $(document).ready(function(){
 				$('#addtable .order_material input.to' ).val( odd[id]['arrival_date'] );
 			}
 
-			// Если изделие в работе, то нельзя увеличить кол-во
+			// Если изделие в работе, то выводятся предупреждения
 			if( odd[id]['inprogress'] == 1 )
 			{
 				$('#addtable img[id="Amount"]').show();
+				$('#addtable img[id="Model"]').show();
+				$('#addtable img[id="Mechanism"]').show();
+				$('#addtable img[id="Length"]').show();
 				$('#addtable input[name="Amount"]').attr('max', odd[id]['amount']);
 			}
 

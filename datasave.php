@@ -9,6 +9,9 @@ if( $_GET["oddid"] )
 					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 					,OD.Color
 					,IFNULL(OD.IsPainting, 0) IsPainting
+					,ODD.PM_ID
+					,ODD.PME_ID
+					,ODD.Length
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
@@ -18,12 +21,37 @@ if( $_GET["oddid"] )
 	$inprogress = mysqli_result($res,0,'inprogress');
 	$color= mysqli_result($res,0,'Color');
 	$ispainting = mysqli_result($res,0,'IsPainting');
+	$Model = mysqli_result($res,0,'PM_ID');
+	$Mechanism = mysqli_result($res,0,'PME_ID');
+	$Length = mysqli_result($res,0,'Length');
+
+	// Если изменения затрагивают этапы то создаем новые этапы, а старые помечаем
+	if( $Model != $_POST["Model"] or $Mechanism != $_POST["Mechanism"] or $Length != $_POST["Length"] ) {
+		// Удаляем видимые этапы без работника
+		$query = "DELETE FROM OrdersDataSteps WHERE ODD_ID = {$_GET["oddid"]} AND WD_ID IS NULL AND Visible = 1";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		// Оставшиеся этапы помечаются архивом (Old)
+		$query = "UPDATE OrdersDataSteps SET Old = 1 WHERE ODD_ID = {$_GET["oddid"]}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		// Добавляем заново все этапы
+		$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
+		$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
+		$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
+		$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
+				SELECT {$_GET["oddid"]}
+					  ,ST.ST_ID
+					  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
+				FROM StepsTariffs ST
+				JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
+				LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
+				LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	}
 
 	// Обновляем информацию об изделии
-	$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 	$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
-	$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
-	$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
 	$Width = $_POST["Type"] == 2 ? "{$_POST["Width"]}" : "NULL";
 	$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
 	$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
@@ -56,18 +84,6 @@ if( $_GET["oddid"] )
 			  WHERE ODD_ID = {$_GET["oddid"]}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	// Добавляем недостающие этапы после обновления данных
-	$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
-			SELECT {$_GET["oddid"]}
-				  ,ST.ST_ID
-				  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
-			FROM StepsTariffs ST
-			JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
-			LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
-			LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
-			WHERE ST.ST_ID NOT IN( SELECT ST_ID FROM OrdersDataSteps WHERE ODD_ID = {$_GET["oddid"]} )";
-	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
 	// Если количество изделий уменьшено и изделие в работе, то переносим их на склад (свободные)
 	if( $amount > $_POST["Amount"] and $inprogress == 1)
 	{
@@ -83,24 +99,11 @@ if( $_GET["oddid"] )
 				  WHERE ODD_ID = {$_GET["oddid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
+		// Обновляем этапы чтобы сработал триггер для движения денег
+		$query = "UPDATE OrdersDataSteps SET Old = Old WHERE ODD_ID IN ({$_GET["oddid"]}, {$odd_id})";
+
 		$_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
 	}
-
-	// TODO: Нужно помечать в базе тарифы измененные вручную
-	// пересчитывать тарифы при изменении параметров изделия (модель, форма, размер) кроме ручных
-	// сделать возможность пересчитать любой тариф по клику, при этом снимается пометка "ручной ввод"
-	
-	// Если изменены модель, форма или размер, то пересчитываем тариф
-//	$query = "SELECT ODD.PM_ID
-//					,ODD.PS_ID
-//					,PF.PME_ID
-//			  FROM OrdersDataDetail ODD
-//			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-//			  WHERE ODD.ODD_ID = {$_GET["oddid"]}";
-//	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//	$model = mysqli_result($res,0,'PM_ID');
-//	$size = mysqli_result($res,0,'PS_ID');
-//	$mechanism = mysqli_result($res,0,'PME_ID');
 
 	header( "Location: ".$_GET["location"]."#".$_GET["oddid"] ); // Перезагружаем экран
 	die;
@@ -146,38 +149,9 @@ if( isset($_POST["ODD_ID"]) )
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
-		// Обновление работника
-		if( strpos($k,"WD_ID") === 0 ) 
-		{
-			$sid = (int)str_replace( "WD_ID", "", $k );
-			$query = "UPDATE OrdersDataSteps SET WD_ID = $val WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
-//			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		}
-
-		// Обновление тарифа
-		if( strpos($k,"Tariff") === 0 ) 
-		{
-			$sid = (int)str_replace( "Tariff", "", $k );
-			$tariff = $v ? "$v" : "NULL";
-			$query = "UPDATE OrdersDataSteps SET Tariff = $val WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
-//			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		}
-
-		// Обновление статуса готовности
-		if( strpos($k,"IsReady") === 0 ) 
-		{
-			$sid = (int)str_replace( "IsReady", "", $k );
-			$query = "UPDATE OrdersDataSteps SET IsReady = $v WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
-//			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		}
-
-		// Обновление статуса видимости этапа
-		if( strpos($k,"Visible") === 0 )
-		{
-			$sid = (int)str_replace( "Visible", "", $k );
-			$query = "UPDATE OrdersDataSteps SET Visible = $v WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
-//			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		}
+		// Удаление архивных этапов
+		$query = "DELETE FROM OrdersDataSteps WHERE ODD_ID = {$_POST["ODD_ID"]} AND Old = 1";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 
 	header( "Location: ".$_GET["location"]."#".$_POST["ODD_ID"] );

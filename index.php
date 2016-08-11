@@ -368,7 +368,7 @@
 		// Получаем данные по этамам производства
 		$query = "SELECT IFNULL(PM.PT_ID, 2) PT_ID
 						,ODD.ODD_ID itemID
-						,CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' class=\'edit_steps shadow\' location=\'{$location}\'>', GROUP_CONCAT(CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>') ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
+						,CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' class=\'edit_steps shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(ODS.Old = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
 					FROM OrdersDataDetail ODD
 					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID

@@ -106,7 +106,7 @@
 			  				   ,IFNULL(PM.PT_ID, 2) PT_ID
 			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(IFNULL(WD.ShortName, WD.Name), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR ' | ') Steps
 						FROM OrdersDataDetail ODD
-						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
+						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
