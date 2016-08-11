@@ -105,7 +105,7 @@
 			  LEFT JOIN (SELECT ODD.OD_ID
 			  				   ,ODD.ODD_ID itemID
 			  				   ,IFNULL(PM.PT_ID, 2) PT_ID
-			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(WD.Name, '---'), '</i>)') ORDER BY ST.Sort SEPARATOR '<br>') Steps
+			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(IF(IFNULL(WD.ShortName, '') = '', WD.Name, WD.ShortName), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR '<br>') Steps
 						FROM OrdersDataDetail ODD
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
