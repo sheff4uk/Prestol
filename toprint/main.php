@@ -155,7 +155,7 @@
 			$border = "";
 		}
 		echo "<tr>";
-		if(isset($_GET["CD"]) and $span) echo "<td{$border} rowspan='{$cnt}' class='nowrap'>{$row["Code"]}<br>{$cnt}</td>";
+		if(isset($_GET["CD"]) and $span) echo "<td{$border} rowspan='{$cnt}' class='nowrap'>{$row["Code"]}</td>";
 		if(isset($_GET["CN"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["ClientName"]}</td>";
 		if(isset($_GET["SD"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["StartDate"]}</td>";
 		if(isset($_GET["ED"]) and $span) {
