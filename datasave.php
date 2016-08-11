@@ -51,6 +51,9 @@ if( $_GET["oddid"] )
 	}
 
 	// Обновляем информацию об изделии
+	$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
+	$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
+	$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
 	$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
 	$Width = $_POST["Type"] == 2 ? "{$_POST["Width"]}" : "NULL";
 	$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
