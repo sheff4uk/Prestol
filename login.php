@@ -56,8 +56,8 @@
 		<h3>Вход в личный кабинет</h3>
 
 		<form method="post">
-			<div><label>Ваш логин:</label><input required type="text" name="login" minlength="3" maxlength="15"></div>
-			<div><label>Пароль:</label><input required type="password" name="password" minlength="3" maxlength="15"></div>
+			<div><label>Ваш логин:</label><input type="text" name="login" minlength="3" maxlength="15"></div>
+			<div><label>Пароль:</label><input type="password" name="password" minlength="3" maxlength="15"></div>
 			<div><button>Вход »</button></div>
 		</form>
 		<a href="reg.php">Зарегистрироваться</a>
