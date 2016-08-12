@@ -77,20 +77,14 @@
 					,CONCAT(IFNULL(CONCAT(ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' (', ODD.Comment, ')'))), ''), IFNULL(CONCAT(ODB.Amount, ' ', BL.Name, IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' (', ODB.Comment, ')'))), '')) Zakaz
 					,OD.Color
 					,OD.IsPainting
-					,CONCAT(IFNULL(CONCAT(IF(IFNULL(PM.PT_ID, 2) = 2, IFNULL(CONCAT(ODD.Material,
+					,IF(IFNULL(PM.PT_ID, 2) = 2, IFNULL(ODD.Material, ''), '') Plastic
+					,IF(PM.PT_ID = 1, IFNULL(CONCAT(ODD.Material,
 						CASE ODD.IsExist
 							WHEN 0 THEN ' <b>(нет)</b>'
 							WHEN 1 THEN ' <b>(заказано)</b>'
 							WHEN 2 THEN ' <b>(есть)</b>'
 						END
-					), ''), '')), '')) Plastic
-					,CONCAT(IFNULL(CONCAT(IF(PM.PT_ID = 1, IFNULL(CONCAT(ODD.Material,
-						CASE ODD.IsExist
-							WHEN 0 THEN ' <b>(нет)</b>'
-							WHEN 1 THEN ' <b>(заказано)</b>'
-							WHEN 2 THEN ' <b>(есть)</b>'
-						END
-					), ''), '')), '')) Textile
+					), ''), '') Textile
 					,IFNULL(ODS_WD.Steps, '') Steps
 					,IFNULL(OD.Comment, '') Comment
 			  FROM OrdersData OD

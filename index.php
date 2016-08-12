@@ -394,7 +394,7 @@
 		echo "<td val='{$row["IsPainting"]}'";
 			switch ($row["IsPainting"]) {
 				case 1:
-					$class = "notready";
+					$class = "";
 					$title = "Не в работе";
 					break;
 				case 2:
