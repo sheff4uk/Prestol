@@ -134,6 +134,12 @@
 		</form>
 	</div>
 	
+	<!-- Копирование ссылки на таблицу в буфер -->
+	<input id="post-link" style="position: absolute; z-index: -1;">
+	<div id="copy-link" data-clipboard-target="#post-link" style="display: none;">
+		<a id="copy-button" data-clipboard-target="#post-link" style="display: block; height: 100%" title="Скопировать ссылку в буфер обмена"></a>
+	</div>
+
 	<div id="add_btn" title="Добавить новый заказ"></div> <!-- Кнопка добавления заказа -->
 	
 	<div id="print_btn" href="#print_tbl" class="open_modal" title="Распечатать таблицу"> <!-- Кнопка печати -->
@@ -505,6 +511,8 @@
 <script>
 	$(document).ready(function(){
 
+		new Clipboard('#copy-button');
+
 		// Фильтрация таблицы при автокомплите
 		$( ".main_table .shopstags" ).on( "autocompleteselect", function( event, ui ) {
 			$(this).val(ui.item.value);
@@ -574,8 +582,12 @@
 		function changelink() { // Добавляем к ссылке печати столбцы и строки которые будем печатать
 			var data = $('#printtable').serialize();
 			$("#toprint").attr('href', '/toprint/main.php?' + data);
+			$("#post-link").val('http://<?=$_SERVER['HTTP_HOST']?>/toprint/main.php?' + data);
 			return false;
 		}
+		$("#copy-button").click(function() {
+			noty({timeout: 3000, text: 'Ссылка на таблицу скопирована в буфер обмена', type: 'success'});
+		});
 
 		odd = <?= json_encode($ODD) ?>;
 		odb = <?= json_encode($ODB) ?>;

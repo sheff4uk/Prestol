@@ -13,6 +13,7 @@ $(document).ready(function() {
 		$('.print_col').button();
 		$('.print_row').button();
 		$('#print_btn > a').css('display', 'block');
+		$('#copy-link').css('display', 'block');
 		$('#print_title').css('display', 'block');
 		$(div)
 			.css('z-index', '11')
@@ -40,6 +41,7 @@ $(document).ready(function() {
 			overlay.fadeOut(400,
 			function() {
 				$('#print_btn > a').css('display', 'none');
+				$('#copy-link').css('display', 'none');
 				$('#print_title').css('display', 'none');
 				modal.css('z-index', '').css('position', '');
 				$('.wr_main_table_body').css('height', '');

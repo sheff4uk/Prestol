@@ -245,7 +245,7 @@ input[type="checkbox"].nightshift + label:before {
 	height: 100%;
 }
 
-#add_btn:hover, #print_btn:hover {
+#add_btn:hover, #print_btn:hover, #copy-link:hover {
 	opacity: .8;
 }
 
@@ -549,4 +549,19 @@ td.tscell > i {
 	position: absolute;
 	overflow-y: scroll;
 	background: #fff;
+}
+
+#copy-link {
+	background: url("../img/clipboard.png") no-repeat scroll center center transparent;
+	bottom: 250px;
+	cursor: pointer;
+	width: 56px;
+	height: 56px;
+	opacity: .4;
+	position: fixed;
+	right: 100px;
+	z-index: 13;
+	border-radius: 50%;
+	background-color: #db4437;
+	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
 }
