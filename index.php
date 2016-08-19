@@ -84,7 +84,7 @@
 			<fieldset>
 				<div>
 					<label>Заказчик:</label>
-					<input type='text' name='ClientName' size='38'>
+					<input type='text' class='clienttags' name='ClientName' size='38'>
 				</div>
 				<div>
 					<label>Дата приема:</label>
@@ -151,7 +151,7 @@
 		<thead>
 		<tr>
 			<th width="45"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
-			<th width="5%"><input type='text' name='f_CN' size='8' value='<?= $_SESSION["f_CN"] ?>' class='<?=($_SESSION["f_CN"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
+			<th width="5%"><input type='text' name='f_CN' size='8' value='<?= $_SESSION["f_CN"] ?>' class='clienttags <?=($_SESSION["f_CN"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>' class='<?=($_SESSION["f_SD"] != "") ? "filtered" : ""?>'></th>
 			<th width="5%"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>' class='<?=($_SESSION["f_ED"] != "") ? "filtered" : ""?>'></th>
 			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags <?=($_SESSION["f_SH"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_SH"] ?>'></th>
@@ -511,9 +511,13 @@
 <script>
 	$(document).ready(function(){
 
-		new Clipboard('#copy-button');
+		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 
 		// Фильтрация таблицы при автокомплите
+		$( ".main_table .clienttags" ).on( "autocompleteselect", function( event, ui ) {
+			$(this).val(ui.item.value);
+			$(event.target.form).submit();
+		});
 		$( ".main_table .shopstags" ).on( "autocompleteselect", function( event, ui ) {
 			$(this).val(ui.item.value);
 			$(event.target.form).submit();

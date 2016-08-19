@@ -297,7 +297,7 @@
 		<tbody>
 		<tr>
 			<td class="nowrap"><?=$Code?></td>
-			<td><input type='text' name='ClientName' size='10' value='<?=$ClientName?>'></td>
+			<td><input type='text' class='clienttags' name='ClientName' size='10' value='<?=$ClientName?>'></td>
 			<td><input required type='text' name='StartDate' size='8' class='date from' value='<?=$StartDate?>' readonly></td>
 			<td><input type='text' name='EndDate' size='8' class='date to' value='<?=$EndDate?>' readonly></td>
 			<td style='background: <?=$CTColor?>;'>

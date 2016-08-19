@@ -102,6 +102,21 @@
 	//			autoFocus: true,
 				source: TextilePlasticTags
 			});
+
+			// Автокомплит заказчиков
+			<?
+				$query = "SELECT ClientName FROM OrdersData WHERE IFNULL(ClientName, '') != '' GROUP BY ClientName";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($res) )
+				{
+					$ClientTags[] = $row["ClientName"];
+				}
+			?>
+			var ClientTags = <?= json_encode($ClientTags); ?>;
+			$( ".clienttags" ).autocomplete({
+	//			autoFocus: true,
+				source: ClientTags
+			});
 		});
 	});
 </script>
