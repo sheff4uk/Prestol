@@ -88,6 +88,7 @@
 							UNION ALL
 							SELECT ODB.Material FROM OrdersDataBlank ODB
 						  ) ODD_ODB
+						  WHERE Material != ''
 						  GROUP BY ODD_ODB.Material
 						  ORDER BY cnt DESC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
