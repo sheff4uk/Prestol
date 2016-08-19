@@ -42,6 +42,11 @@
 			$id_list .= ','.$orderid;
 		}
 	}
+	$product_types = "";
+	if(isset($_GET["Tables"])) $product_types .= ",2";
+	if(isset($_GET["Chairs"])) $product_types .= ",1";
+	if(isset($_GET["Others"])) $product_types .= ",0";
+	$product_types = substr($product_types, 1);
 ?>
 	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
 	<table>
@@ -126,23 +131,24 @@
 						GROUP BY ODB.ODB_ID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  WHERE OD.OD_ID IN ({$id_list})
+			  AND ODD_ODB.PT_ID IN({$product_types})
 			  GROUP BY ODD_ODB.itemID
 			  ORDER BY OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	// Получаем количество изделий в заказе для группировки ячеек
-	$query = "SELECT IFNULL(SUM(ODD_ODB.Cnt), 0) Cnt, OD.OD_ID
+	$query = "SELECT IFNULL(COUNT(1), 1) Cnt, OD.OD_ID
 				FROM OrdersData OD
 				LEFT JOIN (
-					SELECT COUNT(1) Cnt, ODD.OD_ID, GROUP_CONCAT(ODD.ODD_ID) Items
+					SELECT ODD.OD_ID, IFNULL(PM.PT_ID, 2) PT_ID
 					FROM `OrdersDataDetail` ODD
-					GROUP BY ODD.OD_ID
-					UNION
-					SELECT COUNT(1) Cnt, ODB.OD_ID, GROUP_CONCAT(ODB.ODB_ID) Items
+					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+					UNION ALL
+					SELECT ODB.OD_ID, 0 PT_ID
 					FROM `OrdersDataBlank` ODB
-					GROUP BY ODB.OD_ID
 				) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 				WHERE OD.OD_ID IN ({$id_list})
+				AND ODD_ODB.PT_ID IN({$product_types})
 				GROUP BY OD.OD_ID
 				ORDER BY OD.OD_ID";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

@@ -15,6 +15,7 @@ $(document).ready(function() {
 		$('#print_btn > a').css('display', 'block');
 		$('#copy-link').css('display', 'block');
 		$('#print_title').css('display', 'block');
+		$('#print_products').css('display', 'block');
 		$(div)
 			.css('z-index', '11')
 			.css('position', 'absolute');
@@ -43,6 +44,7 @@ $(document).ready(function() {
 				$('#print_btn > a').css('display', 'none');
 				$('#copy-link').css('display', 'none');
 				$('#print_title').css('display', 'none');
+				$('#print_products').css('display', 'none');
 				modal.css('z-index', '').css('position', '');
 				$('.wr_main_table_body').css('height', '');
 				$('.wr_main_table_head').css('width', '');

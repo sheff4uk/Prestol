@@ -193,6 +193,11 @@
 	<div class="wr_main_table_head"> <!-- Обертка шапки -->
 	<table class="main_table">
 		<input type="text" id="print_title" name="print_title" placeholder="Введите заголовок таблицы">
+		<div id="print_products">
+			<input type="checkbox" value="1" checked name="Tables" id="Tables" class="print_products"><label for="Tables">Печатать столы</label>
+			<input type="checkbox" value="1" checked name="Chairs" id="Chairs" class="print_products"><label for="Chairs">Печатать стулья</label>
+			<input type="checkbox" value="1" checked name="Others" id="Others" class="print_products"><label for="Others">Печатать заготовки и прочее</label>
+		</div>
 		<thead>
 		<tr>
 			<th width="45"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
@@ -513,6 +518,8 @@
 
 		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 
+		$('.print_products').button();
+
 		// Фильтрация таблицы при автокомплите
 		$( ".main_table .clienttags" ).on( "autocompleteselect", function( event, ui ) {
 			$(this).val(ui.item.value);
@@ -558,7 +565,7 @@
 				return false;
 			});
 
-			$('.print_col, .print_row').change( function() { changelink(); });
+			$('.print_col, .print_row, .print_products').change( function() { changelink(); });
 
 			$('#print_btn').click( function() { changelink(); });
 			$('#print_title').change( function() { changelink(); });
