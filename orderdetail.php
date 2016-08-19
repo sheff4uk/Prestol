@@ -107,11 +107,11 @@
 			$Material = trim($Material);
 			$Color = trim($Color);
 			$Comment = trim($Comment);
-			$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
-			$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
+			$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
+			$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 
 			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, Material, IsExist, Amount, Color, Comment, order_date, arrival_date)
-					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, '{$Material}', {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$Comment}', '{$OrderDate}', '{$ArrivalDate}')";
+					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, '{$Material}', {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$Comment}', {$OrderDate}, {$ArrivalDate})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$odd_id = mysqli_insert_id( $mysqli );
 
@@ -150,18 +150,31 @@
 		unset($_SESSION["odd_id"]); // Очищаем сессию
 	}
 
-	// Добавление к заказу заготовки
+	// Добавление к заказу заготовки или прочего
 	if ( $_GET["addblank"] ) {
-		$Blank = $_POST["Blank"] ? "{$_POST["Blank"]}" : "NULL";
+		$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
+		$Other = trim($_POST["Other"]);
+		$Other = mysqli_real_escape_string( $mysqli, $Other );
+		$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
+		$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
+		$Material = trim($Material);
+		$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
+		$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
-		// Удаляем лишние пробелы
 		$Comment = trim($Comment);
 
-		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Amount, Comment)
-				  VALUES ({$id}, {$Blank}, {$_POST["Amount"]}, '{$Comment}')";
+		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Amount, Comment, Material, IsExist, order_date, arrival_date)
+				  VALUES ({$id}, {$Blank}, '{$Other}', {$_POST["Amount"]}, '{$Comment}', '{$Material}', {$IsExist}, {$OrderDate}, {$ArrivalDate})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		$odb_id = mysqli_insert_id( $mysqli );
+
+		// Если "Прочее" - добавляем этап производства
+		if( $Blank == "NULL" ) {
+			$query="INSERT INTO OrdersDataSteps SET ODB_ID = {$odb_id}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+
 		$_SESSION["odb_id"] = $odb_id; // Cохраняем в сессию id вставленной записи
 		header( "Location: ".$location."#".$odb_id ); // Перезагружаем экран
 		die;
@@ -208,6 +221,9 @@
 	if( $_GET["delblank"] ) {
 		$odb_id = (int)$_GET["delblank"];
 
+		$query = "DELETE FROM OrdersDataSteps WHERE ODB_ID={$odb_id}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
 		$query = "DELETE FROM OrdersDataBlank WHERE ODB_ID={$odb_id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -239,6 +255,7 @@
 	<table>
 		<thead>
 		<tr>
+			<th>Код</th>
 			<th>Заказчик</th>
 			<th>Дата&nbsp;приема</th>
 			<th>Дата&nbsp;сдачи</th>
@@ -251,7 +268,8 @@
 		</tr>
 		</thead>
 <?
-	$query = "SELECT OD.ClientName
+	$query = "SELECT OD.Code
+					,OD.ClientName
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 					,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 					,IFNULL(OD.SH_ID, 0) SH_ID
@@ -265,6 +283,7 @@
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 			  WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$Code = mysqli_result($res,0,'Code');
 	$ClientName = mysqli_result($res,0,'ClientName');
 	$StartDate = mysqli_result($res,0,'StartDate');
 	$EndDate = mysqli_result($res,0,'EndDate');
@@ -277,6 +296,7 @@
 ?>
 		<tbody>
 		<tr>
+			<td class="nowrap"><?=$Code?></td>
 			<td><input type='text' name='ClientName' size='10' value='<?=$ClientName?>'></td>
 			<td><input required type='text' name='StartDate' size='8' class='date from' value='<?=$StartDate?>' readonly></td>
 			<td><input type='text' name='EndDate' size='8' class='date to' value='<?=$EndDate?>' readonly></td>
@@ -321,7 +341,13 @@
 	<p>
 		<button class='edit_product1'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
 		<button class='edit_product2'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
-		<button class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки</button>
+		<?
+		if( $id != "NULL" ) {
+			?>
+			<button class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки/прочее</button>
+			<?
+		}
+		?>
 	</p>
 
 	<!-- Таблица изделий -->
@@ -360,13 +386,12 @@
 					,ODD.Amount
 					,ODD.Color
 					,ODD.Comment
-					,ODD.Comment
 					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
 					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
 					,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
 					,IF(ODD.is_check = 1, '', 'attention') is_check
 					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
-					,GROUP_CONCAT(IF(ODS.Old = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
+					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
 					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
@@ -428,9 +453,24 @@
 
 	<!-- Таблица заготовок -->
 <?
-	$query = "SELECT ODB.ODB_ID, ODB.Amount, ODB.BL_ID, BL.Name, ODB.Comment
+	$query = "SELECT ODB.ODB_ID
+					,ODB.Amount
+					,ODB.BL_ID
+					,IFNULL(BL.Name, ODB.Other) Name
+					,ODB.Other
+					,ODB.Comment
+					,ODB.Material
+					,ODB.IsExist
+					,DATE_FORMAT(ODB.order_date, '%d.%m.%Y') order_date
+					,DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y') arrival_date
+					,IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), '') clock
+					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
+					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR '') Steps
+					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
 			  FROM OrdersDataBlank ODB
-			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID";
+			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
+			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID";
 	if( $id != "NULL" )
 	{
 		$query .= " WHERE ODB.OD_ID = {$id}";
@@ -439,6 +479,7 @@
 	{
 		$query .= " WHERE ODB.OD_ID IS NULL";
 	}
+	$query .= " GROUP BY ODB.ODB_ID ORDER BY ODB.ODB_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	if( mysqli_num_rows($res) ) {
@@ -448,7 +489,9 @@
 			<thead>
 			<tr>
 				<th>Кол-во</th>
-				<th>Заготовка</th>
+				<th>Заготовка/прочее</th>
+				<th>Этапы</th>
+				<th>Материал</th>
 				<th>Примечание</th>
 				<th>Действие</th>
 			</tr>
@@ -462,12 +505,28 @@
 		echo "<tr id='{$row["ODB_ID"]}'>";
 		echo "<td>{$row["Amount"]}</td>";
 		echo "<td>{$row["Name"]}</td>";
+		echo "<td><a href='#' odbid='{$row["ODB_ID"]}' class='edit_steps nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td>";
+		switch ($row["IsExist"]) {
+			case 0:
+				echo "<span class='bg-red'>";
+				break;
+			case 1:
+				echo "{$row["clock"]}<span class='bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
+				break;
+			case 2:
+				echo "<span class='bg-green'>";
+				break;
+		}
+		echo "{$row["Material"]}</span></td>";
 		echo "<td>{$row["Comment"]}</td>";
-		echo "<td><a href='#' id='{$row["ODB_ID"]}' class='button edit_order_blank' location='{$location}' title='Редактировать заготовку'><i class='fa fa-pencil fa-lg'></i></a>";
-		$delmessage = "Удалить {$row["Name"]}({$row["Amount"]} шт.)?";
-		echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+		echo "<td><a href='#' id='{$row["ODB_ID"]}' class='button edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a>";
+		if( $row["inprogress"] == 0 ) {
+			$delmessage = "Удалить {$row["Name"]}({$row["Amount"]} шт.)?";
+			echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+		}
 
-		$ODB[$row["ODB_ID"]] = array( "amount"=>$row["Amount"], "blank"=>$row["BL_ID"], "comment"=>$row["Comment"] );
+		$ODB[$row["ODB_ID"]] = array( "amount"=>$row["Amount"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
 	}
 ?>
 		</tbody>
@@ -477,7 +536,13 @@
 	<p>
 		<button class='edit_product1'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
 		<button class='edit_product2'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
-		<button class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки</button>
+		<?
+		if( $id != "NULL" ) {
+			?>
+			<button class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки/прочее</button>
+			<?
+		}
+		?>
 	</p>
 
 </body>
@@ -492,7 +557,7 @@
 		odd = <?= json_encode($ODD); ?>;
 		odb = <?= json_encode($ODB); ?>;
 
-		$("input.from[name='StartDate']").datepicker("disable");
-		$( "input.to" ).datepicker( "option", "minDate", "<?=$StartDate?>" );
+//		$("input.from[name='StartDate']").datepicker("disable");
+//		$( "input.to" ).datepicker( "option", "minDate", "<?=$StartDate?>" );
 	});
 </script>

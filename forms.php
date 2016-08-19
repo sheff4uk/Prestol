@@ -197,7 +197,7 @@
 <!-- Конец формы добавения стола -->
 
 <!-- Форма добавления заготовки -->
-<div id='addblank' title='Параметры заготовки' class='addproduct' style='display:none'>
+<div id='addblank' title='Параметры заготовки/прочего' class='addproduct' style='display:none'>
 	<form method='post'>
 		<fieldset>
 			<div>
@@ -206,13 +206,13 @@
 			</div>
 			<div>
 				<label>Заготовка:</label>
-				<select required name='Blank'>
+				<select required name="Blanks">
 					<option value="">-=Выберите заготовку=-</option>
 					<optgroup label="Стулья">
 						<?
-						$query = "SELECT BL.BL_ID, BL.Name, IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
+						$query = "SELECT BL.BL_ID, BL.Name, IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
 								  FROM BlankList BL
-								  LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
+								  LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
 								  WHERE BL.PT_ID = 1
 								  GROUP BY BL.BL_ID
 								  ORDER BY BL.Name";
@@ -225,9 +225,9 @@
 					</optgroup>
 					<optgroup label="Столы">
 						<?
-						$query = "SELECT BL.BL_ID, BL.Name, IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
+						$query = "SELECT BL.BL_ID, BL.Name, IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
 								  FROM BlankList BL
-								  LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
+								  LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
 								  WHERE BL.PT_ID = 2
 								  GROUP BY BL.BL_ID
 								  ORDER BY BL.Name";
@@ -241,8 +241,34 @@
 				</select>
 			</div>
 			<div>
+				<label>Прочее:</label>
+				<input required class='othertags' type='text' style='width: 300px;' name='Other' autocomplete="off">
+			</div>
+			<div>
+				<label>Материал:</label>
+				<input type='text' class="textileplastictags" name='Material' style='width: 300px;'>
+			</div>
+			<div>
+				<label>Наличие:</label>
+				<div class='btnset radiostatus'>
+					<input type='radio' id='0radio0' name='IsExist' value='0'>
+						<label for='0radio0'>Нет</label>
+					<input type='radio' id='0radio1' name='IsExist' value='1'>
+						<label for='0radio1'>Заказано</label>
+					<input type='radio' id='0radio2' name='IsExist' value='2'>
+						<label for='0radio2'>В наличии</label>
+				</div>
+			</div>
+			<br>
+			<div class='order_material' style='text-align: center; display: none;'>
+				<span>Заказано:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Ожидается:</span><br>
+				<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>" readonly>
+				&nbsp;&nbsp;-&nbsp;&nbsp;
+				<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
+			</div>
+			<div>
 				<label>Примечание:</label>
-				<textarea name='Comment' rows='3' cols='38'></textarea>
+				<textarea name='Comment' rows='3' style='width: 300px;'></textarea>
 			</div>
 		</fieldset>
 		<div>

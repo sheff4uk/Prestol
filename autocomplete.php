@@ -80,9 +80,16 @@
 				source: PlasticTags
 			});
 
-			// Автокомплит тканей и пластиков
+			// Автокомплит тканей, пластиков и прочего
 			<?
-				$query = "SELECT ODD.Material FROM OrdersDataDetail ODD JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID GROUP BY ODD.Material";
+				$query = "SELECT COUNT(1) cnt, ODD_ODB.Material
+						  FROM (
+							SELECT ODD.Material FROM OrdersDataDetail ODD
+							UNION ALL
+							SELECT ODB.Material FROM OrdersDataBlank ODB
+						  ) ODD_ODB
+						  GROUP BY ODD_ODB.Material
+						  ORDER BY cnt DESC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{

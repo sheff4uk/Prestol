@@ -2,9 +2,14 @@ $.fx.speeds._default = 300;
 //var odid;
 
 // Функция генерирует форму с этапами производства
-function makeform(id, location)
+function makeform(id, other, location)
 {
-	$.ajax({ url: "ajax.php?do=steps&odd_id="+id, dataType: "script", async: false });
+	if( other == 0 ) {
+		$.ajax({ url: "ajax.php?do=steps&odd_id="+id, dataType: "script", async: false });
+	}
+	else {
+		$.ajax({ url: "ajax.php?do=steps&odb_id="+id, dataType: "script", async: false });
+	}
 	$( '.isready' ).button();
 	$("#steps form").attr("action", "datasave.php?location="+location);
 	
@@ -62,6 +67,7 @@ function materialonoff(element)
 		// Очистка инпутов дат заказа пластика
 		$('#1radio0').prop('checked', true);
 		$('#2radio2').prop('checked', true);
+		$('#0radio0').prop('checked', true);
 		$(element+' .order_material').hide('fast');
 		$(element+' .order_material input').attr("required", false);
 		$(element+' .order_material input').val('');
@@ -132,18 +138,24 @@ $(document).ready(function(){
 	});
 	
 	// Кнопка редактирования этапов
-	$('.edit_steps').mouseup( function()
-	{
-		var id = $(this).attr("id");
-		var location = $(this).attr("location");
-		makeform(id, location);
-		return false;
-	});
+//	$('.edit_steps').mouseup( function()
+//	{
+//		var id = $(this).attr("id");
+//		var location = $(this).attr("location");
+//		makeform(id, location);
+//		return false;
+//	});
 	$('.edit_steps').click( function()
 	{
-		var id = $(this).attr("id");
 		var location = $(this).attr("location");
-		makeform(id, location);
+		var id = $(this).attr("id");
+		var odbid = $(this).attr("odbid");
+		if( typeof odbid !== "undefined" ) {
+			makeform(odbid, 1, location);
+		}
+		else {
+			makeform(id, 0, location);
+		}
 		return false;
 	});
 
@@ -231,16 +243,19 @@ $(document).ready(function(){
 		$('#addchair select[name="Model"]').change( function() { livesearch(this); });
 
 		// Если нет ткани, то кнопка наличия не активна
-		$('#addchair input[name="Material"]').keyup( function() {
+		$('#addchair input[name="Material"]').change( function() {
+			materialonoff('#addchair');
+		});
+		$('#addchair input[name="Material"]').on( "autocompleteselect", function() {
 			materialonoff('#addchair');
 		});
 		// Костыль для активации кнопок наличия материала при вставке из буфера
-		$('#addchair input[name="Material"]').bind('paste', function(e) {
-			var pastedData = e.originalEvent.clipboardData.getData('text');
-			$(this).val(' ');
-			materialonoff('#addchair');
-			$(this).val('');
-		});
+//		$('#addchair input[name="Material"]').bind('paste', function(e) {
+//			var pastedData = e.originalEvent.clipboardData.getData('text');
+//			$(this).val(' ');
+//			materialonoff('#addchair');
+//			$(this).val('');
+//		});
 		
 		// Форма добавления/редактирования стульев
 		$('#addchair').dialog({
@@ -276,8 +291,8 @@ $(document).ready(function(){
 		$('#addtable textarea').val('');
 		$('#addtable input[name="Amount"]').val('1');
 		$('#addtable select[name="Model"]').val('');
-		$('#addtable input[name="Length"]').val('1300');
-		$('#addtable input[name="Width"]').val('800');
+		$('#addtable input[name="Length"]').val(''); //было 1300
+		$('#addtable input[name="Width"]').val(''); //было 800
 		$('#2radio2').prop('checked', true);
 		$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
 		$('#addtable .radiostatus input[type="radio"]').button('refresh');
@@ -376,16 +391,19 @@ $(document).ready(function(){
 		});
 		
 		// Если нет пластика, то кнопка наличия не активна
-		$('#addtable input[name="Material"]').keyup( function() {
+		$('#addtable input[name="Material"]').change( function() {
+			materialonoff('#addtable');
+		});
+		$('#addtable input[name="Material"]').on( "autocompleteselect", function() {
 			materialonoff('#addtable');
 		});
 		// Костыль для активации кнопок наличия материала при вставке из буфера
-		$('#addtable input[name="Material"]').bind('paste', function(e) {
-			var pastedData = e.originalEvent.clipboardData.getData('text');
-			$(this).val(' ');
-			materialonoff('#addtable');
-			$(this).val('');
-		});
+//		$('#addtable input[name="Material"]').bind('paste', function(e) {
+//			var pastedData = e.originalEvent.clipboardData.getData('text');
+//			$(this).val(' ');
+//			materialonoff('#addtable');
+//			$(this).val('');
+//		});
 
 		$("#addtable").dialog(
 		{
@@ -404,26 +422,96 @@ $(document).ready(function(){
 
 	// Форма добавления заготовок
 	$('.edit_order_blank').click(function() {
-		var id = $(this).attr('id');
+		id = $(this).attr('id');
 		var location = $(this).attr("location");
 		var odid = $(this).attr("odid");
 
 		// Очистка диалога
-		$('#addblank input').val('1');
-		$('#addblank textarea, #addblank select').val('');
+		$('#addblank textarea, #addblank select, #addblank input[type="text"]').val('');
+		$('#addblank input[name="Amount"]').val('1');
+		$('#0radio0').prop('checked', true);
+		$('#addblank .radiostatus input[type="radio"]').prop('disabled', true);
+		$('#addblank .radiostatus input[type="radio"]').button('refresh');
+		$('#addblank input[name="Other"]').prop('disabled', false);
+		$('#addblank input[name="Other"]').prop("required", true);
+		$('#addblank select[name="Blanks"]').prop('disabled', false);
+		$('#addblank select[name="Blanks"]').prop('required', true);
+		// Очистка инпутов дат заказа пластика
+		$('#addblank .order_material').hide('fast');
+		$('#addblank .order_material input').attr("required", false);
+		$('#addblank .order_material input').val('');
+		$('#addblank .order_material input.from').datepicker( "option", "maxDate", null );
+		$('#addblank .order_material input.to').datepicker( "option", "minDate", null );
 
 		// Заполнение
 		if( id > 0 )
 		{
 			$('#addblank input[name="Amount"]').val(odb[id]['amount']);
-			$('#addblank select[name="Blank"]').val(odb[id]['blank']);
+			if( odb[id]['blank'] > 0 ) {
+				$('#addblank select[name="Blanks"]').val(odb[id]['blank']);
+				$('#addblank input[name="Other"]').prop('disabled', true);
+				$('#addblank input[name="Other"]').prop("required", false);
+			}
+			else {
+				$('#addblank input[name="Other"]').val(odb[id]['other']);
+				$('#addblank select[name="Blanks"]').prop('disabled', true);
+				$('#addblank select[name="Blanks"]').prop('required', false);
+			}
 			$('#addblank textarea[name="Comment"]').val(odb[id]['comment']);
+
+			$('#addblank input[name="Material"]').val(odb[id]['material']);
+			$('#0radio'+odb[id]['isexist']).prop('checked', true);
+			$('#addblank .radiostatus input[type="radio"]').button('refresh');
+			if( odb[id]['isexist'] == 1 ) {
+				$('#addblank .order_material').show('fast');
+				$('#addblank .order_material input').attr("required", true);
+				$('#addblank .order_material input.from').val( odb[id]['order_date'] );
+				$('#addblank .order_material input.to' ).val( odb[id]['arrival_date'] );
+			}
+
+			materialonoff('#addblank');
 			$("#addblank form").attr("action", "datasave.php?odbid="+id+"&location="+location);
 		}
 		else // Иначе добавляем новую заготовку
 		{
 			$('#addblank form').attr('action', 'orderdetail.php?id='+odid+'&addblank=1');
 		}
+
+		$('#addblank select[name="Blanks"]').change( function() {
+			if( !(id > 0) ) {
+				val = $(this).val();
+				if( val != '' ) {
+					$('#addblank input[name="Other"]').prop('disabled', true);
+					$('#addblank input[name="Other"]').prop("required", false);
+				}
+				else {
+					$('#addblank input[name="Other"]').prop('disabled', false);
+					$('#addblank input[name="Other"]').prop("required", true);
+				}
+			}
+		});
+
+		$('#addblank input[name="Other"]').change( function() {
+			if( !(id > 0) ) {
+				val = $(this).val();
+				if( val != '' ) {
+					$('#addblank select[name="Blanks"]').prop('disabled', true);
+					$('#addblank select[name="Blanks"]').prop('required', false);
+				}
+				else {
+					$('#addblank select[name="Blanks"]').prop('disabled', false);
+					$('#addblank select[name="Blanks"]').prop('required', true);
+				}
+			}
+		});
+
+		// Если нет материала, то кнопка наличия не активна
+		$('#addblank input[name="Material"]').change( function() {
+			materialonoff('#addblank');
+		});
+		$('#addblank input[name="Material"]').on( "autocompleteselect", function() {
+			materialonoff('#addblank');
+		});
 
 		$("#addblank").dialog(
 		{
@@ -432,6 +520,11 @@ $(document).ready(function(){
 			show: 'blind',
 			hide: 'explode',
 		});
+
+		// Автокомплит поверх диалога
+		$( ".textileplastictags" ).autocomplete( "option", "appendTo", "#addblank" );
+
+		return false;
 	});
 
 

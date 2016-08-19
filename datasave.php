@@ -66,8 +66,8 @@ if( $_GET["oddid"] )
 	$Material = trim($Material);
 	$Color = trim($Color);
 	$Comment = trim($Comment);
-	$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
-	$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
+	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
+	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 	$query = "UPDATE OrdersDataDetail
 			  SET PM_ID = {$Model}
 				 ,Length = {$Length}
@@ -82,8 +82,8 @@ if( $_GET["oddid"] )
 				 ,Color = '{$Color}'
 				 ,Comment = '{$Comment}'
 				 ,is_check = 1
-				 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
-				 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
+				 ,order_date = {$OrderDate}
+				 ,arrival_date = {$ArrivalDate}
 			  WHERE ODD_ID = {$_GET["oddid"]}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -112,20 +112,34 @@ if( $_GET["oddid"] )
 	die;
 }
 
-// Обновление параметров заготовки
+// Обновление параметров заготовки или прочего
 if( $_GET["odbid"] )
 {
-	$Blank = $_POST["Blank"] ? "{$_POST["Blank"]}" : "NULL";
+	$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
+	$Other = trim($_POST["Other"]);
+	$Other = mysqli_real_escape_string( $mysqli, $Other );
+	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
+	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
+	$Material = trim($Material);
+	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
+	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
-	// Удаляем лишние пробелы
 	$Comment = trim($Comment);
 
 	$query = "UPDATE OrdersDataBlank
 			  SET BL_ID = {$Blank}
+				 ,Other = '{$Other}'
 				 ,Amount = {$_POST["Amount"]}
 				 ,Comment = '{$Comment}'
+				 ,Material = '{$Material}'
+				 ,IsExist = {$IsExist}
+				 ,order_date = {$OrderDate}
+				 ,arrival_date = {$ArrivalDate}
 			  WHERE ODB_ID = {$_GET["odbid"]}";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
+	// Обновление этапов чтобы сработал триггер
+	$query = "UPDATE OrdersDataSteps SET Old = Old WHERE ODB_ID = {$_GET["odbid"]}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	header( "Location: ".$_GET["location"]."#".$_GET["odbid"] ); // Перезагружаем экран
@@ -138,8 +152,6 @@ if( isset($_POST["ODD_ID"]) )
 {
 	foreach( $_POST as $k => $v) 
 	{
-//		$val = $v ? "$v" : "NULL";
-
 		if( strpos($k,"Tariff") === 0 ) {
 			$sid = (int)str_replace( "Tariff", "", $k ); // ID этапа
 			$tariff = $v ? "$v" : "NULL";
@@ -154,6 +166,32 @@ if( isset($_POST["ODD_ID"]) )
 
 		// Удаление архивных этапов
 		$query = "DELETE FROM OrdersDataSteps WHERE ODD_ID = {$_POST["ODD_ID"]} AND Old = 1";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	}
+
+	header( "Location: ".$_GET["location"]."#".$_POST["ODD_ID"] );
+	die;
+}
+
+// Обновление производственных этапов для прочего
+if( isset($_POST["ODB_ID"]) )
+{
+	foreach( $_POST as $k => $v)
+	{
+		if( strpos($k,"Tariff") === 0 ) {
+			$sid = 0;
+			$tariff = $v ? "$v" : "NULL";
+			$worker = $_POST["WD_ID".$sid] ? $_POST["WD_ID".$sid] : "NULL";
+			$isready = $_POST["IsReady".$sid] ? $_POST["IsReady".$sid] : 0;
+			$visible = $_POST["Visible".$sid] ? $_POST["Visible".$sid] : 0;
+			$query = "UPDATE OrdersDataSteps
+					  SET WD_ID = {$worker}, Tariff = {$tariff}, IsReady = {$isready}, Visible = {$visible}
+					  WHERE ODB_ID = {$_POST["ODB_ID"]}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+
+		// Удаление архивных этапов
+		$query = "DELETE FROM OrdersDataSteps WHERE ODB_ID = {$_POST["ODB_ID"]} AND Old = 1";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 

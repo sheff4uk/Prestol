@@ -41,7 +41,12 @@
 				$_SESSION['login']=$myrow['Login'];
 				$_SESSION['id']=$myrow['USR_ID'];
 				$_SESSION['name']=$myrow['Name'];
-				exit ('<meta http-equiv="refresh" content="0; url=/">');
+				if( isset($_GET["location"]) ) {
+					exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
+				}
+				else {
+					exit ('<meta http-equiv="refresh" content="0; url=/">');
+				}
 			}
 			else {
 				//если пароли не сошлись

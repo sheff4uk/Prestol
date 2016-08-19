@@ -15,8 +15,7 @@
 	$_SESSION["f_X"] = $_GET["f_X"];	// Пометка X
 	$_SESSION["f_IP"] = $_GET["f_IP"];	// Cтатус лакировки
 	$_SESSION["f_CR"] = $_GET["f_CR"];	// Цвет
-	$_SESSION["f_T"] = $_GET["f_T"];	// Ткань
-	$_SESSION["f_P"] = $_GET["f_P"];	// Пластик
+	$_SESSION["f_M"] = $_GET["f_M"];	// Материал
 	$_SESSION["f_PR"] = $_GET["f_PR"];	// Работник
 
 	header( "Location: ".$_GET["location"] ); // Перезагружаем экран

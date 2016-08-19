@@ -29,7 +29,6 @@
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
 		header( "Location: ".$location );
-		//header( "Location: ".$_SERVER['REQUEST_URI'] );
 		die;
 	}
 
@@ -78,9 +77,9 @@
 						<option value="">-=Выберите заготовку=-</option>
 						<optgroup label="Стулья">
 							<?
-							$query = "SELECT BL.BL_ID, BL.Name, IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
+							$query = "SELECT BL.BL_ID, BL.Name, IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
 									  FROM BlankList BL
-									  LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
+									  LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
 									  WHERE BL.PT_ID = 1
 									  GROUP BY BL.BL_ID
 									  ORDER BY BL.Name";
@@ -93,9 +92,9 @@
 						</optgroup>
 						<optgroup label="Столы">
 							<?
-							$query = "SELECT BL.BL_ID, BL.Name, IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
+							$query = "SELECT BL.BL_ID, BL.Name, IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
 									  FROM BlankList BL
-									  LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
+									  LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
 									  WHERE BL.PT_ID = 2
 									  GROUP BY BL.BL_ID
 									  ORDER BY BL.Name";
@@ -144,11 +143,12 @@
 				// Количество остатков заготовок
 				$query = "SELECT BL.PT_ID
 								,BL.Name
-								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.Amount, 0) - IFNULL(SBLL.Amount, 0)) Amount
-								,IFNULL(SODD.Amount, 0) - IFNULL(SODD.Painting, 0) BeforePainting
-								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SBLL.Amount, 0)) AmountBeforePainting
-								,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
+								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.Amount, 0) - IFNULL(SBLL.Amount, 0) - IFNULL(SODB.Amount, 0)) Amount
+								,IFNULL(SODD.Amount, 0) - IFNULL(SODD.Painting, 0) + IFNULL(SODB.Amount, 0) - IFNULL(SODB.Painting, 0) BeforePainting
+								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SBLL.Amount, 0)) AmountBeforePainting
+								,IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
 							FROM BlankList BL
+							LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
 							LEFT JOIN (
 								SELECT BS.BL_ID, SUM(BS.Amount) Amount
 								FROM BlankStock BS
@@ -164,17 +164,21 @@
 								GROUP BY PB.BL_ID
 							) SODD ON SODD.BL_ID = BL.BL_ID
 							LEFT JOIN (
+								SELECT ODB.BL_ID
+										,SUM(ODB.Amount) Amount
+										,SUM(IF(OD.IsPainting = 1, 0, ODB.Amount)) Painting
+								FROM OrdersDataBlank ODB
+								LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
+								WHERE ODB.BL_ID IS NOT NULL
+								GROUP BY ODB.BL_ID
+							) SODB ON SODB.BL_ID = BL.BL_ID
+							LEFT JOIN (
 								SELECT BLL.BLL_ID, SUM(BS.Amount * BLL.Amount) Amount
 								FROM BlankLink BLL
 								LEFT JOIN BlankStock BS ON BS.BL_ID = BLL.BL_ID
 								GROUP BY BLL.BLL_ID
 							) SBLL ON SBLL.BLL_ID = BL.BL_ID
-							LEFT JOIN (
-								SELECT BL.BL_ID, BLL.BLL_ID
-								FROM BlankList BL
-								LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
-								GROUP BY BL.BL_ID
-							) BLL ON BLL.BL_ID = BL.BL_ID
+							GROUP BY BL.BL_ID
 							ORDER BY BL.PT_ID ASC, BL.Name ASC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )

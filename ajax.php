@@ -6,36 +6,66 @@ switch( $_GET["do"] )
 {
 // Генерирование формы этапов производства
 case "steps":
-	$odd_id = (int)$_GET["odd_id"];
+	if( isset($_GET["odd_id"]) ) {
+		$odd_id = (int)$_GET["odd_id"];
+		$other = 0;
+	}
+	else {
+		$odb_id = (int)$_GET["odb_id"];
+		$other = 1;
+	}
 	
 	// Получение информации об изделии
-	$query = "SELECT IFNULL(PM.PT_ID, 2) PT_ID
-					,PM.Model
-					,IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), '') Size
-					,CONCAT(PF.Form, ' ', PME.Mechanism) Form
-					,ODD.Amount
-			  FROM OrdersDataDetail ODD
-			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			  WHERE ODD.ODD_ID = $odd_id";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$pt = mysqli_result($res,0,'PT_ID');
-	$model = mysqli_result($res,0,'Model');
-	$size = mysqli_result($res,0,'Size');
-	$form = mysqli_result($res,0,'Form');
-	$amount = mysqli_result($res,0,'Amount');
-	$product = "<img src=\'/img/product_{$pt}.png\'>x{$amount}&nbsp;{$model}&nbsp;{$size}&nbsp;{$form}";
-	
-	// Получение информации об этапах производства
-	$query = "SELECT ST.ST_ID, ST.Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible, ODS.Old
-			  FROM OrdersDataSteps ODS
-			  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-			  WHERE ODS.ODD_ID = $odd_id
-			  ORDER BY ODS.Old DESC, ST.Sort";
-	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	if( $other == 0 ) {
+		$query = "SELECT IFNULL(PM.PT_ID, 2) PT_ID
+						,PM.Model
+						,IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), '') Size
+						,CONCAT(PF.Form, ' ', PME.Mechanism) Form
+						,ODD.Amount
+				  FROM OrdersDataDetail ODD
+				  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+				  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+				  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+				  WHERE ODD.ODD_ID = $odd_id";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$pt = mysqli_result($res,0,'PT_ID');
+		$model = mysqli_result($res,0,'Model');
+		$size = mysqli_result($res,0,'Size');
+		$form = mysqli_result($res,0,'Form');
+		$amount = mysqli_result($res,0,'Amount');
+		$product = "<img src=\'/img/product_{$pt}.png\'>x{$amount}&nbsp;{$model}&nbsp;{$size}&nbsp;{$form}";
 
-	$text = "<input type=\'hidden\' name=\'ODD_ID\' value=\'$odd_id\'>";
+		// Получение информации об этапах производства
+		$query = "SELECT ST.ST_ID, ST.Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible, ODS.Old
+				  FROM OrdersDataSteps ODS
+				  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+				  WHERE ODS.ODD_ID = $odd_id
+				  ORDER BY ODS.Old DESC, ST.Sort";
+		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		$text = "<input type=\'hidden\' name=\'ODD_ID\' value=\'$odd_id\'>";
+	}
+	else {
+		$query = "SELECT IFNULL(BL.Name, ODB.Other) Name
+						,ODB.Amount
+				  FROM OrdersDataBlank ODB
+				  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+				  WHERE ODB.ODB_ID = $odb_id";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$model = mysqli_result($res,0,'Name');
+		$amount = mysqli_result($res,0,'Amount');
+		$product = "<img src=\'/img/product_0.png\'>x{$amount}&nbsp;{$model}";
+
+		// Получение информации об этапах производства
+		$query = "SELECT 0 ST_ID, '-' Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible, ODS.Old
+				  FROM OrdersDataSteps ODS
+				  WHERE ODS.ODB_ID = $odb_id
+				  ORDER BY ODS.Old DESC";
+		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		$text = "<input type=\'hidden\' name=\'ODB_ID\' value=\'$odb_id\'>";
+	}
+
 	$text .= "<h3>$product</h3>";
 	$text .= "<table><thead>";
 	$text .= "<tr><th>Этап</th>";
@@ -49,18 +79,34 @@ case "steps":
 	{
 		// Формирование дропдауна со списком рабочих. Сортировка по релевантности.
 		$selectworker = "<option value=\'\'>-=Выберите работника=-</option>";
-		$query = "SELECT WD.WD_ID, WD.Name, SUM(IFNULL(ODS.Amount, 0)) CNT
-				  FROM WorkersData WD
-				  LEFT JOIN (
-					SELECT ODS.*, ODD.Amount 
-					FROM OrdersDataSteps ODS
-					JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
-					WHERE ODS.WD_ID IS NOT NULL AND ODS.ST_ID = {$row["ST_ID"]}
-					LIMIT 100
-				  ) ODS ON ODS.WD_ID = WD.WD_ID
-				  WHERE WD.Type = 1
-				  GROUP BY WD.WD_ID
-				  ORDER BY CNT DESC";
+		if( $other == 0 ) {
+			$query = "SELECT WD.WD_ID, WD.Name, SUM(IFNULL(ODS.Amount, 0)) CNT
+					  FROM WorkersData WD
+					  LEFT JOIN (
+						SELECT ODS.*, ODD.Amount
+						FROM OrdersDataSteps ODS
+						JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
+						WHERE ODS.WD_ID IS NOT NULL AND IFNULL(ODS.ST_ID, 0) = {$row["ST_ID"]}
+						LIMIT 100
+					  ) ODS ON ODS.WD_ID = WD.WD_ID
+					  WHERE WD.Type = 1
+					  GROUP BY WD.WD_ID
+					  ORDER BY CNT DESC";
+		}
+		else {
+			$query = "SELECT WD.WD_ID, WD.Name, SUM(IFNULL(ODS.Amount, 0)) CNT
+					  FROM WorkersData WD
+					  LEFT JOIN (
+						SELECT ODS.*, ODB.Amount
+						FROM OrdersDataSteps ODS
+						JOIN OrdersDataBlank ODB ON ODB.ODB_ID = ODS.ODB_ID
+						WHERE ODS.WD_ID IS NOT NULL
+						LIMIT 100
+					  ) ODS ON ODS.WD_ID = WD.WD_ID
+					  WHERE WD.Type = 1
+					  GROUP BY WD.WD_ID
+					  ORDER BY CNT DESC";
+		}
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $subrow = mysqli_fetch_array($res) )
 		{
@@ -108,7 +154,7 @@ case "livesearch":
 					,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
 					,IF(ODD.is_check = 1, '', 'attention') is_check
 					,SUM(IF(ODS.WD_ID IS NULL, 0, 1)) progress
-					,GROUP_CONCAT(IF(ODS.Old = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
+					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
 					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID

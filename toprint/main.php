@@ -55,54 +55,52 @@
 					if(isset($_GET["SH"])) echo "<th>Салон</th>";
 					if(isset($_GET["ON"])) echo "<th>№ квитанции</th>";
 					if(isset($_GET["Z"])) echo "<th>Заказ</th>";
-					if(isset($_GET["P"])) echo "<th>Пластик</th>";
+					if(isset($_GET["M"])) echo "<th>Материал</th>";
 					if(isset($_GET["CR"])) echo "<th>Цвет</th>";
 					if(isset($_GET["PR"])) echo "<th>Этапы</th>";
 					if(isset($_GET["IP"])) echo "<th>Лак.</th>";
-					if(isset($_GET["T"])) echo "<th>Ткань</th>";
 					if(isset($_GET["N"])) echo "<th>Примечание</th>";
 				?>
-            </tr>
-        </thead>
-        <tbody>
+			</tr>
+		</thead>
+		<tbody>
 	<?
 	$query = "SELECT OD.OD_ID
 					,IFNULL(OD.Code, '') Code
 					,IFNULL(OD.ClientName, '') ClientName
-					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
-					,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
+					,DATE_FORMAT(OD.StartDate, '%d.%m<br>%Y') StartDate
+					,DATE_FORMAT(OD.EndDate, '%d.%m<br>%Y') EndDate
 					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
 					,OD.OrderNumber
-					,CONCAT(IFNULL(CONCAT(ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' (', ODD.Comment, ')'))), ''), IFNULL(CONCAT(ODB.Amount, ' ', BL.Name, IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' (', ODB.Comment, ')'))), '')) Zakaz
+					,ODD_ODB.Zakaz
 					,OD.Color
 					,OD.IsPainting
-					,IF(IFNULL(PM.PT_ID, 2) = 2, IFNULL(ODD.Material, ''), '') Plastic
-					,IF(PM.PT_ID = 1, IFNULL(CONCAT(ODD.Material,
-						CASE ODD.IsExist
-							WHEN 0 THEN ' <b>(нет)</b>'
-							WHEN 1 THEN ' <b>(заказано)</b>'
-							WHEN 2 THEN ' <b>(есть)</b>'
-						END
-					), ''), '') Textile
-					,IFNULL(ODS_WD.Steps, '') Steps
+					,ODD_ODB.Material
+					,IFNULL(ODD_ODB.Steps, '') Steps
 					,IFNULL(OD.Comment, '') Comment
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-			  LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
-			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			  LEFT JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID
-			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 			  LEFT JOIN (SELECT ODD.OD_ID
 			  				   ,ODD.ODD_ID itemID
 			  				   ,IFNULL(PM.PT_ID, 2) PT_ID
+							   ,CONCAT(ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' (', ODD.Comment, ')'))) Zakaz
+							   ,IFNULL(CONCAT(ODD.Material,
+							   		IF(PM.PT_ID = 1 AND IFNULL(ODD.Material, '') != '',
+										CASE ODD.IsExist
+											WHEN 0 THEN ' <b>(нет)</b>'
+											WHEN 1 THEN ' <b>(заказано)</b>'
+											WHEN 2 THEN ' <b>(есть)</b>'
+										END,
+									'')
+							   ), '') Material
 			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(IF(IFNULL(WD.ShortName, '') = '', WD.Name, WD.ShortName), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR '<br>') Steps
 						FROM OrdersDataDetail ODD
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 						GROUP BY ODD.ODD_ID
@@ -110,12 +108,26 @@
 						SELECT ODB.OD_ID
 							  ,ODB.ODB_ID itemID
 							  ,0 PT_ID
-							  ,'' Steps
+							  ,CONCAT(ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' (', ODB.Comment, ')'))) Zakaz
+							  ,IFNULL(CONCAT(ODB.Material,
+							  		IF(IFNULL(ODB.Material, '') != '',
+										CASE ODB.IsExist
+											WHEN 0 THEN ' <b>(нет)</b>'
+											WHEN 1 THEN ' <b>(заказано)</b>'
+											WHEN 2 THEN ' <b>(есть)</b>'
+										END,
+									'')
+							  ), '') Material
+			  				  ,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT(IF(ODS.IsReady, '<b>Этап</b>', 'Этап'), '(<i>', IFNULL(IF(IFNULL(WD.ShortName, '') = '', WD.Name, WD.ShortName), '---'), '</i>)')) SEPARATOR '<br>') Steps
 						FROM OrdersDataBlank ODB
-						) ODS_WD ON ODS_WD.itemID = ODD.ODD_ID
+						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1 AND ODS.Old = 0
+						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+						GROUP BY ODB.ODB_ID
+						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  WHERE OD.OD_ID IN ({$id_list})
-			  GROUP BY ODD.ODD_ID
-			  ORDER BY OD.OD_ID, IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID";
+			  GROUP BY ODD_ODB.itemID
+			  ORDER BY OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	// Получаем количество изделий в заказе для группировки ячеек
@@ -163,7 +175,7 @@
 		if(isset($_GET["SH"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["Shop"]}</td>";
 		if(isset($_GET["ON"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
 		if(isset($_GET["Z"])) echo "<td{$border}>{$row["Zakaz"]}</td>";
-		if(isset($_GET["P"])) echo "<td{$border}>{$row["Plastic"]}</td>";
+		if(isset($_GET["M"])) echo "<td{$border}>{$row["Material"]}</td>";
 		if(isset($_GET["CR"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["Color"]}</td>";
 		if(isset($_GET["PR"])) echo "<td{$border}><span class='nowrap'>{$row["Steps"]}</span></td>";
 		if(isset($_GET["IP"]) and $span) {
@@ -181,7 +193,6 @@
 				}
 			echo "</td>";
 		}
-		if(isset($_GET["T"])) echo "<td{$border}>{$row["Textile"]}</td>";
 		if(isset($_GET["N"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["Comment"]}</td>";
 	}
     ?>

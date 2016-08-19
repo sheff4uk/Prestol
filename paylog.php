@@ -351,9 +351,16 @@
 				}
 				if( strpos($row["Link"],"ODS") === 0 ) { // Если запись из этапов производства - редактируем
 					$odd = substr($row["Link"], 4);
+					$step = strstr($odd, '_');
+					$step = substr($step, 1);
 					$pos = strpos($odd, '_');
 					$odd = substr($odd, 0, $pos);
-					echo "<a href='#' id='{$odd}' class='button edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
+					if( $step == '0' ) {
+						echo "<a href='#' odbid='{$odd}' class='button edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
+					}
+					else {
+						echo "<a href='#' id='{$odd}' class='button edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
+					}
 				}
 				echo "</td>";
 				echo "</tr>";
