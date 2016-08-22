@@ -159,7 +159,27 @@
 			<th width="15%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class="<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>"></th>
 			<th width="15%"><input type='text' name='f_M' size='8' class='textileplastictags <?=($_SESSION["f_M"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_M"] ?>'></th>
 			<th width="15%"><input type='text' name='f_CR' size='8' class='colortags <?=($_SESSION["f_CR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_CR"] ?>'></th>
-			<th width="10%"><input type='text' name='f_PR' size='8' class='workerstags <?=($_SESSION["f_PR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_PR"] ?>'></th>
+			<th width="10%" style="font-size: 0;">
+				<select name="f_PR" id="" style="width: 70%;" onchange="this.form.submit()" class="<?=($_SESSION["f_PR"] != "") ? "filtered" : ""?>">
+					<option></option>
+					<option value="0" <?= ($_SESSION["f_PR"] == "0") ? 'selected' : '' ?>>Не назначен!</option>
+					<?
+						$query = "SELECT WD_ID, Name FROM WorkersData WHERE Type = 1 ORDER BY Name";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option value='{$row["WD_ID"]}' ";
+							if( $_SESSION["f_PR"] == $row["WD_ID"] ) echo "selected";
+							echo ">{$row["Name"]}</option>";
+						}
+					?>
+				</select>
+				<select name="f_ST" style="width:30%;" onchange="this.form.submit()" class="<?=($_SESSION["f_ST"] != "") ? "filtered" : ""?>">
+					<option></option>
+					<option value="0" <?= ($_SESSION["f_ST"] == "0") ? 'selected' : '' ?> class="inwork">В работе</option>
+					<option value="1" <?= ($_SESSION["f_ST"] == "1") ? 'selected' : '' ?> class="ready">Готово</option>
+				</select>
+			</th>
 			<th width="40">
 				<select name="f_X" style="width: 100%;" onchange="this.form.submit()" class="<?=($_SESSION["f_X"] != "") ? "filtered" : ""?>">
 					<option></option>
@@ -255,16 +275,37 @@
 					,OD.Color
 					,OD.IsPainting
 					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
-					,GROUP_CONCAT(ODD_ODB.Name) Workers
+					,BIT_OR(ODD_ODB.PRfilter) PRfilter
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 
 					,BIT_AND(ODD_ODB.IsReady) IsReady
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-			  LEFT JOIN (SELECT ODD.OD_ID
-							   ,GROUP_CONCAT(DISTINCT WD.Name) Name
-							   ,ODS.IsReady
+			  LEFT JOIN (SELECT ODD.OD_ID";
+							   if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" ) {
+								   if( $_SESSION["f_PR"] != "0" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+								   else {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+							   }
+							   elseif( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "" ) {
+								   if( $_SESSION["f_PR"] != "0" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+								   else {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+							   }
+							   elseif( $_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "" ) {
+								   $query .= ",BIT_OR(IF(ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+							   }
+							   else {
+								   $query .= ",1 PRfilter";
+							   }
+					$query .= ",ODS.IsReady
 							   ,IFNULL(PM.PT_ID, 2) PT_ID
 							   ,ODD.ODD_ID itemID
 
@@ -280,15 +321,35 @@
 
 						FROM OrdersDataDetail ODD
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
-						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 						GROUP BY ODD.ODD_ID
 						UNION
-						SELECT ODB.OD_ID
-							  ,GROUP_CONCAT(DISTINCT WD.Name) Name
-							  ,ODS.IsReady
+						SELECT ODB.OD_ID";
+							   if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" ) {
+								   if( $_SESSION["f_PR"] != "0" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+								   else {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+							   }
+							   elseif( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "" ) {
+								   if( $_SESSION["f_PR"] != "0" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+								   else {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+							   }
+							   elseif( $_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "" ) {
+								   $query .= ",BIT_OR(IF(ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+							   }
+							   else {
+								   $query .= ",1 PRfilter";
+							   }
+					$query .= ",ODS.IsReady
 							  ,0 PT_ID
 							  ,ODB.ODB_ID itemID
 
@@ -304,7 +365,6 @@
 
 			  			FROM OrdersDataBlank ODB
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1
-						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 						GROUP BY ODB.ODB_ID
 						ORDER BY PT_ID DESC, itemID
@@ -352,15 +412,12 @@
 			  if( $_SESSION["f_CR"] != "" ) {
 				  $query .= " AND OD.Color LIKE '%{$_SESSION["f_CR"]}%'";
 			  }
-			  $query .= " GROUP BY OD.OD_ID HAVING TRUE";
+			  $query .= " GROUP BY OD.OD_ID HAVING PRfilter";
 			  if( $_SESSION["f_Z"] != "" ) {
 				  $query .= " AND Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
 			  }
 			  if( $_SESSION["f_M"] != "" ) {
 				  $query .= " AND Material LIKE '%{$_SESSION["f_M"]}%'";
-			  }
-			  if( $_SESSION["f_PR"] != "" ) {
-				  $query .= " AND Workers LIKE '%{$_SESSION["f_PR"]}%'";
 			  }
 			  if( $_SESSION["f_X"] == "1" ) {
 				  $X_ord = '0';
@@ -397,7 +454,30 @@
 		// Получаем данные по этамам производства
 		$query = "SELECT IFNULL(PM.PT_ID, 2) PT_ID
 						,ODD.ODD_ID itemID
-						,CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' class=\'edit_steps nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
+						,CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' class=\'edit_steps nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1,";
+						if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" ) {
+							if( $_SESSION["f_PR"] != "0" ) {
+								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
+							}
+							else {
+								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
+							}
+						}
+						elseif( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "" ) {
+							if( $_SESSION["f_PR"] != "0" ) {
+								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]}, ' ss', '')";
+							}
+							else {
+								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
+							}
+						}
+						elseif( $_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "" ) {
+							$query .= "IF(ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
+						}
+						else {
+							$query .= "''";
+						}
+					$query .= ", ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
 					FROM OrdersDataDetail ODD
 					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -407,7 +487,30 @@
 					GROUP BY ODD.ODD_ID
 					UNION
 					SELECT 0 PT_ID, ODB.ODB_ID itemID
-					,CONCAT('<a href=\'#\' odbid=\'', ODB.ODB_ID, '\' class=\'edit_steps nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
+					,CONCAT('<a href=\'#\' odbid=\'', ODB.ODB_ID, '\' class=\'edit_steps nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1,";
+						if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" ) {
+							if( $_SESSION["f_PR"] != "0" ) {
+								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
+							}
+							else {
+								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
+							}
+						}
+						elseif( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "" ) {
+							if( $_SESSION["f_PR"] != "0" ) {
+								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]}, ' ss', '')";
+							}
+							else {
+								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
+							}
+						}
+						elseif( $_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "" ) {
+							$query .= "IF(ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
+						}
+						else {
+							$query .= "''";
+						}
+					$query .= ", ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
 					FROM OrdersDataBlank ODB
 					LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
 					LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
@@ -534,10 +637,6 @@
 			$(event.target.form).submit();
 		});
 		$( ".main_table .colortags" ).on( "autocompleteselect", function( event, ui ) {
-			$(this).val(ui.item.value);
-			$(event.target.form).submit();
-		});
-		$( ".main_table .workerstags" ).on( "autocompleteselect", function( event, ui ) {
 			$(this).val(ui.item.value);
 			$(event.target.form).submit();
 		});

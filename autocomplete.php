@@ -20,21 +20,6 @@
 				source: ShopsTags
 			});
 
-			// Автокомплит работников (кроме почасовиков)
-			<?
-				$query = "SELECT Name FROM WorkersData WHERE Type = 1";
-				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				while( $row = mysqli_fetch_array($res) )
-				{
-					$WorkersTags[] = $row["Name"];
-				}
-			?>
-			var WorkersTags = <?= json_encode($WorkersTags); ?>;
-			$( ".workerstags" ).autocomplete({
-	//			autoFocus: true,
-				source: WorkersTags
-			});
-
 			// Автокомплит цветов
 			<?
 				$query = "SELECT Color FROM OrdersData GROUP BY Color";

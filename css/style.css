@@ -141,6 +141,10 @@ pre {
 	color: #333;
 }
 
+.ss {
+	border: 2px solid #333;
+}
+
 .shadow {
 	box-shadow: 0 0 10px #666;
 }
