@@ -59,7 +59,6 @@
 
 	$title = 'Престол главная';
 	include "header.php";
-//	include "autocomplete.php"; //JavaScript
 ?>
 	
 	<div id="overlay"></div>
@@ -159,12 +158,20 @@
 			<th width="15%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class="<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>"></th>
 			<th width="15%"><input type='text' name='f_M' size='8' class='textileplastictags <?=($_SESSION["f_M"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_M"] ?>'></th>
 			<th width="15%"><input type='text' name='f_CR' size='8' class='colortags <?=($_SESSION["f_CR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_CR"] ?>'></th>
-			<th width="10%" style="font-size: 0;">
-				<select name="f_PR" id="" style="width: 70%;" onchange="this.form.submit()" class="<?=($_SESSION["f_PR"] != "") ? "filtered" : ""?>">
+			<th width="100" style="font-size: 0;">
+				<select name="f_PR" style="width: 70%;" onchange="this.form.submit()" class="<?=($_SESSION["f_PR"] != "") ? "filtered" : ""?>">
 					<option></option>
-					<option value="0" <?= ($_SESSION["f_PR"] == "0") ? 'selected' : '' ?>>Не назначен!</option>
+					<option value="0" <?= ($_SESSION["f_PR"] === "0") ? 'selected' : '' ?>>Не назначен!</option>
+					<option value="02" <?= ($_SESSION["f_PR"] === "02") ? 'selected' : '' ?>>Не назначен! - Столы</option>
+					<option value="01" <?= ($_SESSION["f_PR"] === "01") ? 'selected' : '' ?>>Не назначен! - Стулья</option>
+					<option value="00" <?= ($_SESSION["f_PR"] === "00") ? 'selected' : '' ?>>Не назначен! - Прочее</option>
 					<?
-						$query = "SELECT WD_ID, Name FROM WorkersData WHERE Type = 1 ORDER BY Name";
+						$query = "SELECT ODS.WD_ID, WD.Name, COUNT(1) Cnt
+									FROM OrdersDataSteps ODS
+									LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+									WHERE ODS.WD_ID IS NOT NULL
+									GROUP BY ODS.WD_ID
+									ORDER BY Cnt DESC";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{
@@ -229,7 +236,7 @@
 			<th width="15%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
 			<th width="15%"><input type="checkbox" disabled value="8" checked name="M" class="print_col" id="M"><label for="M">Материал</label></th>
 			<th width="15%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
-			<th width="10%"><input type="checkbox" disabled value="10" checked name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
+			<th width="100"><input type="checkbox" disabled value="10" checked name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
 			<th width="40"><input type="checkbox" disabled value="11" checked name="X" class="print_col" id="X"><label for="X">X</label></th>
 			<th width="45"><input type="checkbox" disabled value="12" checked name="IP" class="print_col" id="IP"><label for="IP">Лакировка</label></th>
 			<th width="15%"><input type="checkbox" disabled value="13" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
@@ -251,7 +258,7 @@
 			<th width="15%"></th>
 			<th width="15%"></th>
 			<th width="15%"></th>
-			<th width="10%"></th>
+			<th width="100"></th>
 			<th width="40"></th>
 			<th width="45"></th>
 			<th width="15%"></th>
@@ -284,19 +291,37 @@
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 			  LEFT JOIN (SELECT ODD.OD_ID";
 							   if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" ) {
-								   if( $_SESSION["f_PR"] != "0" ) {
-									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   if( $_SESSION["f_PR"] === "0" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+								   elseif( $_SESSION["f_PR"] === "02" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND IFNULL(PM.PT_ID, 2) = 2 AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+								   elseif( $_SESSION["f_PR"] === "01" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND PM.PT_ID = 1 AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+								   elseif( $_SESSION["f_PR"] === "00" ) {
+									   $query .= ",0 PRfilter";
 								   }
 								   else {
-									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
 								   }
 							   }
 							   elseif( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "" ) {
-								   if( $_SESSION["f_PR"] != "0" ) {
-									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   if( $_SESSION["f_PR"] === "0" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+								   elseif( $_SESSION["f_PR"] === "02" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND IFNULL(PM.PT_ID, 2) = 2 AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+								   elseif( $_SESSION["f_PR"] === "01" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND PM.PT_ID = 1 AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   }
+								   elseif( $_SESSION["f_PR"] === "00" ) {
+									   $query .= ",0 PRfilter";
 								   }
 								   else {
-									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
 								   }
 							   }
 							   elseif( $_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "" ) {
@@ -328,19 +353,19 @@
 						UNION
 						SELECT ODB.OD_ID";
 							   if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" ) {
-								   if( $_SESSION["f_PR"] != "0" ) {
-									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   if( $_SESSION["f_PR"] === "0" or $_SESSION["f_PR"] === "00" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
 								   }
 								   else {
-									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
 								   }
 							   }
 							   elseif( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "" ) {
-								   if( $_SESSION["f_PR"] != "0" ) {
-									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+								   if( $_SESSION["f_PR"] === "0" or $_SESSION["f_PR"] === "00" ) {
+									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
 								   }
 								   else {
-									   $query .= ",BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
+									   $query .= ",BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
 								   }
 							   }
 							   elseif( $_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "" ) {
@@ -456,19 +481,37 @@
 						,ODD.ODD_ID itemID
 						,CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' class=\'edit_steps nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1,";
 						if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" ) {
-							if( $_SESSION["f_PR"] != "0" ) {
-								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
+							if( $_SESSION["f_PR"] === "0" ) {
+								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
+							}
+							elseif( $_SESSION["f_PR"] === "02" ) {
+								$query .= "IF(ODS.WD_ID IS NULL AND IFNULL(PM.PT_ID, 2) = 2, ' ss', '')";
+							}
+							elseif( $_SESSION["f_PR"] === "01" ) {
+								$query .= "IF(ODS.WD_ID IS NULL AND PM.PT_ID = 1, ' ss', '')";
+							}
+							elseif( $_SESSION["f_PR"] === "00" ) {
+								$query .= "''";
 							}
 							else {
-								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
+								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
 							}
 						}
 						elseif( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "" ) {
-							if( $_SESSION["f_PR"] != "0" ) {
-								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]}, ' ss', '')";
+							if( $_SESSION["f_PR"] === "0" ) {
+								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
+							}
+							elseif( $_SESSION["f_PR"] === "02" ) {
+								$query .= "IF(ODS.WD_ID IS NULL AND IFNULL(PM.PT_ID, 2) = 2, ' ss', '')";
+							}
+							elseif( $_SESSION["f_PR"] === "01" ) {
+								$query .= "IF(ODS.WD_ID IS NULL AND PM.PT_ID = 1, ' ss', '')";
+							}
+							elseif( $_SESSION["f_PR"] === "00" ) {
+								$query .= "''";
 							}
 							else {
-								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
+								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]}, ' ss', '')";
 							}
 						}
 						elseif( $_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "" ) {
@@ -489,19 +532,19 @@
 					SELECT 0 PT_ID, ODB.ODB_ID itemID
 					,CONCAT('<a href=\'#\' odbid=\'', ODB.ODB_ID, '\' class=\'edit_steps nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1,";
 						if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" ) {
-							if( $_SESSION["f_PR"] != "0" ) {
-								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
+							if( $_SESSION["f_PR"] === "0" or $_SESSION["f_PR"] === "00" ) {
+								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
 							}
 							else {
-								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
+								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
 							}
 						}
 						elseif( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "" ) {
-							if( $_SESSION["f_PR"] != "0" ) {
-								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]}, ' ss', '')";
+							if( $_SESSION["f_PR"] === "0" or $_SESSION["f_PR"] === "00" ) {
+								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
 							}
 							else {
-								$query .= "IF(ODS.WD_ID IS NULL, ' ss', '')";
+								$query .= "IF(ODS.WD_ID = {$_SESSION["f_PR"]}, ' ss', '')";
 							}
 						}
 						elseif( $_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "" ) {
@@ -622,6 +665,9 @@
 		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 
 		$('.print_products').button();
+
+		$('select[name="f_PR"]').attr('title', $('select[name="f_PR"] option:selected').html()); // Подсказка выбранного работника в фильтре
+		$('select[name="f_ST"]').attr('title', $('select[name="f_ST"] option:selected').html()); // Подсказка статуса этапа в фильтре
 
 		// Фильтрация таблицы при автокомплите
 		$( ".main_table .clienttags" ).on( "autocompleteselect", function( event, ui ) {

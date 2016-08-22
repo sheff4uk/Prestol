@@ -49,7 +49,7 @@
 //	$product_types = substr($product_types, 1);
 ?>
 	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
-	<table>
+	<table class="main_table">
 		<thead>
 			<tr>
 				<?
@@ -59,7 +59,7 @@
 					if(isset($_GET["ED"])) echo "<th>Дата сдачи</th>";
 					if(isset($_GET["SH"])) echo "<th>Салон</th>";
 					if(isset($_GET["ON"])) echo "<th>№ квитанции</th>";
-					if(isset($_GET["Z"])) echo "<th>Заказ</th>";
+					if(isset($_GET["Z"])) echo "<th width='50%'>Заказ</th>";
 					if(isset($_GET["M"])) echo "<th>Материал</th>";
 					if(isset($_GET["CR"])) echo "<th>Цвет</th>";
 					if(isset($_GET["PR"])) echo "<th>Этапы</th>";
