@@ -42,11 +42,11 @@
 			$id_list .= ','.$orderid;
 		}
 	}
-	$product_types = "";
+	$product_types = "-1";
 	if(isset($_GET["Tables"])) $product_types .= ",2";
 	if(isset($_GET["Chairs"])) $product_types .= ",1";
 	if(isset($_GET["Others"])) $product_types .= ",0";
-	$product_types = substr($product_types, 1);
+//	$product_types = substr($product_types, 1);
 ?>
 	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
 	<table>
