@@ -542,7 +542,7 @@ td.tscell > i {
 	width: 100%;
 	z-index: 12;
 	text-align: center;
-	box-shadow: 0 0 10px #666;
+//	box-shadow: 0 0 10px #666;
 }
 
 .filtered {

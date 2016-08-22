@@ -263,7 +263,7 @@
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 			  LEFT JOIN (SELECT ODD.OD_ID
-							   ,WD.Name
+							   ,GROUP_CONCAT(DISTINCT WD.Name) Name
 							   ,ODS.IsReady
 							   ,IFNULL(PM.PT_ID, 2) PT_ID
 							   ,ODD.ODD_ID itemID
@@ -287,7 +287,7 @@
 						GROUP BY ODD.ODD_ID
 						UNION
 						SELECT ODB.OD_ID
-							  ,WD.Name
+							  ,GROUP_CONCAT(DISTINCT WD.Name) Name
 							  ,ODS.IsReady
 							  ,0 PT_ID
 							  ,ODB.ODB_ID itemID
