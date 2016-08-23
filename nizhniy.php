@@ -164,7 +164,7 @@
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  WHERE OD.Del = 0";
-			  $query .= " AND CT.CT_ID = 9 OR OD.SH_ID IS NULL";
+			  $query .= " AND (CT.CT_ID = 9 OR OD.SH_ID IS NULL)";
 			  if( $archive ) {
 				  $query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
 			  }
