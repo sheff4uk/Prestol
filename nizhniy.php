@@ -46,11 +46,11 @@
 		<?
 		if( $archive == 1 )
 		{
-			echo "<a href='/nizhniy.php' class='button'>В работе</a>";
+			echo "<a href='/nizhniy.php' class='button'>К в работе</a>";
 		}
 		else
 		{
-			echo "<a href='/nizhniy.php?archive=1' class='button'>Готовые</a>";
+			echo "<a href='/nizhniy.php?archive=1' class='button'>К готовым</a>";
 		}
 		?>
 	</p>
