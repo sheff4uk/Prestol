@@ -1,5 +1,4 @@
 <?
-//	session_start();
 	include "config.php";
 
 	$datediff = 60; // Максимальный период отображения данных
@@ -267,6 +266,7 @@
 		</thead>
 		<tbody>
 <?
+	$OD_IDs = "0"; // Сюда будем записывать список выбранных ID заказов для автокомплита
 	$query = "SELECT OD.OD_ID
 					,OD.Code
 					,IFNULL(OD.ClientName, '') ClientName
@@ -330,7 +330,7 @@
 							   else {
 								   $query .= ",1 PRfilter";
 							   }
-					$query .= ",ODS.IsReady
+					$query .= ",BIT_AND(ODS.IsReady) IsReady
 							   ,IFNULL(PM.PT_ID, 2) PT_ID
 							   ,ODD.ODD_ID itemID
 
@@ -374,7 +374,7 @@
 							   else {
 								   $query .= ",1 PRfilter";
 							   }
-					$query .= ",ODS.IsReady
+					$query .= ",BIT_AND(ODS.IsReady) IsReady
 							  ,0 PT_ID
 							  ,ODB.ODB_ID itemID
 
@@ -460,6 +460,7 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
+		$OD_IDs .= ",".$row["OD_ID"];
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td><span class='nowrap'>{$row["Code"]}</span></td>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
