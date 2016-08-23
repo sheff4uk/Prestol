@@ -1,5 +1,7 @@
 <?
 	include "config.php";
+
+	$datediff = 60; // Максимальный период отображения данных
 ?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -22,13 +24,38 @@
 	<script type="text/javascript" src="js/noty/packaged/jquery.noty.packaged.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.4.0/clipboard.min.js"></script>
 
+	<script>
+		$(document).ready(function(){
+			$( 'input[type=submit], .button, button' ).button();
+		});
+	</script>
+
 <?
 	$archive = ($_GET["archive"] == 1) ? 1 : 0;
 ?>
 
 </head>
 <body style='background: <?= ( $archive == 1 ) ? "#bf8" : "#fff" ?>'>
+	<nav class="navbar">
+		<div class="navbar-header"  id="main">
+			<a class="navbar-brand" href="/nizhniy.php" title="На главную">ПРЕСТОЛ</a>
+		</div>
+	</nav>
 
+	<p>
+		<?
+		if( $archive == 1 )
+		{
+			echo "<a href='/nizhniy.php' class='button'>В работе</a>";
+		}
+		else
+		{
+			echo "<a href='/nizhniy.php?archive=1' class='button'>Готовые</a>";
+		}
+		?>
+	</p>
+
+	<div class="wr_main_table_head">
 	<table class="main_table">
 		<thead>
 		<tr>
@@ -44,6 +71,26 @@
 			<th width="100"><label for="PR">Этапы</label></th>
 			<th width="45"><label for="IP">Лакировка</label></th>
 			<th width="15%"><label for="N">Примечание</label></th>
+		</tr>
+		</thead>
+	</table>
+	</div>
+	<div class="wr_main_table_body"> <!-- Обертка тела таблицы -->
+	<table class="main_table">
+		<thead style="">
+		<tr>
+			<th width="45"></th>
+			<th width="5%"></th>
+			<th width="5%"></th>
+			<th width="5%"></th>
+			<th width="5%"></th>
+			<th width="5%"></th>
+			<th width="15%"></th>
+			<th width="15%"></th>
+			<th width="15%"></th>
+			<th width="100"></th>
+			<th width="45"></th>
+			<th width="15%"></th>
 		</tr>
 		</thead>
 		<tbody>
@@ -197,5 +244,6 @@
 ?>
 		</tbody>
 	</table>
+	</div>
 </body>
 </html>
