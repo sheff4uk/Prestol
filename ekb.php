@@ -111,7 +111,7 @@
 					,OD.Color
 					,OD.IsPainting
 					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
-					,BIT_OR(ODD_ODB.PRfilter) PRfilter
+					,BIT_OR(IFNULL(ODD_ODB.PRfilter, 1)) PRfilter
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 
 					,BIT_AND(ODD_ODB.IsReady) IsReady
