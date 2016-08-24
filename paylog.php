@@ -296,7 +296,47 @@
 			</table>
 			<?
 			}
-			?>
+		if( isset($_GET["worker"]) ) {
+?>
+
+		<h1>Журнал изменения баланса</h1>
+		<table>
+			<thead>
+				<tr>
+					<th>Дата</th>
+					<th>Время</th>
+					<th>Баланс</th>
+				</tr>
+			</thead>
+			<tbody>
+<?
+			$query = "SELECT BL.Balance
+							,DATE_FORMAT(DATE(BL.Date), '%d.%m.%Y') Date
+							,TIME(BL.Date) Time
+					  FROM BalanceLog BL
+					  WHERE WD_ID = {$_GET["worker"]} AND DATEDIFF(NOW(), Date) <= {$datediff}
+					  ORDER BY BL.Date DESC";
+
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			while( $row = mysqli_fetch_array($res) ) {
+				$format_balance = number_format($row["Balance"], 0, '', ' ');
+				if( $row["Balance"] < 0 )
+					$color = ' bg-red';
+				else
+					$color = '';
+				echo "<tr>";
+				echo "<td><span nowrap'>{$row["Date"]}</span></td>";
+				echo "<td><span nowrap'>{$row["Time"]}</span></td>";
+				echo "<td class='txtright'><span class='nowrap{$color}'>{$format_balance}</span></td>";
+				echo "</tr>";
+			}
+?>
+			</tbody>
+		</table>
+<?
+		}
+?>
 	</div>
 
 	<div class="log-pay halfblock">
