@@ -10,7 +10,7 @@
             margin: 20px;
             color: #333;
             font-family: Verdana, Trebuchet MS, Tahoma, Arial, sans-serif;
-            font-size: 12pt;
+            font-size: 10pt;
         }
         table {
             border-collapse: collapse;
@@ -21,13 +21,22 @@
             border: 1px solid black;
             line-height: 1.45em;
         }
-        .nowrap {
+		thead {
+			display: table-header-group;
+		}
+		tr, td {
+			page-break-inside: avoid;
+		}
+		tr.page-break {
+			page-break-before:auto;
+		}
+		.nowrap {
 			white-space: nowrap;
 		}
 		.line {
 			text-decoration: line-through;
 		}
-    </style>
+	</style>
 </head>
 <body>
 <?
@@ -160,32 +169,39 @@
 			$cnt = $subrow["Cnt"];
 			$odid = $row["OD_ID"];
 			$span = 1;
-			$border = " style='border-top: 3px solid black;'";
+			$border = "border-top: 3px solid black;";
 		}
 		else {
 			$span = 0;
 			$border = "";
 		}
-		echo "<tr>";
-		if(isset($_GET["CD"]) and $span) echo "<td{$border} rowspan='{$cnt}' class='nowrap'>{$row["Code"]}</td>";
-		if(isset($_GET["CN"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["ClientName"]}</td>";
-		if(isset($_GET["SD"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["StartDate"]}</td>";
+
+		if( $span ) {
+			echo "<tr class='page-break'>";
+		}
+		else {
+			echo "<tr>";
+		}
+
+		if(isset($_GET["CD"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}' class='nowrap'>{$row["Code"]}</td>";
+		if(isset($_GET["CN"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}</td>";
+		if(isset($_GET["SD"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["StartDate"]}</td>";
 		if(isset($_GET["ED"]) and $span) {
 			if( $archive ) {
-				echo "<td{$border} rowspan='{$cnt}'>{$row["ReadyDate"]}</td>";
+				echo "<td style='{$border}' rowspan='{$cnt}'>{$row["ReadyDate"]}</td>";
 			}
 			else {
-				echo "<td{$border} rowspan='{$cnt}'>{$row["EndDate"]}</td>";
+				echo "<td style='{$border}' rowspan='{$cnt}'>{$row["EndDate"]}</td>";
 			}
 		}
-		if(isset($_GET["SH"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["Shop"]}</td>";
-		if(isset($_GET["ON"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
-		if(isset($_GET["Z"])) echo "<td{$border}>{$row["Zakaz"]}</td>";
-		if(isset($_GET["M"])) echo "<td{$border}>{$row["Material"]}</td>";
-		if(isset($_GET["CR"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["Color"]}</td>";
-		if(isset($_GET["PR"])) echo "<td{$border}><span class='nowrap'>{$row["Steps"]}</span></td>";
+		if(isset($_GET["SH"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["Shop"]}</td>";
+		if(isset($_GET["ON"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
+		if(isset($_GET["Z"])) echo "<td style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";
+		if(isset($_GET["M"])) echo "<td style='{$border}'>{$row["Material"]}</td>";
+		if(isset($_GET["CR"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["Color"]}</td>";
+		if(isset($_GET["PR"])) echo "<td style='{$border}'><span class='nowrap'>{$row["Steps"]}</span></td>";
 		if(isset($_GET["IP"]) and $span) {
-			echo "<td{$border} rowspan='{$cnt}'>";
+			echo "<td style='{$border}' rowspan='{$cnt}'>";
 				switch ($row["IsPainting"]) {
 					case 1:
 						echo "<i class='fa fa-star-o fa-lg'></i>";
@@ -199,7 +215,8 @@
 				}
 			echo "</td>";
 		}
-		if(isset($_GET["N"]) and $span) echo "<td{$border} rowspan='{$cnt}'>{$row["Comment"]}</td>";
+		if(isset($_GET["N"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["Comment"]}</td>";
+		echo "</tr>";
 	}
     ?>
         </tbody>
