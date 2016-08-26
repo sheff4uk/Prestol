@@ -343,6 +343,7 @@
 		$SelectStepODB = "''";
 	}
 
+	$OD_IDs = "0"; // Сюда будем записывать список выбранных ID заказов для автокомплита
 	$query = "SELECT OD.OD_ID
 					,OD.Code
 					,IFNULL(OD.ClientName, '') ClientName
@@ -486,6 +487,7 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
+		$OD_IDs .= ",".$row["OD_ID"];
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td><span class='nowrap'>{$row["Code"]}</span></td>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
@@ -526,13 +528,11 @@
 		{
 			if( $row["IsReady"] && $row["IsPainting"] == 3 && $archive != 1)
 			{
-				//echo "<a href='?ready={$row["OD_ID"]}' class='button' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\")) return true; return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a> ";
 				echo "<a class='button' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a> ";
 			}
 		}
 		else
 		{
-			//echo "<a href='?del={$row["OD_ID"]}' class='button' onclick='if(confirm(\"Удалить?\")) return true; return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 			echo "<a class='button' onclick='if(confirm(\"Удалить?\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 		}
 		echo "</td></tr>";
