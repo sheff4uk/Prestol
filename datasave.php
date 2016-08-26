@@ -68,6 +68,44 @@ if( $_GET["oddid"] )
 	$Comment = trim($Comment);
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
+
+	// Узнаем какой материал был ранее
+	$query = "SELECT IFNULL(MT.Material, '') Material, ODD.MT_ID
+			  FROM OrdersDataDetail ODD
+			  JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+			  WHERE ODD.ODD_ID = {$_GET["oddid"]}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$OldMaterial = mysqli_result($res,0,'Material');
+
+	// Если материалы не совпадают
+	if( $OldMaterial != $Material ) {
+		$query = "UPDATE Materials SET Count = Count - 1 WHERE Material = '{$OldMaterial}' AND PT_ID = {$_POST["Type"]}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		if( $Material != '' ) { // Сохраняем в таблицу материалов полученный материал и узнаем его ID
+			$query = "INSERT INTO Materials
+						SET
+							PT_ID = {$_POST["Type"]},
+							Material = '{$Material}',
+							Count = 1
+						ON DUPLICATE KEY UPDATE
+							Count = Count + 1";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$mt_id = mysqli_insert_id( $mysqli );
+		}
+		else {
+			$mt_id = "NULL";
+		}
+	}
+	else {
+		if( $Material != '' ) {
+			$mt_id = mysqli_result($res,0,'MT_ID');
+		}
+		else {
+			$mt_id = "NULL";
+		}
+	}
+
 	$query = "UPDATE OrdersDataDetail
 			  SET PM_ID = {$Model}
 				 ,Length = {$Length}
@@ -76,7 +114,7 @@ if( $_GET["oddid"] )
 				 ,PieceSize = {$PieceSize}
 				 ,PF_ID = {$Form}
 				 ,PME_ID = {$Mechanism}
-				 ,Material = '{$Material}'
+				 ,MT_ID = {$mt_id}
 				 ,IsExist = {$IsExist}
 				 ,Amount = {$_POST["Amount"]}
 				 ,Color = '{$Color}'
@@ -126,12 +164,49 @@ if( $_GET["odbid"] )
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 	$Comment = trim($Comment);
 
+	// Узнаем какой материал был ранее
+	$query = "SELECT IFNULL(MT.Material, '') Material, ODB.MT_ID
+			  FROM OrdersDataBlank ODB
+			  JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+			  WHERE ODB.ODB_ID = {$_GET["odbid"]}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$OldMaterial = mysqli_result($res,0,'Material');
+
+	// Если материалы не совпадают
+	if( $OldMaterial != $Material ) {
+		$query = "UPDATE Materials SET Count = Count - 1 WHERE Material = '{$OldMaterial}' AND PT_ID = 0";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		if( $Material != '' ) { // Сохраняем в таблицу материалов полученный материал и узнаем его ID
+			$query = "INSERT INTO Materials
+						SET
+							PT_ID = 0,
+							Material = '{$Material}',
+							Count = 1
+						ON DUPLICATE KEY UPDATE
+							Count = Count + 1";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$mt_id = mysqli_insert_id( $mysqli );
+		}
+		else {
+			$mt_id = "NULL";
+		}
+	}
+	else {
+		if( $Material != '' ) {
+			$mt_id = mysqli_result($res,0,'MT_ID');
+		}
+		else {
+			$mt_id = "NULL";
+		}
+	}
+
 	$query = "UPDATE OrdersDataBlank
 			  SET BL_ID = {$Blank}
 				 ,Other = '{$Other}'
 				 ,Amount = {$_POST["Amount"]}
 				 ,Comment = '{$Comment}'
-				 ,Material = '{$Material}'
+				 ,MT_ID = {$mt_id}
 				 ,IsExist = {$IsExist}
 				 ,order_date = {$OrderDate}
 				 ,arrival_date = {$ArrivalDate}

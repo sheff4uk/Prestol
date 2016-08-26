@@ -46,7 +46,7 @@
                     ,PM.Model
                     ,CONCAT(PF.Form, ' ', PME.Mechanism) Form
                     ,CONCAT(ODD.Length, 'х', ODD.Width) Size
-                    ,ODD.Material
+                    ,MT.Material
                     ,ODD.Color
                     ,OD.Comment
                     ,SUM(IF(ODS.ST_ID = 7, ODS.WD_ID, 0)) Step7
@@ -59,6 +59,7 @@
                 LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
                 LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 				LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+				LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
                 JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.ST_ID IN(7,8) AND ODS.IsReady != 1
                 JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
                 JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID

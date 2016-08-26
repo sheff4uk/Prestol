@@ -118,7 +118,7 @@
 								WHEN 1 THEN 'bg-yellow'
 								WHEN 2 THEN 'bg-green'
 							END,
-						'\'>', IFNULL(ODD.Material, ''), '</span><br>') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') Material
+						'\'>', IFNULL(MT.Material, ''), '</span><br>') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') Material
 				  FROM OrdersData OD
 				  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 				  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -131,6 +131,7 @@
 				  JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = {$_GET["type"]}
 				  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 				  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+				  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 				  WHERE OD.Del = 0
 				  GROUP BY OD.OD_ID, ODS.ST_ID
 				  ORDER BY ST.Sort";

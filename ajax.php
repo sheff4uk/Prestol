@@ -147,7 +147,7 @@ case "livesearch":
 					,CONCAT(PF.Form, ' ', PME.Mechanism) Form
 					,IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), '') Size
 					,ODD.Color
-					,ODD.Material
+					,MT.Material
 					,ODD.IsExist
 					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
 					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
@@ -162,7 +162,8 @@ case "livesearch":
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID";
+			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID";
 	$query .= " WHERE ODD.OD_ID IS NULL";
 	$query .= ( $pt == 1 ) ? " AND PM.PT_ID = {$pt}" : "";
 	$query .= ($_GET["model"] and $_GET["model"] <> "undefined") ? " AND (ODD.PM_ID = {$_GET["model"]} OR ODD.PM_ID IS NULL)" : "";
@@ -171,7 +172,7 @@ case "livesearch":
 //	$query .= ($_GET["length"] and $_GET["length"] <> "undefined") ? " AND ODD.Length = {$_GET["length"]}" : "";
 //	$query .= ($_GET["width"] and $_GET["width"] <> "undefined") ? " AND ODD.Width = {$_GET["width"]}" : "";
 //	$query .= ($_GET["color"]) ? " AND ODD.Color LIKE '%{$_GET["color"]}%'" : "";
-	$query .= ($_GET["material"]) ? " AND ODD.Material LIKE '%{$_GET["material"]}%'" : "";
+//	$query .= ($_GET["material"]) ? " AND MT.Material LIKE '%{$_GET["material"]}%'" : "";
 	$query .= " GROUP BY ODD.ODD_ID";
 	$query .= " ORDER BY progress DESC";
 	

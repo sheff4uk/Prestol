@@ -110,8 +110,23 @@
 			$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 			$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 
-			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, Material, IsExist, Amount, Color, Comment, order_date, arrival_date)
-					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, '{$Material}', {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$Comment}', {$OrderDate}, {$ArrivalDate})";
+			if( $Material != '' ) { // Сохраняем в таблицу материалов полученный материал и узнаем его ID
+				$query = "INSERT INTO Materials
+							SET
+								PT_ID = {$_POST["Type"]},
+								Material = '{$Material}',
+								Count = 1
+							ON DUPLICATE KEY UPDATE
+								Count = Count + 1";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$mt_id = mysqli_insert_id( $mysqli );
+			}
+			else {
+				$mt_id = "NULL";
+			}
+
+			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Color, Comment, order_date, arrival_date)
+					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$Comment}', {$OrderDate}, {$ArrivalDate})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$odd_id = mysqli_insert_id( $mysqli );
 
@@ -163,8 +178,23 @@
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 		$Comment = trim($Comment);
 
-		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Amount, Comment, Material, IsExist, order_date, arrival_date)
-				  VALUES ({$id}, {$Blank}, '{$Other}', {$_POST["Amount"]}, '{$Comment}', '{$Material}', {$IsExist}, {$OrderDate}, {$ArrivalDate})";
+		if( $Material != '' ) { // Сохраняем в таблицу материалов полученный материал и узнаем его ID
+			$query = "INSERT INTO Materials
+						SET
+							PT_ID = 0,
+							Material = '{$Material}',
+							Count = 1
+						ON DUPLICATE KEY UPDATE
+							Count = Count + 1";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$mt_id = mysqli_insert_id( $mysqli );
+		}
+		else {
+			$mt_id = "NULL";
+		}
+
+		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Amount, Comment, MT_ID, IsExist, order_date, arrival_date)
+				  VALUES ({$id}, {$Blank}, '{$Other}', {$_POST["Amount"]}, '{$Comment}', {$mt_id}, {$IsExist}, {$OrderDate}, {$ArrivalDate})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		$odb_id = mysqli_insert_id( $mysqli );
@@ -381,7 +411,7 @@
 					,ODD.PieceSize
 					,ODD.PF_ID
 					,ODD.PME_ID
-					,ODD.Material
+					,IFNULL(MT.Material, '') Material
 					,ODD.IsExist
 					,ODD.Amount
 					,ODD.Color
@@ -399,7 +429,8 @@
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID";
+			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID";
 	if( $id != "NULL" )
 	{
 		$query .= " WHERE ODD.OD_ID = {$id}";
@@ -459,7 +490,7 @@
 					,IFNULL(BL.Name, ODB.Other) Name
 					,ODB.Other
 					,ODB.Comment
-					,ODB.Material
+					,IFNULL(MT.Material, '') Material
 					,ODB.IsExist
 					,DATE_FORMAT(ODB.order_date, '%d.%m.%Y') order_date
 					,DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y') arrival_date
@@ -470,7 +501,8 @@
 			  FROM OrdersDataBlank ODB
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
 			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID";
+			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+			  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID";
 	if( $id != "NULL" )
 	{
 		$query .= " WHERE ODB.OD_ID = {$id}";

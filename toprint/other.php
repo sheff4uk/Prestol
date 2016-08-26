@@ -52,7 +52,7 @@
                     
 					,GROUP_CONCAT(CONCAT(ODD.Color, '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Color
 					
-                    ,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 1, IFNULL(ODD.Material, ''), ''),
+                    ,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 1, IFNULL(MT.Material, ''), ''),
                         IF(PM.PT_ID = 1,
 						CASE ODD.IsExist
 							WHEN 0 THEN '(Нет)'
@@ -61,7 +61,7 @@
 						END, ''),
 					'<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Textile
 					
-                    ,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 2, IFNULL(ODD.Material, ''), ''),
+                    ,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 2, IFNULL(MT.Material, ''), ''),
                         IF(PM.PT_ID = 2,
 						CASE ODD.IsExist
 							WHEN 0 THEN '(Нет)'
@@ -77,6 +77,7 @@
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			  LEFT JOIN (SELECT ODS.ODD_ID, BIT_AND(ODS.IsReady) IsReady, GROUP_CONCAT(IF(ODS.ST_ID IN (2,8), WD.Name, '') SEPARATOR '') fitter
 						FROM OrdersDataSteps ODS
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID

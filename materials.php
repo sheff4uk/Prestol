@@ -33,7 +33,7 @@
 ?>
 	
 	<form method='get' style='display: flex;'>
-		<label for='isexist'>Наличие:</label>
+		<label for='isexist'>Наличие:&nbsp;</label>
 		<div class='btnset' id='isexist'>
 			<input type='radio' id='isex0' name='isex' value='0' <?= ($_GET["isex"] =="0" ? "checked" : "") ?> onchange="this.form.submit()">
 				<label for='isex0'>Нет</label>
@@ -45,7 +45,7 @@
 
 		<div class='spase'></div>
 
-		<label for='material'>Материал:</label>
+		<label for='material'>Материал:&nbsp;</label>
 		<div class='btnset' id='material'>
 			<input type='radio' id='prod1' name='prod' value='1' <?= ($_GET["prod"] =="1" ? "checked" : "") ?> onchange="this.form.submit()">
 				<label for='prod1'>Ткань</label>
@@ -53,7 +53,7 @@
 				<label for='prod2'>Пластик</label>
 		</div>
 		<div class='spase'></div>
-		Название:
+		Название:&nbsp;
 		<input type="text" name="material" class="textileplastictags" value="<?=$_GET["material"]?>" style="height: 18px;" autocomplete="off">
 		<div class='spase'></div>
 <!--		<button>Фильтр</button>-->
@@ -65,8 +65,7 @@
 		<thead>
 		<tr>
 			<th></th>
-			<th>Ткань/пластик</th>
-			<th>Примечание к изделию</th>
+			<th>Материал</th>
 			<th>Заказ</th>
 			<th>Лакировка</th>
 			<th>Цвет</th>
@@ -89,18 +88,20 @@
 					,OD.OrderNumber
 					,OD.Comment
 					,COUNT(ODD.ODD_ID) Child
-					,GROUP_CONCAT(CONCAT(IFNULL(ODD.Comment, ''), '<br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') ZakazComment
-					,GROUP_CONCAT(CONCAT(ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '<br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') Zakaz
+
+					,GROUP_CONCAT(CONCAT('<span', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, '***'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</span><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') Zakaz
+
 					,OD.IsPainting
 					,IFNULL(OD.Color, '<a href=\"/orderdetail.php\">Свободные</a>') Color
-					,GROUP_CONCAT(CONCAT(ODD.Color, '<br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Color_archive
+
 					,GROUP_CONCAT(CONCAT(IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
 						CASE ODD.IsExist
 							WHEN 0 THEN 'bg-red'
 							WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
 							WHEN 2 THEN 'bg-green'
 						END,
-					'\'>', IFNULL(ODD.Material, ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Material
+					'\'>', IFNULL(MT.Material, ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Material
+
 					,GROUP_CONCAT(CONCAT('<input type=\'checkbox\' value=\'1\' name=\'prod', ODD.ODD_ID, '\' class=\'chbox\'><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Checkbox
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 			  FROM OrdersData OD
@@ -110,9 +111,9 @@
 			  JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID IN ({$product})
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			  WHERE IFNULL(ODD.Material, '') <> ''
-			  	AND ODD.IsExist IN ({$isexist})
-				AND ODD.Material LIKE '%{$_GET["material"]}%'
+			  JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+			  WHERE ODD.IsExist IN ({$isexist})
+				AND MT.Material LIKE '%{$_GET["material"]}%'
 				AND OD.ReadyDate IS NULL
 			  GROUP BY OD.OD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -121,7 +122,6 @@
 		echo "<tr>";
 		echo "<td>{$row["Checkbox"]}</td>";
 		echo "<td><span class='nowrap'>{$row["Material"]}</span></td>";
-		echo "<td><span class='nowrap'>{$row["ZakazComment"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 			switch ($row["IsPainting"]) {
 				case 1:

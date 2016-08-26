@@ -45,7 +45,7 @@
                     ,PM.Model
                     ,CONCAT(PF.Form, ' ', PME.Mechanism) Form
                     ,CONCAT(ODD.Length, 'х', ODD.Width) Size
-                    ,ODD.Material
+                    ,MT.Material
                     ,OD.Comment
                 FROM OrdersData OD
                 RIGHT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
@@ -54,6 +54,7 @@
                 LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
                 LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 				LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+				LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
                 JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.ST_ID = 6 AND ODS.IsReady != 1
                 JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
                 JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID AND WD.WD_ID = {$_GET["worker"]}

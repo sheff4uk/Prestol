@@ -37,7 +37,7 @@
 
 			// Автокомплит тканей
 			<?
-				$query = "SELECT ODD.Material FROM OrdersDataDetail ODD JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1 GROUP BY ODD.Material";
+				$query = "SELECT Material FROM Materials WHERE PT_ID = 1 ORDER BY Count DESC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{
@@ -52,7 +52,7 @@
 
 			// Автокомплит пластиков
 			<?
-				$query = "SELECT ODD.Material FROM OrdersDataDetail ODD JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2 GROUP BY ODD.Material";
+				$query = "SELECT Material FROM Materials WHERE PT_ID = 2 ORDER BY Count DESC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{
@@ -67,15 +67,7 @@
 
 			// Автокомплит тканей, пластиков и прочего
 			<?
-				$query = "SELECT COUNT(1) cnt, ODD_ODB.Material
-						  FROM (
-							SELECT ODD.Material FROM OrdersDataDetail ODD
-							UNION ALL
-							SELECT ODB.Material FROM OrdersDataBlank ODB
-						  ) ODD_ODB
-						  WHERE Material != ''
-						  GROUP BY ODD_ODB.Material
-						  ORDER BY cnt DESC";
+				$query = "SELECT Material, SUM(Count) Count FROM Materials GROUP BY Material ORDER BY Count DESC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{

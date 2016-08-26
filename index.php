@@ -342,13 +342,14 @@
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
 									WHEN 2 THEN 'bg-green'
 								END,
-							   '\'>', IFNULL(ODD.Material, ''), '</span><br>') Material
+							   '\'>', IFNULL(MT.Material, ''), '</span><br>') Material
 
 						FROM OrdersDataDetail ODD
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 						GROUP BY ODD.ODD_ID
 						UNION
 						SELECT ODB.OD_ID";
@@ -386,11 +387,12 @@
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
 									WHEN 2 THEN 'bg-green'
 								END,
-							  '\'>', IFNULL(ODB.Material, ''), '</span><br>') Material
+							  '\'>', IFNULL(MT.Material, ''), '</span><br>') Material
 
 			  			FROM OrdersDataBlank ODB
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1
 						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 						GROUP BY ODB.ODB_ID
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
@@ -616,13 +618,14 @@
 						,ODD.PieceSize
 						,ODD.Color
 						,ODD.Comment
-						,ODD.Material
+						,MT.Material
 						,ODD.IsExist
                         ,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
                         ,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
 						,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 				  FROM OrdersDataDetail ODD
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
+				  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 				  WHERE ODD.OD_ID = {$row["OD_ID"]}
 				  GROUP BY ODD.ODD_ID";
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -636,13 +639,14 @@
 						,ODB.BL_ID
 						,ODB.Other
 						,ODB.Comment
-						,ODB.Material
+						,MT.Material
 						,ODB.IsExist
 						,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 						,DATE_FORMAT(ODB.order_date, '%d.%m.%Y') order_date
 						,DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y') arrival_date
 				  FROM OrdersDataBlank ODB
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1
+				  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 				  WHERE ODB.OD_ID = {$row["OD_ID"]}
 				  GROUP BY ODB.ODB_ID";
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
