@@ -154,7 +154,7 @@
 			<th width="5%"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>' class='<?=($_SESSION["f_ED"] != "") ? "filtered" : ""?>'></th>
 			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags <?=($_SESSION["f_SH"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_SH"] ?>'></th>
 			<th width="5%"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>' class="<?=($_SESSION["f_ON"] != "") ? "filtered" : ""?>"></th>
-			<th width="15%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class="<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>"></th>
+			<th width="25%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class="<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>"></th>
 			<th width="15%"><input type='text' name='f_M' size='8' class='textileplastictags <?=($_SESSION["f_M"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_M"] ?>'></th>
 			<th width="15%"><input type='text' name='f_CR' size='8' class='colortags <?=($_SESSION["f_CR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_CR"] ?>'></th>
 			<th width="100" style="font-size: 0;">
@@ -232,7 +232,7 @@
 			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br>сдачи</label></th>
 			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
 			<th width="5%"><input type="checkbox" disabled value="6" checked name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>
-			<th width="15%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
+			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
 			<th width="15%"><input type="checkbox" disabled value="8" checked name="M" class="print_col" id="M"><label for="M">Материал</label></th>
 			<th width="15%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
 			<th width="100"><input type="checkbox" disabled value="10" checked name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
@@ -254,7 +254,7 @@
 			<th width="5%"></th>
 			<th width="5%"></th>
 			<th width="5%"></th>
-			<th width="15%"></th>
+			<th width="25%"></th>
 			<th width="15%"></th>
 			<th width="15%"></th>
 			<th width="100"></th>
