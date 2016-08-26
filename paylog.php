@@ -315,7 +315,7 @@
 							,TIME(BL.Date) Time
 					  FROM BalanceLog BL
 					  WHERE WD_ID = {$_GET["worker"]} AND DATEDIFF(NOW(), Date) <= {$datediff}
-					  ORDER BY BL.Date DESC";
+					  ORDER BY BL.Date DESC, BL.Balance DESC";
 
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
