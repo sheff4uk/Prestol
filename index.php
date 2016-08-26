@@ -521,20 +521,24 @@
 					$title = "Готово";
 					break;
 			}
-		echo " class='painting {$class}' title='{$title}'></td>";
+		echo " class='painting {$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$archive}'></td>";
 		echo "<td><span>{$row["Comment"]}</span></td>";
 		echo "<td><a href='./orderdetail.php?id={$row["OD_ID"]}' class='button' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+
+		echo "<span class='action'>";
 		if( $row["Child"] ) // Если заказ не пустой
 		{
 			if( $row["IsReady"] && $row["IsPainting"] == 3 && $archive != 1)
 			{
-				echo "<a class='button' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a> ";
+				echo "<a class='button' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 			}
 		}
 		else
 		{
 			echo "<a class='button' onclick='if(confirm(\"Удалить?\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 		}
+		echo "</span>";
+
 		echo "</td></tr>";
 
 		// Заполнение массива для JavaScript
@@ -656,7 +660,9 @@
 			var id = $(this).parents('tr').attr('id');
 			id = id.replace('ord', '');
 			var val = $(this).attr('val');
-			$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val, dataType: "script", async: false });
+			var isready = $(this).attr('isready');
+			var archive = $(this).attr('archive');
+			$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val+"&isready="+isready+"&archive="+archive, dataType: "script", async: false });
 		});
 
 		$('.X input[type="checkbox"]').change(function() {

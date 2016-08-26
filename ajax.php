@@ -245,6 +245,8 @@ case "livesearch":
 case "ispainting":
 
 	$id = $_GET["od_id"];
+	$isready = $_GET["isready"];
+	$archive = $_GET["archive"];
 	$val = $_GET["val"];
 	$val = ($val == 3) ? 1 : $val + 1;
 
@@ -276,6 +278,15 @@ case "ispainting":
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').addClass('{$class}');";
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('title', '{$status}');";
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('val', '{$val}');";
+	if( $isready == 1 and $archive != 1 ) {
+		if( $val == 3 ) {
+			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action').html('<a class=\"button\" onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
+			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action a').button();";
+		}
+		else {
+			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action').html('');";
+		}
+	}
 	echo "noty({timeout: 3000, text: 'Статус лакировки изменен на \"{$status}\"', type: 'success'});";
 	break;
 
