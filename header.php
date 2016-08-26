@@ -1,4 +1,8 @@
 <?
+	// Снимаем ограничение в 1024 на GROUP_CONCAT
+	$query = "SET @@group_concat_max_len = 10000;";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
 	ini_set("session.gc_maxlifetime",10);
 	session_start();
 	// Проверяем, пусты ли переменные логина и id пользователя
@@ -27,7 +31,9 @@
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
 	<script type="text/javascript" src="js/noty/packaged/jquery.noty.packaged.min.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.4.0/clipboard.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.4.0/clipboard.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
 
 	<script>
 		$(document).ready(function(){
@@ -111,9 +117,9 @@
 					  ,"Регистрация" => "reg.php");
 	}
 	else {
-		$menu = array ("Ткань/пластик" => "materials.php?isex=0&prod=1"
+		$menu = array ("Материалы" => "materials.php"
 //					  ,"Производство" => "workers.php?worker=0&type=1&isready=0"
-					  ,"Свободные{$ischeckcount}" => "/orderdetail.php"
+					  ,"Свободные{$ischeckcount}" => "/orderdetail.php?free=1"
 					  ,"Заготовки" => "blankstock.php"
 					  ,"Табель" => "timesheet.php"
 					  ,"Платежи" => "paylog.php"

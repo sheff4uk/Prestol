@@ -24,22 +24,31 @@
 		die;
 	}
 
-	$isexist = $_GET["isex"];
-	$product = $_GET["prod"];
+	if( isset($_GET["isex"]) ) {
+		$isexist = $_GET["isex"];
+	}
+	else {
+		$isexist = 0;
+	}
+	if( isset($_GET["prod"]) ) {
+		$product = $_GET["prod"];
+	}
+	else {
+		$product = 1;
+	}
 
-	$title = 'Ткань/пластик';
+	$title = 'Материалы';
 	include "header.php";
-//	include "autocomplete.php"; //JavaScript
 ?>
 	
 	<form method='get' style='display: flex;'>
 		<label for='isexist'>Наличие:&nbsp;</label>
 		<div class='btnset' id='isexist'>
-			<input type='radio' id='isex0' name='isex' value='0' <?= ($_GET["isex"] =="0" ? "checked" : "") ?> onchange="this.form.submit()">
+			<input type='radio' id='isex0' name='isex' value='0' <?= ($isexist =="0" ? "checked" : "") ?> onchange="this.form.submit()">
 				<label for='isex0'>Нет</label>
-			<input type='radio' id='isex1' name='isex' value='1' <?= ($_GET["isex"] =="1" ? "checked" : "") ?> onchange="this.form.submit()">
+			<input type='radio' id='isex1' name='isex' value='1' <?= ($isexist =="1" ? "checked" : "") ?> onchange="this.form.submit()">
 				<label for='isex1'>Заказано</label>
-			<input type='radio' id='isex2' name='isex' value='2' <?= ($_GET["isex"] =="2" ? "checked" : "") ?> onchange="this.form.submit()">
+			<input type='radio' id='isex2' name='isex' value='2' <?= ($isexist =="2" ? "checked" : "") ?> onchange="this.form.submit()">
 				<label for='isex2'>В наличии</label>
 		</div>
 
@@ -47,15 +56,26 @@
 
 		<label for='material'>Материал:&nbsp;</label>
 		<div class='btnset' id='material'>
-			<input type='radio' id='prod1' name='prod' value='1' <?= ($_GET["prod"] =="1" ? "checked" : "") ?> onchange="this.form.submit()">
+			<input type='radio' id='prod1' name='prod' value='1' <?= ($product =="1" ? "checked" : "") ?> onchange="this.form.submit()">
 				<label for='prod1'>Ткань</label>
-			<input type='radio' id='prod2' name='prod' value='2' <?= ($_GET["prod"] =="2" ? "checked" : "") ?> onchange="this.form.submit()">
+			<input type='radio' id='prod2' name='prod' value='2' <?= ($product =="2" ? "checked" : "") ?> onchange="this.form.submit()">
 				<label for='prod2'>Пластик</label>
+			<input type='radio' id='prod0' name='prod' value='0' <?= ($product =="0" ? "checked" : "") ?> onchange="this.form.submit()">
+				<label for='prod0'>Прочее</label>
 		</div>
+
 		<div class='spase'></div>
+
 		Название:&nbsp;
 		<input type="text" name="material" class="textileplastictags" value="<?=$_GET["material"]?>" style="height: 18px;" autocomplete="off">
+
 		<div class='spase'></div>
+
+		<select name="MT_ID">
+			<?
+			$query = "";
+			?>
+		</select>
 <!--		<button>Фильтр</button>-->
 	</form>
 
@@ -101,6 +121,8 @@
 							WHEN 2 THEN 'bg-green'
 						END,
 					'\'>', IFNULL(MT.Material, ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Material
+
+					,ODD.MT_ID
 
 					,GROUP_CONCAT(CONCAT('<input type=\'checkbox\' value=\'1\' name=\'prod', ODD.ODD_ID, '\' class=\'chbox\'><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Checkbox
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
