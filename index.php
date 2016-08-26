@@ -386,7 +386,7 @@
 							   ,CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' class=\'edit_steps nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODD}, ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
 
 						FROM OrdersDataDetail ODD
-						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
+						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
@@ -414,7 +414,7 @@
 							  ,CONCAT('<a href=\'#\' odbid=\'', ODB.ODB_ID, '\' class=\'edit_steps nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODB}, ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
 
 			  			FROM OrdersDataBlank ODB
-						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1
+						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
 						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
