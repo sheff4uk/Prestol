@@ -227,17 +227,17 @@
 		<thead>
 		<tr>
 			<th width="45"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
-			<th width="5%"><input type="checkbox" disabled value="2" checked name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
-			<th width="5%"><input type="checkbox" disabled value="3" checked name="SD" class="print_col" id="SD"><label for="SD">Дата<br>приема</label></th>
+			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
+			<th width="5%"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>приема</label></th>
 			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br>сдачи</label></th>
 			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
-			<th width="5%"><input type="checkbox" disabled value="6" checked name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>
+			<th width="5%"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>
 			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
 			<th width="15%"><input type="checkbox" disabled value="8" checked name="M" class="print_col" id="M"><label for="M">Материал</label></th>
 			<th width="15%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
-			<th width="100"><input type="checkbox" disabled value="10" checked name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
-			<th width="40"><input type="checkbox" disabled value="11" checked name="X" class="print_col" id="X"><label for="X">X</label></th>
-			<th width="45"><input type="checkbox" disabled value="12" checked name="IP" class="print_col" id="IP"><label for="IP">Лакировка</label></th>
+			<th width="100"><input type="checkbox" disabled value="10" name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
+			<th width="40"><input type="checkbox" disabled value="11" name="X" class="print_col" id="X"><label for="X">X</label></th>
+			<th width="45"><input type="checkbox" disabled value="12" name="IP" class="print_col" id="IP"><label for="IP">Лакировка</label></th>
 			<th width="15%"><input type="checkbox" disabled value="13" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
 			<th width="80">Действие</th>
 		</tr>
