@@ -37,46 +37,57 @@
 		$product = 1;
 	}
 
+	$MT_IDs = implode(",", $_GET["MT_ID"]);
+
 	$title = 'Материалы';
 	include "header.php";
 ?>
 	
-	<form method='get' style='display: flex;'>
-		<label for='isexist'>Наличие:&nbsp;</label>
-		<div class='btnset' id='isexist'>
-			<input type='radio' id='isex0' name='isex' value='0' <?= ($isexist =="0" ? "checked" : "") ?> onchange="this.form.submit()">
-				<label for='isex0'>Нет</label>
-			<input type='radio' id='isex1' name='isex' value='1' <?= ($isexist =="1" ? "checked" : "") ?> onchange="this.form.submit()">
-				<label for='isex1'>Заказано</label>
-			<input type='radio' id='isex2' name='isex' value='2' <?= ($isexist =="2" ? "checked" : "") ?> onchange="this.form.submit()">
-				<label for='isex2'>В наличии</label>
+	<form method='get' id='MTfilter'>
+		<div>
+			<label for='isexist'>Наличие:&nbsp;</label>
+			<div class='btnset' id='isexist'>
+				<input type='radio' id='isex0' name='isex' value='0' <?= ($isexist =="0" ? "checked" : "") ?>>
+					<label for='isex0'>Нет</label>
+				<input type='radio' id='isex1' name='isex' value='1' <?= ($isexist =="1" ? "checked" : "") ?>>
+					<label for='isex1'>Заказано</label>
+				<input type='radio' id='isex2' name='isex' value='2' <?= ($isexist =="2" ? "checked" : "") ?>>
+					<label for='isex2'>В наличии</label>
+			</div>
 		</div>
 
-		<div class='spase'></div>
-
-		<label for='material'>Материал:&nbsp;</label>
-		<div class='btnset' id='material'>
-			<input type='radio' id='prod1' name='prod' value='1' <?= ($product =="1" ? "checked" : "") ?> onchange="this.form.submit()">
-				<label for='prod1'>Ткань</label>
-			<input type='radio' id='prod2' name='prod' value='2' <?= ($product =="2" ? "checked" : "") ?> onchange="this.form.submit()">
-				<label for='prod2'>Пластик</label>
-			<input type='radio' id='prod0' name='prod' value='0' <?= ($product =="0" ? "checked" : "") ?> onchange="this.form.submit()">
-				<label for='prod0'>Прочее</label>
+		<div>
+			<label for='material'>Материал:&nbsp;</label>
+			<div class='btnset' id='material'>
+				<input type='radio' id='prod1' name='prod' value='1' <?= ($product =="1" ? "checked" : "") ?>>
+					<label for='prod1'>Ткань</label>
+				<input type='radio' id='prod2' name='prod' value='2' <?= ($product =="2" ? "checked" : "") ?>>
+					<label for='prod2'>Пластик</label>
+				<input type='radio' id='prod0' name='prod' value='0' <?= ($product =="0" ? "checked" : "") ?>>
+					<label for='prod0'>Прочее</label>
+			</div>
 		</div>
 
-		<div class='spase'></div>
+		<div>
+			<select name="MT_ID[]" multiple style="width: 800px; display: none;">
+				<?
+				$query = "SELECT MT.MT_ID, MT.Material
+							FROM Materials MT
+							JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD.IsExist = {$isexist}
+							JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.ReadyDate IS NULL
+							WHERE MT.PT_ID = {$product}
+							GROUP BY MT.MT_ID
+							ORDER BY MT.Material";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($res) ) {
+					$selected = in_array($row["MT_ID"], $_GET["MT_ID"]) ? "selected" : "";
+					echo "<option {$selected} value='{$row["MT_ID"]}'>{$row["Material"]}</option>";
+				}
+				?>
+			</select>
+		</div>
 
-		Название:&nbsp;
-		<input type="text" name="material" class="textileplastictags" value="<?=$_GET["material"]?>" style="height: 18px;" autocomplete="off">
-
-		<div class='spase'></div>
-
-		<select name="MT_ID">
-			<?
-			$query = "";
-			?>
-		</select>
-<!--		<button>Фильтр</button>-->
+		<button>Фильтр</button>
 	</form>
 
 	<form method='post'>
@@ -134,10 +145,11 @@
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-			  WHERE ODD.IsExist IN ({$isexist})
-				AND MT.Material LIKE '%{$_GET["material"]}%'
-				AND OD.ReadyDate IS NULL
-			  GROUP BY OD.OD_ID";
+			  WHERE ODD.IsExist IN ({$isexist})";
+	if( $MT_IDs ) $query .= " AND ODD.MT_ID IN ({$MT_IDs})";
+	$query .= " AND OD.ReadyDate IS NULL
+			  GROUP BY OD.OD_ID
+			  ORDER BY OD.OD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
@@ -165,7 +177,7 @@
 		echo "<td>{$row["Comment"]}</td>";
 		echo "</tr>";
 	}
-?>		
+?>
 		</tbody>
 	</table>
 	<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>
@@ -226,6 +238,18 @@
 				$('#selectallbottom').prop('checked', checked_status);
 				return false;
 			});
+		});
+
+		$('#isexist input, #material input').change(function(){
+			$('select[name="MT_ID[]"] option').removeAttr('selected');
+			$('#MTfilter').submit();
+		});
+
+		$('select[name="MT_ID[]"]').select2({
+			placeholder: "Выберите интересующие материалы",
+			allowClear: true,
+			closeOnSelect: false,
+			language: "ru"
 		});
 	});
 </script>

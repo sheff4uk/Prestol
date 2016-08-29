@@ -578,3 +578,11 @@ td.tscell > i {
 	background-color: #db4437;
 	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
 }
+
+#MTfilter > div {
+	display: inline-block;
+	margin: 10px;
+}
+.select2-container--default .select2-results>.select2-results__options {
+    max-height: 400px !important;
+}
