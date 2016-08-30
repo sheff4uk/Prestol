@@ -401,7 +401,7 @@
 <?
 	$query = "SELECT ODD.ODD_ID
 					,IFNULL(PM.PT_ID, 2) PT_ID
-					,PM.Model
+					,IFNULL(PM.Model, 'Столешница') Model
 					,CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')) Size
 					,PF.Form
 					,PME.Mechanism

@@ -1,29 +1,6 @@
 <?
 	include "config.php";
 
-	// Применение статуса материала
-	if( isset($_POST["IsExist"]) )
-	{
-		foreach( $_POST as $k => $v) 
-		{
-			$val = $_POST["IsExist"];
-			if( strpos($k,"prod") === 0 ) 
-			{
-				$prodid = (int)str_replace( "prod", "", $k );
-				$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
-				$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
-				$query = "UPDATE OrdersDataDetail
-						  SET IsExist = $val
-							 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
-							 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
-						  WHERE ODD_ID = {$prodid}";
-				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			}
-		}
-		header( "Location: ".$_SERVER['REQUEST_URI'] );
-		die;
-	}
-
 	if( isset($_GET["isex"]) ) {
 		$isexist = $_GET["isex"];
 	}
@@ -38,6 +15,39 @@
 	}
 
 	$MT_IDs = implode(",", $_GET["MT_ID"]);
+	$MT_IDs = $MT_IDs == "" ? "0" : $MT_IDs;
+
+	// Применение статуса материала
+	if( isset($_POST["IsExist"]) )
+	{
+		foreach( $_POST as $k => $v) 
+		{
+			$val = $_POST["IsExist"];
+			if( strpos($k,"prod") === 0 ) 
+			{
+				$prodid = (int)str_replace( "prod", "", $k );
+				$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
+				$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
+				if( $product > 0 ) {
+					$query = "UPDATE OrdersDataDetail
+							  SET IsExist = $val
+								 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
+								 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
+							  WHERE ODD_ID = {$prodid}";
+				}
+				else {
+					$query = "UPDATE OrdersDataBlank
+							  SET IsExist = $val
+								 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
+								 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
+							  WHERE ODB_ID = {$prodid}";
+				}
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			}
+		}
+		header( "Location: ".$_SERVER['REQUEST_URI'] );
+		die;
+	}
 
 	$title = 'Материалы';
 	include "header.php";
@@ -73,9 +83,15 @@
 				<?
 				$query = "SELECT MT.MT_ID, MT.Material
 							FROM Materials MT
-							JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD.IsExist = {$isexist}
-							JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.ReadyDate IS NULL
-							WHERE MT.PT_ID = {$product}
+							JOIN (
+								SELECT ODD.OD_ID, ODD.MT_ID, ODD.IsExist
+								FROM OrdersDataDetail ODD
+								UNION
+								SELECT ODB.OD_ID, ODB.MT_ID, ODB.IsExist
+								FROM OrdersDataBlank ODB
+								) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID AND ODD_ODB.IsExist = {$isexist}
+							LEFT JOIN OrdersData OD ON OD.OD_ID = ODD_ODB.OD_ID
+							WHERE MT.PT_ID = {$product} AND OD.ReadyDate IS NULL
 							GROUP BY MT.MT_ID
 							ORDER BY MT.Material";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -110,6 +126,7 @@
 		</thead>
 		<tbody>
 <?
+//	if( $product > 0 ) {
 	$query = "SELECT OD.OD_ID
 					,OD.ClientName
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
@@ -118,36 +135,64 @@
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,OD.OrderNumber
 					,OD.Comment
-					,COUNT(ODD.ODD_ID) Child
-
-					,GROUP_CONCAT(CONCAT('<span', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</span><br>') ORDER BY IFNULL(PM.PT_ID, 2) DESC, ODD.ODD_ID SEPARATOR '') Zakaz
-
 					,OD.IsPainting
 					,IFNULL(OD.Color, '<a href=\"/orderdetail.php\">Свободные</a>') Color
-
-					,GROUP_CONCAT(CONCAT(IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
-						CASE ODD.IsExist
-							WHEN 0 THEN 'bg-red'
-							WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
-							WHEN 2 THEN 'bg-green'
-						END,
-					'\'>', IFNULL(MT.Material, ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Material
-
-					,ODD.MT_ID
-
-					,GROUP_CONCAT(CONCAT('<input type=\'checkbox\' value=\'1\' name=\'prod', ODD.ODD_ID, '\' class=\'chbox\'><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Checkbox
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
+					,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
+					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
+					,GROUP_CONCAT(ODD_ODB.Checkbox SEPARATOR '') Checkbox
 			  FROM OrdersData OD
-			  RIGHT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-			  JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID IN ({$product})
-			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			  JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-			  WHERE ODD.IsExist IN ({$isexist})";
-	if( $MT_IDs ) $query .= " AND ODD.MT_ID IN ({$MT_IDs})";
-	$query .= " AND OD.ReadyDate IS NULL
+			  RIGHT JOIN (
+						  SELECT ODD.OD_ID
+								,ODD.ODD_ID ItemID
+								,IFNULL(PM.PT_ID, 2) PT_ID
+
+								,CONCAT('<span', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), '</span><br>') Zakaz
+
+								,CONCAT(IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
+								CASE ODD.IsExist
+									WHEN 0 THEN 'bg-red'
+									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
+									WHEN 2 THEN 'bg-green'
+								END,
+								'\'>', IFNULL(MT.Material, ''), '</span><br>') Material
+
+								,CONCAT('<input type=\'checkbox\' value=\'1\' name=\'prod', ODD.ODD_ID, '\' class=\'chbox\'><br>') Checkbox
+
+						  FROM OrdersDataDetail ODD
+						  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+						  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+						  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+						  JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+						  WHERE ODD.IsExist = {$isexist} AND IFNULL(PM.PT_ID, 2) = {$product}
+						  AND (ODD.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
+						  UNION
+						  SELECT ODB.OD_ID
+								,ODB.ODB_ID ItemID
+								,0 PT_ID
+
+								,CONCAT('<span', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</span><br>') Zakaz
+
+								,CONCAT(IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span class=\'',
+								CASE ODB.IsExist
+									WHEN 0 THEN 'bg-red'
+									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
+									WHEN 2 THEN 'bg-green'
+								END,
+								'\'>', IFNULL(MT.Material, ''), '</span><br>') Material
+
+								,CONCAT('<input type=\'checkbox\' value=\'1\' name=\'prod', ODB.ODB_ID, '\' class=\'chbox\'><br>') Checkbox
+
+						  FROM OrdersDataBlank ODB
+						  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+						  JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+						  WHERE ODB.IsExist = {$isexist} AND 0 = {$product}
+						  AND (ODB.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
+						  ORDER BY PT_ID DESC, ItemID
+						  ) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+			  WHERE OD.ReadyDate IS NULL
 			  GROUP BY OD.OD_ID
 			  ORDER BY OD.OD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -166,6 +211,9 @@
 					break;
 				case 3:
 					echo "<td class='ready' title='Готово'></td>";
+					break;
+				default:
+					echo "<td></td>";
 					break;
 			}
 		echo "<td>{$row["Color"]}</td>";
