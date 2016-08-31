@@ -146,7 +146,7 @@ if( $_GET["oddid"] )
 		$_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
 	}
 
-	header( "Location: ".$_GET["location"]."#".$_GET["oddid"] ); // Перезагружаем экран
+	header( "Location: ".$_GET["location"]."#prod".$_GET["oddid"] ); // Перезагружаем экран
 	die;
 }
 
@@ -217,7 +217,7 @@ if( $_GET["odbid"] )
 	$query = "UPDATE OrdersDataSteps SET Old = Old WHERE ODB_ID = {$_GET["odbid"]}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	header( "Location: ".$_GET["location"]."#".$_GET["odbid"] ); // Перезагружаем экран
+	header( "Location: ".$_GET["location"]."#blank".$_GET["odbid"] ); // Перезагружаем экран
 	die;
 
 }
@@ -244,7 +244,7 @@ if( isset($_POST["ODD_ID"]) )
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 
-	header( "Location: ".$_GET["location"]."#".$_POST["ODD_ID"] );
+	header( "Location: ".$_GET["location"]."#prod".$_POST["ODD_ID"] );
 	die;
 }
 
@@ -270,7 +270,7 @@ if( isset($_POST["ODB_ID"]) )
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 
-	header( "Location: ".$_GET["location"]."#".$_POST["ODD_ID"] );
+	header( "Location: ".$_GET["location"]."#blank".$_POST["ODB_ID"] );
 	die;
 }
 ?>

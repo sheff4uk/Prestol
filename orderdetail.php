@@ -444,7 +444,7 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		echo "<tr class='{$row["is_check"]}' id='{$row["ODD_ID"]}'>";
+		echo "<tr class='{$row["is_check"]}' id='prod{$row["ODD_ID"]}'>";
 		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
 		echo "<td>{$row["Model"]}</td>";
 		echo "<td>{$row["Size"]}</td>";
@@ -535,7 +535,7 @@
 
 	while( $row = mysqli_fetch_array($res) )
 	{
-		echo "<tr id='{$row["ODB_ID"]}'>";
+		echo "<tr id='blank{$row["ODB_ID"]}'>";
 		echo "<td>{$row["Amount"]}</td>";
 		echo "<td>{$row["Name"]}</td>";
 		echo "<td><a href='#' odbid='{$row["ODB_ID"]}' class='edit_steps nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";

@@ -166,7 +166,10 @@ $(document).ready(function(){
 		$('#addchair fieldset').prop('disabled', false);
 		$('#addchair input[name=free]').val(0);
 
-		var id = $(this).attr('id');
+		id = $(this).attr('id');
+		if( typeof id !== "undefined" ) {
+			id = id.replace('prod', '');
+		}
 		var free = $(this).attr('free');
 		var location = $(this).attr("location");
 		var odid = $(this).attr("odid");
@@ -280,7 +283,10 @@ $(document).ready(function(){
 		$('#addtable .btnset').buttonset( 'option', 'disabled', false );
 		$('#addtable input[name=free]').val(0);
 
-		var id = $(this).attr('id');
+		id = $(this).attr('id');
+		if( typeof id !== "undefined" ) {
+			id = id.replace('prod', '');
+		}
 		var free = $(this).attr('free');
 		var location = $(this).attr("location");
 		var odid = $(this).attr("odid");
@@ -423,6 +429,9 @@ $(document).ready(function(){
 	// Форма добавления заготовок
 	$('.edit_order_blank').click(function() {
 		id = $(this).attr('id');
+		if( typeof id !== "undefined" ) {
+			id = id.replace('blank', '');
+		}
 		var location = $(this).attr("location");
 		var odid = $(this).attr("odid");
 
