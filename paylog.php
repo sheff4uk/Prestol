@@ -362,6 +362,7 @@
 							,ABS(PL.Pay) Pay
 							,PL.Comment
 							,WD.WD_ID, IF(PL.Pay < 0, '-', '') Sign
+							,IF(PL.Archive = 1, 'pl-archive', '') Archive
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
 						WHERE DATEDIFF(NOW(), PL.ManDate) <= {$datediff} AND PL.Pay <> 0";
@@ -373,7 +374,7 @@
 			while( $row = mysqli_fetch_array($res) )
 			{
 				$format_pay = number_format($row["Pay"], 0, '', ' ');
-				echo "<tr>";
+				echo "<tr class='{$row["Archive"]}'>";
 				echo "<td>{$row["ManDate"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'>{$row["Worker"]}</td>";
 				if ($row["Sign"] == '-') {
