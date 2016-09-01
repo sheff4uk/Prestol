@@ -369,12 +369,12 @@
 			if( isset($_GET["worker"]) ) {
 				$query .= " AND PL.WD_ID = {$_GET["worker"]}";
 			}
-			$query .= " ORDER BY PL.ManDate DESC, PL.PL_ID DESC";
+			$query .= " ORDER BY PL.ManDate DESC, PL.Link, PL.PL_ID DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
 				$format_pay = number_format($row["Pay"], 0, '', ' ');
-				echo "<tr class='{$row["Archive"]}'>";
+				echo "<tr class='{$row["Archive"]}' id='pl{$row["PL_ID"]}'>";
 				echo "<td>{$row["ManDate"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'>{$row["Worker"]}</td>";
 				if ($row["Sign"] == '-') {
@@ -397,10 +397,10 @@
 					$pos = strpos($odd, '_');
 					$odd = substr($odd, 0, $pos);
 					if( $step == '0' ) {
-						echo "<a href='#' odbid='{$odd}' class='button edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
+						echo "<a href='#' odbid='{$odd}' plid='{$row["PL_ID"]}' class='button edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
 					}
 					else {
-						echo "<a href='#' id='{$odd}' class='button edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
+						echo "<a href='#' id='{$odd}' plid='{$row["PL_ID"]}' class='button edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
 					}
 				}
 				echo "</td>";

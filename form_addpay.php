@@ -9,6 +9,7 @@
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 		$Sign = $_POST["sign"];
 		$location = $_POST["location"];
+		$plid = $_POST["plid"];
 
 		// Редактирование
 		if( $_POST["PL_ID"] <> "" ) {
@@ -23,7 +24,7 @@
 		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		header( "Location: ".$location );
+		header( "Location: ".$location."#pl".$plid );
 		die;
 	}
 ?>
@@ -35,6 +36,7 @@
 			<input type='hidden' name='PL_ID'>
 			<input type='hidden' name='sign'>
 			<input type='hidden' name='location'>
+			<input type='hidden' name='plid'>
 			<div>
 				<label>Работник:</label>
 				<select required name='Worker'>
@@ -85,6 +87,7 @@
 			// Заполнение
 			$('#addpay input[name="sign"]').val(sign);
 			$('#addpay input[name="location"]').val(location);
+			$('#addpay input[name="plid"]').val(id);
 			$('#addpay input[name="ManDate"]').val(date);
 
 			if( typeof worker !== "undefined" ) {

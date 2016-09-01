@@ -244,7 +244,12 @@ if( isset($_POST["ODD_ID"]) )
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 
-	header( "Location: ".$_GET["location"]."#prod".$_POST["ODD_ID"] );
+	if( isset($_GET["plid"]) and $_GET["plid"] !== "" ) {
+		header( "Location: ".$_GET["location"]."#pl".$_GET["plid"] );
+	}
+	else {
+		header( "Location: ".$_GET["location"]."#prod".$_POST["ODD_ID"] );
+	}
 	die;
 }
 
@@ -270,7 +275,12 @@ if( isset($_POST["ODB_ID"]) )
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 
-	header( "Location: ".$_GET["location"]."#blank".$_POST["ODB_ID"] );
+	if( isset($_GET["plid"]) and $_GET["plid"] !== "" ) {
+		header( "Location: ".$_GET["location"]."#pl".$_GET["plid"] );
+	}
+	else {
+		header( "Location: ".$_GET["location"]."#blank".$_POST["ODB_ID"] );
+	}
 	die;
 }
 ?>

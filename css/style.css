@@ -588,5 +588,6 @@ td.tscell > i {
 }
 
 .pl-archive > td {
-	opacity: .3;
+	opacity: .5;
+	color: #911;
 }

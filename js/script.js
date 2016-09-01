@@ -2,7 +2,7 @@ $.fx.speeds._default = 300;
 //var odid;
 
 // Функция генерирует форму с этапами производства
-function makeform(id, other, location)
+function makeform(id, other, location, plid)
 {
 	if( other == 0 ) {
 		$.ajax({ url: "ajax.php?do=steps&odd_id="+id, dataType: "script", async: false });
@@ -11,7 +11,7 @@ function makeform(id, other, location)
 		$.ajax({ url: "ajax.php?do=steps&odb_id="+id, dataType: "script", async: false });
 	}
 	$( '.isready' ).button();
-	$("#steps form").attr("action", "datasave.php?location="+location);
+	$("#steps form").attr("action", "datasave.php?location="+location+"&plid="+plid);
 	
 	// Диалог добавления этапов
 	$('#steps').dialog({
@@ -150,11 +150,15 @@ $(document).ready(function(){
 		var location = $(this).attr("location");
 		var id = $(this).attr("id");
 		var odbid = $(this).attr("odbid");
+		plid = $(this).attr("plid");
+		if( typeof plid === "undefined" ) {
+			plid = '';
+		}
 		if( typeof odbid !== "undefined" ) {
-			makeform(odbid, 1, location);
+			makeform(odbid, 1, location, plid);
 		}
 		else {
-			makeform(id, 0, location);
+			makeform(id, 0, location, plid);
 		}
 		return false;
 	});
