@@ -11,7 +11,7 @@
 	else
 	{
 		$id = "NULL";
-		$location = "orderdetail.php";
+		$location = "orderdetail.php?free=1";
 		$free = 1;
 	}
 
@@ -73,8 +73,8 @@
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 						// Добавляем указанное количество изделий в заказ
-						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Color, order_date, arrival_date)
-								SELECT {$id}, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, {$v}, Color, order_date, arrival_date FROM OrdersDataDetail WHERE ODD_ID = {$prodid}";
+						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, order_date, arrival_date)
+								SELECT {$id}, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, {$v}, order_date, arrival_date FROM OrdersDataDetail WHERE ODD_ID = {$prodid}";
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$odd_id = mysqli_insert_id( $mysqli );
 
@@ -102,11 +102,9 @@
 			$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
 			$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 			$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
-			$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
 			$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 			// Удаляем лишние пробелы
 			$Material = trim($Material);
-			$Color = trim($Color);
 			$Comment = trim($Comment);
 			$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 			$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
@@ -126,8 +124,8 @@
 				$mt_id = "NULL";
 			}
 
-			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Color, Comment, order_date, arrival_date)
-					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, '{$Color}', '{$Comment}', {$OrderDate}, {$ArrivalDate})";
+			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Comment, order_date, arrival_date)
+					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, '{$Comment}', {$OrderDate}, {$ArrivalDate})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$odd_id = mysqli_insert_id( $mysqli );
 
@@ -220,14 +218,13 @@
 	{
 		$odd_id = (int)$_GET["del"];
 
-        $query = "SELECT IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress, OD.Color, IFNULL(OD.IsPainting, 0) IsPainting
+        $query = "SELECT IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress, IFNULL(OD.IsPainting, 0) IsPainting
                   FROM OrdersDataDetail ODD
 				  LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
                   LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
                   WHERE ODD.ODD_ID = {$odd_id}";
         $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
         $inprogress = mysqli_result($res,0,'inprogress');
-        $color = mysqli_result($res,0,'Color');
         $ispainting = mysqli_result($res,0,'IsPainting');
 
         if( $inprogress == 0 ) { // Если не приступили, то удаляем. Иначе - переносим в свободные.
@@ -238,7 +235,7 @@
             mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
         }
         else {
-            $query = "UPDATE OrdersDataDetail SET OD_ID = NULL, is_check = 0, Color = IF({$ispainting} > 1, '{$color}', NULL) WHERE ODD_ID={$odd_id}";
+            $query = "UPDATE OrdersDataDetail SET OD_ID = NULL, is_check = 0 WHERE ODD_ID={$odd_id}";
             mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
             
             $_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
@@ -391,8 +388,7 @@
 			<th>Форма</th>
 			<th>Механизм</th>
 			<th>Этапы</th>
-			<th>Ткань/пластик</th>
-			<?= ($id == "NULL") ? "<th>Цвет</th>" : "" ?>
+			<th>Материал</th>
 			<th>Примечание</th>
 			<th>Действие</th>
 		</tr>
@@ -415,7 +411,6 @@
 					,IFNULL(MT.Material, '') Material
 					,ODD.IsExist
 					,ODD.Amount
-					,ODD.Color
 					,ODD.Comment
 					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
 					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
@@ -464,7 +459,6 @@
 				break;
 		}
 		echo "{$row["Material"]}</span></td>";
-		if ($id == "NULL") echo "<td>{$row["Color"]}</td>"; // Цвет показываем только в свободных
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td><a href='#' id='{$row["ODD_ID"]}' free='{$free}' class='button edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></a>";
 		
@@ -476,7 +470,7 @@
 		}
 		echo "<img hidden='true' src='/img/attention.png' class='attention' title='Требуется проверка данных после переноса изделий в \"Свободные\".'></td></tr>";
 
-		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "color"=>$row["Color"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
+		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
 	}
 ?>
 		</tbody>

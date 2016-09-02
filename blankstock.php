@@ -157,7 +157,7 @@
 							LEFT JOIN (
 								SELECT PB.BL_ID
 										,SUM(ODD.Amount * PB.Amount) Amount
-										,SUM(IF(OD.IsPainting = 1 OR (OD.OD_ID IS NULL AND IFNULL(ODD.Color, '') = ''), 0, ODD.Amount) * PB.Amount) Painting
+										,SUM(IF(OD.IsPainting = 1, 0, ODD.Amount) * PB.Amount) Painting
 								FROM OrdersDataDetail ODD
 								LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID

@@ -7,8 +7,6 @@ if( $_GET["oddid"] )
 {
 	$query = "SELECT ODD.Amount
 					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
-					,OD.Color
-					,IFNULL(OD.IsPainting, 0) IsPainting
 					,ODD.PM_ID
 					,ODD.PME_ID
 					,ODD.Length
@@ -19,8 +17,6 @@ if( $_GET["oddid"] )
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$amount = mysqli_result($res,0,'Amount');
 	$inprogress = mysqli_result($res,0,'inprogress');
-	$color= mysqli_result($res,0,'Color');
-	$ispainting = mysqli_result($res,0,'IsPainting');
 	$Model = mysqli_result($res,0,'PM_ID');
 	$Mechanism = mysqli_result($res,0,'PME_ID');
 	$Length = mysqli_result($res,0,'Length');
@@ -60,11 +56,9 @@ if( $_GET["oddid"] )
 	$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
 	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
-	$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 	// Удаляем лишние пробелы
 	$Material = trim($Material);
-	$Color = trim($Color);
 	$Comment = trim($Comment);
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
@@ -117,7 +111,6 @@ if( $_GET["oddid"] )
 				 ,MT_ID = {$mt_id}
 				 ,IsExist = {$IsExist}
 				 ,Amount = {$_POST["Amount"]}
-				 ,Color = '{$Color}'
 				 ,Comment = '{$Comment}'
 				 ,is_check = 1
 				 ,order_date = {$OrderDate}
@@ -129,8 +122,8 @@ if( $_GET["oddid"] )
 	if( $amount > $_POST["Amount"] and $inprogress == 1)
 	{
 		// Перемещение на склад лишних изделий
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Color, is_check, order_date, arrival_date)
-				  SELECT NULL, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount - {$_POST["Amount"]}, IF({$ispainting} > 1, '{$color}', NULL), 0, order_date, arrival_date FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, is_check, order_date, arrival_date)
+				  SELECT NULL, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount - {$_POST["Amount"]}, 0, order_date, arrival_date FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$odd_id = mysqli_insert_id( $mysqli );
 

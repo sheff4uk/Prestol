@@ -146,7 +146,6 @@ case "livesearch":
 					,PM.Model
 					,CONCAT(PF.Form, ' ', PME.Mechanism) Form
 					,IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), '') Size
-					,ODD.Color
 					,MT.Material
 					,ODD.IsExist
 					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
@@ -156,6 +155,7 @@ case "livesearch":
 					,SUM(IF(ODS.WD_ID IS NULL, 0, 1)) progress
 					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
 					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
+					,ODD.Comment
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
@@ -171,7 +171,6 @@ case "livesearch":
 	$query .= ($_GET["mechanism"] and $_GET["mechanism"] <> "undefined") ? " AND ODD.PME_ID = {$_GET["mechanism"]}" : "";
 //	$query .= ($_GET["length"] and $_GET["length"] <> "undefined") ? " AND ODD.Length = {$_GET["length"]}" : "";
 //	$query .= ($_GET["width"] and $_GET["width"] <> "undefined") ? " AND ODD.Width = {$_GET["width"]}" : "";
-//	$query .= ($_GET["color"]) ? " AND ODD.Color LIKE '%{$_GET["color"]}%'" : "";
 //	$query .= ($_GET["material"]) ? " AND MT.Material LIKE '%{$_GET["material"]}%'" : "";
 	$query .= " GROUP BY ODD.ODD_ID";
 	$query .= " ORDER BY progress DESC";
@@ -188,8 +187,8 @@ case "livesearch":
 			$table .= "<th>Размер</th>";
 		}
 		$table .= "<th>Этапы</th>";
-		$table .= "<th>Цвет</th>";
 		$table .= ($pt == 1) ? "<th>Ткань</th>" : "<th>Пластик</th>";
+		$table .= "<th>Примечание</th>";
 		$table .= "</tr></thead><tbody>";
 	}
 		
@@ -206,7 +205,6 @@ case "livesearch":
 			$table .= "<td>{$row["Size"]}</td>";
 		}
 		$table .= "<td><a class='edit_steps nowrap shadow{$row["Attention"]}'>{$row["Steps"]}</a></td>";
-		$table .= "<td>{$row["Color"]}</td>";
 		$table .= "<td>";
 		switch ($row["IsExist"]) {
 			case 0:
@@ -219,7 +217,8 @@ case "livesearch":
 				$table .= "<span class='bg-green'>";
 				break;
 		}
-		$table .= "{$row["Material"]}</span></td></tr>";
+		$table .= "{$row["Material"]}</span></td>";
+		$table .= "<td>{$row["Comment"]}</td></tr>";
 	}
 
 	$table .= "</tbody></table>";

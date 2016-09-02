@@ -43,10 +43,6 @@
 			<img src='/img/attention.png' class='attention' id='Model' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 		</div>
 		<div>
-			<label>Цвет:</label>
-			<input type='text' class='colortags' name='Color' size='40'>
-		</div>
-		<div>
 			<label>Ткань:</label>
 			<input type='text' class='textiletags' name='Material' size='40'>
 		</div>
@@ -148,10 +144,6 @@
 			<input type="number" name="PieceAmount" min="1" max="3" autocomplete="off" title="Кол-во вставок">
 			<span>&nbsp;х&nbsp;</span>
 			<input type="number" name="PieceSize" min="300" max="550" step="10" autocomplete="off" title="Размер вставки">
-		</div>
-		<div>
-			<label>Цвет:</label>
-			<input type='text' class='colortags' name='Color' size='40'>
 		</div>
 		<div>
 			<label>Пластик:</label>

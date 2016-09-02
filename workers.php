@@ -111,7 +111,6 @@
 								  ,IF (ODS.IsReady, 'checked', '')
 								  ,'\";}') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') arrIsReady
 						,GROUP_CONCAT(CONCAT_WS(' ', ODD.Amount, PM.Model, IFNULL(PF.Form, ''), IFNULL(PME.Mechanism, ''), IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), ''), '<br>') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') Zakaz
-						,GROUP_CONCAT(CONCAT(IFNULL(ODD.Color, ''), '<br>') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') Color
 						,GROUP_CONCAT(CONCAT('<span class=\'',
 							CASE ODD.IsExist
 								WHEN 0 THEN 'bg-red'
@@ -214,7 +213,6 @@
 					}
 				echo "</td>";
 				echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
-				echo "<td><span class='nowrap'>{$row["Color"]}</span></td>";
 				echo "<td><span class='nowrap'>{$row["Material"]}</span></td>";
 				echo "<td>{$row["ClientName"]}</td>";
 				echo "<td>{$row["StartDate"]}</td>";

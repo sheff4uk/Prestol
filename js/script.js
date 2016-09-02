@@ -90,7 +90,6 @@ function livesearch(element) {
 				 + "&mechanism="+$(element).parents('form').find('input[name="Mechanism"]:checked').val()
 				 + "&length="+$(element).parents('form').find('input[name="Length"]').val()
 				 + "&width="+$(element).parents('form').find('input[name="Width"]').val()
-				 + "&color="+$(element).parents('form').find('input[name="Color"]').val()
 				 + "&material="+$(element).parents('form').find('input[name="Material"]').val()
 				 + "&type="+$(element).parents('form').find('input[name="Type"]').val();
 		$.ajax({
@@ -188,13 +187,6 @@ $(document).ready(function(){
 		$('#addchair .radiostatus input[type="radio"]').prop('disabled', true);
 		$('#addchair .radiostatus input[type="radio"]').button('refresh');
 		$('#addchair input[name="Amount"]').removeAttr('max');
-		// В свободных показываем цвет
-		if( free == 1 ) {
-			$('#addchair input[name="Color"]').parent('div').show('fast');
-		}
-		else {
-			$('#addchair input[name="Color"]').parent('div').hide('fast');
-		}
 		// Очистка инпутов дат заказа ткани
 		$('#addchair .order_material').hide('fast');
 		$('#addchair .order_material input').attr("required", false);
@@ -215,7 +207,6 @@ $(document).ready(function(){
 		{
 			$('#addchair input[name="Amount"]').val(odd[id]['amount']);
 			$('#addchair select[name="Model"]').val(odd[id]['model']);
-			$('#addchair input[name="Color"]').val(odd[id]['color']);
 			$('#addchair textarea[name="Comment"]').val(odd[id]['comment']);
 			$('#addchair input[name="Material"]').val(odd[id]['material']);
 			$('#1radio'+odd[id]['isexist']).prop('checked', true);
@@ -310,15 +301,6 @@ $(document).ready(function(){
 		$('#addtable input[name="Mechanism"]:nth-child(1)').prop('checked', true);
 		$('#addtable input[type="radio"]').button("refresh");
 		$('#addtable input[name="Amount"]').removeAttr('max');
-		// В свободных показываем цвет
-		if( free == 1 ) {
-			$('#addtable input[name="Color"]').parent('div').show('fast');
-			//$('#addtable select[name="Model"]').attr('required', 'false');
-		}
-		else {
-			$('#addtable input[name="Color"]').parent('div').hide('fast');
-			//$('#addtable select[name="Model"]').attr('required', 'true');
-		}
 		// Очистка инпутов дат заказа пластика
 		$('#addtable .order_material').hide('fast');
 		$('#addtable .order_material input').attr("required", false);
@@ -354,8 +336,6 @@ $(document).ready(function(){
 			$('#addtable input[name="Width"]').val(odd[id]['width']);
 			$('#addtable input[name="PieceAmount"]').val(odd[id]['PieceAmount']);
 			$('#addtable input[name="PieceSize"]').val(odd[id]['PieceSize']);
-
-			$('#addtable input[name="Color"]').val(odd[id]['color']);
 			$('#addtable textarea[name="Comment"]').val(odd[id]['comment']);
 			$('#addtable input[name="Material"]').val(odd[id]['material']);
 			$('#2radio'+odd[id]['isexist']).prop('checked', true);
@@ -563,8 +543,8 @@ $(document).ready(function(){
 //	$('select[name="Model"]').change( function() { livesearch(this); });
 //	$('input[name="Length"], input[name="Width"]').change( function() { livesearch(this); });
 	$('#forms, #mechanisms').on("change", function(){ livesearch(this); });
-	$('input[name="Color"], input[name="Material"]').keyup( function() { livesearch(this); });
-	$('input[name="Color"], input[name="Material"]').on( 'autocompleteselect', function( event, ui ) { $(this).val( ui.item.value ); livesearch(this); } );
+	$('input[name="Material"]').keyup( function() { livesearch(this); });
+	$('input[name="Material"]').on( 'autocompleteselect', function( event, ui ) { $(this).val( ui.item.value ); livesearch(this); } );
 
 	// В форме заготовки при смене заготовки меняем тариф
 	$('#addblank select[name="Blank"]').change(function(){

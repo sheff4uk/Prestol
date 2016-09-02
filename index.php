@@ -551,7 +551,6 @@
 						,ODD.Width
 						,ODD.PieceAmount
 						,ODD.PieceSize
-						,ODD.Color
 						,ODD.Comment
 						,MT.Material
 						,ODD.IsExist
