@@ -134,7 +134,7 @@
 	
 	<!-- Копирование ссылки на таблицу в буфер -->
 	<input id="post-link" style="position: absolute; z-index: -1;">
-	<div id="copy-link" data-clipboard-target="#post-link" style="display: none;">
+	<div id="copy_link" data-clipboard-target="#post-link" style="display: none;">
 		<a id="copy-button" data-clipboard-target="#post-link" style="display: block; height: 100%" title="Скопировать ссылку в буфер обмена"></a>
 	</div>
 
@@ -143,6 +143,11 @@
 	<div id="print_btn" href="#print_tbl" class="open_modal" title="Распечатать таблицу"> <!-- Кнопка печати -->
 		<a id="toprint"></a>
 	</div>
+
+	<div id="print_torg12" title="Распечатать накладную" style="display: none;"> <!-- Кнопка печати накладной -->
+		<a id="torg12" target="_blank">ТОРГ<br>12</a>
+	</div>
+
 	<!-- ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
 	<table class="main_table">
 		<form method='get' action='filter.php'>
@@ -373,7 +378,7 @@
 							   ,IFNULL(PM.PT_ID, 2) PT_ID
 							   ,ODD.ODD_ID itemID
 
-							   ,CONCAT('<a href=\'#\' id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'button edit_product', IFNULL(PM.PT_ID, 2), '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a><br>') Zakaz
+							   ,CONCAT('<b style=\'line-height: 1.79em;\'><a href=\'#\' id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'edit_product', IFNULL(PM.PT_ID, 2), '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a></b><br>') Zakaz
 
 							   ,CONCAT(IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'m', ODD.ODD_ID, '\' class=\'',
 								CASE ODD.IsExist
@@ -401,7 +406,7 @@
 							  ,0 PT_ID
 							  ,ODB.ODB_ID itemID
 
-							  ,CONCAT('<a href=\'#\' id=\'blank', ODB.ODB_ID, '\'', 'class=\'button edit_order_blank\' location=\'{$location}\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</a><br>') Zakaz
+							  ,CONCAT('<b style=\'line-height: 1.79em;\'><a href=\'#\' id=\'blank', ODB.ODB_ID, '\'', 'class=\'edit_order_blank\' location=\'{$location}\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</a></b><br>') Zakaz
 
 							  ,CONCAT(IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'m', ODB.ODB_ID, '\' class=\'',
 								CASE ODB.IsExist
@@ -523,21 +528,21 @@
 			}
 		echo " class='painting {$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$archive}'></td>";
 		echo "<td><span>{$row["Comment"]}</span></td>";
-		echo "<td><a href='./orderdetail.php?id={$row["OD_ID"]}' class='button' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+		echo "<td><a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
 
-		echo "<span class='action'>";
+		echo "<action>";
 		if( $row["Child"] ) // Если заказ не пустой
 		{
 			if( $row["IsReady"] && $row["IsPainting"] == 3 && $archive != 1)
 			{
-				echo "<a class='button' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+				echo "<a href='#' class='' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 			}
 		}
 		else
 		{
-			echo "<a class='button' onclick='if(confirm(\"Удалить?\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+			echo "<a href='#' class='' onclick='if(confirm(\"Удалить?\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 		}
-		echo "</span>";
+		echo "</action>";
 
 		echo "</td></tr>";
 
@@ -680,6 +685,7 @@
 			var data = $('#printtable').serialize();
 			$("#toprint").attr('href', '/toprint/main.php?' + data);
 			$("#post-link").val('http://<?=$_SERVER['HTTP_HOST']?>/toprint/main.php?' + data);
+			$("#torg12").attr('href', '/torg12.php?' + data);
 			return false;
 		}
 		$("#copy-button").click(function() {

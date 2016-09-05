@@ -279,11 +279,11 @@ case "ispainting":
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('val', '{$val}');";
 	if( $isready == 1 and $archive != 1 ) {
 		if( $val == 3 ) {
-			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action').html('<a class=\"button\" onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
-			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action a').button();";
+			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a  href=\"#\" class=\"\" onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
+//			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action a').button();";
 		}
 		else {
-			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action').html('');";
+			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('');";
 		}
 	}
 	echo "noty({timeout: 3000, text: 'Статус лакировки изменен на \"{$status}\"', type: 'success'});";

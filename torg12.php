@@ -1,48 +1,45 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html><head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Товарная накладная</title>
-<link rel="shortcut icon" href="//service-online.su/images/icon.png">
+<?
+	include "config.php";
 
-<link href="../../../css/style.css" rel="stylesheet" type="text/css">
-<link rel="shortcut icon" href="//service-online.su/images/icon.png">
+	$title = 'Товарная накладная';
+	include "header.php";
 
+	// Формируем список строк для печати
+	$id_list = '0';
+	foreach( $_GET as $k => $v)
+	{
+		if( strpos($k,"order") === 0 )
+		{
+			$orderid = (int)str_replace( "order", "", $k );
+			$id_list .= ','.$orderid;
+		}
+	}
+	$product_types = "-1";
+	if(isset($_GET["Tables"])) $product_types .= ",2";
+	if(isset($_GET["Chairs"])) $product_types .= ",1";
+	if(isset($_GET["Others"])) $product_types .= ",0";
+?>
 
-<script type="text/javascript" src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="//service-online.su/js/move.js"></script>
-<script async="" src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<link href="/css/320.css" rel="stylesheet" type="text/css">
-<link href="/css/style_index.css" rel="stylesheet" type="text/css"><script src="https://service-online.su/js/jquery.formstyler.min.js"></script>
-<link href="https://service-online.su/css/jquery.formstyler.css" rel="stylesheet">
-	<script>
-		(function($) {
-		$(function() {
-			$('select[id="auto_recording_blanc"]').styler({
-				selectSearch: true
-			});
-		});
-		})(jQuery);
-	</script>
+<style>
+	.forms input[type="text"] {
+		width: 99%;
+	}
+</style>
 
-
-</head>
-<body marginwidth="0" marginheight="0">
-<div style="width:730px; max-width:730px;">
-        <p><script type="text/javascript" src="/js/enter-as-tab.js"></script>
-          </p>
-        <p></p>
+<div style="width:730px; max-width:730px; margin: auto; margin-bottom: 50px;">
+	<h1>Товарная накладная  форма № ТОРГ-12</h1>
         <form action="" method="post" id="formdiv">
         <table width="100%" border="0" cellspacing="4" class="forms">
           <tbody><tr class="forms">
             <td width="250" align="left"> Товарно-транспортная накладная:</td>
             <td valign="top">№
-              <input type="text" name="nomer" id="nomer" class="forminput_seriya" placeholder="">
+              <input type="text" name="nomer" id="nomer" class="forminput_seriya" placeholder="" style="width: 35%;">
               от
-              <input type="text" name="date" id="date" value="09.08.2016" class="forminput_N"></td>
+              <input type="text" name="date" id="date" value="<?= date("d.m.Y") ?>" class="date forminput_N" style="width: 35%;" readonly></td>
           </tr>
           <tr class="forms">
             <td align="left" valign="top">Серия:</td>
-            <td valign="top"><input type="text" name="seriya_ttn" id="seriya_ttn" class="forminput" placeholder=""></td>
+            <td valign="top"><input type="text" name="seriya_ttn" id="seriya_ttn" class="forminput" placeholder="" style="width: 35%;"></td>
           </tr>
         </tbody></table>
         <br>
@@ -264,7 +261,6 @@
                 <input type="radio" name="postavshik" value="2" id="zakazthik_3" onclick="showhideBlocks4(this.value)">
                 Сторонняя организация</label>
               <script type="text/javascript">
-                        <!--
                         function showhideBlocks4(val){
                                 if (val == 0 || val==1){
                                     document.getElementById('zakazthik2').style.display='none';
@@ -273,7 +269,6 @@
                                    document.getElementById('zakazthik'+val).style.display='block';
                                 }
                         }
-                        -->
                 </script></td>
           </tr>
           <tr class="forms">
@@ -410,6 +405,7 @@
             единицу</strong></th>
           <th width="20"><p>&nbsp;</p></th>
         </tr>
+<!--
         <tr>
           <td><input type="text" name="tovar_name[]" id="tovar_name" class="f2"></td>
           <td><input type="text" name="tovar_ed[]" id="tovar_ed" class="f3"></td>
@@ -417,18 +413,23 @@
           <td><input type="text" name="tovar_massa[]" id="tovar_massa" class="f4"></td>
           <td><input type="text" name="tovar_kolvo[]" id="tovar_kolvo" class="f5"></td>
           <td><input type="text" name="tovar_tcena[]" id="tovar_tcena" class="f6"></td>
-          <td><img src="../../images/cut_red.gif" alt="уд" width="16" height="16" class="delete" onclick="deleteRow(this);"></td>
+          <td><i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i></td>
         </tr>
+-->
 
+	</tbody>
 
-    </tbody><tbody>
-    </tbody>
-         <tbody><tr>
-          <td colspan="7">
-<img src="../../images/add.gif" alt="Добавить строку" width="16" height="16" align="left" onclick="addRow();">     <span onclick="addRow();"><font><font> Добавить строку</font></font></span>     </td>
-        </tr>
+	<tbody></tbody>
 
-</tbody></table>
+	<tbody>
+		<tr>
+			<td colspan="7">
+				<i class="fa fa-plus-square fa-2x" style="color: green;" onclick="addRow();"></i>
+				<span onclick="addRow();"><font><font> Добавить строку</font></font></span>
+			</td>
+		</tr>
+	</tbody>
+</table>
 
 
 
@@ -437,7 +438,7 @@
 <script type="text/javascript">
 var d = document;
 
-function addRow()
+function addRow(name, ed, amount, price)
 {
 
     // Находим нужную таблицу
@@ -465,13 +466,25 @@ function addRow()
     row.appendChild(td6);
     row.appendChild(td7);
     // Наполняем ячейки
-    td1.innerHTML = '<input type="text" name="tovar_name[]" id="tovar_name" class="f2" />';
-    td2.innerHTML = '<input type="text" name="tovar_ed[]" id="tovar_ed" class="f3" />';
+	if( typeof name === "undefined" ) {
+		name = '';
+	}
+	if( typeof ed === "undefined" ) {
+		ed = '';
+	}
+	if( typeof amount === "undefined" ) {
+		amount = '';
+	}
+	if( typeof price === "undefined" ) {
+		price = '';
+	}
+    td1.innerHTML = '<input type="text" value="'+name+'" name="tovar_name[]" id="tovar_name" class="f2" />';
+    td2.innerHTML = '<input type="text" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />';
     td3.innerHTML = '<input type="text" name="tovar_okei[]" id="tovar_okei" class="f1" />';
     td4.innerHTML = '<input type="text" name="tovar_massa[]" id="tovar_massa" class="f4" />';
-    td5.innerHTML = '<input type="text" name="tovar_kolvo[]" id="tovar_kolvo" class="f5" />';
-    td6.innerHTML = '<input type="text" name="tovar_tcena[]" id="tovar_tcena" class="f6" />';
-    td7.innerHTML = '<img src="../../images/cut_red.gif" alt="уд" width="16" height="16" class="delete" onclick="deleteRow(this);">';
+    td5.innerHTML = '<input type="text" value="'+amount+'" name="tovar_kolvo[]" id="tovar_kolvo" class="f5" />';
+    td6.innerHTML = '<input type="text" value="'+price+'" name="tovar_tcena[]" id="tovar_tcena" class="f6" />';
+    td7.innerHTML = '<i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i>';
 
 }
 function deleteRow(r)
@@ -486,24 +499,56 @@ document.getElementById('tab1').deleteRow(i);
         </div>
 </form>
 
-<script language="javascript1.2" src="../../js/float.js" type="text/javascript"></script>
-
-        <script language="javascript">
+<script language="javascript">
 
 function set_target(action, target) {
 	//if target is not empty form is submitted into a new window
 
 
 	var frm = document.getElementById('formdiv');
-	frm.action = 'https://service-online.su/forms/buh/tovarnaya-nakladnaya/blanc.php';
+	frm.action = 'blanc.php';
 	frm.target = target;
 }
 
 $(document).ready(function() {
+<?
+	$query = "SELECT ODD_ODB.itemID
+					,ODD_ODB.PT_ID
+					,ODD_ODB.Amount
+					,ODD_ODB.Zakaz
+			  FROM (SELECT ODD.OD_ID
+						  ,ODD.ODD_ID itemID
+						  ,IFNULL(PM.PT_ID, 2) PT_ID
+						  ,ODD.Amount
+						  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, '')) Zakaz
+					FROM OrdersDataDetail ODD
+					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+					LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+					LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+					UNION
+					SELECT ODB.OD_ID
+						  ,ODB.ODB_ID itemID
+						  ,0 PT_ID
+						  ,ODB.Amount
+						  ,CONCAT(IFNULL(BL.Name, ODB.Other)) Zakaz
+					FROM OrdersDataBlank ODB
+					LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+					) ODD_ODB
+			  WHERE ODD_ODB.OD_ID IN ({$id_list})
+			  AND ODD_ODB.PT_ID IN({$product_types})
+			  GROUP BY ODD_ODB.itemID
+			  ORDER BY ODD_ODB.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) ) {
+		echo "addRow('{$row["Zakaz"]}', 'шт', '{$row["Amount"]}');";
+	}
+?>
+//	addRow();
+
 	//функция выполняется при загрузке документа
-   $("#person_sum").blur(on_price_change);
-   $("#person_sumuslugi").blur(on_price_change);
-   $("#person_sumitog").blur(on_total_price_change);
+	$("#person_sum").blur(on_price_change);
+	$("#person_sumuslugi").blur(on_price_change);
+	$("#person_sumitog").blur(on_total_price_change);
  });
 
 function on_price_change() {
@@ -522,11 +567,10 @@ function on_price_change() {
 function on_total_price_change() {
 	check_float($("#person_sumitog"), 2);
 }
-          </script>
-        <script language="javascript">
-	//перемещаемся между элементами формы enter
-	enterAsTab();
-          </script>
+</script>
 
 </div>
-          </body></html>
+
+<!--<iframe frameborder="0" height="1550px" marginheight="0" marginwidth="0" scrolling="no" src="http://service-online.su/forms/buh/tovarnaya-nakladnaya/form.php" width="730px"></iframe>-->
+
+</body></html>

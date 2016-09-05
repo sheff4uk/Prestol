@@ -14,7 +14,8 @@ $(document).ready(function() {
 		$('.print_col').button();
 		$('.print_row').button();
 		$('#print_btn > a').css('display', 'block');
-		$('#copy-link').css('display', 'block');
+		$('#copy_link').css('display', 'block');
+		$('#print_torg12').css('display', 'block');
 		$('#print_title').css('display', 'block');
 		$('#print_products').css('display', 'block');
 		$(div)
@@ -43,7 +44,8 @@ $(document).ready(function() {
 			overlay.fadeOut(400,
 			function() {
 				$('#print_btn > a').css('display', 'none');
-				$('#copy-link').css('display', 'none');
+				$('#copy_link').css('display', 'none');
+				$('#print_torg12').css('display', 'none');
 				$('#print_title').css('display', 'none');
 				$('#print_products').css('display', 'none');
 				modal.css('z-index', '').css('position', '');
