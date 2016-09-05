@@ -18,6 +18,19 @@
 	if(isset($_GET["Tables"])) $product_types .= ",2";
 	if(isset($_GET["Chairs"])) $product_types .= ",1";
 	if(isset($_GET["Others"])) $product_types .= ",0";
+
+	$query = "SELECT * FROM Rekvizity LIMIT 1";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$Name = mysqli_result($res,0,'Name');
+	$INN = mysqli_result($res,0,'INN');
+	$KPP = mysqli_result($res,0,'KPP');
+	$Addres = mysqli_result($res,0,'Addres');
+	$Dir = mysqli_result($res,0,'Dir');
+	$Phone = mysqli_result($res,0,'Phone');
+	$RS = mysqli_result($res,0,'RS');
+	$Bank = mysqli_result($res,0,'Bank');
+	$BIK = mysqli_result($res,0,'BIK');
+	$KS = mysqli_result($res,0,'KS');
 ?>
 
 <style>
@@ -49,15 +62,15 @@
             </tr>
           <tr>
             <td width="250" align="left" valign="top">Название ООО или фамилия ИП:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_name" id="gruzootpravitel_name" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=$Name?>" name="gruzootpravitel_name" id="gruzootpravitel_name" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">ИНН:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_inn" id="gruzootpravitel_inn" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=$INN?>" name="gruzootpravitel_inn" id="gruzootpravitel_inn" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">КПП:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_kpp" id="gruzootpravitel_kpp" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=$KPP?>" name="gruzootpravitel_kpp" id="gruzootpravitel_kpp" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">ОКПО:</td>
@@ -65,11 +78,11 @@
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Адрес:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_adres" id="gruzootpravitel_adres" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=$Addres?>" name="gruzootpravitel_adres" id="gruzootpravitel_adres" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Руководитель:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_director" id="gruzootpravitel_director" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=$Dir?>" name="gruzootpravitel_director" id="gruzootpravitel_director" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Главный (старший) бухгалтер:</td>
@@ -77,26 +90,26 @@
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Телефоны:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_tel" id="gruzootpravitel_tel" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=$Phone?>" name="gruzootpravitel_tel" id="gruzootpravitel_tel" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td colspan="2" align="left" valign="top"><strong>Банковские реквизиты грузоотправителя</strong></td>
             </tr>
           <tr>
             <td width="250" align="left" valign="top">Расчетный счет:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_schet" id="gruzootpravitel_schet" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=$RS?>" name="gruzootpravitel_schet" id="gruzootpravitel_schet" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">В банке (наименование банка):</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_bank" id="gruzootpravitel_bank" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=$Bank?>" name="gruzootpravitel_bank" id="gruzootpravitel_bank" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">БИК:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_bik" id="gruzootpravitel_bik" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=$BIK?>" name="gruzootpravitel_bik" id="gruzootpravitel_bik" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Корреспондентский счет:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_ks" id="gruzootpravitel_ks" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=$KS?>" name="gruzootpravitel_ks" id="gruzootpravitel_ks" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Местонахождение банка:</td>
@@ -395,12 +408,12 @@
           <th colspan="7" align="left"><strong>Информация о перевозимом грузе:</strong></th>
           </tr>
         <tr>
-          <th bgcolor="#666666">Наименование</th>
-          <th bgcolor="#666666">Ед. измерения</th>
-          <th bgcolor="#666666">код по ОКЕИ</th>
-          <th bgcolor="#666666">масса кг единицы</th>
-          <th bgcolor="#666666"><strong>Кол-во</strong></th>
-          <th bgcolor="#666666"><strong>Цена<br>
+          <th width="40%">Наименование</th>
+          <th>Ед. измерения</th>
+          <th>код по ОКЕИ</th>
+          <th>масса кг единицы</th>
+          <th><strong>Кол-во</strong></th>
+          <th><strong>Цена<br>
             за<br>
             единицу</strong></th>
           <th width="20"><p>&nbsp;</p></th>
