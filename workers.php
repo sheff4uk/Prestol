@@ -110,7 +110,7 @@
 								  ,':\"'
 								  ,IF (ODS.IsReady, 'checked', '')
 								  ,'\";}') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') arrIsReady
-						,GROUP_CONCAT(CONCAT_WS(' ', ODD.Amount, PM.Model, IFNULL(PF.Form, ''), IFNULL(PME.Mechanism, ''), IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), ''), '<br>') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') Zakaz
+						,GROUP_CONCAT(CONCAT_WS(' ', ODD.Amount, PM.Model, IFNULL(PF.Form, ''), IFNULL(PME.Mechanism, ''), IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), '')), ''), '<br>') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') Zakaz
 						,GROUP_CONCAT(CONCAT('<span class=\'',
 							CASE ODD.IsExist
 								WHEN 0 THEN 'bg-red'

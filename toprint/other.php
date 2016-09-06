@@ -48,7 +48,7 @@
 					,OD.ClientName
 					,CONCAT(CT.City, '/', SH.Shop) AS Shop
 					,OD.Comment
-					,GROUP_CONCAT(CONCAT('<span class=\'', IF(ODS_WD.IsReady = 1, 'line', ''), '\'>', ODD.Amount, ' ', PM.Model, ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Zakaz
+					,GROUP_CONCAT(CONCAT('<span class=\'', IF(ODS_WD.IsReady = 1, 'line', ''), '\'>', ODD.Amount, ' ', PM.Model, ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), '')), ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Zakaz
                     
 					,OD.Color
 					

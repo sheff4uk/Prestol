@@ -22,7 +22,7 @@
 
 			// Автокомплит цветов
 			<?
-				$query = "SELECT Color FROM OrdersData GROUP BY Color";
+				$query = "SELECT Color FROM OrdersData GROUP BY Color ORDER BY COUNT(1) DESC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{

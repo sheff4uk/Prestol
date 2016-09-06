@@ -47,6 +47,7 @@ if( $_GET["oddid"] )
 	}
 
 	// Обновляем информацию об изделии
+	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 	$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 	$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
 	$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
@@ -111,6 +112,7 @@ if( $_GET["oddid"] )
 				 ,MT_ID = {$mt_id}
 				 ,IsExist = {$IsExist}
 				 ,Amount = {$_POST["Amount"]}
+				 ,Price = {$Price}
 				 ,Comment = '{$Comment}'
 				 ,is_check = 1
 				 ,order_date = {$OrderDate}
@@ -122,8 +124,8 @@ if( $_GET["oddid"] )
 	if( $amount > $_POST["Amount"] and $inprogress == 1)
 	{
 		// Перемещение на склад лишних изделий
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, is_check, order_date, arrival_date)
-				  SELECT NULL, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount - {$_POST["Amount"]}, 0, order_date, arrival_date FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Price, is_check, order_date, arrival_date)
+				  SELECT NULL, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount - {$_POST["Amount"]}, {$Price}, 0, order_date, arrival_date FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$odd_id = mysqli_insert_id( $mysqli );
 
@@ -146,6 +148,7 @@ if( $_GET["oddid"] )
 // Обновление параметров заготовки или прочего
 if( $_GET["odbid"] )
 {
+	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 	$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
 	$Other = trim($_POST["Other"]);
 	$Other = mysqli_real_escape_string( $mysqli, $Other );
@@ -198,6 +201,7 @@ if( $_GET["odbid"] )
 			  SET BL_ID = {$Blank}
 				 ,Other = '{$Other}'
 				 ,Amount = {$_POST["Amount"]}
+				 ,Price = {$Price}
 				 ,Comment = '{$Comment}'
 				 ,MT_ID = {$mt_id}
 				 ,IsExist = {$IsExist}

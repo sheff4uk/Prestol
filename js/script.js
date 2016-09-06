@@ -182,6 +182,7 @@ $(document).ready(function(){
 		$('#addchair input[type="text"]').val('');
 		$('#addchair textarea').val('');
 		$('#addchair input[name="Amount"]').val('1');
+		$('#addchair input[name="Price"]').val('');
 		$('#addchair select[name="Model"]').val('');
 		$('#1radio0').prop('checked', true);
 		$('#addchair .radiostatus input[type="radio"]').prop('disabled', true);
@@ -206,6 +207,7 @@ $(document).ready(function(){
 		if( id > 0 )
 		{
 			$('#addchair input[name="Amount"]').val(odd[id]['amount']);
+			$('#addchair input[name="Price"]').val(odd[id]['price']);
 			$('#addchair select[name="Model"]').val(odd[id]['model']);
 			$('#addchair textarea[name="Comment"]').val(odd[id]['comment']);
 			$('#addchair input[name="Material"]').val(odd[id]['material']);
@@ -291,6 +293,7 @@ $(document).ready(function(){
 		$('#addtable input[type="text"]').val('');
 		$('#addtable textarea').val('');
 		$('#addtable input[name="Amount"]').val('1');
+		$('#addtable input[name="Price"]').val('');
 		$('#addtable select[name="Model"]').val('');
 		$('#addtable input[name="Length"]').val(''); //было 1300
 		$('#addtable input[name="Width"]').val(''); //было 800
@@ -327,6 +330,7 @@ $(document).ready(function(){
 				FormModelList(odd[id]['model']);
 			}
 			$('#addtable input[name="Amount"]').val(odd[id]['amount']);
+			$('#addtable input[name="Price"]').val(odd[id]['price']);
 			$('#addtable select[name="Model"]').val(odd[id]['model']);
 			$('#form'+odd[id]['form']).prop('checked', true);
 			$('#addtable input[name="Form"]').button("refresh");
@@ -422,6 +426,7 @@ $(document).ready(function(){
 		// Очистка диалога
 		$('#addblank textarea, #addblank select, #addblank input[type="text"]').val('');
 		$('#addblank input[name="Amount"]').val('1');
+		$('#addblank input[name="Price"]').val('');
 		$('#0radio0').prop('checked', true);
 		$('#addblank .radiostatus input[type="radio"]').prop('disabled', true);
 		$('#addblank .radiostatus input[type="radio"]').button('refresh');
@@ -440,6 +445,7 @@ $(document).ready(function(){
 		if( id > 0 )
 		{
 			$('#addblank input[name="Amount"]').val(odb[id]['amount']);
+			$('#addblank input[name="Price"]').val(odb[id]['price']);
 			if( odb[id]['blank'] > 0 ) {
 				$('#addblank select[name="Blanks"]').val(odb[id]['blank']);
 				$('#addblank input[name="Other"]').prop('disabled', true);

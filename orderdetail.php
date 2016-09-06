@@ -93,6 +93,7 @@
 		}
 		else {
 			// Добавление в базу нового изделия
+			$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 			$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 			$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
 			$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
@@ -124,8 +125,8 @@
 				$mt_id = "NULL";
 			}
 
-			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Comment, order_date, arrival_date)
-					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, '{$Comment}', {$OrderDate}, {$ArrivalDate})";
+			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Price, Comment, order_date, arrival_date)
+					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Price}, '{$Comment}', {$OrderDate}, {$ArrivalDate})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$odd_id = mysqli_insert_id( $mysqli );
 
@@ -166,6 +167,7 @@
 
 	// Добавление к заказу заготовки или прочего
 	if ( $_GET["addblank"] ) {
+		$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 		$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
 		$Other = trim($_POST["Other"]);
 		$Other = mysqli_real_escape_string( $mysqli, $Other );
@@ -192,8 +194,8 @@
 			$mt_id = "NULL";
 		}
 
-		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Amount, Comment, MT_ID, IsExist, order_date, arrival_date)
-				  VALUES ({$id}, {$Blank}, '{$Other}', {$_POST["Amount"]}, '{$Comment}', {$mt_id}, {$IsExist}, {$OrderDate}, {$ArrivalDate})";
+		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Amount, Price, Comment, MT_ID, IsExist, order_date, arrival_date)
+				  VALUES ({$id}, {$Blank}, '{$Other}', {$_POST["Amount"]}, {$Price}, '{$Comment}', {$mt_id}, {$IsExist}, {$OrderDate}, {$ArrivalDate})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		$odb_id = mysqli_insert_id( $mysqli );
@@ -390,6 +392,7 @@
 			<th>Этапы</th>
 			<th>Материал</th>
 			<th>Примечание</th>
+			<th>Цена</th>
 			<th>Действие</th>
 		</tr>
 		</thead>
@@ -398,7 +401,7 @@
 	$query = "SELECT ODD.ODD_ID
 					,IFNULL(PM.PT_ID, 2) PT_ID
 					,IFNULL(PM.Model, 'Столешница') Model
-					,CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')) Size
+					,CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')) Size
 					,PF.Form
 					,PME.Mechanism
 					,ODD.PM_ID
@@ -411,6 +414,7 @@
 					,IFNULL(MT.Material, '') Material
 					,ODD.IsExist
 					,ODD.Amount
+					,ODD.Price
 					,ODD.Comment
 					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
 					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
@@ -439,6 +443,7 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
+		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
 		echo "<tr class='{$row["is_check"]}' id='prod{$row["ODD_ID"]}'>";
 		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
 		echo "<td>{$row["Model"]}</td>";
@@ -460,6 +465,7 @@
 		}
 		echo "{$row["Material"]}</span></td>";
 		echo "<td>{$row["Comment"]}</td>";
+		echo "<td class='txtright'>{$format_price}</td>";
 		echo "<td><a href='#' id='{$row["ODD_ID"]}' free='{$free}' class='button edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></a>";
 		
 		// Не показываем кнопку "Удалить" только в свободных если прогресс не 0
@@ -470,7 +476,7 @@
 		}
 		echo "<img hidden='true' src='/img/attention.png' class='attention' title='Требуется проверка данных после переноса изделий в \"Свободные\".'></td></tr>";
 
-		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
+		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
 	}
 ?>
 		</tbody>
@@ -481,6 +487,7 @@
 <?
 	$query = "SELECT ODB.ODB_ID
 					,ODB.Amount
+					,ODB.Price
 					,ODB.BL_ID
 					,IFNULL(BL.Name, ODB.Other) Name
 					,ODB.Other
@@ -520,6 +527,7 @@
 				<th>Этапы</th>
 				<th>Материал</th>
 				<th>Примечание</th>
+				<th>Цена</th>
 				<th>Действие</th>
 			</tr>
 			</thead>
@@ -529,6 +537,7 @@
 
 	while( $row = mysqli_fetch_array($res) )
 	{
+		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
 		echo "<tr id='blank{$row["ODB_ID"]}'>";
 		echo "<td>{$row["Amount"]}</td>";
 		echo "<td>{$row["Name"]}</td>";
@@ -547,13 +556,14 @@
 		}
 		echo "{$row["Material"]}</span></td>";
 		echo "<td>{$row["Comment"]}</td>";
+		echo "<td class='txtright'>{$format_price}</td>";
 		echo "<td><a href='#' id='{$row["ODB_ID"]}' class='button edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a>";
 		if( $row["inprogress"] == 0 ) {
 			$delmessage = "Удалить {$row["Name"]}({$row["Amount"]} шт.)?";
 			echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 		}
 
-		$ODB[$row["ODB_ID"]] = array( "amount"=>$row["Amount"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
+		$ODB[$row["ODB_ID"]] = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
 	}
 ?>
 		</tbody>

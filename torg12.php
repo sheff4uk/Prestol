@@ -62,15 +62,15 @@
             </tr>
           <tr>
             <td width="250" align="left" valign="top">Название ООО или фамилия ИП:</td>
-            <td align="left" valign="top"><input type="text" value="<?=$Name?>" name="gruzootpravitel_name" id="gruzootpravitel_name" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($Name)?>" name="gruzootpravitel_name" id="gruzootpravitel_name" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">ИНН:</td>
-            <td align="left" valign="top"><input type="text" value="<?=$INN?>" name="gruzootpravitel_inn" id="gruzootpravitel_inn" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($INN)?>" name="gruzootpravitel_inn" id="gruzootpravitel_inn" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">КПП:</td>
-            <td align="left" valign="top"><input type="text" value="<?=$KPP?>" name="gruzootpravitel_kpp" id="gruzootpravitel_kpp" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($KPP)?>" name="gruzootpravitel_kpp" id="gruzootpravitel_kpp" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">ОКПО:</td>
@@ -78,11 +78,11 @@
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Адрес:</td>
-            <td align="left" valign="top"><input type="text" value="<?=$Addres?>" name="gruzootpravitel_adres" id="gruzootpravitel_adres" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($Addres)?>" name="gruzootpravitel_adres" id="gruzootpravitel_adres" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Руководитель:</td>
-            <td align="left" valign="top"><input type="text" value="<?=$Dir?>" name="gruzootpravitel_director" id="gruzootpravitel_director" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($Dir)?>" name="gruzootpravitel_director" id="gruzootpravitel_director" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Главный (старший) бухгалтер:</td>
@@ -90,26 +90,26 @@
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Телефоны:</td>
-            <td align="left" valign="top"><input type="text" value="<?=$Phone?>" name="gruzootpravitel_tel" id="gruzootpravitel_tel" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($Phone)?>" name="gruzootpravitel_tel" id="gruzootpravitel_tel" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td colspan="2" align="left" valign="top"><strong>Банковские реквизиты грузоотправителя</strong></td>
             </tr>
           <tr>
             <td width="250" align="left" valign="top">Расчетный счет:</td>
-            <td align="left" valign="top"><input type="text" value="<?=$RS?>" name="gruzootpravitel_schet" id="gruzootpravitel_schet" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($RS)?>" name="gruzootpravitel_schet" id="gruzootpravitel_schet" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">В банке (наименование банка):</td>
-            <td align="left" valign="top"><input type="text" value="<?=$Bank?>" name="gruzootpravitel_bank" id="gruzootpravitel_bank" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($Bank)?>" name="gruzootpravitel_bank" id="gruzootpravitel_bank" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">БИК:</td>
-            <td align="left" valign="top"><input type="text" value="<?=$BIK?>" name="gruzootpravitel_bik" id="gruzootpravitel_bik" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($BIK)?>" name="gruzootpravitel_bik" id="gruzootpravitel_bik" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Корреспондентский счет:</td>
-            <td align="left" valign="top"><input type="text" value="<?=$KS?>" name="gruzootpravitel_ks" id="gruzootpravitel_ks" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($KS)?>" name="gruzootpravitel_ks" id="gruzootpravitel_ks" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Местонахождение банка:</td>
@@ -420,12 +420,12 @@
         </tr>
 <!--
         <tr>
-          <td><input type="text" name="tovar_name[]" id="tovar_name" class="f2"></td>
-          <td><input type="text" name="tovar_ed[]" id="tovar_ed" class="f3"></td>
+          <td><input required type="text" name="tovar_name[]" id="tovar_name" class="f2"></td>
+          <td><input required type="text" name="tovar_ed[]" id="tovar_ed" class="f3"></td>
           <td><input type="text" name="tovar_okei[]" id="tovar_okei" class="f1"></td>
           <td><input type="text" name="tovar_massa[]" id="tovar_massa" class="f4"></td>
-          <td><input type="text" name="tovar_kolvo[]" id="tovar_kolvo" class="f5"></td>
-          <td><input type="text" name="tovar_tcena[]" id="tovar_tcena" class="f6"></td>
+          <td><input required type="number" min="1" name="tovar_kolvo[]" id="tovar_kolvo" class="f5"></td>
+          <td><input required type="number" min="0" name="tovar_tcena[]" id="tovar_tcena" class="f6"></td>
           <td><i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i></td>
         </tr>
 -->
@@ -451,7 +451,7 @@
 <script type="text/javascript">
 var d = document;
 
-function addRow(name, ed, amount, price)
+function addRow(name, ed, amount, price, item, pt)
 {
 
     // Находим нужную таблицу
@@ -491,19 +491,25 @@ function addRow(name, ed, amount, price)
 	if( typeof price === "undefined" ) {
 		price = '';
 	}
-    td1.innerHTML = '<input type="text" value="'+name+'" name="tovar_name[]" id="tovar_name" class="f2" />';
-    td2.innerHTML = '<input type="text" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />';
+	if( typeof item === "undefined" ) {
+		item = '';
+	}
+	if( typeof pt === "undefined" ) {
+		pt = '';
+	}
+    td1.innerHTML = '<input required type="text" value="'+name+'" name="tovar_name[]" id="tovar_name" class="f2" />';
+    td2.innerHTML = '<input required type="text" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />';
     td3.innerHTML = '<input type="text" name="tovar_okei[]" id="tovar_okei" class="f1" />';
     td4.innerHTML = '<input type="text" name="tovar_massa[]" id="tovar_massa" class="f4" />';
-    td5.innerHTML = '<input type="text" value="'+amount+'" name="tovar_kolvo[]" id="tovar_kolvo" class="f5" />';
-    td6.innerHTML = '<input type="text" value="'+price+'" name="tovar_tcena[]" id="tovar_tcena" class="f6" />';
+    td5.innerHTML = '<input required type="number" min="1" value="'+amount+'" name="tovar_kolvo[]" id="tovar_kolvo" class="f5" />';
+	td6.innerHTML = '<input required type="number" min="0" value="'+price+'" name="tovar_tcena[]" id="tovar_tcena" class="f6" /><input type="hidden" name="item[]" value="'+item+'"><input type="hidden" name="pt[]" value="'+pt+'">';
     td7.innerHTML = '<i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i>';
 
 }
 function deleteRow(r)
 {
-var i=r.parentNode.parentNode.rowIndex;
-document.getElementById('tab1').deleteRow(i);
+	var i=r.parentNode.parentNode.rowIndex;
+	document.getElementById('tab1').deleteRow(i);
 }
 </script>
 <input name="n" type="hidden" value="1">
@@ -525,24 +531,27 @@ function set_target(action, target) {
 
 $(document).ready(function() {
 <?
-	$query = "SELECT ODD_ODB.itemID
+	$query = "SELECT ODD_ODB.ItemID
 					,ODD_ODB.PT_ID
 					,ODD_ODB.Amount
+					,ODD_ODB.Price
 					,ODD_ODB.Zakaz
 			  FROM (SELECT ODD.OD_ID
-						  ,ODD.ODD_ID itemID
+						  ,ODD.ODD_ID ItemID
 						  ,IFNULL(PM.PT_ID, 2) PT_ID
 						  ,ODD.Amount
-						  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, '')) Zakaz
+						  ,ODD.Price
+						  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, '')) Zakaz
 					FROM OrdersDataDetail ODD
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 					LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 					LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 					UNION
 					SELECT ODB.OD_ID
-						  ,ODB.ODB_ID itemID
+						  ,ODB.ODB_ID ItemID
 						  ,0 PT_ID
 						  ,ODB.Amount
+						  ,ODB.Price
 						  ,CONCAT(IFNULL(BL.Name, ODB.Other)) Zakaz
 					FROM OrdersDataBlank ODB
 					LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
@@ -553,7 +562,8 @@ $(document).ready(function() {
 			  ORDER BY ODD_ODB.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
-		echo "addRow('{$row["Zakaz"]}', 'шт', '{$row["Amount"]}');";
+		$Zakaz = htmlspecialchars($row["Zakaz"]);
+		echo "addRow('{$Zakaz}', 'шт', '{$row["Amount"]}', '{$row["Price"]}', '{$row["ItemID"]}', '{$row["PT_ID"]}');";
 	}
 ?>
 //	addRow();
