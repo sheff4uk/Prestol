@@ -4,6 +4,21 @@
 	$title = 'Товарная накладная';
 	include "header.php";
 
+	// Записываем в сессию и в базу порядковый номер накладной
+	if( empty($_SESSION["torg_year"]) or empty($_SESSION["torg_count"]) ) {
+		$Year = date('Y');
+		$query = "SELECT COUNT(1)+1 Cnt FROM NakladnayaCount WHERE Year = {$Year}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$Count = mysqli_result($res,0,'Cnt');
+
+		$query = "INSERT INTO NakladnayaCount SET Year = {$Year}, Count = {$Count}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		$_SESSION["torg_year"] = $Year;
+		$_SESSION["torg_count"] = $Count;
+	}
+	$Number = str_pad($_SESSION["torg_count"], 8, '0', STR_PAD_LEFT); // Дописываем нули к номеру накладной
+
 	// Формируем список строк для печати
 	$id_list = '0';
 	foreach( $_GET as $k => $v)
@@ -46,13 +61,13 @@
           <tbody><tr class="forms">
             <td width="250" align="left"> Товарно-транспортная накладная:</td>
             <td valign="top">№
-              <input type="text" name="nomer" id="nomer" class="forminput_seriya" placeholder="" style="width: 35%;">
+              <input required value="<?=$Number?>" type="text" autocomplete="off" name="nomer" id="nomer" class="forminput_seriya" placeholder="" style="width: 35%;">
               от
-              <input type="text" name="date" id="date" value="<?= date("d.m.Y") ?>" class="date forminput_N" style="width: 35%;" readonly></td>
+              <input required type="text" autocomplete="off" name="date" id="date" value="<?= date("d.m.Y") ?>" class="date forminput_N" style="width: 35%;" readonly></td>
           </tr>
-          <tr class="forms">
+          <tr class="forms" style="display: none;">
             <td align="left" valign="top">Серия:</td>
-            <td valign="top"><input type="text" name="seriya_ttn" id="seriya_ttn" class="forminput" placeholder="" style="width: 35%;"></td>
+            <td valign="top"><input type="text" autocomplete="off" name="seriya_ttn" id="seriya_ttn" class="forminput" placeholder="" style="width: 35%;"></td>
           </tr>
         </tbody></table>
         <br>
@@ -62,58 +77,58 @@
             </tr>
           <tr>
             <td width="250" align="left" valign="top">Название ООО или фамилия ИП:</td>
-            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($Name)?>" name="gruzootpravitel_name" id="gruzootpravitel_name" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input required type="text" autocomplete="off" value="<?=htmlspecialchars($Name)?>" name="gruzootpravitel_name" id="gruzootpravitel_name" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">ИНН:</td>
-            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($INN)?>" name="gruzootpravitel_inn" id="gruzootpravitel_inn" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" value="<?=htmlspecialchars($INN)?>" name="gruzootpravitel_inn" id="gruzootpravitel_inn" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">КПП:</td>
-            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($KPP)?>" name="gruzootpravitel_kpp" id="gruzootpravitel_kpp" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" value="<?=htmlspecialchars($KPP)?>" name="gruzootpravitel_kpp" id="gruzootpravitel_kpp" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">ОКПО:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_okpo" id="gruzootpravitel_okpo" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="gruzootpravitel_okpo" id="gruzootpravitel_okpo" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Адрес:</td>
-            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($Addres)?>" name="gruzootpravitel_adres" id="gruzootpravitel_adres" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" value="<?=htmlspecialchars($Addres)?>" name="gruzootpravitel_adres" id="gruzootpravitel_adres" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Руководитель:</td>
-            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($Dir)?>" name="gruzootpravitel_director" id="gruzootpravitel_director" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" value="<?=htmlspecialchars($Dir)?>" name="gruzootpravitel_director" id="gruzootpravitel_director" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Главный (старший) бухгалтер:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_buhgalter" id="gruzootpravitel_buhgalter" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="gruzootpravitel_buhgalter" id="gruzootpravitel_buhgalter" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Телефоны:</td>
-            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($Phone)?>" name="gruzootpravitel_tel" id="gruzootpravitel_tel" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" value="<?=htmlspecialchars($Phone)?>" name="gruzootpravitel_tel" id="gruzootpravitel_tel" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td colspan="2" align="left" valign="top"><strong>Банковские реквизиты грузоотправителя</strong></td>
             </tr>
           <tr>
             <td width="250" align="left" valign="top">Расчетный счет:</td>
-            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($RS)?>" name="gruzootpravitel_schet" id="gruzootpravitel_schet" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" value="<?=htmlspecialchars($RS)?>" name="gruzootpravitel_schet" id="gruzootpravitel_schet" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">В банке (наименование банка):</td>
-            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($Bank)?>" name="gruzootpravitel_bank" id="gruzootpravitel_bank" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" value="<?=htmlspecialchars($Bank)?>" name="gruzootpravitel_bank" id="gruzootpravitel_bank" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">БИК:</td>
-            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($BIK)?>" name="gruzootpravitel_bik" id="gruzootpravitel_bik" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" value="<?=htmlspecialchars($BIK)?>" name="gruzootpravitel_bik" id="gruzootpravitel_bik" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Корреспондентский счет:</td>
-            <td align="left" valign="top"><input type="text" value="<?=htmlspecialchars($KS)?>" name="gruzootpravitel_ks" id="gruzootpravitel_ks" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" value="<?=htmlspecialchars($KS)?>" name="gruzootpravitel_ks" id="gruzootpravitel_ks" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Местонахождение банка:</td>
-            <td align="left" valign="top"><input type="text" name="gruzootpravitel_bank_adres" id="gruzootpravitel_bank_adres" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="gruzootpravitel_bank_adres" id="gruzootpravitel_bank_adres" class="forminput" placeholder=""></td>
           </tr>
         </tbody></table>
         <br>
@@ -124,50 +139,53 @@
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Название ООО или фамилия ИП:</td>
-            <td align="left" valign="top"><input type="text" name="platelshik_name" id="platelshik_name" class="forminput" placeholder=""></td>
+            <td align="left" valign="top">
+            	<input type="hidden" name="platelshik_id" id="platelshik_id" class="forminput">
+            	<input required type="text" autocomplete="off" name="platelshik_name" id="platelshik_name" class="forminput" placeholder="Введите минимум 2 символа для поиска контрагента">
+            </td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">ИНН:</td>
-            <td align="left" valign="top"><input type="text" name="platelshik_inn" id="platelshik_inn" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_inn" id="platelshik_inn" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">КПП:</td>
-            <td align="left" valign="top"><input type="text" name="platelshik_kpp" id="platelshik_kpp" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_kpp" id="platelshik_kpp" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">ОКПО:</td>
-            <td align="left" valign="top"><input type="text" name="platelshik_okpo" id="platelshik_okpo" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_okpo" id="platelshik_okpo" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Адрес:</td>
-            <td align="left" valign="top"><input type="text" name="platelshik_adres" id="platelshik_adres" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_adres" id="platelshik_adres" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Телефоны:</td>
-            <td align="left" valign="top"><input type="text" name="platelshik_tel" id="platelshik_tel" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_tel" id="platelshik_tel" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td colspan="2" align="left" valign="top"><strong>Банковские реквизиты плательщика&nbsp;</strong></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Расчетный счет:</td>
-            <td align="left" valign="top"><input type="text" name="platelshik_schet" id="platelshik_schet" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_schet" id="platelshik_schet" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">В банке (наименование банка):</td>
-            <td align="left" valign="top"><input type="text" name="platelshik_bank" id="platelshik_bank" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank" id="platelshik_bank" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">БИК:</td>
-            <td align="left" valign="top"><input type="text" name="platelshik_bik" id="platelshik_bik" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bik" id="platelshik_bik" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Корреспондентский счет:</td>
-            <td align="left" valign="top"><input type="text" name="platelshik_ks" id="platelshik_ks" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_ks" id="platelshik_ks" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Местонахождение банка:</td>
-            <td align="left" valign="top"><input type="text" name="platelshik_bank_adres" id="platelshik_bank_adres" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank_adres" id="platelshik_bank_adres" class="forminput" placeholder=""></td>
           </tr>
         </tbody></table>
         <br>
@@ -206,50 +224,50 @@
             <td colspan="2" align="left" valign="top"><table width="100%" border="0" cellspacing="4" id="gruzopoluchatel1">
               <tbody><tr>
                 <td width="245">Название ООО или фамилия ИП:</td>
-                <td><input type="text" name="gruzopoluchatel_name" id="gruzopoluchatel_name" class="forminput" placeholder=""></td>
+                <td><input type="text" autocomplete="off" name="gruzopoluchatel_name" id="gruzopoluchatel_name" class="forminput" placeholder=""></td>
               </tr>
               <tr>
                 <td width="245">ИНН:</td>
-                <td><input type="text" name="gruzopoluchatel_inn" id="gruzopoluchatel_inn" class="forminput" placeholder=""></td>
+                <td><input type="text" autocomplete="off" name="gruzopoluchatel_inn" id="gruzopoluchatel_inn" class="forminput" placeholder=""></td>
               </tr>
               <tr>
                 <td width="245">КПП:</td>
-                <td><input type="text" name="gruzopoluchatel_kpp" id="gruzopoluchatel_kpp" class="forminput" placeholder=""></td>
+                <td><input type="text" autocomplete="off" name="gruzopoluchatel_kpp" id="gruzopoluchatel_kpp" class="forminput" placeholder=""></td>
               </tr>
               <tr>
                 <td>ОКПО:</td>
-                <td><input type="text" name="gruzopoluchatel_okpo" id="gruzopoluchatel_okpo" class="forminput" placeholder=""></td>
+                <td><input type="text" autocomplete="off" name="gruzopoluchatel_okpo" id="gruzopoluchatel_okpo" class="forminput" placeholder=""></td>
               </tr>
               <tr>
                 <td width="245">Адрес:</td>
-                <td><input type="text" name="gruzopoluchatel_adres" id="gruzopoluchatel_adres" class="forminput" placeholder=""></td>
+                <td><input type="text" autocomplete="off" name="gruzopoluchatel_adres" id="gruzopoluchatel_adres" class="forminput" placeholder=""></td>
               </tr>
               <tr>
                 <td width="245">Телефоны:</td>
-                <td><input type="text" name="gruzopoluchatel_tel" id="gruzopoluchatel_tel" class="forminput" placeholder=""></td>
+                <td><input type="text" autocomplete="off" name="gruzopoluchatel_tel" id="gruzopoluchatel_tel" class="forminput" placeholder=""></td>
               </tr>
               <tr class="forms">
                 <td colspan="2" align="left" valign="top"><strong>Банковские реквизиты грузополучателя:&nbsp;</strong></td>
               </tr>
               <tr class="forms">
                 <td width="245" align="left" valign="top">Расчетный счет:</td>
-                <td align="left" valign="top"><input type="text" name="gruzopoluchatel_schet" id="gruzopoluchatel_schet" class="forminput" placeholder=""></td>
+                <td align="left" valign="top"><input type="text" autocomplete="off" name="gruzopoluchatel_schet" id="gruzopoluchatel_schet" class="forminput" placeholder=""></td>
               </tr>
               <tr class="forms">
                 <td width="245" align="left" valign="top">В банке (наименование банка):</td>
-                <td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank" id="gruzopoluchatel_bank" class="forminput" placeholder=""></td>
+                <td align="left" valign="top"><input type="text" autocomplete="off" name="gruzopoluchatel_bank" id="gruzopoluchatel_bank" class="forminput" placeholder=""></td>
               </tr>
               <tr class="forms">
                 <td width="245" align="left" valign="top">БИК:</td>
-                <td align="left" valign="top"><input type="text" name="gruzopoluchatel_bik" id="gruzopoluchatel_bik" class="forminput" placeholder=""></td>
+                <td align="left" valign="top"><input type="text" autocomplete="off" name="gruzopoluchatel_bik" id="gruzopoluchatel_bik" class="forminput" placeholder=""></td>
               </tr>
               <tr class="forms">
                 <td width="245" align="left" valign="top">Корреспондентский счет:</td>
-                <td align="left" valign="top"><input type="text" name="gruzopoluchatel_ks" id="gruzopoluchatel_ks" class="forminput" placeholder=""></td>
+                <td align="left" valign="top"><input type="text" autocomplete="off" name="gruzopoluchatel_ks" id="gruzopoluchatel_ks" class="forminput" placeholder=""></td>
               </tr>
               <tr class="forms">
                 <td width="245" align="left" valign="top">Местонахождение банка:</td>
-                <td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank_adres" id="gruzopoluchatel_bank_adres" class="forminput" placeholder=""></td>
+                <td align="left" valign="top"><input type="text" autocomplete="off" name="gruzopoluchatel_bank_adres" id="gruzopoluchatel_bank_adres" class="forminput" placeholder=""></td>
               </tr>
               </tbody></table></td>
           </tr>
@@ -288,46 +306,46 @@
             <td colspan="2" align="left" valign="top"><table width="100%" border="0" cellspacing="4" id="zakazthik2">
               <tbody><tr>
                 <td width="245">Название ООО или фамилия ИП:</td>
-                <td><input type="text" name="postavshik_name" id="postavshik_name" class="forminput" placeholder=""></td>
+                <td><input type="text" autocomplete="off" name="postavshik_name" id="postavshik_name" class="forminput" placeholder=""></td>
               </tr>
               <tr>
                 <td width="245">ИНН:</td>
-                <td><input type="text" name="postavshik_inn" id="postavshik_inn" class="forminput" placeholder=""></td>
+                <td><input type="text" autocomplete="off" name="postavshik_inn" id="postavshik_inn" class="forminput" placeholder=""></td>
               </tr>
               <tr>
                 <td width="245">КПП:</td>
-                <td><input type="text" name="postavshik_kpp" id="postavshik_kpp" class="forminput" placeholder=""></td>
+                <td><input type="text" autocomplete="off" name="postavshik_kpp" id="postavshik_kpp" class="forminput" placeholder=""></td>
               </tr>
               <tr>
                 <td width="245">Адрес:</td>
-                <td><input type="text" name="postavshik_adres" id="postavshik_adres" class="forminput" placeholder=""></td>
+                <td><input type="text" autocomplete="off" name="postavshik_adres" id="postavshik_adres" class="forminput" placeholder=""></td>
               </tr>
               <tr>
                 <td width="245">Телефоны:</td>
-                <td><input type="text" name="postavshik_tel" id="postavshik_tel" class="forminput" placeholder=""></td>
+                <td><input type="text" autocomplete="off" name="postavshik_tel" id="postavshik_tel" class="forminput" placeholder=""></td>
               </tr>
               <tr class="forms">
                 <td colspan="2" align="left" valign="top"><strong>Банковские реквизиты поставщика:&nbsp;</strong></td>
               </tr>
               <tr class="forms">
                 <td width="245" align="left" valign="top">Расчетный счет:</td>
-                <td align="left" valign="top"><input type="text" name="postavshik_schet" id="postavshik_schet" class="forminput" placeholder=""></td>
+                <td align="left" valign="top"><input type="text" autocomplete="off" name="postavshik_schet" id="postavshik_schet" class="forminput" placeholder=""></td>
               </tr>
               <tr class="forms">
                 <td width="245" align="left" valign="top">В банке (наименование банка):</td>
-                <td align="left" valign="top"><input type="text" name="postavshik_bank" id="postavshik_bank" class="forminput" placeholder=""></td>
+                <td align="left" valign="top"><input type="text" autocomplete="off" name="postavshik_bank" id="postavshik_bank" class="forminput" placeholder=""></td>
               </tr>
               <tr class="forms">
                 <td width="245" align="left" valign="top">БИК:</td>
-                <td align="left" valign="top"><input type="text" name="postavshik_bik" id="postavshik_bik" class="forminput" placeholder=""></td>
+                <td align="left" valign="top"><input type="text" autocomplete="off" name="postavshik_bik" id="postavshik_bik" class="forminput" placeholder=""></td>
               </tr>
               <tr class="forms">
                 <td width="245" align="left" valign="top">Корреспондентский счет:</td>
-                <td align="left" valign="top"><input type="text" name="postavshik_ks" id="postavshik_ks" class="forminput" placeholder=""></td>
+                <td align="left" valign="top"><input type="text" autocomplete="off" name="postavshik_ks" id="postavshik_ks" class="forminput" placeholder=""></td>
               </tr>
               <tr class="forms">
                 <td width="245" align="left" valign="top">Местонахождение банка:</td>
-                <td align="left" valign="top"><input type="text" name="postavshik_bank_adres" id="postavshik_bank_adres" class="forminput" placeholder=""></td>
+                <td align="left" valign="top"><input type="text" autocomplete="off" name="postavshik_bank_adres" id="postavshik_bank_adres" class="forminput" placeholder=""></td>
               </tr>
             </tbody></table></td>
           </tr>
@@ -420,12 +438,12 @@
         </tr>
 <!--
         <tr>
-          <td><input required type="text" name="tovar_name[]" id="tovar_name" class="f2"></td>
-          <td><input required type="text" name="tovar_ed[]" id="tovar_ed" class="f3"></td>
-          <td><input type="text" name="tovar_okei[]" id="tovar_okei" class="f1"></td>
-          <td><input type="text" name="tovar_massa[]" id="tovar_massa" class="f4"></td>
-          <td><input required type="number" min="1" name="tovar_kolvo[]" id="tovar_kolvo" class="f5"></td>
-          <td><input required type="number" min="0" name="tovar_tcena[]" id="tovar_tcena" class="f6"></td>
+          <td><input required type="text" autocomplete="off" name="tovar_name[]" id="tovar_name" class="f2"></td>
+          <td><input required type="text" autocomplete="off" name="tovar_ed[]" id="tovar_ed" class="f3"></td>
+          <td><input type="text" autocomplete="off" name="tovar_okei[]" id="tovar_okei" class="f1"></td>
+          <td><input type="text" autocomplete="off" name="tovar_massa[]" id="tovar_massa" class="f4"></td>
+          <td><input required type="number" autocomplete="off" min="1" name="tovar_kolvo[]" id="tovar_kolvo" class="f5"></td>
+          <td><input required type="number" autocomplete="off" min="0" name="tovar_tcena[]" id="tovar_tcena" class="f6"></td>
           <td><i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i></td>
         </tr>
 -->
@@ -497,12 +515,12 @@ function addRow(name, ed, amount, price, item, pt)
 	if( typeof pt === "undefined" ) {
 		pt = '';
 	}
-    td1.innerHTML = '<input required type="text" value="'+name+'" name="tovar_name[]" id="tovar_name" class="f2" />';
-    td2.innerHTML = '<input required type="text" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />';
-    td3.innerHTML = '<input type="text" name="tovar_okei[]" id="tovar_okei" class="f1" />';
-    td4.innerHTML = '<input type="text" name="tovar_massa[]" id="tovar_massa" class="f4" />';
-    td5.innerHTML = '<input required type="number" min="1" value="'+amount+'" name="tovar_kolvo[]" id="tovar_kolvo" class="f5" />';
-	td6.innerHTML = '<input required type="number" min="0" value="'+price+'" name="tovar_tcena[]" id="tovar_tcena" class="f6" /><input type="hidden" name="item[]" value="'+item+'"><input type="hidden" name="pt[]" value="'+pt+'">';
+    td1.innerHTML = '<input required type="text" autocomplete="off" value="'+name+'" name="tovar_name[]" id="tovar_name" class="f2" />';
+    td2.innerHTML = '<input required type="text" autocomplete="off" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />';
+    td3.innerHTML = '<input type="text" autocomplete="off" name="tovar_okei[]" id="tovar_okei" class="f1" />';
+    td4.innerHTML = '<input type="text" autocomplete="off" name="tovar_massa[]" id="tovar_massa" class="f4" />';
+    td5.innerHTML = '<input required type="number" autocomplete="off" min="1" value="'+amount+'" name="tovar_kolvo[]" id="tovar_kolvo" class="f5" />';
+	td6.innerHTML = '<input required type="number" autocomplete="off" min="0" value="'+price+'" name="tovar_tcena[]" id="tovar_tcena" class="f6" /><input type="hidden" name="item[]" value="'+item+'"><input type="hidden" name="pt[]" value="'+pt+'">';
     td7.innerHTML = '<i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i>';
 
 }
@@ -566,30 +584,63 @@ $(document).ready(function() {
 		echo "addRow('{$Zakaz}', 'шт', '{$row["Amount"]}', '{$row["Price"]}', '{$row["ItemID"]}', '{$row["PT_ID"]}');";
 	}
 ?>
-//	addRow();
+	var Kontragenty = <?= json_encode($Kontragenty); ?>;
+	$( "#platelshik_name" ).autocomplete({
+		source: "kontragenty.php",
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#platelshik_id').val(ui.item.id);
+			$('#platelshik_inn').val(ui.item.INN);
+			$('#platelshik_kpp').val(ui.item.KPP);
+			$('#platelshik_okpo').val(ui.item.OKPO);
+			$('#platelshik_adres').val(ui.item.Jur_adres);
+			$('#platelshik_tel').val(ui.item.Telefony);
+			$('#platelshik_schet').val(ui.item.Schet);
+			$('#platelshik_bank').val(ui.item.Bank);
+			$('#platelshik_bik').val(ui.item.BIK);
+			$('#platelshik_ks').val(ui.item.KS);
+			$('#platelshik_bank_adres').val(ui.item.Bank_adres);
+		}
+	});
 
-	//функция выполняется при загрузке документа
-	$("#person_sum").blur(on_price_change);
-	$("#person_sumuslugi").blur(on_price_change);
-	$("#person_sumitog").blur(on_total_price_change);
+	$( "#platelshik_name" ).on("keyup", function() {
+		if( $( "#platelshik_name" ).val().length < 2 ) {
+			$('#platelshik_id').val('');
+			$('#platelshik_inn').val('');
+			$('#platelshik_kpp').val('');
+			$('#platelshik_okpo').val('');
+			$('#platelshik_adres').val('');
+			$('#platelshik_tel').val('');
+			$('#platelshik_schet').val('');
+			$('#platelshik_bank').val('');
+			$('#platelshik_bik').val('');
+			$('#platelshik_ks').val('');
+			$('#platelshik_bank_adres').val('');
+		}
+	});
+
+//	//функция выполняется при загрузке документа
+//	$("#person_sum").blur(on_price_change);
+//	$("#person_sumuslugi").blur(on_price_change);
+//	$("#person_sumitog").blur(on_total_price_change);
  });
 
-function on_price_change() {
-	check_float($("#person_sum"), 2);
-	check_float($("#person_sumuslugi"), 2);
-	//получаем сумму оплаты и услуг и помещаем ее в итого
-	var value = get_float_value($("#price"))+get_float_value($("#service_price"));
+//function on_price_change() {
+//	check_float($("#person_sum"), 2);
+//	check_float($("#person_sumuslugi"), 2);
+//	//получаем сумму оплаты и услуг и помещаем ее в итого
+//	var value = get_float_value($("#price"))+get_float_value($("#service_price"));
+//
+//	if (value!=0) {
+//		$("#person_sumitog").val(value.toFixed(2));
+//	} else {
+//		$("#person_sumitog").val("");
+//	}
+//}
 
-	if (value!=0) {
-		$("#person_sumitog").val(value.toFixed(2));
-	} else {
-		$("#person_sumitog").val("");
-	}
-}
-
-function on_total_price_change() {
-	check_float($("#person_sumitog"), 2);
-}
+//function on_total_price_change() {
+//	check_float($("#person_sumitog"), 2);
+//}
 </script>
 
 </div>
