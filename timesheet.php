@@ -160,7 +160,7 @@
 	<!-- Форма изменения нормы часов -->
 	<form method="post" style="display: flex; float: right;">
 		<label for="normhours">Норма часов за месяц:&nbsp;</label>
-		<input type="number" name="normhours" value="<?=$NormHours?>" min="0" max="300">
+		<input type="number" name="normhours" id="normhours" value="<?=$NormHours?>" min="0" max="300">
 		<div class='spase'></div>
 		<button>Сохранить</button>
 	</form>
@@ -172,6 +172,7 @@
 			<th>Работник</th>
 			<?
 				$i = 1;
+				$workdays = 0;
 				while ($i <= $days) {
 					$date = $year.'-'.$month.'-'.$i;
 					if (date('N', strtotime($date)) >= 6) { // Выделяем цветом выходные дни
@@ -179,9 +180,14 @@
 					}
 					else {
 						echo "<th>".$i++."</th>";
+						$workdays++;
 					}
 				}
 			?>
+			<script>
+				$('#normhours').attr('placeholder', '<?=($workdays*8)?>');
+			</script>
+
 			<th>Часы</th>
 			<th>Сумма</th>
 			<th>%</th>
