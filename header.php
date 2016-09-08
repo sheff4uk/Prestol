@@ -57,9 +57,12 @@
 			var loc = window.location.hash.replace("#","");
 			if (loc == "") {loc = "main"}
 
-			var destination = $("#"+loc).offset().top - 200;
-			$("body:not(:animated)").animate({ scrollTop: destination }, 200);
-			$("html").animate({ scrollTop: destination }, 200);
+			var nav = $("#"+loc);
+			if (nav.length) {
+				var destination = nav.offset().top - 200;
+				$("body:not(:animated)").animate({ scrollTop: destination }, 200);
+				$("html").animate({ scrollTop: destination }, 200);
+			}
 		});
 
 		// Диалог подтверждения действия
