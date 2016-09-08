@@ -543,7 +543,7 @@ function set_target(action, target) {
 
 
 	var frm = document.getElementById('formdiv');
-	frm.action = 'blanc.php';
+	frm.action = 'blanc.php?do=torg12';
 	frm.target = target;
 }
 

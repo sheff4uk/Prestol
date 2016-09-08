@@ -148,6 +148,10 @@
 		<a id="torg12" target="_blank">ТОРГ<br>12</a>
 	</div>
 
+	<div id="print_schet" title="Распечатать счёт" style="display: none;"> <!-- Кнопка печати счета -->
+		<a id="schet" target="_blank">СЧЁТ</a>
+	</div>
+
 	<!-- ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
 	<table class="main_table">
 		<form method='get' action='filter.php'>
@@ -688,6 +692,7 @@
 			$("#toprint").attr('href', '/toprint/main.php?' + data);
 			$("#post-link").val('http://<?=$_SERVER['HTTP_HOST']?>/toprint/main.php?' + data);
 			$("#torg12").attr('href', '/torg12.php?' + data);
+			$("#schet").attr('href', '/schet.php?' + data);
 			return false;
 		}
 		$("#copy-button").click(function() {
