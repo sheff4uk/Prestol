@@ -31,8 +31,20 @@
 		$DayBonus = ($_POST["daybonus"]) ? $_POST["daybonus"] : 'NULL';
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["comment"] );
 
-		$query = "REPLACE INTO TimeSheet(WD_ID, Date, Hours, Tariff, NightBonus, DayBonus, Comment)
-				  VALUES ({$Worker}, {$Date}, {$Hours}, {$Tariff}, {$NightBonus}, {$DayBonus}, '{$Comment}')";
+		$query = "INSERT INTO TimeSheet
+					 SET WD_ID = {$Worker}
+						,Date = {$Date}
+						,Hours = {$Hours}
+						,Tariff = {$Tariff}
+						,NightBonus = {$NightBonus}
+						,DayBonus = {$DayBonus}
+						,Comment = '{$Comment}'
+				  ON DUPLICATE KEY UPDATE
+						 Hours = {$Hours}
+						,Tariff = {$Tariff}
+						,NightBonus = {$NightBonus}
+						,DayBonus = {$DayBonus}
+						,Comment = '{$Comment}'";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		header( "Location: ".$location );
