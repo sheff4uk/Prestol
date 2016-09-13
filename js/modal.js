@@ -19,6 +19,7 @@ $(document).ready(function() {
 		$('#print_schet').css('display', 'block');
 		$('#print_title').css('display', 'block');
 		$('#print_products').css('display', 'block');
+		$('#print_labelsbox').css('display', 'block');
 		$(div)
 			.css('z-index', '11')
 			.css('position', 'absolute');
@@ -50,6 +51,7 @@ $(document).ready(function() {
 				$('#print_schet').css('display', 'none');
 				$('#print_title').css('display', 'none');
 				$('#print_products').css('display', 'none');
+				$('#print_labelsbox').css('display', 'none');
 				modal.css('z-index', '').css('position', '');
 				$('.wr_main_table_body').css('height', '');
 				$('.wr_main_table_head').css('width', '');

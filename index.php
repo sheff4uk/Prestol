@@ -152,6 +152,10 @@
 		<a id="schet" target="_blank">СЧЁТ</a>
 	</div>
 
+	<div id="print_labelsbox" title="Распечатать этикетки на упаковку" style="display: none;"> <!-- Кнопка печати этикеток на упаковку -->
+		<a id="labelsbox" target="_blank"></a>
+	</div>
+
 	<!-- ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
 	<table class="main_table">
 		<form method='get' action='filter.php'>
@@ -628,15 +632,11 @@
 			$(this).val(ui.item.value);
 			$(event.target.form).submit();
 		});
-		$( ".main_table .plastictags" ).on( "autocompleteselect", function( event, ui ) {
+		$( ".main_table .textileplastictags" ).on( "autocompleteselect", function( event, ui ) {
 			$(this).val(ui.item.value);
 			$(event.target.form).submit();
 		});
 		$( ".main_table .colortags" ).on( "autocompleteselect", function( event, ui ) {
-			$(this).val(ui.item.value);
-			$(event.target.form).submit();
-		});
-		$( ".main_table .textiletags" ).on( "autocompleteselect", function( event, ui ) {
 			$(this).val(ui.item.value);
 			$(event.target.form).submit();
 		});
@@ -693,6 +693,7 @@
 			$("#post-link").val('http://<?=$_SERVER['HTTP_HOST']?>/toprint/main.php?' + data);
 			$("#torg12").attr('href', '/torg12.php?' + data);
 			$("#schet").attr('href', '/schet.php?' + data);
+			$("#labelsbox").attr('href', '/labels_box.php?' + data);
 			return false;
 		}
 		$("#copy-button").click(function() {

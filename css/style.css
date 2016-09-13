@@ -249,7 +249,7 @@ input[type="checkbox"].nightshift + label:before {
 	height: 100%;
 }
 
-#add_btn:hover, #print_btn:hover, #copy_link:hover, #print_torg12:hover, #print_schet:hover {
+#add_btn:hover, #print_btn:hover, #copy_link:hover, #print_torg12:hover, #print_schet:hover, #print_labelsbox:hover {
 	opacity: .8;
 }
 
@@ -578,6 +578,24 @@ td.tscell > i {
 	background-color: #db4437;
 	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
 }
+#print_labelsbox {
+	background: url("../img/label_box.png") no-repeat scroll center center transparent;
+	bottom: 475px;
+	cursor: pointer;
+	width: 56px;
+	height: 56px;
+	opacity: .4;
+	position: fixed;
+	right: 100px;
+	z-index: 13;
+	border-radius: 50%;
+	background-color: #db4437;
+	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+}
+#labelsbox {
+	display: block;
+	height: 100%;
+}
 #print_torg12 {
 	bottom: 325px;
 	cursor: pointer;
@@ -637,4 +655,9 @@ td.tscell > i {
 
 .ui-autocomplete-loading {
 	background: white url("/img/ui-anim_basic_16x16.gif") right center no-repeat;
+}
+.ui-autocomplete {
+	max-height: 150px;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
