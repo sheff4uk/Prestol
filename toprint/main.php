@@ -2,39 +2,68 @@
 	include "../config.php";
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<link rel='stylesheet' type='text/css' href='../css/font-awesome.min.css'>
-    <title>Версия для печати</title>
-    <style>
-        body, td {
-            margin: 20px;
-            color: #333;
-            font-family: Verdana, Trebuchet MS, Tahoma, Arial, sans-serif;
-            font-size: 10pt;
-        }
-        table {
-            border-collapse: collapse;
-            border-spacing: 0px;
-        }
-        td, th {
-            padding: 3px;
-            border: 1px solid black;
-            line-height: 1.45em;
-        }
-		thead {
-			display: table-header-group;
+	<title>Версия для печати</title>
+<!--
+	<script type="text/javascript" src="../js/prototype.js"></script>
+	<script type="text/javascript">
+		//page height in px
+		//thisPageTotal is the total of pixels on the current page, in px
+		pageHeight = 1000;
+		thisPageTotal = 0;
+
+		Event.observe(window, 'load', function(){
+			$$('.coupon').each(function(el){
+				var layout = el.getLayout();
+				thisPageTotal += parseInt(layout.get('margin-box-height'));
+				if(thisPageTotal > pageHeight) {
+					thisPageTotal = parseInt(layout.get('margin-box-height'));
+					var pageBreak = new Element('div', {
+						'class': 'pagebreak'
+					});
+					el.insert({before: pageBreak});
+				}
+				//this shows the current amount of px on the current page
+//				el.update(thisPageTotal);
+			});
+		});
+	</script>
+-->
+	<style>
+		.pagebreak {
+			page-break-after: always;
 		}
-		tr, td {
+		body, td {
+			margin: 20px;
+			color: #333;
+			font-family: Verdana, Trebuchet MS, Tahoma, Arial, sans-serif;
+			font-size: 10pt;
+		}
+		table {
+			table-layout: fixed;
+			width: 100%;
+			border-collapse: collapse;
+			border-spacing: 0px;
+		}
+		.thead {
+			text-align: center;
+			font-weight: bold;
+		}
+		td, th {
+			padding: 3px;
+			border: 1px solid black;
+			line-height: 1.45em;
+		}
+		.coupon {
 			page-break-inside: avoid;
-		}
-		tr.page-break {
-			page-break-before:auto;
+			border: 2px solid black;
+			border-bottom: none;
 		}
 		.nowrap {
 			white-space: nowrap;
-		}
-		.line {
-			text-decoration: line-through;
 		}
 	</style>
 </head>
@@ -58,26 +87,25 @@
 //	$product_types = substr($product_types, 1);
 ?>
 	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
+	<div class="coupon">
 	<table>
-		<thead>
-			<tr>
+		<tbody>
+			<tr class="thead">
 				<?
-					if(isset($_GET["CD"])) echo "<th>Код</th>";
-					if(isset($_GET["CN"])) echo "<th>Заказчик</th>";
-					if(isset($_GET["SD"])) echo "<th>Дата приема</th>";
-					if(isset($_GET["ED"])) echo "<th>Дата сдачи</th>";
-					if(isset($_GET["SH"])) echo "<th>Салон</th>";
-					if(isset($_GET["ON"])) echo "<th>№ квитанции</th>";
-					if(isset($_GET["Z"])) echo "<th width='50%'>Заказ</th>";
-					if(isset($_GET["M"])) echo "<th>Материал</th>";
-					if(isset($_GET["CR"])) echo "<th>Цвет</th>";
-					if(isset($_GET["PR"])) echo "<th>Этапы</th>";
-					if(isset($_GET["IP"])) echo "<th>Лак.</th>";
-					if(isset($_GET["N"])) echo "<th>Примечание</th>";
+					if(isset($_GET["CD"])) echo "<td width='4%'>Код</td>";
+					if(isset($_GET["CN"])) echo "<td width='7%'>Заказчик</td>";
+					if(isset($_GET["SD"])) echo "<td width='4%'>Дата приема</td>";
+					if(isset($_GET["ED"])) echo "<td width='4%'>Дата сдачи</td>";
+					if(isset($_GET["SH"])) echo "<td width='9%'>Салон</td>";
+					if(isset($_GET["ON"])) echo "<td width='5%'>№ квитанции</td>";
+					if(isset($_GET["Z"])) echo "<td width='20%'>Заказ</td>";
+					if(isset($_GET["M"])) echo "<td width='15%'>Материал</td>";
+					if(isset($_GET["CR"])) echo "<td width='15%'>Цвет</td>";
+					if(isset($_GET["PR"])) echo "<td width='8%'>Этапы</td>";
+					if(isset($_GET["IP"])) echo "<td width='2%'>Лак.</td>";
+					if(isset($_GET["N"])) echo "<td width='15%'>Примечание</td>";
 				?>
 			</tr>
-		</thead>
-		<tbody>
 	<?
 	// Снимаем ограничение в 1024 на GROUP_CONCAT
 	$query = "SET @@group_concat_max_len = 10000;";
@@ -175,7 +203,7 @@
 			$cnt = $subrow["Cnt"];
 			$odid = $row["OD_ID"];
 			$span = 1;
-			$border = "border-top: 3px solid black;";
+			//$border = "border-top: 3px solid black;";
 		}
 		else {
 			$span = 0;
@@ -183,49 +211,50 @@
 		}
 
 		if( $span ) {
-			echo "<tr class='page-break'>";
+			echo "</tbody></table></div><div class='coupon'><table><tbody><tr>";
 		}
 		else {
 			echo "<tr>";
 		}
 
-		if(isset($_GET["CD"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}' class='nowrap'>{$row["Code"]}</td>";
-		if(isset($_GET["CN"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}</td>";
-		if(isset($_GET["SD"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["StartDate"]}</td>";
+		if(isset($_GET["CD"]) and $span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}' class='nowrap'>{$row["Code"]}</td>";
+		if(isset($_GET["CN"]) and $span) echo "<td width='7%' style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}</td>";
+		if(isset($_GET["SD"]) and $span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["StartDate"]}</td>";
 		if(isset($_GET["ED"]) and $span) {
 			if( $archive ) {
-				echo "<td style='{$border}' rowspan='{$cnt}'>{$row["ReadyDate"]}</td>";
+				echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["ReadyDate"]}</td>";
 			}
 			else {
-				echo "<td style='{$border}' rowspan='{$cnt}'>{$row["EndDate"]}</td>";
+				echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["EndDate"]}</td>";
 			}
 		}
-		if(isset($_GET["SH"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["Shop"]}</td>";
-		if(isset($_GET["ON"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
-		if(isset($_GET["Z"])) echo "<td style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";
-		if(isset($_GET["M"])) echo "<td style='{$border}'>{$row["Material"]}</td>";
-		if(isset($_GET["CR"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["Color"]}</td>";
-		if(isset($_GET["PR"])) echo "<td style='{$border}'><span class='nowrap'>{$row["Steps"]}</span></td>";
+		if(isset($_GET["SH"]) and $span) echo "<td width='9%' style='{$border}' rowspan='{$cnt}'>{$row["Shop"]}</td>";
+		if(isset($_GET["ON"]) and $span) echo "<td width='5%' style='{$border}' rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
+		if(isset($_GET["Z"])) echo "<td width='20%' style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";
+		if(isset($_GET["M"])) echo "<td width='15%' style='{$border}'>{$row["Material"]}</td>";
+		if(isset($_GET["CR"]) and $span) echo "<td width='15%' style='{$border}' rowspan='{$cnt}'>{$row["Color"]}</td>";
+		if(isset($_GET["PR"])) echo "<td width='8%' style='{$border}'><span class='nowrap'>{$row["Steps"]}</span></td>";
 		if(isset($_GET["IP"]) and $span) {
-			echo "<td style='{$border}' rowspan='{$cnt}'>";
-				switch ($row["IsPainting"]) {
-					case 1:
-						echo "<i class='fa fa-star-o fa-lg'></i>";
-						break;
-					case 2:
-						echo "<i class='fa fa-star-half-o fa-lg'></i>";
-						break;
-					case 3:
-						echo "<i class='fa fa-star fa-lg'></i>";
-						break;
-				}
+			echo "<td width='2%' style='{$border}' rowspan='{$cnt}'>";
+			switch ($row["IsPainting"]) {
+				case 1:
+					echo "<i class='fa fa-star-o fa-lg'></i>";
+					break;
+				case 2:
+					echo "<i class='fa fa-star-half-o fa-lg'></i>";
+					break;
+				case 3:
+					echo "<i class='fa fa-star fa-lg'></i>";
+					break;
+			}
 			echo "</td>";
 		}
-		if(isset($_GET["N"]) and $span) echo "<td style='{$border}' rowspan='{$cnt}'>{$row["Comment"]}</td>";
+		if(isset($_GET["N"]) and $span) echo "<td width='15%' style='{$border}' rowspan='{$cnt}'>{$row["Comment"]}</td>";
 		echo "</tr>";
 	}
     ?>
         </tbody>
     </table>
+	</div>
 </body>
 </html>
