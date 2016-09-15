@@ -140,5 +140,5 @@
 	</nav>
 	<!-- END NAVBAR -->
 <?
-	include "autocomplete.php"; //JavaScript
+//	include "autocomplete.php"; //JavaScript
 ?>

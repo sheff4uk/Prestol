@@ -356,7 +356,6 @@
 		$SelectStepODB = "''";
 	}
 
-	$OD_IDs = "0"; // Сюда будем записывать список выбранных ID заказов для автокомплита
 	$query = "SELECT OD.OD_ID
 					,OD.Code
 					,IFNULL(OD.ClientName, '') ClientName
@@ -500,7 +499,6 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$OD_IDs .= ",".$row["OD_ID"];
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td><span class='nowrap'>{$row["Code"]}</span></td>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
@@ -615,6 +613,30 @@
 
 <script>
 	$(document).ready(function(){
+
+		$( ".shopstags" ).autocomplete({ // Автокомплит салонов
+			source: "autocomplete.php?do=shopstags"
+		});
+
+		$( ".colortags" ).autocomplete({ // Автокомплит цветов
+			source: "autocomplete.php?do=colortags"
+		});
+
+		$( ".textiletags" ).autocomplete({ // Автокомплит тканей
+			source: "autocomplete.php?do=textiletags"
+		});
+
+		$( ".plastictags" ).autocomplete({ // Автокомплит пластиков
+			source: "autocomplete.php?do=plastictags"
+		});
+
+		$( ".textileplastictags" ).autocomplete({ // Автокомплит материалов
+			source: "autocomplete.php?do=textileplastictags"
+		});
+
+		$( ".clienttags" ).autocomplete({ // Автокомплит заказчиков
+			source: "autocomplete.php?do=clienttags"
+		});
 
 		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 

@@ -584,7 +584,6 @@ $(document).ready(function() {
 		echo "addRow('{$Zakaz}', 'шт', '{$row["Amount"]}', '{$row["Price"]}', '{$row["ItemID"]}', '{$row["PT_ID"]}');";
 	}
 ?>
-	var Kontragenty = <?= json_encode($Kontragenty); ?>;
 	$( "#platelshik_name" ).autocomplete({
 		source: "kontragenty.php",
 		minLength: 2,

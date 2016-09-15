@@ -587,6 +587,26 @@
 
 <script>
 	$(document).ready(function(){
+		$( ".colortags" ).autocomplete({ // Автокомплит цветов
+			source: "autocomplete.php?do=colortags"
+		});
+
+		$( ".textiletags" ).autocomplete({ // Автокомплит тканей
+			source: "autocomplete.php?do=textiletags"
+		});
+
+		$( ".plastictags" ).autocomplete({ // Автокомплит пластиков
+			source: "autocomplete.php?do=plastictags"
+		});
+
+		$( ".textileplastictags" ).autocomplete({ // Автокомплит материалов
+			source: "autocomplete.php?do=textileplastictags"
+		});
+
+		$( ".clienttags" ).autocomplete({ // Автокомплит заказчиков
+			source: "autocomplete.php?do=clienttags"
+		});
+
 //		odid = <?= ($id == 'NULL') ? 0 : $id ?>;
 
 		$('.attention img').show();
