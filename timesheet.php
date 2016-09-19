@@ -1,6 +1,14 @@
 <?
 //	session_start();
 	include "config.php";
+	$title = 'Табель';
+	include "header.php";
+
+	// Проверка прав на доступ к экрану
+	if( !in_array('screen_timesheet', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
 
 	$location = $_SERVER['REQUEST_URI'];
 
@@ -47,7 +55,8 @@
 						,Comment = '{$Comment}'";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		header( "Location: ".$location );
+		//header( "Location: ".$location );
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
 
@@ -58,7 +67,8 @@
 				  VALUES ({$year}, {$month}, {$NormHours})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		header( "Location: ".$location );
+		//header( "Location: ".$location );
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
 
@@ -81,12 +91,10 @@
 			$query = "DELETE FROM MonthlyPremiumPercent WHERE PremiumPercent IS NULL AND DisableNormHours IS NULL";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
-		header( "Location: ".$_SERVER['REQUEST_URI'] );
+		//header( "Location: ".$_SERVER['REQUEST_URI'] );
+		exit ('<meta http-equiv="refresh" content="0; url='.$_SERVER['REQUEST_URI'].'">');
 		die;
 	}
-
-	$title = 'Табель';
-	include "header.php";
 
 	// Узнаем норму часов на этот месяц
 	$query = "SELECT IFNULL(Hours, '') Hours FROM MonthlyNormHours WHERE Year = {$year} AND Month = {$month}";

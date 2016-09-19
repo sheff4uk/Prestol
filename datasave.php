@@ -1,10 +1,15 @@
 <?
 session_start();
 include "config.php";
+include "header.php";
 
 // Обновление параметров изделия
 if( $_GET["oddid"] )
 {
+	if( !in_array('order_add', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
 	$query = "SELECT ODD.Amount
 					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 					,ODD.PM_ID
@@ -141,13 +146,18 @@ if( $_GET["oddid"] )
 		$_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
 	}
 
-	header( "Location: ".$_GET["location"]."#prod".$_GET["oddid"] ); // Перезагружаем экран
+	//header( "Location: ".$_GET["location"]."#prod".$_GET["oddid"] ); // Перезагружаем экран
+	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#prod'.$_GET["oddid"].'">');
 	die;
 }
 
 // Обновление параметров заготовки или прочего
 if( $_GET["odbid"] )
 {
+	if( !in_array('order_add', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
 	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 	$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
 	$Other = trim($_POST["Other"]);
@@ -214,7 +224,8 @@ if( $_GET["odbid"] )
 	$query = "UPDATE OrdersDataSteps SET Old = Old WHERE ODB_ID = {$_GET["odbid"]}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	header( "Location: ".$_GET["location"]."#blank".$_GET["odbid"] ); // Перезагружаем экран
+	//header( "Location: ".$_GET["location"]."#blank".$_GET["odbid"] ); // Перезагружаем экран
+	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#blank'.$_GET["odbid"].'">');
 	die;
 
 }
@@ -222,6 +233,10 @@ if( $_GET["odbid"] )
 // Обновление в базе производственных этапов
 if( isset($_POST["ODD_ID"]) )
 {
+	if( !in_array('step_update', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
 	foreach( $_POST as $k => $v) 
 	{
 		if( strpos($k,"Tariff") === 0 ) {
@@ -242,10 +257,12 @@ if( isset($_POST["ODD_ID"]) )
 	}
 
 	if( isset($_GET["plid"]) and $_GET["plid"] !== "" ) {
-		header( "Location: ".$_GET["location"]."#pl".$_GET["plid"] );
+		//header( "Location: ".$_GET["location"]."#pl".$_GET["plid"] );
+		exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#pl'.$_GET["plid"].'">');
 	}
 	else {
-		header( "Location: ".$_GET["location"]."#prod".$_POST["ODD_ID"] );
+		//header( "Location: ".$_GET["location"]."#prod".$_POST["ODD_ID"] );
+		exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#prod'.$_POST["ODD_ID"].'">');
 	}
 	die;
 }
@@ -253,6 +270,10 @@ if( isset($_POST["ODD_ID"]) )
 // Обновление производственных этапов для прочего
 if( isset($_POST["ODB_ID"]) )
 {
+	if( !in_array('step_update', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
 	foreach( $_POST as $k => $v)
 	{
 		if( strpos($k,"Tariff") === 0 ) {
@@ -273,10 +294,12 @@ if( isset($_POST["ODB_ID"]) )
 	}
 
 	if( isset($_GET["plid"]) and $_GET["plid"] !== "" ) {
-		header( "Location: ".$_GET["location"]."#pl".$_GET["plid"] );
+		//header( "Location: ".$_GET["location"]."#pl".$_GET["plid"] );
+		exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#pl'.$_GET["plid"].'">');
 	}
 	else {
-		header( "Location: ".$_GET["location"]."#blank".$_POST["ODB_ID"] );
+		//header( "Location: ".$_GET["location"]."#blank".$_POST["ODB_ID"] );
+		exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#blank'.$_POST["ODB_ID"].'">');
 	}
 	die;
 }

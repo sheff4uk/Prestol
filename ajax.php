@@ -1,5 +1,6 @@
 <?
 	include "config.php";
+	include "checkrights.php";
 	header( "Content-Type: text/html; charset=UTF-8" );
 
 switch( $_GET["do"] )
@@ -278,7 +279,7 @@ case "ispainting":
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('title', '{$status}');";
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('val', '{$val}');";
 	if( $isready == 1 and $archive != 1 ) {
-		if( $val == 3 ) {
+		if( $val == 3 and in_array('order_ready', $Rights) ) {
 			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a  href=\"#\" class=\"\" onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
 //			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action a').button();";
 		}

@@ -1,8 +1,13 @@
 <?
 	include "config.php";
-
 	$title = 'Подготовка этикеток для упаковок';
 	include "header.php";
+
+	// Проверка прав на доступ к экрану
+	if( !in_array('print_label_box', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
 
 	// Формируем список строк для печати
 	$id_list = '0';

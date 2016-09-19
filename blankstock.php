@@ -1,6 +1,14 @@
 <?
 //	session_start();
 	include "config.php";
+	$title = 'Заготовки';
+	include "header.php";
+
+	// Проверка прав на доступ к экрану
+	if( !in_array('screen_blanks', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
 
 	$datediff = 60; // Максимальный период отображения данных
 
@@ -28,12 +36,10 @@
 		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
-		header( "Location: ".$location );
+		//header( "Location: ".$location );
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
-
-	$title = 'Заготовки';
-	include "header.php";
 
 	// Массив тарифов заготовок
 	$BlankTariff = array();

@@ -1,17 +1,18 @@
 <?
 include "config.php";
+include "checkrights.php";
 
 switch( $_GET["do"] )
 {
 case "shopstags":
 	// Автокомплит салонов
 	$query = "SELECT Shop FROM (
-				SELECT CT.City AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID GROUP BY CT.CT_ID
+				SELECT CT.CT_ID, CT.City AS Shop FROM Cities CT
 				UNION
-				SELECT CONCAT(CT.City, '/', SH.Shop) AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID
+				SELECT CT.CT_ID, CONCAT(CT.City, '/', SH.Shop) AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID
 				UNION
-				SELECT 'Свободные' AS Shop) SHT
-			  WHERE Shop LIKE '%{$_GET["term"]}%'";
+				SELECT 0 CT_ID, 'Свободные' AS Shop) SHT
+			  WHERE Shop LIKE '%{$_GET["term"]}%' AND CT_ID IN ({$USR_cities})";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{

@@ -4,6 +4,12 @@
 	$title = 'Товарная накладная';
 	include "header.php";
 
+	// Проверка прав на доступ к экрану
+	if( !in_array('print_torg12', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
+
 	// Записываем в сессию и в базу порядковый номер накладной
 	if( empty($_SESSION["torg_year"]) or empty($_SESSION["torg_count"]) ) {
 		$Year = date('Y');

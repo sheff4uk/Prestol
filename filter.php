@@ -25,5 +25,6 @@
 	}
 
 	header( "Location: ".$_GET["location"] ); // Перезагружаем экран
+	//exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
 	die;
 ?>

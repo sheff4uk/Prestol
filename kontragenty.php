@@ -1,6 +1,8 @@
 <?
 	// Список названий контрагентов для автокомплита
 	include "config.php";
+	include "checkrights.php";
+
 	$query = "SELECT KA_ID, Naimenovanie, IFNULL(Jur_adres, '') Jur_adres, IFNULL(Fakt_adres, '') Fakt_adres, IFNULL(Telefony, '') Telefony, IFNULL(INN, '') INN, IFNULL(OKPO, '') OKPO, IFNULL(KPP, '') KPP, IFNULL(Pasport, '') Pasport, IFNULL(Email, '') Email, IFNULL(Schet, '') Schet, IFNULL(Bank, '') Bank, IFNULL(BIK, '') BIK, IFNULL(KS, '') KS, IFNULL(Bank_adres, '') Bank_adres FROM Kontragenty WHERE Naimenovanie LIKE '%{$_GET["term"]}%' ORDER BY Naimenovanie";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {

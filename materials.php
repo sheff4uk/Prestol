@@ -1,5 +1,13 @@
 <?
 	include "config.php";
+	$title = 'Материалы';
+	include "header.php";
+
+	// Проверка прав на доступ к экрану
+	if( !in_array('screen_materials', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
 
 	if( isset($_GET["isex"]) ) {
 		$isexist = $_GET["isex"];
@@ -45,12 +53,10 @@
 				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			}
 		}
-		header( "Location: ".$_SERVER['REQUEST_URI'] );
+		//header( "Location: ".$_SERVER['REQUEST_URI'] );
+		exit ('<meta http-equiv="refresh" content="0; url='.$_SERVER['REQUEST_URI'].'">');
 		die;
 	}
-
-	$title = 'Материалы';
-	include "header.php";
 ?>
 	
 	<form method='get' id='MTfilter'>

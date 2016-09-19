@@ -1,15 +1,41 @@
 <?
 //	session_start();
 	include "config.php";
+	if( $id != "NULL" )
+	{
+		$title = 'Детали заказа';
+	}
+	else
+	{
+		$title = 'Свободные изделия';
+	}
+	include "header.php";
 
 	if( (int)$_GET["id"] > 0 )
 	{
+		// Проверка прав на доступ к экрану
+		// Проверка города
+		$query = "SELECT 1
+					FROM OrdersData OD
+					JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+					WHERE SH.CT_ID IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		if( !in_array('order_add', $Rights) or !mysqli_num_rows($res) ) {
+			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+			die('Недостаточно прав для совершения операции');
+		}
 		$id = (int)$_GET["id"];
 		$location = "orderdetail.php?id=".$id;
 		$free = 0;
 	}
 	else
 	{
+		// Проверка прав на доступ к экрану
+		if( !in_array('screen_free', $Rights) ) {
+			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+			die('Недостаточно прав для совершения операции');
+		}
 		$id = "NULL";
 		$location = "orderdetail.php?free=1";
 		$free = 1;
@@ -43,7 +69,8 @@
 				  WHERE OD_ID = {$id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
-		header( "Location: ".$location );
+		//header( "Location: ".$location );
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
 
@@ -88,7 +115,8 @@
 					}
 				}
 			}
-			header( "Location: ".$location."#".$prodid );
+			//header( "Location: ".$location."#".$prodid );
+			exit ('<meta http-equiv="refresh" content="0; url='.$location.'#'.$prodid.'">');
 			die;
 		}
 		else {
@@ -156,7 +184,8 @@
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			$_SESSION["odd_id"] = $odd_id; // Cохраняем в сессию id вставленной записи
-			header( "Location: ".$location."#".$odd_id ); // Перезагружаем экран
+			//header( "Location: ".$location."#".$odd_id ); // Перезагружаем экран
+			exit ('<meta http-equiv="refresh" content="0; url='.$location.'#'.$odd_id.'">');
 			die;
 		}
 	}
@@ -207,7 +236,8 @@
 		}
 
 		$_SESSION["odb_id"] = $odb_id; // Cохраняем в сессию id вставленной записи
-		header( "Location: ".$location."#".$odb_id ); // Перезагружаем экран
+		//header( "Location: ".$location."#".$odb_id ); // Перезагружаем экран
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#'.$odb_id.'">');
 		die;
 	}
 	else {
@@ -243,7 +273,8 @@
             $_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
         }
 
-		header( "Location: ".$location ); // Перезагружаем экран
+		//header( "Location: ".$location ); // Перезагружаем экран
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
 
@@ -257,20 +288,10 @@
 		$query = "DELETE FROM OrdersDataBlank WHERE ODB_ID={$odb_id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		header( "Location: ".$location ); // Перезагружаем экран
+		//header( "Location: ".$location ); // Перезагружаем экран
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
-
-	if( $id != "NULL" )
-	{
-		$title = 'Детали заказа';
-	}
-	else
-	{
-		$title = 'Свободные изделия';
-	}
-	include "header.php";
-//	include "autocomplete.php"; //JavaScript
 ?>
 
 	<? include "forms.php"; ?>

@@ -1,6 +1,14 @@
 <?
 //	session_start();
 	include "config.php";
+	$title = 'Платежи';
+	include "header.php";
+
+	// Проверка прав на доступ к экрану
+	if( !in_array('screen_paylog', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
 
 	$datediff = 60; // Максимальный период отображения данных
 
@@ -12,9 +20,6 @@
 	$lastmonth = date("n",strtotime("-1 months"));
 
 	$MONTHS = array(1=>'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь');
-
-	$title = 'Платежи';
-	include "header.php";
 ?>
 	<p>
 		<button class='edit_pay' sign='' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Начислить</button>

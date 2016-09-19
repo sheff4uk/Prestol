@@ -10,7 +10,7 @@
 		font-family: Arial;
 		width: 1200px;
 		margin: auto;
-		font-size: 0;
+		//font-size: 0;
 	}
 	.label-wr {
 		display: inline-block;
@@ -80,13 +80,19 @@
 		$(elem).css({fontSize: fontSize+'px'});
 		$(elem).attr('fontSize', fontSize);
 	}
-	$(document).ready(function(){
-		fontSize('.mfr', 18);
-	});
 </script>
 </head>
 <body>
 <?
+	include "config.php";
+	include "checkrights.php";
+
+	// Проверка прав на доступ к экрану
+	if( !in_array('print_label_box', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
+
 	foreach ($_POST["prod"] as $key => $value) {
 		?>
 		<div class="label-wr prod<?=$key?>">
@@ -127,5 +133,11 @@
 		<?
 	}
 ?>
+<script>
+	$(document).ready(function(){
+		fontSize('.mfr', 18);
+		$('body').css('font-size', '0');
+	});
+</script>
 </body>
 </html>

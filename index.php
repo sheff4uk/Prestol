@@ -1,5 +1,7 @@
 <?
 	include "config.php";
+	$title = 'Престол главная';
+	include "header.php";
 
 	$datediff = 60; // Максимальный период отображения данных
 	
@@ -8,6 +10,10 @@
 	// Добавление в базу нового заказа
 	if( isset($_POST["StartDate"]) )
 	{
+		if( !in_array('order_add', $Rights) ) {
+			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+			die('Недостаточно прав для совершения операции');
+		}
 		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
 		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli, $_POST["ClientName"] );
@@ -34,30 +40,37 @@
 	// Удаление заказа
 	if( $_GET["del"] )
 	{
+		if( !in_array('order_add', $Rights) ) {
+			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+			die('Недостаточно прав для совершения операции');
+		}
 		$id = (int)$_GET["del"];
 
 //		$query = "DELETE FROM OrdersData WHERE OD_ID={$id}";
 		$query = "UPDATE OrdersData SET Del = 1 WHERE OD_ID={$id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		header( "Location: /" ); // Перезагружаем экран
+		//header( "Location: /" ); // Перезагружаем экран
+		exit ('<meta http-equiv="refresh" content="0; url=/">');
 		die;
 	}
 
 	// Подтверждение готовности заказа
 	if( $_GET["ready"] )
 	{
+		if( !in_array('order_ready', $Rights) ) {
+			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+			die('Недостаточно прав для совершения операции');
+		}
 		$id = (int)$_GET["ready"];
 		$date = date("Y-m-d");
 		$query = "UPDATE OrdersData SET ReadyDate = '{$date}' WHERE OD_ID={$id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		header( "Location: /" ); // Перезагружаем экран
+		//header( "Location: /" ); // Перезагружаем экран
+		exit ('<meta http-equiv="refresh" content="0; url=/">');
 		die;
 	}
-
-	$title = 'Престол главная';
-	include "header.php";
 ?>
 	
 	<div id="overlay"></div>
@@ -103,6 +116,7 @@
 										,Cities.Color
 									FROM Shops
 									JOIN Cities ON Cities.CT_ID = Shops.CT_ID
+									WHERE Cities.CT_ID IN ({$USR_cities})
 									ORDER BY Cities.City, Shops.Shop";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
@@ -131,30 +145,50 @@
 			</div>
 		</form>
 	</div>
-	
-	<!-- Копирование ссылки на таблицу в буфер -->
-	<input id="post-link" style="position: absolute; z-index: -1;">
-	<div id="copy_link" data-clipboard-target="#post-link" style="display: none;">
-		<a id="copy-button" data-clipboard-target="#post-link" style="display: block; height: 100%" title="Скопировать ссылку в буфер обмена"></a>
-	</div>
 
-	<div id="add_btn" title="Добавить новый заказ"></div> <!-- Кнопка добавления заказа -->
-	
-	<div id="print_btn" href="#print_tbl" class="open_modal" title="Распечатать таблицу"> <!-- Кнопка печати -->
-		<a id="toprint"></a>
-	</div>
 
-	<div id="print_torg12" title="Распечатать накладную" style="display: none;"> <!-- Кнопка печати накладной -->
-		<a id="torg12" target="_blank">ТОРГ<br>12</a>
-	</div>
+<?
+	// Кнопка добавления заказа
+	if( in_array('order_add', $Rights) ) {
+		echo "<div id='add_btn' title='Добавить новый заказ'></div>";
+	}
 
-	<div id="print_schet" title="Распечатать счёт" style="display: none;"> <!-- Кнопка печати счета -->
-		<a id="schet" target="_blank">СЧЁТ</a>
-	</div>
+	// Кнопка печати
+	if( in_array('order_print', $Rights) ) {
+		echo '<div id="print_btn" href="#print_tbl" class="open_modal" title="Распечатать таблицу">';
+		echo '<a id="toprint"></a>';
+		echo '</div>';
+	}
 
-	<div id="print_labelsbox" title="Распечатать этикетки на упаковку" style="display: none;"> <!-- Кнопка печати этикеток на упаковку -->
-		<a id="labelsbox" target="_blank"></a>
-	</div>
+	// Копирование ссылки на таблицу в буфер
+	if( in_array('order_link', $Rights) ) {
+		echo '<input id="post-link" style="position: absolute; z-index: -1;">';
+		echo '<div id="copy_link" data-clipboard-target="#post-link" style="display: none;">';
+		echo '<a id="copy-button" data-clipboard-target="#post-link" style="display: block; height: 100%" title="Скопировать ссылку в буфер обмена"></a>';
+		echo '</div>';
+	}
+
+	// Кнопка печати накладной
+	if( in_array('print_torg12', $Rights) ) {
+		echo '<div id="print_torg12" title="Распечатать накладную" style="display: none;">';
+		echo '<a id="torg12" target="_blank">ТОРГ<br>12</a>';
+		echo '</div>';
+	}
+
+	// Кнопка печати счета
+	if( in_array('print_schet', $Rights) ) {
+		echo '<div id="print_schet" title="Распечатать счёт" style="display: none;">';
+		echo '<a id="schet" target="_blank">СЧЁТ</a>';
+		echo '</div>';
+	}
+
+	// Кнопка печати этикеток на упаковку
+	if( in_array('print_label_box', $Rights) ) {
+		echo '<div id="print_labelsbox" title="Распечатать этикетки на упаковку" style="display: none;">';
+		echo '<a id="labelsbox" target="_blank"></a>';
+		echo '</div>';
+	}
+?>
 
 	<!-- ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
 	<table class="main_table">
@@ -385,7 +419,7 @@
 							   ,IFNULL(PM.PT_ID, 2) PT_ID
 							   ,ODD.ODD_ID itemID
 
-							   ,CONCAT('<b style=\'line-height: 1.79em;\'><a href=\'#\' id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'edit_product', IFNULL(PM.PT_ID, 2), '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a></b><br>') Zakaz
+							   ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'".(in_array('order_add', $Rights) ? "edit_product', IFNULL(PM.PT_ID, 2), '" : "")."\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a></b><br>') Zakaz
 
 							   ,CONCAT(IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'m', ODD.ODD_ID, '\' class=\'',
 								CASE ODD.IsExist
@@ -395,7 +429,7 @@
 								END,
 							   '\'>', IFNULL(MT.Material, ''), '</span><br>') Material
 
-							   ,CONCAT('<a href=\'#\' id=\'', ODD.ODD_ID, '\' class=\'edit_steps nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODD}, ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
+							   ,CONCAT('<a ".(in_array('step_update', $Rights) ? "href=\'#\'" : "")." id=\'', ODD.ODD_ID, '\' class=\'".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODD}, ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
 
 						FROM OrdersDataDetail ODD
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
@@ -413,7 +447,7 @@
 							  ,0 PT_ID
 							  ,ODB.ODB_ID itemID
 
-							  ,CONCAT('<b style=\'line-height: 1.79em;\'><a href=\'#\' id=\'blank', ODB.ODB_ID, '\'', 'class=\'edit_order_blank\' location=\'{$location}\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</a></b><br>') Zakaz
+							  ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'blank', ODB.ODB_ID, '\'', 'class=\'".(in_array('order_add', $Rights) ? "edit_order_blank" : "")."\' location=\'{$location}\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</a></b><br>') Zakaz
 
 							  ,CONCAT(IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'m', ODB.ODB_ID, '\' class=\'',
 								CASE ODB.IsExist
@@ -423,7 +457,7 @@
 								END,
 							  '\'>', IFNULL(MT.Material, ''), '</span><br>') Material
 
-							  ,CONCAT('<a href=\'#\' odbid=\'', ODB.ODB_ID, '\' class=\'edit_steps nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODB}, ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
+							  ,CONCAT('<a ".(in_array('step_update', $Rights) ? "href=\'#\'" : "")." odbid=\'', ODB.ODB_ID, '\' class=\'".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODB}, ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
 
 			  			FROM OrdersDataBlank ODB
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
@@ -433,7 +467,7 @@
 						GROUP BY ODB.ODB_ID
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-			  WHERE OD.Del = 0";
+			  WHERE OD.Del = 0 AND IFNULL(CT.CT_ID, 0) IN ({$USR_cities})";
 			  if( $archive ) {
 				  $query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
 			  }
@@ -532,21 +566,28 @@
 					$title = "Готово";
 					break;
 			}
-		echo " class='painting {$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$archive}'></td>";
+		echo " class='".(in_array('order_add', $Rights) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$archive}'></td>";
 		echo "<td><span>{$row["Comment"]}</span></td>";
-		echo "<td><a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+		echo "<td>";
+		if( in_array('order_add', $Rights) ) {
+			echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+		}
 
 		echo "<action>";
 		if( $row["Child"] ) // Если заказ не пустой
 		{
-			if( $row["IsReady"] && $row["IsPainting"] == 3 && $archive != 1)
+			if( $row["IsReady"] && $row["IsPainting"] == 3 && $archive != 1 )
 			{
-				echo "<a href='#' class='' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+				if( in_array('order_ready', $Rights) ) {
+					echo "<a href='#' class='' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+				}
 			}
 		}
 		else
 		{
-			echo "<a href='#' class='' onclick='if(confirm(\"Удалить?\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+			if( in_array('order_add', $Rights) ) {
+				echo "<a href='#' class='' onclick='if(confirm(\"Удалить?\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+			}
 		}
 		echo "</action>";
 

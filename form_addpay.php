@@ -3,6 +3,14 @@
 	if( isset($_POST["Pay"]) )
 	{
 		include "config.php";
+		include "header.php";
+
+		// Проверка прав на доступ к экрану
+		if( !in_array('screen_paylog', $Rights) ) {
+			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+			die('Недостаточно прав для совершения операции');
+		}
+
 		$ManDate = '\''.date( 'Y-m-d', strtotime($_POST["ManDate"]) ).'\'';
 		$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
 		$Pay = $_POST["Pay"] <> "" ? $_POST["Pay"] : "NULL";
@@ -24,7 +32,8 @@
 		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		header( "Location: ".$location."#pl".$plid );
+		//header( "Location: ".$location."#pl".$plid );
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#pl'.$plid.'">');
 		die;
 	}
 ?>

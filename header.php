@@ -3,15 +3,7 @@
 	$query = "SET @@group_concat_max_len = 10000;";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	ini_set("session.gc_maxlifetime",10);
-	session_start();
-	// Проверяем, пусты ли переменные логина и id пользователя
-	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {
-		if( !strpos($_SERVER["REQUEST_URI"], 'login.php') and !strpos($_SERVER["REQUEST_URI"], 'reg.php') and !strpos($_SERVER["REQUEST_URI"], 'save_user.php') and !strpos($_SERVER["REQUEST_URI"], 'mailconfirm.php') and !strpos($_SERVER["REQUEST_URI"], 'activation.php') ) {
-			$location = $_SERVER['REQUEST_URI'];
-			header('Location: login.php?location='.$location);
-		}
-	}
+	include "checkrights.php";
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -121,14 +113,30 @@
 					  ,"Регистрация" => "reg.php");
 	}
 	else {
-		$menu = array ("Материалы" => "materials.php"
-//					  ,"Производство" => "workers.php?worker=0&type=1&isready=0"
-					  ,"Свободные{$ischeckcount}" => "/orderdetail.php?free=1"
-					  ,"Заготовки" => "blankstock.php"
-					  ,"Табель" => "timesheet.php"
-					  ,"Платежи" => "paylog.php"
-//					  ,"Печатные формы" => "toprint.php"
-					  ,"Выход ({$_SESSION['name']})" => "exit.php");
+		if( in_array('screen_materials', $Rights) ) {
+			$menu["Материалы"] = "materials.php";
+		}
+		if( in_array('screen_free', $Rights) ) {
+			$menu["Свободные".$ischeckcount] = "/orderdetail.php?free=1";
+		}
+		if( in_array('screen_blanks', $Rights) ) {
+			$menu["Заготовки"] = "blankstock.php";
+		}
+		if( in_array('screen_timesheet', $Rights) ) {
+			$menu["Табель"] = "timesheet.php";
+		}
+		if( in_array('screen_paylog', $Rights) ) {
+			$menu["Платежи"] = "paylog.php";
+		}
+		$menu["Выход (".$_SESSION['name'].")"] = "exit.php";
+//		$menu = array ("Материалы" => "materials.php"
+////					  ,"Производство" => "workers.php?worker=0&type=1&isready=0"
+//					  ,"Свободные{$ischeckcount}" => "/orderdetail.php?free=1"
+//					  ,"Заготовки" => "blankstock.php"
+//					  ,"Табель" => "timesheet.php"
+//					  ,"Платежи" => "paylog.php"
+////					  ,"Печатные формы" => "toprint.php"
+//					  ,"Выход ({$_SESSION['name']})" => "exit.php");
 	}
 	echo "<ul class='navbar-nav'>";
 	foreach ($menu as $title=>$url) {
