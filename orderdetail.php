@@ -493,7 +493,9 @@
 		if( !($id == "NULL" && $row["inprogress"] != 0) )
 		{
 			$delmessage = "Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?";
-			echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+			?>
+			<a class='button' onclick='if(confirm("<?=addslashes($delmessage)?>", "?id=<?=$id?>&del=<?=$row["ODD_ID"]?>")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>
+			<?
 		}
 		echo "<img hidden='true' src='/img/attention.png' class='attention' title='Требуется проверка данных после переноса изделий в \"Свободные\".'></td></tr>";
 
