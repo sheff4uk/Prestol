@@ -17,8 +17,8 @@
 		// Проверка города
 		$query = "SELECT 1
 					FROM OrdersData OD
-					JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-					WHERE SH.CT_ID IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}";
+					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+					WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		if( !in_array('order_add', $Rights) or !mysqli_num_rows($res) ) {
