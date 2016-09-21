@@ -92,11 +92,23 @@
 		echo "<script>alert('{$_SESSION["alert"]}');</script>";
 		$_SESSION["alert"] = '';
 	}
-	$archive = ($_GET["archive"] == 1) ? 1 : 0;
+	//$archive = ($_GET["archive"] >= 1) ? $_GET["archive"] : 0;
+	$archive = $_GET["archive"];
+	switch ($archive) {
+		case 0:
+			$BG = "#fff";
+			break;
+		case 1:
+			$BG = "#bf8";
+			break;
+		case 2:
+			$BG = "#ffb";
+			break;
+	}
 ?>
 
 </head>
-<body style='background: <?= ( $archive == 1 ) ? "#bf8" : "#fff" ?>'>
+<body style='background: <?=$BG?>'>
 	<!-- NAVBAR -->
 	<nav class="navbar">
 		<div class="navbar-header"  id="main">

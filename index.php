@@ -78,15 +78,22 @@
 
 	<p>
 		<?
-		if( $archive == 1 )
-		{
-			echo "<a href='/' class='button'>К в работе</a>";
-		}
-		else
-		{
-			echo "<a href='?archive=1' class='button'>К готовым</a>";
-		}
+//		if( $archive == 1 )
+//		{
+//			echo "<a href='/' class='button'>К в работе</a>";
+//		}
+//		else
+//		{
+//			echo "<a href='?archive=1' class='button'>К готовым</a>";
+//		}
 		?>
+		<form method="get">
+			<select name="archive" onchange="this.form.submit()">
+				<option value="0" <?=($archive == 0) ? "selected" : ""?>>В работе</option>
+				<option value="1" <?=($archive == 1) ? "selected" : ""?>>Готовые</option>
+				<option value="2" <?=($archive == 2) ? "selected" : ""?>>Все</option>
+			</select>
+		</form>
 	</p>
 
 	<!-- Форма добавления заказа -->
@@ -394,8 +401,9 @@
 					,OD.Code
 					,IFNULL(OD.ClientName, '') ClientName
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
-					,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
+					,DATE_FORMAT(IFNULL(OD.ReadyDate, OD.EndDate), '%d.%m.%Y') EndDate
 					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
+					,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,OD.OrderNumber
@@ -407,7 +415,7 @@
 					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
 					,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 					,BIT_OR(IFNULL(ODD_ODB.PRfilter, 1)) PRfilter
-					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
+					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 
 					,BIT_AND(ODD_ODB.IsReady) IsReady
 			  FROM OrdersData OD
@@ -468,12 +476,23 @@
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  WHERE OD.Del = 0 AND IFNULL(CT.CT_ID, 0) IN ({$USR_cities})";
-			  if( $archive ) {
-				  $query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
+			  switch ($archive) {
+				case 0:
+					$query .= " AND OD.ReadyDate IS NULL";
+					break;
+				case 1:
+					$query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
+					break;
+				case 2:
+					$query .= " AND ((OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}) OR (OD.ReadyDate IS NULL))";
+					break;
 			  }
-			  else {
-				  $query .= " AND OD.ReadyDate IS NULL";
-			  }
+//			  if( $archive ) {
+//				  $query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
+//			  }
+//			  else {
+//				  $query .= " AND OD.ReadyDate IS NULL";
+//			  }
 			  if( $_SESSION["f_CD"] != "" ) {
 				  $query .= " AND OD.Code LIKE '%{$_SESSION["f_CD"]}%'";
 			  }
@@ -484,12 +503,7 @@
 				  $query .= " AND DATE_FORMAT(OD.StartDate, '%d.%m.%Y') LIKE '%{$_SESSION["f_SD"]}%'";
 			  }
 			  if( $_SESSION["f_ED"] != "" ) {
-				  if( $archive ) {
-				  	$query .= " AND DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') LIKE '%{$_SESSION["f_ED"]}%'";
-				  }
-				  else {
-				  	$query .= " AND DATE_FORMAT(OD.EndDate, '%d.%m.%Y') LIKE '%{$_SESSION["f_ED"]}%'";
-				  }
+			  	$query .= " AND DATE_FORMAT(OD.EndDate, '%d.%m.%Y') LIKE '%{$_SESSION["f_ED"]}%'";
 			  }
 			  if( $_SESSION["f_SH"] != "" ) {
 				  $query .= " AND (CONCAT(CT.City, '/', SH.Shop) LIKE '%{$_SESSION["f_SH"]}%'";
@@ -534,15 +548,10 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		echo "<tr id='ord{$row["OD_ID"]}'>";
-		echo "<td><span class='nowrap'>{$row["Code"]}</span></td>";
+		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'>{$row["Code"]}</span></td>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
 		echo "<td><span>{$row["StartDate"]}</span></td>";
-		if( $archive ) {
-			echo "<td><span>{$row["ReadyDate"]}</span></td>";
-		}
-		else {
-			echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		}
+		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
 		echo "<td><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
 		echo "<td><span>{$row["OrderNumber"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
@@ -566,7 +575,7 @@
 					$title = "Готово";
 					break;
 			}
-		echo " class='".(in_array('order_add', $Rights) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$archive}'></td>";
+		echo " class='".(in_array('order_add', $Rights) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}'></td>";
 		echo "<td><span>{$row["Comment"]}</span></td>";
 		echo "<td>";
 		if( in_array('order_add', $Rights) ) {
@@ -576,7 +585,7 @@
 		echo "<action>";
 		if( $row["Child"] ) // Если заказ не пустой
 		{
-			if( $row["IsReady"] && $row["IsPainting"] == 3 && $archive != 1 )
+			if( $row["IsReady"] && $row["IsPainting"] == 3 && $row["Archive"] == 0 )
 			{
 				if( in_array('order_ready', $Rights) ) {
 					echo "<a href='#' class='' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
