@@ -390,17 +390,30 @@
 					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
 					echo "<td></td>";
 				}
-				echo "<td class='comment'><pre>{$row["Comment"]}</pre></td>";
-				echo "<td>";
-				if ($row["Link"] == '') {
-					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' {$row["ManDate"]} class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
-				}
-				if( strpos($row["Link"],"ODS") === 0 ) { // Если запись из этапов производства - редактируем
+				echo "<td class='comment'><pre>";
+				// Если запись из этапов производства - выводим код заказа
+				if( strpos($row["Link"],"ODS") === 0 ) {
 					$odd = substr($row["Link"], 4);
 					$step = strstr($odd, '_');
 					$step = substr($step, 1);
 					$pos = strpos($odd, '_');
 					$odd = substr($odd, 0, $pos);
+					if( $step == '0' ) {
+						$query = "SELECT IFNULL(OD.Code, 'Свободные') Code FROM OrdersDataBlank ODB LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID WHERE ODB.ODB_ID = {$odd}";
+					}
+					else {
+						$query = "SELECT IFNULL(OD.Code, 'Свободные') Code FROM OrdersDataDetail ODD LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID WHERE ODD.ODD_ID = {$odd}";
+					}
+					$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					$Code = mysqli_result($subres,0,'Code');
+					echo "<b>|{$Code}|</b> ";
+				}
+				echo "{$row["Comment"]}</pre></td>";
+				echo "<td>";
+				if ($row["Link"] == '') {
+					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' {$row["ManDate"]} class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
+				}
+				if( strpos($row["Link"],"ODS") === 0 ) { // Если запись из этапов производства - редактируем
 					if( $step == '0' ) {
 						echo "<a href='#' odbid='{$odd}' plid='{$row["PL_ID"]}' class='button edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
 					}
