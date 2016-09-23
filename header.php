@@ -30,7 +30,7 @@
 
 	<script>
 		$(document).ready(function(){
-			$( 'input[type=submit], .button, button' ).button();
+			$( 'input[type=submit], input[type=button], .button, button' ).button();
 
 			// Календарь
 			$( "input.date" ).datepicker({

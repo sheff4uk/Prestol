@@ -44,7 +44,7 @@
 	// Обновление основной информации о заказе
 	if( isset($_POST["Shop"]) )
 	{
-		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
+//		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli,$_POST["ClientName"] );
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
@@ -59,7 +59,7 @@
 		$Comment = trim($Comment);
 		$query = "UPDATE OrdersData
 				  SET CLientName = '{$ClientName}'
-				     ,StartDate = $StartDate
+				     #,StartDate = $StartDate
 				     ,EndDate = $EndDate
 				     ,SH_ID = $Shop
 				     ,OrderNumber = '{$OrderNumber}'
@@ -158,30 +158,31 @@
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$odd_id = mysqli_insert_id( $mysqli );
 
-			// Вычисляем тарифи для разных этапов и записываем их
-			if( $_POST["Model"] ) {
-				$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
-						SELECT {$odd_id}
-							  ,ST.ST_ID
-							  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
-						FROM StepsTariffs ST
-						JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
-						LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
-						LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To";
-			}
-			// Если модель не указана - присваиваем дефолтные этапы
-			else {
-				$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
-						SELECT {$odd_id}
-							  ,ST.ST_ID
-							  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
-						FROM StepsTariffs ST
-						LEFT JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
-						LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
-						LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
-						WHERE ST.Default = 1";
-			}
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+// Создан триггер в БД
+//			// Вычисляем тарифи для разных этапов и записываем их
+//			if( $_POST["Model"] ) {
+//				$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
+//						SELECT {$odd_id}
+//							  ,ST.ST_ID
+//							  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
+//						FROM StepsTariffs ST
+//						JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
+//						LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
+//						LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To";
+//			}
+//			// Если модель не указана - присваиваем дефолтные этапы
+//			else {
+//				$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
+//						SELECT {$odd_id}
+//							  ,ST.ST_ID
+//							  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
+//						FROM StepsTariffs ST
+//						LEFT JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
+//						LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
+//						LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
+//						WHERE ST.Default = 1";
+//			}
+//			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			$_SESSION["odd_id"] = $odd_id; // Cохраняем в сессию id вставленной записи
 			//header( "Location: ".$location."#".$odd_id ); // Перезагружаем экран
@@ -230,10 +231,11 @@
 		$odb_id = mysqli_insert_id( $mysqli );
 
 		// Если "Прочее" - добавляем этап производства
-		if( $Blank == "NULL" ) {
-			$query="INSERT INTO OrdersDataSteps SET ODB_ID = {$odb_id}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		}
+// Создан триггер в БД
+//		if( $Blank == "NULL" ) {
+//			$query="INSERT INTO OrdersDataSteps SET ODB_ID = {$odb_id}";
+//			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//		}
 
 		$_SESSION["odb_id"] = $odb_id; // Cохраняем в сессию id вставленной записи
 		//header( "Location: ".$location."#".$odb_id ); // Перезагружаем экран
@@ -381,7 +383,12 @@
 				</div>
 			</td>
 			<td><textarea name='Comment' rows='6' cols='15'><?=$Comment?></textarea></td>
-			<td><input type='submit' value='Сохранить'></td>
+			<td>
+				<button>Сохранить</button>
+				<br>
+				<br>
+				<a class="button" href="clone_order.php?id=<?=$id?>">Клонировать</a>
+			</td>
 		</tr>
 		</tbody>
 	</table>
@@ -637,7 +644,7 @@
 		odd = <?= json_encode($ODD); ?>;
 		odb = <?= json_encode($ODB); ?>;
 
-//		$("input.from[name='StartDate']").datepicker("disable");
+		$("input.from[name='StartDate']").datepicker("disable");
 		$( "input.to" ).datepicker( "option", "minDate", "<?=$StartDate?>" );
 	});
 </script>
