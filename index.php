@@ -14,6 +14,7 @@
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 			die('Недостаточно прав для совершения операции');
 		}
+		$AddDate = date("Y-m-d");
 		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
 		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli, $_POST["ClientName"] );
@@ -26,8 +27,8 @@
 		$OrderNumber = trim($OrderNumber);
 		$Color = trim($Color);
 		$Comment = trim($Comment);
-		$query = "INSERT INTO OrdersData(CLientName, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment)
-				  VALUES ('{$ClientName}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}')";
+		$query = "INSERT INTO OrdersData(CLientName, AddDate StartDate, EndDate, SH_ID, OrderNumber, Color, Comment)
+				  VALUES ('{$ClientName}', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}')";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
 		// Перенаправление на экран деталей заказа

@@ -44,7 +44,7 @@
 	// Обновление основной информации о заказе
 	if( isset($_POST["Shop"]) )
 	{
-//		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
+		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli,$_POST["ClientName"] );
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
@@ -59,7 +59,7 @@
 		$Comment = trim($Comment);
 		$query = "UPDATE OrdersData
 				  SET CLientName = '{$ClientName}'
-				     #,StartDate = $StartDate
+				     ,StartDate = $StartDate
 				     ,EndDate = $EndDate
 				     ,SH_ID = $Shop
 				     ,OrderNumber = '{$OrderNumber}'
@@ -644,7 +644,8 @@
 		odd = <?= json_encode($ODD); ?>;
 		odb = <?= json_encode($ODB); ?>;
 
-		$("input.from[name='StartDate']").datepicker("disable");
+//		$("input.from[name='StartDate']").datepicker("disable");
+		$( "input.from" ).datepicker( "option", "maxDate", "<?=$EndDate?>" );
 		$( "input.to" ).datepicker( "option", "minDate", "<?=$StartDate?>" );
 	});
 </script>

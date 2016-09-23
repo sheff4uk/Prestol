@@ -2,8 +2,9 @@
 	include "config.php";
 
 	if( isset($_GET["id"]) ) {
-		$query = "INSERT INTO OrdersData(CLientName, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment)
-				  SELECT CLientName, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment
+		$AddDate = date("Y-m-d");
+		$query = "INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment)
+				  SELECT CLientName, '{$AddDate}', StartDate, EndDate, SH_ID, OrderNumber, Color, Comment
 				  FROM OrdersData
 				  WHERE OD_ID = {$_GET["id"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
