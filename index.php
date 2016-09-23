@@ -27,7 +27,7 @@
 		$OrderNumber = trim($OrderNumber);
 		$Color = trim($Color);
 		$Comment = trim($Comment);
-		$query = "INSERT INTO OrdersData(CLientName, AddDate StartDate, EndDate, SH_ID, OrderNumber, Color, Comment)
+		$query = "INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment)
 				  VALUES ('{$ClientName}', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}')";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
