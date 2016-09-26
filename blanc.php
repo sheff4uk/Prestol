@@ -70,11 +70,12 @@ case "torg12":
 		curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($_POST));
 		$out = curl_exec($curl);
 		$filename = 'tovarnaya-nakladnaya.pdf';
-		header('Content-type: application/pdf');
-		header('Content-Disposition: inline; filename="' . $filename . '"');
-		header('Content-Transfer-Encoding: binary');
-		header('Accept-Ranges: bytes');
-		echo $out;
+		header('Content-Type: application/pdf');
+		header('Content-Length: '.strlen( $out ));
+		header('Content-disposition: inline; filename="' . $filename . '"');
+		header('Cache-Control: public, must-revalidate, max-age=0');
+		print $out;
+
 		curl_close($curl);
 	}
 	break;
@@ -94,7 +95,7 @@ case "schet":
 
 	// Обновляем цены товаров
 	foreach ($_POST["tovar_cena"] as $key => $value) {
-		$value = substr($value, 0, -3);
+//		$value = substr($value, 0, -3);
 		if( $_POST["pt"][$key] > 0 ) {
 			$query = "UPDATE OrdersDataDetail SET Price = {$value} WHERE ODD_ID = {$_POST["item"][$key]}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -132,11 +133,12 @@ case "schet":
 		curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($_POST));
 		$out = curl_exec($curl);
 		$filename = 'schet.pdf';
-		header('Content-type: application/pdf');
-		header('Content-Disposition: inline; filename="' . $filename . '"');
-		header('Content-Transfer-Encoding: binary');
-		header('Accept-Ranges: bytes');
-		echo $out;
+		header('Content-Type: application/pdf');
+		header('Content-Length: '.strlen( $out ));
+		header('Content-disposition: inline; filename="' . $filename . '"');
+		header('Cache-Control: public, must-revalidate, max-age=0');
+		print $out;
+
 		curl_close($curl);
 	}
 	break;
