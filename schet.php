@@ -320,17 +320,17 @@ var fn = function(){
 	$("input.tovar_cena", tr).val(tovar_cena);
 
 
-	if (parseFloat(tovar_kol).toFixed(3) != "NaN")$("input.tovar_kol", tr).val(tovar_kol);
-	if (parseFloat(tovar_cena).toFixed(2) != "NaN")$("input.tovar_cena", tr).val(parseFloat(tovar_cena).toFixed(2));
+	if (parseFloat(tovar_kol).toFixed() != "NaN")$("input.tovar_kol", tr).val(tovar_kol);
+	if (parseFloat(tovar_cena).toFixed() != "NaN")$("input.tovar_cena", tr).val(parseFloat(tovar_cena).toFixed());
 
 
-	tovar_sum = parseFloat(tovar_kol*tovar_cena).toFixed(2);
+	tovar_sum = parseFloat(tovar_kol*tovar_cena).toFixed();
 	if (tovar_sum>0)
 	{
 		$("input.tovar_sum", tr).val(tovar_sum);
 	}
 
-	itog = parseFloat(Number(itog) + Number(tovar_sum)).toFixed(2);
+	itog = parseFloat(Number(itog) + Number(tovar_sum)).toFixed();
 	$("#itog1").val(itog);
 	$("#itog").html(itog);
 
@@ -357,7 +357,7 @@ var fn2 = function(){
 	$("input.tovar_sum", tr).val(tovar_sum);
 
 
-	if (parseFloat(tovar_sum).toFixed(2) != "NaN")$("input.tovar_sum", tr).val(parseFloat(tovar_sum).toFixed(2));
+	if (parseFloat(tovar_sum).toFixed() != "NaN")$("input.tovar_sum", tr).val(parseFloat(tovar_sum).toFixed());
 
 	if ((tovar_kol == 0 || tovar_kol < 0) && tovar_sum>0)
 	{
@@ -368,18 +368,18 @@ var fn2 = function(){
 	if (tovar_sum>0)
 	{
 		tovar_cena = tovar_sum/tovar_kol;
-		tovar_cena = parseFloat(tovar_cena).toFixed(2);
+		tovar_cena = parseFloat(tovar_cena).toFixed();
 		$("input.tovar_cena", tr).val(tovar_cena);
 
 	}
-	tovar_sum = parseFloat(tovar_kol*tovar_cena).toFixed(2);
+	tovar_sum = parseFloat(tovar_kol*tovar_cena).toFixed();
 	if (tovar_sum>0)
 	{
 		$("input.tovar_sum", tr).val(tovar_sum);
 	}
 
 	tovar_sum = $("input.tovar_sum", tr).val();
-	itog = parseFloat(Number(itog) + Number(tovar_sum)).toFixed(2);
+	itog = parseFloat(Number(itog) + Number(tovar_sum)).toFixed();
 	$("#itog1").val(itog);
 	$("#itog").html(itog);
 
@@ -392,7 +392,7 @@ var fn3 = function(){
 	var itog = $("#itog1").val();
 
 
-	itog = parseFloat(Number(itog) - Number(tovar_sum)).toFixed(2);
+	itog = parseFloat(Number(itog) - Number(tovar_sum)).toFixed();
 	$("#itog1").val(itog);
 	$("#itog").html(itog);
 
@@ -416,12 +416,12 @@ var fn4 = function(){
 
 		if (nds == 1)
 		{
-			nds_itog = parseFloat(Number(itog)/(Number(nds_stavka)+100)* Number(nds_stavka)).toFixed(2);
+			nds_itog = parseFloat(Number(itog)/(Number(nds_stavka)+100)* Number(nds_stavka)).toFixed();
 		}
 		else
 		{
-			nds_itog = parseFloat(Number(itog)*(Number(nds_stavka)/100)).toFixed(2);
-			itog = parseFloat(Number(itog)+Number(nds_itog)).toFixed(2);
+			nds_itog = parseFloat(Number(itog)*(Number(nds_stavka)/100)).toFixed();
+			itog = parseFloat(Number(itog)+Number(nds_itog)).toFixed();
 		}
 
 		if (nds_itog == 'NaN')
@@ -555,7 +555,7 @@ function addRow(name, ed, amount, price, item, pt)
     td2.innerHTML = '<input type="text" autocomplete="off" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" />';
     td3.innerHTML = '<input type="number" autocomplete="off" min="1" value="'+amount+'" name="tovar_kol[]" id="tovar_kol" class="tovar_kol" />';
     td4.innerHTML = '<input type="text" autocomplete="off"  value="'+price+'" name="tovar_cena[]" id="tovar_cena" class="tovar_cena" /><input type="hidden" name="item[]" value="'+item+'"><input type="hidden" name="pt[]" value="'+pt+'">';
-    td5.innerHTML = '<input type="text" autocomplete="off" name="tovar_sum[]" id="tovar_sum" class="tovar_sum" />';
+    td5.innerHTML = '<input type="text" autocomplete="off" name="tovar_sum1[]" id="tovar_sum1" class="tovar_sum1" />';
     td6.innerHTML = '<i class="fa fa-minus-square fa-2x delete" style="color: red;" onclick="deleteRow(this);"></i>';
 	$("input.tovar_cena").blur();
 }

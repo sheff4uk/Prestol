@@ -78,16 +78,6 @@
 	<? include "forms.php"; ?>
 
 	<p>
-		<?
-//		if( $archive == 1 )
-//		{
-//			echo "<a href='/' class='button'>К в работе</a>";
-//		}
-//		else
-//		{
-//			echo "<a href='?archive=1' class='button'>К готовым</a>";
-//		}
-		?>
 		<form method="get">
 			<select name="archive" onchange="this.form.submit()">
 				<option value="0" <?=($archive == 0) ? "selected" : ""?>>В работе</option>
@@ -176,17 +166,10 @@
 		echo '</div>';
 	}
 
-	// Кнопка печати накладной
-	if( in_array('print_torg12', $Rights) ) {
-		echo '<div id="print_torg12" title="Распечатать накладную" style="display: none;">';
-		echo '<a id="torg12" target="_blank">ТОРГ<br>12</a>';
-		echo '</div>';
-	}
-
-	// Кнопка печати счета
-	if( in_array('print_schet', $Rights) ) {
-		echo '<div id="print_schet" title="Распечатать счёт" style="display: none;">';
-		echo '<a id="schet" target="_blank">СЧЁТ</a>';
+	// Кнопка печати документов
+	if( in_array('print_forms', $Rights) ) {
+		echo '<div id="print_forms" title="Печатные формы" style="display: none;">';
+		echo '<a id="forms" target="_blank"></a>';
 		echo '</div>';
 	}
 
@@ -764,8 +747,7 @@
 			var data = $('#printtable').serialize();
 			$("#toprint").attr('href', '/toprint/main.php?' + data);
 			$("#post-link").val('http://<?=$_SERVER['HTTP_HOST']?>/toprint/main.php?' + data);
-			$("#torg12").attr('href', '/torg12.php?' + data);
-			$("#schet").attr('href', '/schet.php?' + data);
+			$("#print_forms > a").attr('href', '/print_forms.php?' + data);
 			$("#labelsbox").attr('href', '/labels_box.php?' + data);
 			return false;
 		}

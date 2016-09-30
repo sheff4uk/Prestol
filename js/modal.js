@@ -15,8 +15,7 @@ $(document).ready(function() {
 		$('.print_row').button();
 		$('#print_btn > a').css('display', 'block');
 		$('#copy_link').css('display', 'block');
-		$('#print_torg12').css('display', 'block');
-		$('#print_schet').css('display', 'block');
+		$('#print_forms').css('display', 'block');
 		$('#print_title').css('display', 'block');
 		$('#print_products').css('display', 'block');
 		$('#print_labelsbox').css('display', 'block');
@@ -47,8 +46,7 @@ $(document).ready(function() {
 			function() {
 				$('#print_btn > a').css('display', 'none');
 				$('#copy_link').css('display', 'none');
-				$('#print_torg12').css('display', 'none');
-				$('#print_schet').css('display', 'none');
+				$('#print_forms').css('display', 'none');
 				$('#print_title').css('display', 'none');
 				$('#print_products').css('display', 'none');
 				$('#print_labelsbox').css('display', 'none');

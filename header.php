@@ -11,14 +11,14 @@
 	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=5'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=6'>
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
 	<script src="js/jquery-1.11.3.min.js"></script>
 	<script src="js/ui/jquery-ui.js"></script>
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
-	<script src="js/modal.js?v=2"></script>
+	<script src="js/modal.js?v=3"></script>
 	<script src="js/script.js?v=3" type="text/javascript"></script>
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
@@ -125,6 +125,9 @@
 					  ,"Регистрация" => "reg.php");
 	}
 	else {
+		if( in_array('print_forms_view_all', $Rights) or in_array('print_forms_view_autor', $Rights) ) {
+			$menu["Печатные формы"] = "print_forms_list.php";
+		}
 		if( in_array('screen_materials', $Rights) ) {
 			$menu["Материалы"] = "materials.php";
 		}

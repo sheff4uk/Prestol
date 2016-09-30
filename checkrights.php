@@ -22,7 +22,7 @@
 			$Rights[] = $row["RT_ID"];
 		}
 
-		// Получаем список доступных пользователю городов
+		// Получаем список доступных пользователю городов чтобы видеть заказы
 		$USR_cities = '0';
 		if( in_array('order_view_city', $Rights) ) {
 			$query = "SELECT CT_ID FROM Cities WHERE CT_ID = {$USR_City}";
