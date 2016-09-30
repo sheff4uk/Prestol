@@ -42,7 +42,7 @@
 							  ,ODD.ODD_ID ItemID
 							  ,IFNULL(PM.PT_ID, 2) PT_ID
 							  ,ODD.Amount
-							  ,ODD.Price
+							  ,IFNULL(ODD.Price, 'NULL') Price
 							  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, '')) Zakaz
 						FROM OrdersDataDetail ODD
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
