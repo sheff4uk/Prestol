@@ -102,18 +102,25 @@ function livesearch(element) {
 }
 
 // Функция формирования списка форм в зависимости от модели стола
-function FormModelList(model) {
+function FormModelList(model, form) {
 	var forms = "";
 	var arr = ModelForm[model];
+	var informs = 0;
 	if( typeof arr !== "undefined" ) {
 		$.each(arr, function(key, val){
 			forms += "<input type='radio' id='form" + key + "' name='Form' value='" + key + "'>";
 			forms += "<label for='form" + key + "'>" + val + "</label>";
+			if( form == key ) { informs = 1; }
 		});
 	}
 	$('#addtable #forms').html(forms);
 	if( forms != "" ) {
-		$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
+		if( form > 0 && informs ) {
+			$('#addtable input[name="Form"][value="'+form+'"]').prop('checked', true);
+		}
+		else {
+			$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
+		}
 		$('#addtable #forms').buttonset();
 	}
 }
@@ -320,20 +327,22 @@ $(document).ready(function(){
 		$('#addtable .accordion div').html('');
 		$('#addtable .accordion h3 span').html('0');
 		$('#addtable .accordion').hide(); // Прячем акордион
-		FormModelList(0);
+		//FormModelList(0, 0);
 
 		// Заполнение
 		if( id > 0 )
 		{
+			var model = odd[id]['model'];
+			var form = odd[id]['form'];
 			// Если известна модель, то выводим соответствующий список форм
-			if( odd[id]['model'] ) {
-				FormModelList(odd[id]['model']);
-			}
+//			if( odd[id]['model'] ) {
+//				FormModelList(odd[id]['model'], odd[id]['form']);
+//			}
 			$('#addtable input[name="Amount"]').val(odd[id]['amount']);
 			$('#addtable input[name="Price"]').val(odd[id]['price']);
 			$('#addtable select[name="Model"]').val(odd[id]['model']);
-			$('#form'+odd[id]['form']).prop('checked', true);
-			$('#addtable input[name="Form"]').button("refresh");
+			//$('#form'+odd[id]['form']).prop('checked', true);
+			//$('#addtable input[name="Form"]').button("refresh");
 			$('#mechanism'+odd[id]['mechanism']).prop('checked', true);
 			$('#addtable input[name="Mechanism"]').button("refresh");
 			$('#addtable input[name="Length"]').val(odd[id]['length']);
@@ -367,20 +376,37 @@ $(document).ready(function(){
 		}
 		else // Иначе добавляем новый стол
 		{
+			var model = 0;
+			var form = 0;
 			$("#addtable form").attr("action", "orderdetail.php?id="+odid+"&add=1");
 			if( id != 0 ) {
 				$('#addtable .accordion').show('fast'); // Показываем акордион
 			}
 		}
 		
+		FormModelList(model, form);
+
+		$('#addtable input[name="Form"]').change( function() {
+			form = $(this).val();
+			//console.log(form);
+		});
+
 		// Список форм столешниц в зависимости от модели
 		$('#addtable select[name="Model"]').change( function() {
+			//console.log(form);
 			if( $(this).val() == "" ) {
-				FormModelList(0);
+				FormModelList(0, form);
 			}
 			else {
-				FormModelList($(this).val());
+
+				FormModelList($(this).val(), form);
 			}
+
+			$('#addtable input[name="Form"]').change( function() {
+				form = $(this).val();
+				//console.log(form);
+			});
+
 			livesearch(this);
 		});
 		
