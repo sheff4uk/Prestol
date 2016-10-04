@@ -1,8 +1,5 @@
 php_flag register_globals Off
 
-<FilesMatch ".(pdf)$">
-Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate"
-Header set Pragma "no-cache"
-Header set Expires "Wed, 11 Jan 1984 05:00:00 GMT"
-Header set Warning "Testing"
+<FilesMatch "\.(pdf)$">
+	Header unset Cache-Control
 </FilesMatch>
