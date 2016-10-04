@@ -53,7 +53,7 @@
 							  ,ODB.ODB_ID ItemID
 							  ,0 PT_ID
 							  ,ODB.Amount
-							  ,ODB.Price
+							  ,IFNULL(ODB.Price, 'NULL') Price
 							  ,CONCAT(IFNULL(BL.Name, ODB.Other)) Zakaz
 						FROM OrdersDataBlank ODB
 						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
