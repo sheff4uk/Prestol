@@ -62,6 +62,7 @@ if( $_GET["oddid"] )
 	$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
 	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
+	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 	// Удаляем лишние пробелы
 	$Material = trim($Material);
@@ -87,9 +88,11 @@ if( $_GET["oddid"] )
 						SET
 							PT_ID = {$_POST["Type"]},
 							Material = '{$Material}',
+							SH_ID = {$Shipper},
 							Count = 1
 						ON DUPLICATE KEY UPDATE
-							Count = Count + 1";
+							Count = Count + 1,
+							SH_ID = {$Shipper}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$mt_id = mysqli_insert_id( $mysqli );
 		}
@@ -165,6 +168,7 @@ if( $_GET["odbid"] )
 	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 	$Material = trim($Material);
+	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
@@ -188,9 +192,11 @@ if( $_GET["odbid"] )
 						SET
 							PT_ID = 0,
 							Material = '{$Material}',
+							SH_ID = {$Shipper},
 							Count = 1
 						ON DUPLICATE KEY UPDATE
-							Count = Count + 1";
+							Count = Count + 1,
+							SH_ID = {$Shipper}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$mt_id = mysqli_insert_id( $mysqli );
 		}

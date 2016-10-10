@@ -147,7 +147,7 @@ case "livesearch":
 					,PM.Model
 					,CONCAT(PF.Form, ' ', PME.Mechanism) Form
 					,IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), '') Size
-					,MT.Material
+					,CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Material
 					,ODD.IsExist
 					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
 					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
@@ -164,7 +164,8 @@ case "livesearch":
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID";
+			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID";
 	$query .= " WHERE ODD.OD_ID IS NULL";
 	$query .= ( $pt == 1 ) ? " AND PM.PT_ID = {$pt}" : "";
 	$query .= ($_GET["model"] and $_GET["model"] <> "undefined") ? " AND (ODD.PM_ID = {$_GET["model"]} OR ODD.PM_ID IS NULL)" : "";
@@ -302,6 +303,69 @@ case "Xlabel":
 	else {
 		unset($_SESSION["X_".$id]);
 	}
+	break;
+
+// Редактируем название материала
+case "materials":
+	$val = mysqli_real_escape_string( $mysqli,$_GET["val"] );
+	$oldval = mysqli_real_escape_string( $mysqli,$_GET["oldval"] );
+	$val = trim($val);
+	$ptid = $_GET["ptid"];
+	$removed = $_GET["removed"] == 'true' ? 1 : 0;
+
+	if( $val != $oldval ) {
+		$query = "SELECT MT_ID FROM Materials WHERE PT_ID = {$ptid} AND Material = '{$val}'";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		// Если в списке материалов уже есть такое название
+		if( mysqli_num_rows($res) ) {
+			$mtid = mysqli_result($res,0,'MT_ID');
+			$query = "SELECT MT_ID, Count FROM Materials WHERE PT_ID = {$ptid} AND Material = '{$oldval}'";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$oldmtid = mysqli_result($res,0,'MT_ID');
+			$oldcount = mysqli_result($res,0,'Count');
+
+			// Меняем в заказах старый id материала на новый
+			if( $ptid > 0 ) {
+				$query = "UPDATE OrdersDataDetail SET MT_ID = {$mtid} WHERE MT_ID = {$oldmtid}";
+			}
+			else {
+				$query = "UPDATE OrdersDataBlank SET MT_ID = {$mtid} WHERE MT_ID = {$oldmtid}";
+			}
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			// Удаляем старый материал из списка
+			$query = "DELETE FROM Materials WHERE MT_ID = {$oldmtid}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			// Прибавляем старый счетчик к новому
+			$query = "UPDATE Materials SET Count = Count + {$oldcount} WHERE Material = '{$val}' AND PT_ID = {$ptid}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			// Меняем на экране старый id материала на новый
+			echo "$('.mt{$oldmtid}').addClass('mt{$mtid}');";
+			echo "$('.mt{$oldmtid}').attr('mtid', '{$mtid}');";
+			echo "$('.mt{$mtid}').removeClass('.mt{$oldmtid}');";
+		}
+		else {
+			$query = "UPDATE Materials SET Material = '{$val}' WHERE Material = '{$oldval}' AND PT_ID = {$ptid}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+		echo "noty({timeout: 3000, text: 'Название материала изменено на \"{$val}\"', type: 'success'});";
+	}
+	$query = "SELECT removed FROM Materials WHERE Material = '{$val}' AND PT_ID = {$ptid}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$oldremoved = mysqli_result($res,0,'removed');
+	if( $oldremoved != $removed ) {
+		$query = "UPDATE Materials SET removed = {$removed} WHERE Material = '{$val}' AND PT_ID = {$ptid}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( $removed ) {
+			echo "noty({timeout: 3000, text: 'Материал помечен как выведенный.', type: 'success'});";
+		}
+		else {
+			echo "noty({timeout: 3000, text: 'Снята отметка о выведении.', type: 'success'});";
+		}
+	}
+
 	break;
 
 }

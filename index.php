@@ -186,7 +186,7 @@
 		<form method='get' action='filter.php'>
 		<thead>
 		<tr>
-			<th width="45"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
+			<th width="50"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_CN' size='8' value='<?= $_SESSION["f_CN"] ?>' class='clienttags <?=($_SESSION["f_CN"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>' class='<?=($_SESSION["f_SD"] != "") ? "filtered" : ""?>'></th>
 			<th width="5%"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>' class='<?=($_SESSION["f_ED"] != "") ? "filtered" : ""?>'></th>
@@ -264,7 +264,7 @@
 		</div>
 		<thead>
 		<tr>
-			<th width="45"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
+			<th width="50"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
 			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
 			<th width="5%"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>приема</label></th>
 			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br>сдачи</label></th>
@@ -286,7 +286,7 @@
 	<table class="main_table">
 		<thead style="">
 		<tr>
-			<th width="45"></th>
+			<th width="50"></th>
 			<th width="5%"></th>
 			<th width="5%"></th>
 			<th width="5%"></th>
@@ -413,13 +413,13 @@
 
 							   ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'".(in_array('order_add', $Rights) ? "edit_product', IFNULL(PM.PT_ID, 2), '" : "")."\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a></b><br>') Zakaz
 
-							   ,CONCAT(IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'m', ODD.ODD_ID, '\' class=\'',
+							   ,CONCAT(IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'m', ODD.ODD_ID, '\' class=\'', IF(MT.removed=1, 'removed ', ''),
 								CASE ODD.IsExist
 									WHEN 0 THEN 'bg-red'
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
 									WHEN 2 THEN 'bg-green'
 								END,
-							   '\'>', IFNULL(MT.Material, ''), '</span><br>') Material
+							   '\'>', IFNULL(CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')'), ''), '</span><br>') Material
 
 							   ,CONCAT('<a ".(in_array('step_update', $Rights) ? "href=\'#\'" : "")." id=\'', ODD.ODD_ID, '\' class=\'".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODD}, ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
 
@@ -429,6 +429,7 @@
 						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 						GROUP BY ODD.ODD_ID
@@ -441,13 +442,13 @@
 
 							  ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'blank', ODB.ODB_ID, '\'', 'class=\'".(in_array('order_add', $Rights) ? "edit_order_blank" : "")."\' location=\'{$location}\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</a></b><br>') Zakaz
 
-							  ,CONCAT(IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'m', ODB.ODB_ID, '\' class=\'',
+							  ,CONCAT(IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'m', ODB.ODB_ID, '\' class=\'', IF(MT.removed=1, 'removed ', ''),
 								CASE ODB.IsExist
 									WHEN 0 THEN 'bg-red'
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
 									WHEN 2 THEN 'bg-green'
 								END,
-							  '\'>', IFNULL(MT.Material, ''), '</span><br>') Material
+							  '\'>', IFNULL(CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')'), ''), '</span><br>') Material
 
 							  ,CONCAT('<a ".(in_array('step_update', $Rights) ? "href=\'#\'" : "")." odbid=\'', ODB.ODB_ID, '\' class=\'".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODB}, ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
 
@@ -455,6 +456,7 @@
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
 						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						GROUP BY ODB.ODB_ID
 						ORDER BY PT_ID DESC, itemID
@@ -598,7 +600,8 @@
 						,ODD.PieceAmount
 						,ODD.PieceSize
 						,ODD.Comment
-						,MT.Material
+						,IFNULL(MT.Material, '') Material
+						,IFNULL(MT.SH_ID, '') Shipper
 						,ODD.IsExist
                         ,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
                         ,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
@@ -611,7 +614,7 @@
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $sub_row = mysqli_fetch_array($result) )
 		{
-			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "price"=>$sub_row["Price"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "PieceAmount"=>$sub_row["PieceAmount"], "PieceSize"=>$sub_row["PieceSize"], "color"=>$sub_row["Color"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"] );
+			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "price"=>$sub_row["Price"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "PieceAmount"=>$sub_row["PieceAmount"], "PieceSize"=>$sub_row["PieceSize"], "color"=>$sub_row["Color"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "shipper"=>$sub_row["Shipper"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"] );
 		}
 
 		$query = "SELECT ODB.ODB_ID
@@ -620,7 +623,8 @@
 						,ODB.BL_ID
 						,ODB.Other
 						,ODB.Comment
-						,MT.Material
+						,IFNULL(MT.Material, '') Material
+						,IFNULL(MT.SH_ID, '') Shipper
 						,ODB.IsExist
 						,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 						,DATE_FORMAT(ODB.order_date, '%d.%m.%Y') order_date
@@ -633,7 +637,7 @@
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $sub_row = mysqli_fetch_array($result) )
 		{
-			$ODB[$sub_row["ODB_ID"]] = array( "amount"=>$sub_row["Amount"], "price"=>$sub_row["Price"], "blank"=>$sub_row["BL_ID"], "other"=>$sub_row["Other"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"] );
+			$ODB[$sub_row["ODB_ID"]] = array( "amount"=>$sub_row["Amount"], "price"=>$sub_row["Price"], "blank"=>$sub_row["BL_ID"], "other"=>$sub_row["Other"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "shipper"=>$sub_row["Shipper"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"] );
 		}
 	}
 ?>
@@ -657,15 +661,73 @@
 		});
 
 		$( ".textiletags" ).autocomplete({ // Автокомплит тканей
-			source: "autocomplete.php?do=textiletags"
+			source: "autocomplete.php?do=textiletags",
+			minLength: 2,
+			select: function( event, ui ) {
+				$('select[name="Shipper"]').val(ui.item.SH_ID);
+			},
+			create: function() {
+				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					var listItem = $( "<li>" )
+						.append( item.label )
+						.appendTo( ul );
+
+					if (item.removed == 1) {
+						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
+					}
+
+					return listItem;
+				}
+			}
 		});
 
 		$( ".plastictags" ).autocomplete({ // Автокомплит пластиков
-			source: "autocomplete.php?do=plastictags"
+			source: "autocomplete.php?do=plastictags",
+			minLength: 2,
+			select: function( event, ui ) {
+				$('select[name="Shipper"]').val(ui.item.SH_ID);
+			},
+			create: function() {
+				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					var listItem = $( "<li>" )
+						.append( item.label )
+						.appendTo( ul );
+
+					if (item.removed == 1) {
+						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
+					}
+
+					return listItem;
+				}
+			}
 		});
 
 		$( ".textileplastictags" ).autocomplete({ // Автокомплит материалов
-			source: "autocomplete.php?do=textileplastictags"
+			source: "autocomplete.php?do=textileplastictags",
+			minLength: 2,
+			select: function( event, ui ) {
+				$('select[name="Shipper"]').val(ui.item.SH_ID);
+			},
+			create: function() {
+				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					var listItem = $( "<li>" )
+						.append( item.label )
+						.appendTo( ul );
+
+					if (item.removed == 1) {
+						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
+					}
+
+					return listItem;
+				}
+			}
+		});
+
+		// При очистке поля с материалом - очищаем поставщика
+		$( ".textiletags, .plastictags, .textileplastictags" ).on("keyup", function() {
+			if( $(this).val().length < 2 ) {
+				$('select[name="Shipper"]').val('');
+			}
 		});
 
 		$( ".clienttags" ).autocomplete({ // Автокомплит заказчиков

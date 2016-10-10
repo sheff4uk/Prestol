@@ -48,7 +48,17 @@
 		</div>
 		<div>
 			<label>Ткань:</label>
-			<input type='text' class='textiletags' name='Material' size='40'>
+			<input type='text' class='textiletags' name='Material' style='width: 200px;'>
+			<select name="Shipper" style="width: 110px;" title="Поставщик">
+				<option value="">-=Другой=-</option>
+				<?
+				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 1";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($res) ) {
+					echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";
+				}
+				?>
+			</select>
 		</div>
 		<div>
 			<label>Наличие:</label>
@@ -155,7 +165,17 @@
 		</div>
 		<div>
 			<label>Пластик:</label>
-			<input type='text' class="plastictags" name='Material' size='40'>
+			<input type='text' class="plastictags" name='Material' style="width: 200px;">
+			<select name="Shipper" style="width: 110px;" title="Поставщик">
+				<option value="">-=Другой=-</option>
+				<?
+				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 1";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($res) ) {
+					echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";
+				}
+				?>
+			</select>
 		</div>
 		<div>
 			<label>Наличие:</label>
@@ -250,7 +270,28 @@
 			</div>
 			<div>
 				<label>Материал:</label>
-				<input type='text' class="textileplastictags" name='Material' style='width: 300px;'>
+				<input type='text' class="textileplastictags" name='Material' style='width: 200px;'>
+				<select name="Shipper" style="width: 110px;" title="Поставщик">
+					<option value="">-=Другой=-</option>
+					<optgroup label="Ткань">
+						<?
+						$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 1";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) ) {
+							echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";
+						}
+						?>
+					</optgroup>
+					<optgroup label="Пластик">
+						<?
+						$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 2";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) ) {
+							echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";
+						}
+						?>
+					</optgroup>
+				</select>
 			</div>
 			<div>
 				<label>Наличие:</label>

@@ -132,7 +132,7 @@
 			  				   ,ODD.ODD_ID itemID
 			  				   ,IFNULL(PM.PT_ID, 2) PT_ID
 							   ,CONCAT('<b>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
-							   ,IFNULL(CONCAT(MT.Material,
+							   ,IFNULL(CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')',
 							   		IF(PM.PT_ID = 1 AND IFNULL(MT.Material, '') != '',
 										CASE ODD.IsExist
 											WHEN 0 THEN ' <b>(нет)</b>'
@@ -150,13 +150,14 @@
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 						GROUP BY ODD.ODD_ID
 						UNION
 						SELECT ODB.OD_ID
 							  ,ODB.ODB_ID itemID
 							  ,0 PT_ID
 							  ,CONCAT('<b>', ODB.Amount, '</b> ', IFNULL(BL.Name, ODB.Other), IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' <b>(', ODB.Comment, ')</b>'))) Zakaz
-							  ,IFNULL(CONCAT(MT.Material,
+							  ,IFNULL(CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')',
 							  		IF(IFNULL(MT.Material, '') != '',
 										CASE ODB.IsExist
 											WHEN 0 THEN ' <b>(нет)</b>'
@@ -171,6 +172,7 @@
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 						GROUP BY ODB.ODB_ID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  WHERE OD.OD_ID IN ({$id_list})

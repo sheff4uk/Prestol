@@ -34,33 +34,54 @@ case "colortags":
 
 case "textiletags":
 	// Автокомплит тканей
-	$query = "SELECT Material FROM Materials WHERE PT_ID = 1 AND Material LIKE '%{$_GET["term"]}%' ORDER BY Count DESC";
+	$query = "SELECT MT.Material
+					,MT.SH_ID
+					,CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Label
+					,MT.removed
+			  FROM Materials MT
+			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+			  WHERE MT.PT_ID = 1 AND MT.Material LIKE '%{$_GET["term"]}%' ORDER BY MT.Count DESC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$TextileTags[] = $row["Material"];
+		//$TextileTags[] = $row["Material"];
+		$TextileTags[] = array( "label"=>$row["Label"], "value"=>$row["Material"], "SH_ID"=>$row["SH_ID"], "removed"=>$row["removed"] );
 	}
 	echo json_encode($TextileTags);
 		break;
 
 case "plastictags":
 	// Автокомплит пластиков
-	$query = "SELECT Material FROM Materials WHERE PT_ID = 2 AND Material LIKE '%{$_GET["term"]}%' ORDER BY Count DESC";
+	$query = "SELECT MT.Material
+					,MT.SH_ID
+					,CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Label
+					,MT.removed
+			  FROM Materials MT
+			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+			  WHERE MT.PT_ID = 2 AND MT.Material LIKE '%{$_GET["term"]}%' ORDER BY MT.Count DESC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$PlasticTags[] = $row["Material"];
+		//$PlasticTags[] = $row["Material"];
+		$PlasticTags[] = array( "label"=>$row["Label"], "value"=>$row["Material"], "SH_ID"=>$row["SH_ID"], "removed"=>$row["removed"] );
 	}
 	echo json_encode($PlasticTags);
 	break;
 
 case "textileplastictags":
 	// Автокомплит тканей, пластиков и прочего
-	$query = "SELECT Material, SUM(Count) Count FROM Materials WHERE Material LIKE '%{$_GET["term"]}%' GROUP BY Material ORDER BY Count DESC";
+	$query = "SELECT MT.Material
+					,MT.SH_ID
+					,CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Label
+					,MT.removed
+			  FROM Materials MT
+			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+			  WHERE MT.Material LIKE '%{$_GET["term"]}%' GROUP BY MT.Material ORDER BY SUM(MT.Count) DESC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$TextilePlasticTags[] = $row["Material"];
+		//$TextilePlasticTags[] = $row["Material"];
+		$TextilePlasticTags[] = array( "label"=>$row["Label"], "value"=>$row["Material"], "SH_ID"=>$row["SH_ID"], "removed"=>$row["removed"] );
 	}
 	echo json_encode($TextilePlasticTags);
 	break;

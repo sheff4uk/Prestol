@@ -186,11 +186,10 @@ $(document).ready(function(){
 		
 		// Очистка диалога
 		$('#addchair input, #addchair select').prop('disabled', false);
-		$('#addchair input[type="text"]').val('');
+		$('#addchair input[type="text"], #addchair select').val('');
 		$('#addchair textarea').val('');
 		$('#addchair input[name="Amount"]').val('1');
 		$('#addchair input[name="Price"]').val('');
-		$('#addchair select[name="Model"]').val('');
 		$('#1radio0').prop('checked', true);
 		$('#addchair .radiostatus input[type="radio"]').prop('disabled', true);
 		$('#addchair .radiostatus input[type="radio"]').button('refresh');
@@ -218,6 +217,7 @@ $(document).ready(function(){
 			$('#addchair select[name="Model"]').val(odd[id]['model']);
 			$('#addchair textarea[name="Comment"]').val(odd[id]['comment']);
 			$('#addchair input[name="Material"]').val(odd[id]['material']);
+			$('#addchair select[name="Shipper"]').val(odd[id]['shipper']);
 			$('#1radio'+odd[id]['isexist']).prop('checked', true);
 			$('#addchair .radiostatus input[type="radio"]').button('refresh');
 			if( odd[id]['isexist'] == 1 ) {
@@ -297,11 +297,10 @@ $(document).ready(function(){
 
 		// Очистка диалога
 		$('#addtable input, #addtable select').prop('disabled', false);
-		$('#addtable input[type="text"]').val('');
+		$('#addtable input[type="text"], #addtable select').val('');
 		$('#addtable textarea').val('');
 		$('#addtable input[name="Amount"]').val('1');
 		$('#addtable input[name="Price"]').val('');
-		$('#addtable select[name="Model"]').val('');
 		$('#addtable input[name="Length"]').val(''); //было 1300
 		$('#addtable input[name="Width"]').val(''); //было 800
 		$('#2radio2').prop('checked', true);
@@ -351,6 +350,7 @@ $(document).ready(function(){
 			$('#addtable input[name="PieceSize"]').val(odd[id]['PieceSize']);
 			$('#addtable textarea[name="Comment"]').val(odd[id]['comment']);
 			$('#addtable input[name="Material"]').val(odd[id]['material']);
+			$('#addtable select[name="Shipper"]').val(odd[id]['shipper']);
 			$('#2radio'+odd[id]['isexist']).prop('checked', true);
 			$('#addtable .radiostatus input[type="radio"]').button('refresh');
 			if( odd[id]['isexist'] == 1 ) {
@@ -485,6 +485,7 @@ $(document).ready(function(){
 			$('#addblank textarea[name="Comment"]').val(odb[id]['comment']);
 
 			$('#addblank input[name="Material"]').val(odb[id]['material']);
+			$('#addblank select[name="Shipper"]').val(odb[id]['shipper']);
 			$('#0radio'+odb[id]['isexist']).prop('checked', true);
 			$('#addblank .radiostatus input[type="radio"]').button('refresh');
 			if( odb[id]['isexist'] == 1 ) {

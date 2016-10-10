@@ -620,7 +620,7 @@ td.tscell > i {
 	margin: 10px;
 }
 .select2-container--default .select2-results>.select2-results__options {
-    max-height: 400px !important;
+	max-height: 400px !important;
 }
 
 .pl-archive > td {
@@ -635,4 +635,11 @@ td.tscell > i {
 	max-height: 150px;
 	overflow-y: auto;
 	overflow-x: hidden;
+}
+.ui-menu .ui-menu-item {
+	white-space: nowrap;
+}
+.removed {
+	//color: #911;
+	text-decoration: line-through;
 }

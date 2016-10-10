@@ -131,6 +131,7 @@
 			$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
 			$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 			$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
+			$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 			$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 			// Удаляем лишние пробелы
 			$Material = trim($Material);
@@ -143,9 +144,11 @@
 							SET
 								PT_ID = {$_POST["Type"]},
 								Material = '{$Material}',
+								SH_ID = {$Shipper},
 								Count = 1
 							ON DUPLICATE KEY UPDATE
-								Count = Count + 1";
+								Count = Count + 1,
+								SH_ID = {$Shipper}";
 				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				$mt_id = mysqli_insert_id( $mysqli );
 			}
@@ -204,6 +207,7 @@
 		$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 		$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 		$Material = trim($Material);
+		$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 		$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 		$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
@@ -214,9 +218,11 @@
 						SET
 							PT_ID = 0,
 							Material = '{$Material}',
+							SH_ID = {$Shipper},
 							Count = 1
 						ON DUPLICATE KEY UPDATE
-							Count = Count + 1";
+							Count = Count + 1,
+							SH_ID = {$Shipper}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$mt_id = mysqli_insert_id( $mysqli );
 		}
@@ -419,6 +425,7 @@
 			<th>Механизм</th>
 			<th>Этапы</th>
 			<th>Материал</th>
+			<th>Поставщик</th>
 			<th>Примечание</th>
 			<th>Цена</th>
 			<th>Действие</th>
@@ -440,6 +447,9 @@
 					,ODD.PF_ID
 					,ODD.PME_ID
 					,IFNULL(MT.Material, '') Material
+					,IF(MT.removed=1, 'removed ', '') removed
+					,IF(ODD.MT_ID IS NULL, '', IFNULL(SH.Shipper, '-=Другой=-')) Shipper
+					,IFNULL(MT.SH_ID, '') SH_ID
 					,ODD.IsExist
 					,ODD.Amount
 					,ODD.Price
@@ -458,7 +468,8 @@
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID";
+			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID";
 	if( $id != "NULL" )
 	{
 		$query .= " WHERE ODD.OD_ID = {$id}";
@@ -482,16 +493,17 @@
 		echo "<td>";
 		switch ($row["IsExist"]) {
 			case 0:
-				echo "<span class='bg-red'>";
+				echo "<span class='{$row["removed"]}bg-red'>";
 				break;
 			case 1:
-				echo "{$row["clock"]}<span class='bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
+				echo "{$row["clock"]}<span class='{$row["removed"]}bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
 				break;
 			case 2:
-				echo "<span class='bg-green'>";
+				echo "<span class='{$row["removed"]}bg-green'>";
 				break;
 		}
 		echo "{$row["Material"]}</span></td>";
+		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td class='txtright'>{$format_price}</td>";
 		echo "<td><a href='#' id='{$row["ODD_ID"]}' free='{$free}' class='button edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></a>";
@@ -506,7 +518,7 @@
 		}
 		echo "<img hidden='true' src='/img/attention.png' class='attention' title='Требуется проверка данных после переноса изделий в \"Свободные\".'></td></tr>";
 
-		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
+		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["SH_ID"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
 	}
 ?>
 		</tbody>
@@ -523,6 +535,9 @@
 					,ODB.Other
 					,ODB.Comment
 					,IFNULL(MT.Material, '') Material
+					,IF(MT.removed=1, 'removed ', '') removed
+					,IF(ODB.MT_ID IS NULL, '', IFNULL(SH.Shipper, '-=Другой=-')) Shipper
+					,IFNULL(MT.SH_ID, '') SH_ID
 					,ODB.IsExist
 					,DATE_FORMAT(ODB.order_date, '%d.%m.%Y') order_date
 					,DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y') arrival_date
@@ -534,7 +549,8 @@
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
 			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-			  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID";
+			  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID";
 	if( $id != "NULL" )
 	{
 		$query .= " WHERE ODB.OD_ID = {$id}";
@@ -556,6 +572,7 @@
 				<th>Заготовка/прочее</th>
 				<th>Этапы</th>
 				<th>Материал</th>
+				<th>Поставщик</th>
 				<th>Примечание</th>
 				<th>Цена</th>
 				<th>Действие</th>
@@ -575,16 +592,17 @@
 		echo "<td>";
 		switch ($row["IsExist"]) {
 			case 0:
-				echo "<span class='bg-red'>";
+				echo "<span class='{$row["removed"]}bg-red'>";
 				break;
 			case 1:
-				echo "{$row["clock"]}<span class='bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
+				echo "{$row["clock"]}<span class='{$row["removed"]}bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
 				break;
 			case 2:
-				echo "<span class='bg-green'>";
+				echo "<span class='{$row["removed"]}bg-green'>";
 				break;
 		}
 		echo "{$row["Material"]}</span></td>";
+		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td class='txtright'>{$format_price}</td>";
 		echo "<td><a href='#' id='{$row["ODB_ID"]}' class='button edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a>";
@@ -593,7 +611,7 @@
 			echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 		}
 
-		$ODB[$row["ODB_ID"]] = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "comment"=>$row["Comment"], "material"=>$row["Material"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
+		$ODB[$row["ODB_ID"]] = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["SH_ID"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
 	}
 ?>
 		</tbody>
@@ -622,15 +640,73 @@
 		});
 
 		$( ".textiletags" ).autocomplete({ // Автокомплит тканей
-			source: "autocomplete.php?do=textiletags"
+			source: "autocomplete.php?do=textiletags",
+			minLength: 2,
+			select: function( event, ui ) {
+				$('select[name="Shipper"]').val(ui.item.SH_ID);
+			},
+			create: function() {
+				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					var listItem = $( "<li>" )
+						.append( item.label )
+						.appendTo( ul );
+
+					if (item.removed == 1) {
+						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
+					}
+
+					return listItem;
+				}
+			}
 		});
 
 		$( ".plastictags" ).autocomplete({ // Автокомплит пластиков
-			source: "autocomplete.php?do=plastictags"
+			source: "autocomplete.php?do=plastictags",
+			minLength: 2,
+			select: function( event, ui ) {
+				$('select[name="Shipper"]').val(ui.item.SH_ID);
+			},
+			create: function() {
+				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					var listItem = $( "<li>" )
+						.append( item.label )
+						.appendTo( ul );
+
+					if (item.removed == 1) {
+						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
+					}
+
+					return listItem;
+				}
+			}
 		});
 
 		$( ".textileplastictags" ).autocomplete({ // Автокомплит материалов
-			source: "autocomplete.php?do=textileplastictags"
+			source: "autocomplete.php?do=textileplastictags",
+			minLength: 2,
+			select: function( event, ui ) {
+				$('select[name="Shipper"]').val(ui.item.SH_ID);
+			},
+			create: function() {
+				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					var listItem = $( "<li>" )
+						.append( item.label )
+						.appendTo( ul );
+
+					if (item.removed == 1) {
+						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
+					}
+
+					return listItem;
+				}
+			}
+		});
+
+		// При очистке поля с материалом - очищаем поставщика
+		$( ".textiletags, .plastictags, .textileplastictags" ).on("keyup", function() {
+			if( $(this).val().length < 2 ) {
+				$('select[name="Shipper"]').val('');
+			}
 		});
 
 		$( ".clienttags" ).autocomplete({ // Автокомплит заказчиков
