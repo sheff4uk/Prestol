@@ -169,7 +169,7 @@
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
 				<option value="">-=Другой=-</option>
 				<?
-				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 1";
+				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 2";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
 					echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";
