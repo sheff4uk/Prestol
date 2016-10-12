@@ -103,6 +103,9 @@ if( $_GET["oddid"] )
 	else {
 		if( $Material != '' ) {
 			$mt_id = mysqli_result($res,0,'MT_ID');
+			// Обновляем поставщика у материала
+			$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE Material = '{$OldMaterial}' AND PT_ID = {$_POST["Type"]}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 		else {
 			$mt_id = "NULL";
@@ -207,6 +210,9 @@ if( $_GET["odbid"] )
 	else {
 		if( $Material != '' ) {
 			$mt_id = mysqli_result($res,0,'MT_ID');
+			// Обновляем поставщика у материала
+			$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE Material = '{$OldMaterial}' AND PT_ID = 0";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 		else {
 			$mt_id = "NULL";

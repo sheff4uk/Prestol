@@ -132,7 +132,7 @@
 			  				   ,ODD.ODD_ID itemID
 			  				   ,IFNULL(PM.PT_ID, 2) PT_ID
 							   ,CONCAT('<b>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
-							   ,IFNULL(CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')',
+							   ,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
 							   		IF(PM.PT_ID = 1 AND IFNULL(MT.Material, '') != '',
 										CASE ODD.IsExist
 											WHEN 0 THEN ' <b>(нет)</b>'
@@ -157,7 +157,7 @@
 							  ,ODB.ODB_ID itemID
 							  ,0 PT_ID
 							  ,CONCAT('<b>', ODB.Amount, '</b> ', IFNULL(BL.Name, ODB.Other), IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' <b>(', ODB.Comment, ')</b>'))) Zakaz
-							  ,IFNULL(CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')',
+							  ,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
 							  		IF(IFNULL(MT.Material, '') != '',
 										CASE ODB.IsExist
 											WHEN 0 THEN ' <b>(нет)</b>'
