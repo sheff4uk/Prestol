@@ -375,7 +375,9 @@ case "shipment":
 						,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 						,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 						,IF(OD.SHP_ID IS NULL, '', 'checked') checked
+						,Shop
 				  FROM OrdersData OD
+				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
 				  JOIN (
 					  SELECT ODD.OD_ID
 							,IFNULL(PM.PT_ID, 2) PT_ID
@@ -407,7 +409,6 @@ case "shipment":
 						GROUP BY ODB.ODB_ID
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
 				  WHERE OD.Del = 0";
 		if( $_GET["shpid"] ) {
 			$query .= " AND ((OD.ReadyDate IS NULL AND OD.SHP_ID IS NULL) OR OD.SHP_ID = {$_GET["shpid"]})";
@@ -419,11 +420,12 @@ case "shipment":
 
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 		//$html = "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
-		$html .= "<table class='main_table'><thead><tr><th width='70'>Код</th><th width='50%'>Заказ</th><th width='130'>Этапы</th></tr></thead><tbody>";
+		$html .= "<table class='main_table'><thead><tr><th width='70'>Код</th><th width='15%'>Салон</th><th width='40%'>Заказ</th><th width='130'>Этапы</th></tr></thead><tbody>";
 		while( $row = mysqli_fetch_array($res) ) {
 			$html .= "<tr>";
 			$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox' value='{$row["OD_ID"]}'>";
 			$html .= "<label for='ord_sh{$row["OD_ID"]}'>{$row["Code"]}</label></td>";
+			$html .= "<td>{$row["Shop"]}</td>";
 			$html .= "<td>{$row["Zakaz"]}</td>";
 			$html .= "<td>{$row["Steps"]}</td>";
 			$html .= "</tr>";
