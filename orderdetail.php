@@ -300,13 +300,11 @@
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
-?>
 
-	<? include "forms.php"; ?>
+	include "forms.php";
 
-	<p><a href='/#ord<?= $_GET["id"] ?>' class='button'><< На главную</a></p>
+	echo "<p><a href='{$_SESSION["location"]}#ord{$_GET["id"]}' class='button'><< Вернуться</a></p>";
 
-<?
 	if( $id != "NULL" )
 	{
 ?>

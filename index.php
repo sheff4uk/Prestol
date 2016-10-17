@@ -6,6 +6,7 @@
 	$datediff = 60; // Максимальный период отображения данных
 	
 	$location = $_SERVER['REQUEST_URI'];
+	$_SESSION["location"] = $location;
 	
 	// Добавление в базу нового заказа
 	if( isset($_POST["StartDate"]) )
@@ -65,11 +66,54 @@
 		}
 		$id = (int)$_GET["ready"];
 		$date = date("Y-m-d");
-		$query = "UPDATE OrdersData SET ReadyDate = '{$date}' WHERE OD_ID={$id}";
+		$query = "UPDATE OrdersData SET ReadyDate = '{$date}', IsPainting = 3 WHERE OD_ID={$id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		//header( "Location: /" ); // Перезагружаем экран
 		exit ('<meta http-equiv="refresh" content="0; url=/">');
+		die;
+	}
+
+	// Добавление отгрузки
+	if( $_POST["CT_ID"] ) {
+		//$shipping_date = date( 'Y-m-d', strtotime($_POST["shipping_date"]) );
+		$shp_title = mysqli_real_escape_string( $mysqli, $_POST["shp_title"] );
+		if( isset($_GET["shpid"]) ) {
+			$query = "UPDATE Shipment SET title='{$shp_title}' WHERE SHP_ID = {$_GET["shpid"]}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$query = "UPDATE OrdersData SET SHP_ID = NULL WHERE SHP_ID = {$_GET["shpid"]}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$SHP_ID = $_GET["shpid"];
+		}
+		else {
+			$query = "INSERT INTO Shipment SET title='{$shp_title}', CT_ID={$_POST["CT_ID"]}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$SHP_ID = mysqli_insert_id( $mysqli );
+		}
+
+		foreach ($_POST["ord_sh"] as $key => $value) {
+			$query = "UPDATE OrdersData SET SHP_ID = {$SHP_ID} WHERE OD_ID = {$value}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+
+		// Перенаправление на экран этой отгрузки
+		exit ('<meta http-equiv="refresh" content="0; url=/index.php?shpid='.$SHP_ID.'">');
+		die;
+	}
+
+	// Сохранение даты отгрузки
+	if( isset($_POST["shipping_date"]) ) {
+		$shipping_date = $_POST[shipping_date] ? '\''.date( "Y-m-d", strtotime($_POST["shipping_date"]) ).'\'' : "NULL";
+		// Записываем дату отгрузки в Shipping
+		$query = "UPDATE Shipment SET shipping_date = {$shipping_date} WHERE SHP_ID = {$_GET["shpid"]}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		// Помечаем заказы как отгруженные
+		$query = "UPDATE OrdersData SET ReadyDate = {$shipping_date}, IsPainting = 3 WHERE SHP_ID = {$_GET["shpid"]}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		// Перенаправление на экран этой отгрузки
+		exit ('<meta http-equiv="refresh" content="0; url=/index.php?shpid='.$_GET["shpid"].'">');
 		die;
 	}
 ?>
@@ -77,15 +121,99 @@
 	<div id="overlay"></div>
 	<? include "forms.php"; ?>
 
-	<p>
-		<form method="get">
-			<select name="archive" onchange="this.form.submit()">
-				<option value="0" <?=($archive == 0) ? "selected" : ""?>>В работе</option>
-				<option value="1" <?=($archive == 1) ? "selected" : ""?>>Готовые</option>
-				<option value="2" <?=($archive == 2) ? "selected" : ""?>>Все</option>
-			</select>
-		</form>
-	</p>
+	<?
+	if( isset($_GET["shpid"]) ) {
+		$query = "SELECT SHP.title, CT.CT_ID, CT.City, CT.Color, DATE_FORMAT(SHP.shipping_date, '%d.%m.%Y') shipping_date
+					FROM Shipment SHP
+					JOIN Cities CT ON CT.CT_ID = SHP.CT_ID
+					WHERE SHP_ID = {$_GET["shpid"]}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( mysqli_num_rows($res) > 0 ) {
+			$shipping_date = mysqli_result($res,0,'shipping_date');
+			$CT_ID = mysqli_result($res,0,'CT_ID');
+			$shp_title = mysqli_result($res,0,'title');
+			$City = mysqli_result($res,0,'City');
+			$Color = mysqli_result($res,0,'Color');
+
+			// Проверка прав на город
+			if( in_array('shipment_view_city', $Rights) and $CT_ID != $USR_City ) {
+				die('Недостаточно прав для совершения операции');
+			}
+
+			echo "<h3>Отгрузка на <span style='background: {$Color};'>{$City}</span>".($shp_title != '' ? ' ('.$shp_title.')' : '')."</h3>";
+
+			if( in_array('add_shipment', $Rights) ) {
+				echo "<div id='wr_shipping_date'><form method='post'><label>Отгрузка состоялась: <input type='text' name='shipping_date' value='{$shipping_date}' class='date'></label><button style='margin-left: 10px;'>Сoхранить</button>";
+				echo "<font style='display: none;' color='red'></font></form></div>";
+			}
+			else {
+				echo "Дата отгрузки: {$shipping_date}<br>";
+			}
+			echo "<br>";
+		}
+		else {
+			die("<h1>Отгрузка не найдена!</h1>");
+		}
+	}
+	else {
+	?>
+		<p>
+			<form method="get">
+				<select name="archive" onchange="this.form.submit()">
+					<option value="0" <?=($archive == 0) ? "selected" : ""?>>В работе</option>
+					<option value="1" <?=($archive == 1) ? "selected" : ""?>>Готовые</option>
+					<option value="2" <?=($archive == 2) ? "selected" : ""?>>Все</option>
+				</select>
+			</form>
+		</p>
+	<?
+	}
+
+	if( in_array('shipment_view', $Rights) or in_array('shipment_view_city', $Rights) ) {
+	?>
+	<div id="shipment_list">
+		<a class="button" href="#">Отгрузки</a>
+		<div>
+			<table class="main_table">
+				<thead>
+					<tr>
+						<th width="20%">Город</th>
+						<th width="40%">Комментарий</th>
+						<th width="20%">Дата отгрузки</th>
+						<th width="20%">Дата прибытия</th>
+						<th width="30"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?
+					$query = "SELECT SHP.SHP_ID
+					,				CT.City
+									,CT.Color
+									,SHP.title
+									,DATE_FORMAT(SHP.shipping_date, '%d.%m.%Y') shipping_date_format
+									,DATE_FORMAT(SHP.arrival_date, '%d.%m.%Y') arrival_date_format
+								FROM Shipment SHP
+								JOIN Cities CT ON CT.CT_ID = SHP.CT_ID".(in_array('shipment_view_city', $Rights) ? " AND CT.CT_ID = {$USR_City}" : "")."
+								WHERE SHP.shipping_date IS NULL OR DATEDIFF(NOW(), SHP.shipping_date) <= {$datediff}
+								ORDER BY SHP.SHP_ID DESC";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) ) {
+						echo "<tr>";
+						echo "<td><span style='background: {$row["Color"]}'>{$row["City"]}</span></td>";
+						echo "<td>{$row["title"]}</td>";
+						echo "<td><span>{$row["shipping_date_format"]}</span></td>";
+						echo "<td><span>{$row["arrival_date_format"]}</span></td>";
+						echo "<td><a href='/?shpid={$row["SHP_ID"]}'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a></td>";
+						echo "</tr>";
+					}
+					?>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<?
+	}
+	?>
 
 	<!-- Форма добавления заказа -->
 	<div id='order_form' class='addproduct' title='Новый заказ' style='display:none;'>
@@ -147,7 +275,7 @@
 
 <?
 	// Кнопка добавления заказа
-	if( in_array('order_add', $Rights) ) {
+	if( in_array('order_add', $Rights) and !isset($_GET["shpid"]) ) {
 		echo "<div id='add_btn' title='Добавить новый заказ'></div>";
 	}
 
@@ -156,6 +284,11 @@
 		echo '<div id="print_btn" href="#print_tbl" class="open_modal" title="Распечатать таблицу">';
 		echo '<a id="toprint"></a>';
 		echo '</div>';
+	}
+
+	// Кнопка отгрузки
+	if( in_array('add_shipment', $Rights) and $shipping_date == '' ) {
+		echo '<div id="add_shipment" title="Сформировать список на отгрузку"></div>';
 	}
 
 	// Копирование ссылки на таблицу в буфер
@@ -182,6 +315,10 @@
 ?>
 
 	<!-- ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
+	<?
+	// Если зашли в отгрузку - не показываем фильтр
+	if( !isset($_GET["shpid"]) ) {
+	?>
 	<table class="main_table">
 		<form method='get' action='filter.php'>
 		<thead>
@@ -194,7 +331,21 @@
 			<th width="5%"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>' class="<?=($_SESSION["f_ON"] != "") ? "filtered" : ""?>"></th>
 			<th width="25%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class="<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>"></th>
 			<th width="15%"><input type='text' name='f_M' size='8' class='textileplastictags <?=($_SESSION["f_M"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_M"] ?>'></th>
-			<th width="15%"><input type='text' name='f_CR' size='8' class='colortags <?=($_SESSION["f_CR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_CR"] ?>'></th>
+			<th width="15%" style="font-size: 0;">
+				<style>
+					.IsPainting {
+						width: 100%;
+						font-family: FontAwesome;
+					}
+				</style>
+				<input type='text' name='f_CR' style='width: calc(100% - 40px);' class='colortags <?=($_SESSION["f_CR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_CR"] ?>'>
+				<select name="f_IP" style='width: 40px;' class="IsPainting <?=($_SESSION["f_IP"] != "") ? "filtered" : ""?>" onchange="this.form.submit()">
+					<option></option>
+					<option value="1" <?= ($_SESSION["f_IP"] == 1) ? 'selected' : '' ?> class="notready">&#xf006 - Не в работе</option>
+					<option value="2" <?= ($_SESSION["f_IP"] == 2) ? 'selected' : '' ?> class="inwork">&#xf123 - В работе</option>
+					<option value="3" <?= ($_SESSION["f_IP"] == 3) ? 'selected' : '' ?> class="ready">&#xf005 - Готово</option>
+				</select>
+			</th>
 			<th width="100" style="font-size: 0;">
 				<select name="f_PR" style="width: 70%;" onchange="this.form.submit()" class="<?=($_SESSION["f_PR"] != "") ? "filtered" : ""?>">
 					<option></option>
@@ -230,27 +381,17 @@
 					<option value="1" <?= ($_SESSION["f_X"] == 1) ? 'selected' : '' ?>>X</option>
 				</select>
 			</th>
-			<th width="45">
-				<style>
-					.IsPainting {
-						width: 100%;
-						font-family: FontAwesome;
-					}
-				</style>
-				<select name="f_IP" class="IsPainting <?=($_SESSION["f_IP"] != "") ? "filtered" : ""?>" onchange="this.form.submit()">
-					<option></option>
-					<option value="1" <?= ($_SESSION["f_IP"] == 1) ? 'selected' : '' ?> class="notready">&#xf006 - Не в работе</option>
-					<option value="2" <?= ($_SESSION["f_IP"] == 2) ? 'selected' : '' ?> class="inwork">&#xf123 - В работе</option>
-					<option value="3" <?= ($_SESSION["f_IP"] == 3) ? 'selected' : '' ?> class="ready">&#xf005 - Готово</option>
-				</select>
-			</th>
 			<th width="15%"><input type='text' name='f_N' value='<?= $_SESSION["f_N"] ?>' class="<?=($_SESSION["f_N"] != "") ? "filtered" : ""?>"></th>
 			<th width="80"><button title="Фильтр"><i class="fa fa-filter fa-lg"></i></button><a href="filter.php?location=<?=$location?>" class="button" title="Сброс"><i class="fa fa-times fa-lg"></i></a><input type='hidden' name='location' value='<?=$location?>'></th>
 		</tr>
 		</thead>
 		</form>
 	</table>
+	<?
+	}
+	?>
 	<!-- //ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
+
 <div id="print_tbl">
 	<!-- Главная таблица -->
 	<form id='printtable'>
@@ -275,8 +416,7 @@
 			<th width="15%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
 			<th width="100"><input type="checkbox" disabled value="10" name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
 			<th width="40"><input type="checkbox" disabled value="11" name="X" class="print_col" id="X"><label for="X">X</label></th>
-			<th width="45"><input type="checkbox" disabled value="12" name="IP" class="print_col" id="IP"><label for="IP">Лакировка</label></th>
-			<th width="15%"><input type="checkbox" disabled value="13" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
+			<th width="15%"><input type="checkbox" disabled value="12" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
 			<th width="80">Действие</th>
 		</tr>
 		</thead>
@@ -297,14 +437,13 @@
 			<th width="15%"></th>
 			<th width="100"></th>
 			<th width="40"></th>
-			<th width="45"></th>
 			<th width="15%"></th>
 			<th width="80"></th>
 		</tr>
 		</thead>
 		<tbody>
 <?
-	if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" ) {
+	if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" and !isset($_GET["shpid"]) ) {
 		if( $_SESSION["f_PR"] === "0" ) {
 			$PRfilterODD = "BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
 			$PRfilterODB = "BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
@@ -336,7 +475,7 @@
 			$SelectStepODB = "IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
 		}
 	}
-	elseif( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "" ) {
+	elseif( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "" and !isset($_GET["shpid"]) ) {
 		if( $_SESSION["f_PR"] === "0" ) {
 			$PRfilterODD = "BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
 			$PRfilterODB = "BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
@@ -368,7 +507,7 @@
 			$SelectStepODB = "IF(ODS.WD_ID = {$_SESSION["f_PR"]}, ' ss', '')";
 		}
 	}
-	elseif( $_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "" ) {
+	elseif( $_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "" and !isset($_GET["shpid"]) ) {
 		$PRfilterODD = "BIT_OR(IF(ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
 		$PRfilterODB = "BIT_OR(IF(ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
 		$SelectStepODD = "IF(ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
@@ -380,6 +519,9 @@
 		$SelectStepODD = "''";
 		$SelectStepODB = "''";
 	}
+
+	$is_orders_ready = 1; // Собираем готовые заказы чтобы можно ставить дату отгрузки (когда все готовы должна получиться 1)
+	$orders_count = 0; // Счетчик готовых заказов
 
 	$query = "SELECT OD.OD_ID
 					,OD.Code
@@ -400,8 +542,8 @@
 					,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 					,BIT_OR(IFNULL(ODD_ODB.PRfilter, 1)) PRfilter
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
-
 					,BIT_AND(ODD_ODB.IsReady) IsReady
+					,IFNULL(OD.SHP_ID, 0) SHP_ID
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -462,6 +604,8 @@
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  WHERE OD.Del = 0 AND IFNULL(CT.CT_ID, 0) IN ({$USR_cities})";
+
+			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
 			  switch ($archive) {
 				case 0:
 					$query .= " AND OD.ReadyDate IS NULL";
@@ -473,12 +617,6 @@
 					$query .= " AND ((OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}) OR (OD.ReadyDate IS NULL))";
 					break;
 			  }
-//			  if( $archive ) {
-//				  $query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
-//			  }
-//			  else {
-//				  $query .= " AND OD.ReadyDate IS NULL";
-//			  }
 			  if( $_SESSION["f_CD"] != "" ) {
 				  $query .= " AND OD.Code LIKE '%{$_SESSION["f_CD"]}%'";
 			  }
@@ -510,7 +648,14 @@
 			  if( $_SESSION["f_CR"] != "" ) {
 				  $query .= " AND OD.Color LIKE '%{$_SESSION["f_CR"]}%'";
 			  }
-			  $query .= " GROUP BY OD.OD_ID HAVING PRfilter";
+			}
+			else {  // Если в отгрузке - показываем список этой отгрузки
+				$query .= " AND OD.SHP_ID = {$_GET["shpid"]}";
+			}
+
+			$query .= " GROUP BY OD.OD_ID HAVING PRfilter";
+
+			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
 			  if( $_SESSION["f_Z"] != "" ) {
 				  $query .= " AND Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
 			  }
@@ -528,7 +673,9 @@
 				  }
 				  $query .= " AND OD.OD_ID IN ({$X_ord})";
 			  }
-              $query .= " ORDER BY OD.OD_ID";
+			}
+
+			$query .= " ORDER BY OD.OD_ID";
 
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
@@ -542,10 +689,6 @@
 		echo "<td><span>{$row["OrderNumber"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 		echo "<td><span class='nowrap material'>{$row["Material"]}</span></td>";
-		echo "<td><span>{$row["Color"]}</span></td>";
-		echo "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
-		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
-		echo "<td class='X'><input type='checkbox' {$checkedX} value='1'></td>";
 		echo "<td val='{$row["IsPainting"]}'";
 			switch ($row["IsPainting"]) {
 				case 1:
@@ -561,8 +704,11 @@
 					$title = "Готово";
 					break;
 			}
-		echo " class='".(in_array('order_add', $Rights) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}'></td>";
-		echo "<td><span>{$row["Comment"]}</span></td>";
+		echo " class='".(in_array('order_add', $Rights) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}'>{$row["Color"]}</td>";
+		echo "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
+		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
+		echo "<td class='X'><input type='checkbox' {$checkedX} value='1'></td>";
+		echo "<td>{$row["Comment"]}</td>";
 		echo "<td>";
 		if( in_array('order_add', $Rights) ) {
 			echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
@@ -571,12 +717,19 @@
 		echo "<action>";
 		if( $row["Child"] ) // Если заказ не пустой
 		{
-			if( $row["IsReady"] && $row["IsPainting"] == 3 && $row["Archive"] == 0 )
+			if( $row["SHP_ID"] == 0 )
 			{
-				if( in_array('order_ready', $Rights) ) {
+				if( in_array('order_ready', $Rights) and !isset($_GET["shpid"]) and $row["Archive"] == 0 and $row["IsReady"] ) {
 					echo "<a href='#' class='' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 				}
 			}
+			else {
+				echo "<a href='/?shpid={$row["SHP_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a>";
+			}
+			if( !$row["IsReady"] ) {
+				$is_orders_ready = 0;
+			}
+			$orders_count++;
 		}
 		else
 		{
@@ -649,8 +802,58 @@
 </body>
 </html>
 
+<!-- Форма добавления наименования отгрузки -->
+<div id='add_shipment_form' title='Параметры отгрузки' style='display:none'>
+	<form method='post'>
+		<fieldset style="text-align: center;">
+			<div>
+				<label>Город:</label>
+				<select name="CT_ID" required>
+					<?=$_GET["shpid"] ? '' : '<option value="">-=Выберите город=-</option>'?>
+					<?
+					$query = "SELECT CT_ID, City, Color
+								FROM Cities".(isset($_GET["shpid"]) ? ' WHERE CT_ID = '.$CT_ID : '')."
+								ORDER BY Cities.City";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) )
+					{
+						echo "<option value='{$row["CT_ID"]}' style='background: {$row["Color"]};'>{$row["City"]}</option>";
+					}
+					?>
+				</select>
+			</div>
+			<br>
+			<div class="accordion">
+				<h3>Список заказов на отгрузку</h3>
+				<div id="orders_to_shipment" style='text-align: left;'></div>
+			</div>
+			<br>
+			<div>
+				<label>Комментарий к отгрузке:</label>
+				<input type='text' style='width: 350px;' name='shp_title' autocomplete="off">
+			</div>
+			<div>
+				<hr>
+				<input type='submit' value='Сохранить' style='float: right;'>
+			</div>
+		</fieldset>
+	</form>
+</div>
+
 <script>
 	$(document).ready(function(){
+
+		if(!<?=$is_orders_ready?> || !<?=$orders_count?>) {
+			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
+			$('#wr_shipping_date button').hide('fast');
+			$('#wr_shipping_date font').show('fast');
+			if( !<?=$orders_count?> ) {
+				$('#wr_shipping_date font').html('&nbsp;&nbsp;Список пуст!');
+			}
+			else {
+				$('#wr_shipping_date font').html('&nbsp;&nbsp;В списке присутствуют незавершенные этапы!');
+			}
+		}
 
 		$( ".shopstags" ).autocomplete({ // Автокомплит салонов
 			source: "autocomplete.php?do=shopstags"
@@ -784,6 +987,7 @@
 			$('#print_title').change( function() { changelink(); });
 		});
 
+		// Смена статуса лакировки аяксом
 		$('.painting').click(function() {
 			var id = $(this).parents('tr').attr('id');
 			id = id.replace('ord', '');
@@ -816,6 +1020,36 @@
 		$("#copy-button").click(function() {
 			noty({timeout: 3000, text: 'Ссылка на таблицу скопирована в буфер обмена', type: 'success'});
 		});
+
+		// Форма формирования отгрузки
+		$('#add_shipment').click(function() {
+			//$('select[name="CT_ID"]').val('');
+			//$('#orders_to_shipment').html('');
+			//$('#add_shipment_form .accordion').accordion( "option", "active", 1 );
+
+			$('#add_shipment_form').dialog({
+				width: 600,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+			});
+		});
+
+		// Динамическая подгрузка заказов при выборе города (в форме отгрузки)
+		$('select[name="CT_ID"]').on('change', function() {
+			var CT_ID = $(this).val();
+			$.ajax({ url: "ajax.php?do=shipment&CT_ID="+CT_ID, dataType: "script", async: false });
+			$('#add_shipment_form .accordion').accordion( "option", "active", 0 );
+		});
+
+		<?
+		if( isset($_GET["shpid"]) ) { // Если в отгрузке - заполняем форму отгрузки
+			echo "$('select[name=CT_ID]').val('{$CT_ID}');";
+			echo "$('input[name=shp_title]').val('{$shp_title}');";
+			echo '$.ajax({ url: "ajax.php?do=shipment&CT_ID='.$CT_ID.'&shpid='.$_GET["shpid"].'", dataType: "script", async: false });';
+			echo "$('#add_shipment_form .accordion').accordion( 'option', 'active', 0 );";
+		}
+		?>
 
 		odd = <?= json_encode($ODD) ?>;
 		odb = <?= json_encode($ODB) ?>;

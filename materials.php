@@ -9,6 +9,9 @@
 		die('Недостаточно прав для совершения операции');
 	}
 
+	$location = $_SERVER['REQUEST_URI'];
+	$_SESSION["location"] = $location;
+
 	if( isset($_GET["isex"]) ) {
 		$isexist = $_GET["isex"];
 	}
@@ -139,7 +142,6 @@
 			<th>Поставщик</th>
 			<th>Код</th>
 			<th>Заказ</th>
-			<th>Лакировка</th>
 			<th>Цвет</th>
 			<th>Заказчик</th>
 			<th>Дата приема</th>
@@ -231,27 +233,26 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		echo "<tr>";
+		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td>{$row["Checkbox"]}</td>";
 		echo "<td><span class='nowrap'>{$row["Material"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Shipper"]}</span></td>";
 		echo "<td><a href='orderdetail.php?id={$row["OD_ID"]}' class='nowrap'>{$row["Code"]}</a></td>";
 		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
-			switch ($row["IsPainting"]) {
-				case 1:
-					echo "<td class='notready' title='Не в работе'></td>";
-					break;
-				case 2:
-					echo "<td class='inwork' title='В работе'></td>";
-					break;
-				case 3:
-					echo "<td class='ready' title='Готово'></td>";
-					break;
-				default:
-					echo "<td></td>";
-					break;
-			}
-		echo "<td>{$row["Color"]}</td>";
+		switch ($row["IsPainting"]) {
+			case 1:
+				echo "<td class='notready' title='Не в работе'>{$row["Color"]}</td>";
+				break;
+			case 2:
+				echo "<td class='inwork' title='В работе'>{$row["Color"]}</td>";
+				break;
+			case 3:
+				echo "<td class='ready' title='Готово'>{$row["Color"]}</td>";
+				break;
+			default:
+				echo "<td></td>";
+				break;
+		}
 		echo "<td>{$row["ClientName"]}</td>";
 		echo "<td>{$row["StartDate"]}</td>";
 		echo "<td><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></td>";

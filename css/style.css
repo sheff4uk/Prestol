@@ -44,6 +44,10 @@ body, td {
   display: none;
 }
 
+.date {
+	width: 100px;
+}
+
 table {
 	border-collapse: collapse;
 	border-spacing: 0px;
@@ -249,7 +253,22 @@ input[type="checkbox"].nightshift + label:before {
 	height: 100%;
 }
 
-#add_btn:hover, #print_btn:hover, #copy_link:hover, #print_forms:hover, #print_labelsbox:hover {
+#add_shipment {
+	background: url("../img/truck.png") no-repeat scroll center center transparent;
+	bottom: 250px;
+	cursor: pointer;
+	width: 56px;
+	height: 56px;
+	opacity: .4;
+	position: fixed;
+	right: 100px;
+	z-index: 9;
+	border-radius: 50%;
+	background-color: #db4437;
+	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+}
+
+#add_btn:hover, #print_btn:hover, #add_shipment:hover, #copy_link:hover, #print_forms:hover, #print_labelsbox:hover {
 	opacity: .8;
 }
 
@@ -316,7 +335,7 @@ input[type="checkbox"].nightshift + label:before {
 }
 
 .main_table thead input[type="text"] {
-	display: block;
+	//display: block;
 	margin: 0 auto;
 	width: 100%;
 }
@@ -642,4 +661,41 @@ td.tscell > i {
 .removed {
 	//color: #911;
 	text-decoration: line-through;
+}
+
+#shipment_list {
+	position: absolute;
+	right: 20px;
+	top: 70px;
+}
+#shipment_list:hover {
+	z-index: 14;
+}
+#shipment_list > div {
+	width: 75px;
+	height: 22px;
+	opacity: 0;
+	background: #fff;
+	border: solid 1px #bbb;
+	border-radius: 10px;
+	padding: 10px;
+	overflow-y: auto;
+	box-shadow: 5px 5px 10px #bbb;
+	transition: .3s;
+	-webkit-transition: .3s;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+#shipment_list > a {
+	width: 75px;
+	height: 22px;
+}
+#shipment_list:hover > a {
+	display: none;
+}
+#shipment_list:hover > div {
+	width: 400px;
+	height: 400px;
+	opacity: 1;
 }

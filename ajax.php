@@ -28,7 +28,7 @@ case "steps":
 				  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 				  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 				  WHERE ODD.ODD_ID = $odd_id";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 		$pt = mysqli_result($res,0,'PT_ID');
 		$model = mysqli_result($res,0,'Model');
 		$size = mysqli_result($res,0,'Size');
@@ -42,7 +42,7 @@ case "steps":
 				  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 				  WHERE ODS.ODD_ID = $odd_id
 				  ORDER BY ODS.Old DESC, ST.Sort";
-		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$result = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 
 		$text = "<input type=\'hidden\' name=\'ODD_ID\' value=\'$odd_id\'>";
 	}
@@ -52,7 +52,7 @@ case "steps":
 				  FROM OrdersDataBlank ODB
 				  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 				  WHERE ODB.ODB_ID = $odb_id";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 		$model = mysqli_result($res,0,'Name');
 		$amount = mysqli_result($res,0,'Amount');
 		$product = "<img src=\'/img/product_0.png\'>x{$amount}&nbsp;{$model}";
@@ -62,7 +62,7 @@ case "steps":
 				  FROM OrdersDataSteps ODS
 				  WHERE ODS.ODB_ID = $odb_id
 				  ORDER BY ODS.Old DESC";
-		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$result = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 
 		$text = "<input type=\'hidden\' name=\'ODB_ID\' value=\'$odb_id\'>";
 	}
@@ -108,7 +108,7 @@ case "steps":
 					  GROUP BY WD.WD_ID
 					  ORDER BY CNT DESC";
 		}
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 		while( $subrow = mysqli_fetch_array($res) )
 		{
 			$selected = ( $row["WD_ID"] == $subrow["WD_ID"] ) ? "selected" : "";
@@ -177,7 +177,7 @@ case "livesearch":
 	$query .= " GROUP BY ODD.ODD_ID";
 	$query .= " ORDER BY progress DESC";
 	
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 	if( mysqli_num_rows($res) > 0) {
 		$hidden = "<input type='hidden' name='free'>";
 		$table = "<table><thead><tr>";
@@ -253,11 +253,11 @@ case "ispainting":
 
 	// Обновляем статус лакировки
 	$query = "UPDATE OrdersData SET IsPainting = {$val} WHERE OD_ID = {$id}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 
 	// Получаем статус лакировки из базы
 	$query = "SELECT IsPainting FROM OrdersData WHERE OD_ID = {$id}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 	$val = mysqli_result($res,0,'IsPainting');
 
 	switch ($val) {
@@ -279,15 +279,15 @@ case "ispainting":
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').addClass('{$class}');";
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('title', '{$status}');";
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('val', '{$val}');";
-	if( $isready == 1 and $archive != 1 ) {
-		if( $val == 3 and in_array('order_ready', $Rights) ) {
-			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a  href=\"#\" class=\"\" onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
-//			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action a').button();";
-		}
-		else {
-			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('');";
-		}
-	}
+//	if( $isready == 1 and $archive != 1 ) {
+//		if( $val == 3 and in_array('order_ready', $Rights) ) {
+//			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a  href=\"#\" class=\"\" onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
+////			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action a').button();";
+//		}
+//		else {
+//			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('');";
+//		}
+//	}
 	echo "noty({timeout: 3000, text: 'Статус лакировки изменен на \"{$status}\"', type: 'success'});";
 	break;
 
@@ -315,12 +315,12 @@ case "materials":
 
 	if( $val != $oldval ) {
 		$query = "SELECT MT_ID FROM Materials WHERE PT_ID = {$ptid} AND Material = '{$val}'";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 		// Если в списке материалов уже есть такое название
 		if( mysqli_num_rows($res) ) {
 			$mtid = mysqli_result($res,0,'MT_ID');
 			$query = "SELECT MT_ID, Count FROM Materials WHERE PT_ID = {$ptid} AND Material = '{$oldval}'";
-			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 			$oldmtid = mysqli_result($res,0,'MT_ID');
 			$oldcount = mysqli_result($res,0,'Count');
 
@@ -331,15 +331,15 @@ case "materials":
 			else {
 				$query = "UPDATE OrdersDataBlank SET MT_ID = {$mtid} WHERE MT_ID = {$oldmtid}";
 			}
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 
 			// Удаляем старый материал из списка
 			$query = "DELETE FROM Materials WHERE MT_ID = {$oldmtid}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 
 			// Прибавляем старый счетчик к новому
 			$query = "UPDATE Materials SET Count = Count + {$oldcount} WHERE Material = '{$val}' AND PT_ID = {$ptid}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 
 			// Меняем на экране старый id материала на новый
 			echo "$('.mt{$oldmtid}').addClass('mt{$mtid}');";
@@ -348,16 +348,16 @@ case "materials":
 		}
 		else {
 			$query = "UPDATE Materials SET Material = '{$val}' WHERE Material = '{$oldval}' AND PT_ID = {$ptid}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 		}
 		echo "noty({timeout: 3000, text: 'Название материала изменено на \"{$val}\"', type: 'success'});";
 	}
 	$query = "SELECT removed FROM Materials WHERE Material = '{$val}' AND PT_ID = {$ptid}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 	$oldremoved = mysqli_result($res,0,'removed');
 	if( $oldremoved != $removed ) {
 		$query = "UPDATE Materials SET removed = {$removed} WHERE Material = '{$val}' AND PT_ID = {$ptid}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 		if( $removed ) {
 			echo "noty({timeout: 3000, text: 'Материал помечен как выведенный.', type: 'success'});";
 		}
@@ -368,5 +368,107 @@ case "materials":
 
 	break;
 
+case "shipment":
+		$CT_ID = $_GET["CT_ID"] ? $_GET["CT_ID"] : 0;
+		$query = "SELECT OD.OD_ID
+						,OD.Code
+						,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
+						,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
+						,IF(OD.SHP_ID IS NULL, '', 'checked') checked
+				  FROM OrdersData OD
+				  JOIN (
+					  SELECT ODD.OD_ID
+							,IFNULL(PM.PT_ID, 2) PT_ID
+							,ODD.ODD_ID itemID
+							,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a></b><br>') Zakaz
+
+							,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
+
+						FROM OrdersDataDetail ODD
+						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+						GROUP BY ODD.ODD_ID
+						UNION
+						SELECT ODB.OD_ID
+							  ,0 PT_ID
+							  ,ODB.ODB_ID itemID
+							  ,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</a></b><br>') Zakaz
+
+							  ,CONCAT('<a class=nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
+
+						FROM OrdersDataBlank ODB
+						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
+						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+						GROUP BY ODB.ODB_ID
+						ORDER BY PT_ID DESC, itemID
+						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
+				  WHERE OD.Del = 0";
+		if( $_GET["shpid"] ) {
+			$query .= " AND ((OD.ReadyDate IS NULL AND OD.SHP_ID IS NULL) OR OD.SHP_ID = {$_GET["shpid"]})";
+		}
+		else {
+			$query .= " AND OD.ReadyDate IS NULL AND OD.SHP_ID IS NULL";
+		}
+		$query .= " GROUP BY OD.OD_ID ORDER BY OD.OD_ID";
+
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		//$html = "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
+		$html .= "<table class='main_table'><thead><tr><th width='70'>Код</th><th width='50%'>Заказ</th><th width='130'>Этапы</th></tr></thead><tbody>";
+		while( $row = mysqli_fetch_array($res) ) {
+			$html .= "<tr>";
+			$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox' value='{$row["OD_ID"]}'>";
+			$html .= "<label for='ord_sh{$row["OD_ID"]}'>{$row["Code"]}</label></td>";
+			$html .= "<td>{$row["Zakaz"]}</td>";
+			$html .= "<td>{$row["Steps"]}</td>";
+			$html .= "</tr>";
+		}
+		$html .= "</tbody></table>";
+		//$html .= "<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>";
+		$html = addslashes($html);
+		echo "window.top.window.$('#orders_to_shipment').html('{$html}');";
+//		$js = "
+//			function selectall(ch) {
+//				$('.chbox').prop('checked', ch);
+//				$('#selectalltop').prop('checked', ch);
+//				$('#selectallbottom').prop('checked', ch);
+//				return false;
+//			}
+//
+//			$(function() {
+//				$('#selectalltop').change(function(){
+//					ch = $('#selectalltop').prop('checked');
+//					selectall(ch);
+//					return false;
+//				});
+//
+//				$('#selectallbottom').change(function(){
+//					ch = $('#selectallbottom').prop('checked');
+//					selectall(ch);
+//					return false;
+//				});
+//
+//				$('.chbox').change(function(){
+//					var checked_status = true;
+//					$('.chbox').each(function(){
+//						if( !$(this).prop('checked') )
+//						{
+//							checked_status = $(this).prop('checked');
+//						}
+//					});
+//					$('#selectalltop').prop('checked', checked_status);
+//					$('#selectallbottom').prop('checked', checked_status);
+//					return false;
+//				});
+//			});
+//		";
+//		echo $js;
+
+	break;
 }
 ?>
