@@ -219,9 +219,14 @@
 						,IFNULL(WD.PremiumPercent, 0) PremiumPercent
 						,IFNULL(MPP.PremiumPercent, '') ManPercent
 						,IF(MPP.DisableNormHours = 1, 'checked', '') DNHcheck
+						,WD.IsActive
+						,SUM(TS.Hours) Hours
 						FROM WorkersData WD
+						LEFT JOIN TimeSheet TS ON TS.WD_ID = WD.WD_ID AND YEAR(TS.Date) = {$year} AND MONTH(TS.Date) = {$month}
 						LEFT JOIN MonthlyPremiumPercent MPP ON MPP.WD_ID = WD.WD_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
-						WHERE WD.Type = 2";
+						WHERE WD.Type = 2
+						GROUP BY WD.WD_ID
+						HAVING IsActive = 1 OR Hours > 0";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "<tr><td class='worker' val='{$row["WD_ID"]}' deftariff='{$row["deftariff"]}' defbonus='{$row["defbonus"]}'><span>{$row["Name"]}</span>";
