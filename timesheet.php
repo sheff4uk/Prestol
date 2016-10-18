@@ -440,6 +440,7 @@
 				modal:	true,
 				show:	'blind',
 				hide:	'explode',
+				closeText: 'Закрыть'
 			});
 			return false;
 		});

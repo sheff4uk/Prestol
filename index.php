@@ -973,6 +973,7 @@
 					modal: true,
 					show: 'blind',
 					hide: 'explode',
+					closeText: 'Закрыть'
 				});
 
 				// Автокомплит поверх диалога
@@ -1028,10 +1029,13 @@
 			//$('#add_shipment_form .accordion').accordion( "option", "active", 1 );
 
 			$('#add_shipment_form').dialog({
+				position: { my: "center top", at: "center top", of: window },
+				draggable: false,
 				width: 600,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
+				closeText: 'Закрыть'
 			});
 		});
 

@@ -19,6 +19,7 @@ function makeform(id, other, location, plid)
 		modal: true,
 		show: 'blind',
 		hide: 'explode',
+		closeText: 'Закрыть'
 	});
 
 	// Активация чекбокса готовности если выбран работник
@@ -269,6 +270,7 @@ $(document).ready(function(){
 			modal: true,
 			show: 'blind',
 			hide: 'explode',
+			closeText: 'Закрыть'
 		});
 
 		// Автокомплит поверх диалога
@@ -430,6 +432,7 @@ $(document).ready(function(){
 			modal: true,
 			show: 'blind',
 			hide: 'explode',
+			closeText: 'Закрыть'
 		});
 		
 		// Автокомплит поверх диалога
@@ -544,6 +547,7 @@ $(document).ready(function(){
 			modal: true,
 			show: 'blind',
 			hide: 'explode',
+			closeText: 'Закрыть'
 		});
 
 		// Автокомплит поверх диалога

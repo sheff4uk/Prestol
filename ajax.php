@@ -370,12 +370,22 @@ case "materials":
 
 case "shipment":
 		$CT_ID = $_GET["CT_ID"] ? $_GET["CT_ID"] : 0;
+
+		$html = "";
+		$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID}";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		while( $row = mysqli_fetch_array($res) ) {
+			$html .= "<label for='shop{$row["SH_ID"]}'>{$row["Shop"]}</label><input type='checkbox' id='shop{$row["SH_ID"]}' class='button_shops'>";
+		}
+		$html .= "<br><br>";
+
 		$query = "SELECT OD.OD_ID
 						,OD.Code
 						,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 						,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 						,IF(OD.SHP_ID IS NULL, '', 'checked') checked
-						,Shop
+						,OD.SH_ID
+						,SH.Shop
 				  FROM OrdersData OD
 				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
 				  JOIN (
@@ -420,9 +430,9 @@ case "shipment":
 
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 		//$html = "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
-		$html .= "<table class='main_table'><thead><tr><th width='70'>Код</th><th width='15%'>Салон</th><th width='40%'>Заказ</th><th width='130'>Этапы</th></tr></thead><tbody>";
+		$html .= "<table class='main_table' id='to_shipment'><thead><tr><th width='70'>Код</th><th width='15%'>Салон</th><th width='40%'>Заказ</th><th width='130'>Этапы</th></tr></thead><tbody>";
 		while( $row = mysqli_fetch_array($res) ) {
-			$html .= "<tr>";
+			$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
 			$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox' value='{$row["OD_ID"]}'>";
 			$html .= "<label for='ord_sh{$row["OD_ID"]}'>{$row["Code"]}</label></td>";
 			$html .= "<td>{$row["Shop"]}</td>";
@@ -469,7 +479,31 @@ case "shipment":
 //				});
 //			});
 //		";
-//		echo $js;
+		$js = "
+			$('.button_shops').button();
+
+			$('.button_shops').on('change', function() {
+				var id = $(this).attr('id');
+				if( $(this).prop('checked') ) {
+					$('#to_shipment .'+id).show('fast');
+				}
+				else {
+					$('#to_shipment .'+id+' input[type=checkbox]').prop('checked', false);
+					$('#to_shipment .'+id).hide('fast');
+				}
+				//$('#add_shipment_form').dialog('refresh');
+			});
+		";
+		echo $js;
+
+		// Если на экране отгрузки - включаем задействованные салоны
+		if( $_GET["shpid"] ) {
+			$query = "SELECT SH_ID FROM OrdersData WHERE SHP_ID = {$_GET["shpid"]} GROUP BY SH_ID";
+			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+			while( $row = mysqli_fetch_array($res) ) {
+				echo "$('#shop".$row["SH_ID"]."').prop('checked', true).change();";
+			}
+		}
 
 	break;
 }

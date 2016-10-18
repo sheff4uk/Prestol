@@ -124,6 +124,7 @@
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
+				closeText: 'Закрыть'
 			});
 			if (sign == '-') {
 				$('#addpay').dialog('option', 'title', 'Выдать');
