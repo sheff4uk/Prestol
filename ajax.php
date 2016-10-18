@@ -504,6 +504,9 @@ case "shipment":
 				echo "$('#shop".$row["SH_ID"]."').prop('checked', true).change();";
 			}
 		}
+		else {
+			echo "$('.button_shops').prop('checked', true).change();";
+		}
 
 	break;
 }
