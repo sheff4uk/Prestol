@@ -154,6 +154,7 @@
 		<tbody>
 <?
 //	if( $product > 0 ) {
+	$materials_name = "";
 	$query = "SELECT OD.OD_ID
 					,OD.Code
 					,OD.ClientName
@@ -168,6 +169,7 @@
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
+					,GROUP_CONCAT(ODD_ODB.MN SEPARATOR '') MN
 					,GROUP_CONCAT(ODD_ODB.Shipper SEPARATOR '') Shipper
 					,GROUP_CONCAT(ODD_ODB.Checkbox SEPARATOR '') Checkbox
 			  FROM OrdersData OD
@@ -187,6 +189,8 @@
 									WHEN 2 THEN 'bg-green'
 								END,
 								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
+
+								,CONCAT(IFNULL(MT.Material, ''), '<br>') MN
 
 								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
 
@@ -215,6 +219,8 @@
 								END,
 								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
+								,CONCAT(IFNULL(MT.Material, ''), '<br>') MN
+
 								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
 
 								,CONCAT('<input type=\'checkbox\' value=\'1\' name=\'prod', ODB.ODB_ID, '\' class=\'chbox\'><br>') Checkbox
@@ -233,6 +239,7 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
+		$materials_name .= $row["MN"];
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td>{$row["Checkbox"]}</td>";
 		echo "<td><span class='nowrap'>{$row["Material"]}</span></td>";
@@ -264,6 +271,9 @@
 ?>
 		</tbody>
 	</table>
+	<div>
+		<?=$materials_name?>
+	</div>
 	<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>
 	<p>
 		<div class='btnset radiostatus'>
