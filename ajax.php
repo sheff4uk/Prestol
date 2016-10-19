@@ -434,7 +434,7 @@ case "shipment":
 		while( $row = mysqli_fetch_array($res) ) {
 			$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
 			$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox hide' value='{$row["OD_ID"]}'>";
-			$html .= "<label for='ord_sh{$row["OD_ID"]}'>{$row["Code"]}</label></td>";
+			$html .= "<label for='ord_sh{$row["OD_ID"]}'".($row["checked"] == 'checked' ? "style='color: red;'" : "").">{$row["Code"]}</label></td>";
 			$html .= "<td>{$row["Shop"]}</td>";
 			$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 			$html .= "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
