@@ -432,13 +432,13 @@ case "shipment":
 		//$html = "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
 		$html .= "<table class='main_table' id='to_shipment'><thead><tr><th width='70'>Код</th><th width='15%'>Салон</th><th width='40%'>Заказ</th><th width='130'>Этапы</th></tr></thead><tbody>";
 		while( $row = mysqli_fetch_array($res) ) {
-			$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
-			$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox' value='{$row["OD_ID"]}'>";
-			$html .= "<label for='ord_sh{$row["OD_ID"]}'>{$row["Code"]}</label></td>";
-			$html .= "<td>{$row["Shop"]}</td>";
-			$html .= "<td>{$row["Zakaz"]}</td>";
-			$html .= "<td>{$row["Steps"]}</td>";
-			$html .= "</tr>";
+//			$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
+//			$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox' value='{$row["OD_ID"]}'>";
+//			$html .= "<label for='ord_sh{$row["OD_ID"]}'>{$row["Code"]}</label></td>";
+//			$html .= "<td>{$row["Shop"]}</td>";
+//			$html .= "<td>{$row["Zakaz"]}</td>";
+//			$html .= "<td>{$row["Steps"]}</td>";
+//			$html .= "</tr>";
 		}
 		$html .= "</tbody></table>";
 		//$html .= "<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>";
