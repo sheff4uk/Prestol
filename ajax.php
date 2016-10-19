@@ -429,11 +429,11 @@ case "shipment":
 		$query .= " GROUP BY OD.OD_ID ORDER BY OD.OD_ID";
 
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
-		//$html = "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
+		$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
 		$html .= "<table class='main_table' id='to_shipment'><thead><tr><th width='70'>Код</th><th width='15%'>Салон</th><th width='40%'>Заказ</th><th width='130'>Этапы</th></tr></thead><tbody>";
 		while( $row = mysqli_fetch_array($res) ) {
 			$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
-			$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox' value='{$row["OD_ID"]}'>";
+			$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox hide' value='{$row["OD_ID"]}'>";
 			$html .= "<label for='ord_sh{$row["OD_ID"]}'>{$row["Code"]}</label></td>";
 			$html .= "<td>{$row["Shop"]}</td>";
 			$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
@@ -441,57 +441,62 @@ case "shipment":
 			$html .= "</tr>";
 		}
 		$html .= "</tbody></table>";
-		//$html .= "<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>";
+		$html .= "<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>";
 		$html = addslashes($html);
 		echo "window.top.window.$('#orders_to_shipment').html('{$html}');";
-//		$js = "
-//			function selectall(ch) {
-//				$('.chbox').prop('checked', ch);
-//				$('#selectalltop').prop('checked', ch);
-//				$('#selectallbottom').prop('checked', ch);
-//				return false;
-//			}
-//
-//			$(function() {
-//				$('#selectalltop').change(function(){
-//					ch = $('#selectalltop').prop('checked');
-//					selectall(ch);
-//					return false;
-//				});
-//
-//				$('#selectallbottom').change(function(){
-//					ch = $('#selectallbottom').prop('checked');
-//					selectall(ch);
-//					return false;
-//				});
-//
-//				$('.chbox').change(function(){
-//					var checked_status = true;
-//					$('.chbox').each(function(){
-//						if( !$(this).prop('checked') )
-//						{
-//							checked_status = $(this).prop('checked');
-//						}
-//					});
-//					$('#selectalltop').prop('checked', checked_status);
-//					$('#selectallbottom').prop('checked', checked_status);
-//					return false;
-//				});
-//			});
-//		";
 		$js = "
+			function selectall(ch) {
+				$('.chbox.show').prop('checked', ch);
+				$('#selectalltop').prop('checked', ch);
+				$('#selectallbottom').prop('checked', ch);
+				return false;
+			}
+
+			$(function() {
+				$('#selectalltop').change(function(){
+					ch = $('#selectalltop').prop('checked');
+					selectall(ch);
+					return false;
+				});
+
+				$('#selectallbottom').change(function(){
+					ch = $('#selectallbottom').prop('checked');
+					selectall(ch);
+					return false;
+				});
+
+				$('.chbox').change(function(){
+					var checked_status = true;
+					$('.chbox.show').each(function(){
+						if( !$(this).prop('checked') )
+						{
+							checked_status = $(this).prop('checked');
+						}
+					});
+					$('#selectalltop').prop('checked', checked_status);
+					$('#selectallbottom').prop('checked', checked_status);
+					return false;
+				});
+			});
+		";
+		$js .= "
 			$('.button_shops').button();
 
 			$('.button_shops').on('change', function() {
 				var id = $(this).attr('id');
 				if( $(this).prop('checked') ) {
 					$('#to_shipment .'+id).show('fast');
+					$('#to_shipment .'+id+' input[type=checkbox]').removeClass('hide');
+					$('#to_shipment .'+id+' input[type=checkbox]').addClass('show');
+					$('#to_shipment .'+id+' input[type=checkbox]').change();
 				}
 				else {
 					$('#to_shipment .'+id+' input[type=checkbox]').prop('checked', false);
 					$('#to_shipment .'+id).hide('fast');
+					$('#to_shipment .'+id+' input[type=checkbox]').removeClass('show');
+					$('#to_shipment .'+id+' input[type=checkbox]').addClass('hide');
+					$('#to_shipment .'+id+' input[type=checkbox]').change();
 				}
-				//$('#add_shipment_form').dialog('refresh');
 			});
 		";
 		echo $js;
