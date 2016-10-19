@@ -437,7 +437,7 @@ case "shipment":
 			$html .= "<label for='ord_sh{$row["OD_ID"]}'>{$row["Code"]}</label></td>";
 			$html .= "<td>{$row["Shop"]}</td>";
 			$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
-			$html .= "<td>{$row["Steps"]}</td>";
+			$html .= "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
 			$html .= "</tr>";
 		}
 		$html .= "</tbody></table>";
