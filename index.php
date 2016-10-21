@@ -150,6 +150,33 @@
 				echo "Дата отгрузки: {$shipping_date}<br>";
 			}
 			echo "<br>";
+
+			// Вычисляем объем и количество коробок
+			$query = "SELECT PT.PT_ID
+							,ROUND(SUM(IFNULL(PMS.space, 0)), 2) space
+							,CEIL(SUM(IFNULL(PMS.space, 0) / PT.box_space)) boxes
+						FROM ProductTypes PT
+						LEFT JOIN (
+							SELECT PM.PT_ID, PM.space * ODD.Amount space
+							FROM OrdersData OD
+							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
+							JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+							WHERE OD.SHP_ID = {$_GET["shpid"]}
+						) PMS ON PMS.PT_ID = PT.PT_ID
+						GROUP BY PT.PT_ID
+						ORDER BY PT.PT_ID";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$chair_space = mysqli_result($res,0,'space');
+			$chair_boxes = mysqli_result($res,0,'boxes');
+			$table_space = mysqli_result($res,1,'space');
+			$table_boxes = mysqli_result($res,1,'boxes');
+			echo "
+				<div style='position: absolute; right: 130px; top: 60px; border: 1px solid #bbb; padding: 10px; border-radius: 10px;'>
+					<b class='nowrap'>Объем стульев: {$chair_space} м<sup>3</sup> (Коробок: {$chair_boxes})</b>
+					<br>
+					<b class='nowrap'>Объем столов: {$table_space} м<sup>3</sup> (Коробок: {$table_boxes})</b>
+				</div>
+			";
 		}
 		else {
 			die("<h1>Отгрузка не найдена!</h1>");
@@ -180,7 +207,7 @@
 						<th width="20%">Город</th>
 						<th width="40%">Комментарий</th>
 						<th width="20%">Дата отгрузки</th>
-						<th width="20%">Дата прибытия</th>
+						<th width="20%">Дата поступления</th>
 						<th width="30"></th>
 					</tr>
 				</thead>
