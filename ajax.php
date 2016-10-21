@@ -368,6 +368,7 @@ case "materials":
 
 	break;
 
+// Форма отгрузки
 case "shipment":
 		$CT_ID = $_GET["CT_ID"] ? $_GET["CT_ID"] : 0;
 
@@ -512,6 +513,47 @@ case "shipment":
 		else {
 			echo "$('.button_shops').prop('checked', true).change();";
 		}
+
+	break;
+
+// Форма добавления платежа к заказу
+case "add_payment":
+	$OD_ID = $_GET["OD_ID"];
+
+	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
+	$html .= "<table><thead><tr>";
+	$html .= "<th>Дата</th>";
+	$html .= "<th>Сумма</th>";
+	$html .= "<th>Терминал</th>";
+	$html .= "<th>Фамилия</th>";
+	$html .= "</tr></thead><tbody>";
+
+	$query = "SELECT OP_ID
+					,DATE_FORMAT(payment_date, '%d.%m.%Y') payment_date
+					,payment_sum
+					,IF(IFNULL(terminal_payer, '') = '', 0, 1) terminal
+					,terminal_payer
+				FROM OrdersPayment
+				WHERE OD_ID = {$OD_ID}
+				ORDER BY payment_date";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	while( $row = mysqli_fetch_array($res) ) {
+		$html .= "<tr>";
+		$html .= "<td><input type='hidden' name='OP_ID[]' value='{$row["OP_ID"]}'><input type='text' class='date' name='payment_date[]' value='{$row["payment_date"]}' readonly></td>";
+		$html .= "<td><input type='number' class='payment_sum' min='1' name='payment_sum[]' value='{$row["payment_sum"]}'></td>";
+		$html .= "<td><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal' name='terminal[]' value='1'></td>";
+		$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer[]' value='{$row["terminal_payer"]}'></td>";
+		$html .= "</tr>";
+	}
+	$html .= "<tr>";
+	$html .= "<td><input type='text' class='date' name='payment_date_add' value='".date('d.m.Y')."' readonly></td>";
+	$html .= "<td><input type='number' class='payment_sum' min='1' name='payment_sum_add'></td>";
+	$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
+	$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add'></td>";
+	$html .= "</tr></tbody></table>";
+
+	$html = addslashes($html);
+	echo "window.top.window.$('#add_payment fieldset').html('{$html}');";
 
 	break;
 }

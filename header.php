@@ -30,6 +30,13 @@
 
 	<script>
 		$(document).ready(function(){
+
+			// Принудительное перемещение к якорю после перезагрузки страницы
+			var loc = window.location.hash.replace("#","");
+			if (loc != "") {
+				location.replace(document.URL);
+			}
+
 			$( 'input[type=submit], input[type=button], .button, button' ).button();
 
 			// Календарь
@@ -125,6 +132,9 @@
 					  ,"Регистрация" => "reg.php");
 	}
 	else {
+		if( in_array('selling_all', $Rights) or in_array('selling_city', $Rights) ) {
+			$menu["Реализация"] = "selling.php";
+		}
 		if( in_array('print_forms_view_all', $Rights) or in_array('print_forms_view_autor', $Rights) ) {
 			$menu["Печатные формы"] = "print_forms_list.php";
 		}
