@@ -21,6 +21,15 @@
 		}
 	}
 
+	// Формируем выпадающее меню салонов в таблицу
+	$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$select_shops = "<select class='select_shops'>";
+	while( $row = mysqli_fetch_array($res) ) {
+		$select_shops .= "<option value='{$row["SH_ID"]}'>{$row["Shop"]}</option>";
+	}
+	$select_shops .= "</select>";
+
 	$datediff = 60; // Максимальный период отображения данных
 
 	$location = $_SERVER['REQUEST_URI'];
@@ -121,12 +130,12 @@
 				<th width="15%">Материал</th>
 				<th width="15%">Цвет</th>
 				<th width="40">Кол-во</th>
+				<th width="10%">Салон</th>
 				<th width="5%">Дата продажи</th>
 				<th width="65">Сумма заказа</th>
 				<th width="70">Скидка</th>
 				<th width="65">Оплата</th>
 				<th width="20">Т</th>
-				<th width="5%">Салон</th>
 			</tr>
 		</thead>
 	</table>
@@ -142,12 +151,12 @@
 				<th width="15%"></th>
 				<th width="15%"></th>
 				<th width="40"></th>
+				<th width="10%"></th>
 				<th width="5%"></th>
 				<th width="65"></th>
 				<th width="70"></th>
 				<th width="65"></th>
 				<th width="20"></th>
-				<th width="5%"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -156,7 +165,8 @@
 						,OD.Code
 						,IFNULL(OD.ClientName, '') ClientName
 						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
-						,SH.Shop
+						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
+						,SH.SH_ID
 						,OD.OrderNumber
 						,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 						,GROUP_CONCAT(ODD_ODB.Amount SEPARATOR '') Amount
@@ -215,7 +225,7 @@
 			$format_discount = number_format($row['discount'], 0, '', ' ');
 			echo "
 				<tr id='ord{$row["OD_ID"]}'>
-					<td><span></span></td>
+					<td><span>{$row["ReadyDate"]}</span></td>
 					<td>{$row["Code"]}</td>
 					<td><span>{$row["OrderNumber"]}</span></td>
 					<td><span>{$row["ClientName"]}</span></td>
@@ -223,13 +233,16 @@
 					<td><span class='nowrap material'>{$row["Material"]}</span></td>
 					<td>{$row["Color"]}</td>
 					<td>{$row["Amount"]}</td>
+					<td><span id='{$row["OD_ID"]}'>{$select_shops}</span></td>
 					<td><span>{$row["StartDate"]}</span></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
 					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a></td>
 					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>
-					<td><span>{$row["Shop"]}</span></td>
 				</tr>
+				<script>
+					$('#ord{$row["OD_ID"]} select').val('{$row["SH_ID"]}');
+				</script>
 			";
 		}
 		?>
@@ -353,6 +366,13 @@
 			});
 
 			return false;
+		});
+
+		// Редактирование салона
+		$('.select_shops').on('change', function() {
+			var OD_ID = $(this).parent().attr('id');
+			var val = $(this).val();
+			$.ajax({ url: "ajax.php?do=update_shop&OD_ID="+OD_ID+"&SH_ID="+val, dataType: "script", async: false });
 		});
 	});
 </script>

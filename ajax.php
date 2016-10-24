@@ -625,5 +625,28 @@ case "update_price":
 	echo "window.top.window.$('#update_price fieldset').html('{$html}');";
 
 	break;
+
+// Редактирование салона
+case "update_shop":
+	$OD_ID = $_GET["OD_ID"];
+	$SH_ID = $_GET["SH_ID"];
+
+	// Узнаем название старого салона
+	$query = "SELECT SH.Shop FROM Shops SH JOIN OrdersData OD ON OD.SH_ID = SH.SH_ID AND OD.OD_ID = {$OD_ID}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$old_shop = mysqli_result($res,0,'Shop');
+
+	// Меняем салон в заказе
+	$query = "UPDATE OrdersData SET SH_ID = {$SH_ID} WHERE OD_ID = {$OD_ID}";
+	mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+
+	// Узнаем название нового салона
+	$query = "SELECT SH.Shop FROM Shops SH JOIN OrdersData OD ON OD.SH_ID = SH.SH_ID AND OD.OD_ID = {$OD_ID}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$new_shop = mysqli_result($res,0,'Shop');
+
+	echo "noty({timeout: 3000, text: 'Салон изменен с \"{$old_shop}\" на \"{$new_shop}\"', type: 'success'});";
+
+	break;
 }
 ?>
