@@ -136,6 +136,7 @@
 				<th width="70">Скидка</th>
 				<th width="65">Оплата</th>
 				<th width="20">Т</th>
+				<th width="65">Остаток</th>
 			</tr>
 		</thead>
 	</table>
@@ -157,6 +158,7 @@
 				<th width="70"></th>
 				<th width="65"></th>
 				<th width="20"></th>
+				<th width="65"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -223,6 +225,8 @@
 			$format_price = number_format($row["Price"], 0, '', ' ');
 			$format_payment = number_format($row["payment_sum"], 0, '', ' ');
 			$format_discount = number_format($row['discount'], 0, '', ' ');
+			$format_diff = number_format($row["Price"] - $row["payment_sum"], 0, '', ' ');
+			$diff_color = ($row["Price"] == $row["payment_sum"]) ? "#6f6" : (($row["Price"] < $row["payment_sum"]) ? "#f66" : "#fff");
 			echo "
 				<tr id='ord{$row["OD_ID"]}'>
 					<td><span>{$row["ReadyDate"]}</span></td>
@@ -239,6 +243,7 @@
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
 					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a></td>
 					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>
+					<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>
 				</tr>
 				<script>
 					$('#ord{$row["OD_ID"]} select').val('{$row["SH_ID"]}');
