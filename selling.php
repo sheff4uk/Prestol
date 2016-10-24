@@ -22,7 +22,7 @@
 	}
 
 	// Формируем выпадающее меню салонов в таблицу
-	$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1";
+	$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1 ORDER BY Shop";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$select_shops = "<select class='select_shops'>";
 	while( $row = mysqli_fetch_array($res) ) {
@@ -232,7 +232,7 @@
 					<td><span class='nowrap'>{$row["Zakaz"]}</span></td>
 					<td><span class='nowrap material'>{$row["Material"]}</span></td>
 					<td>{$row["Color"]}</td>
-					<td>{$row["Amount"]}</td>
+					<td class='material'>{$row["Amount"]}</td>
 					<td><span id='{$row["OD_ID"]}'>{$select_shops}</span></td>
 					<td><span>{$row["StartDate"]}</span></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
