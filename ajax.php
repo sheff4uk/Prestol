@@ -556,5 +556,63 @@ case "add_payment":
 	echo "window.top.window.$('#add_payment fieldset').html('{$html}');";
 
 	break;
+
+// Форма добавления платежа к заказу
+case "update_price":
+	$OD_ID = $_GET["OD_ID"];
+	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
+	$html .= "<table class='main_table'><thead><tr>";
+	$html .= "<th>Наименование</th>";
+	$html .= "<th width='75'>Цена за шт.</th>";
+	$html .= "<th width='50'>Кол-во</th>";
+	$html .= "<th width='75'>Сумма</th>";
+	$html .= "</tr></thead><tbody>";
+
+	$query = "SELECT ODD.OD_ID
+					,IFNULL(PM.PT_ID, 2) PT_ID
+					,ODD.ODD_ID itemID
+					,ODD.Price
+					,ODD.Amount
+
+					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</i></b><br>') Zakaz
+
+			  FROM OrdersDataDetail ODD
+			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+			  WHERE ODD.OD_ID = {$OD_ID}
+			  GROUP BY ODD.ODD_ID
+			  UNION
+			  SELECT ODB.OD_ID
+					,0 PT_ID
+					,ODB.ODB_ID itemID
+					,ODB.Price
+					,ODB.Amount
+
+					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(BL.Name, ODB.Other), '</i></b><br>') Zakaz
+
+			  FROM OrdersDataBlank ODB
+			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+			  WHERE ODB.OD_ID = {$OD_ID}
+			  GROUP BY ODB.ODB_ID
+			  ORDER BY PT_ID DESC, itemID";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	while( $row = mysqli_fetch_array($res) ) {
+		$html .= "<tr>";
+		$html .= "<input type='hidden' name='PT_ID[]' value='{$row["PT_ID"]}'>";
+		$html .= "<input type='hidden' name='itemID[]' value='{$row["itemID"]}'>";
+		$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
+		$html .= "<td class='prod_price'><input type='number' min='1' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;'></td>";
+		$html .= "<td class='prod_amount' style='text-align: center;'>{$row["Amount"]}</td>";
+		$html .= "<td class='prod_sum' style='text-align: right;'></td>";
+		$html .= "</tr>";
+	}
+	$html .= "<tr style='text-align: right; font-weight: bold;'><td colspan='3'>Итог:</td><td id='prod_total'></td></tr>";
+	$html .= "</tbody></table>";
+
+	$html = addslashes($html);
+	echo "window.top.window.$('#update_price fieldset').html('{$html}');";
+
+	break;
 }
 ?>
