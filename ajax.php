@@ -520,6 +520,11 @@ case "shipment":
 case "add_payment":
 	$OD_ID = $_GET["OD_ID"];
 
+	// Узнаем фамилию заказчика
+	$query = "SELECT ClientName FROM OrdersData WHERE OD_ID = {$OD_ID}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$ClientName = mysqli_result($res,0,'ClientName');
+
 	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 	$html .= "<table><thead><tr>";
 	$html .= "<th>Дата</th>";
@@ -549,7 +554,7 @@ case "add_payment":
 	$html .= "<td><input type='text' class='date' name='payment_date_add' value='".date('d.m.Y')."' readonly></td>";
 	$html .= "<td><input type='number' class='payment_sum' min='1' name='payment_sum_add'></td>";
 	$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
-	$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add'></td>";
+	$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
 	$html .= "</tr></tbody></table>";
 
 	$html = addslashes($html);
