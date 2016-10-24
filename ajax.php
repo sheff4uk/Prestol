@@ -557,9 +557,15 @@ case "add_payment":
 
 	break;
 
-// Форма добавления платежа к заказу
+// Форма редактирования цены заказа
 case "update_price":
 	$OD_ID = $_GET["OD_ID"];
+
+	// Узнаем скидку заказа
+	$query = "SELECT discount FROM OrdersData WHERE OD_ID = {$OD_ID}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$discount = mysqli_result($res,0,'discount');
+
 	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 	$html .= "<table class='main_table'><thead><tr>";
 	$html .= "<th>Наименование</th>";
@@ -607,7 +613,7 @@ case "update_price":
 		$html .= "<td class='prod_sum' style='text-align: right;'></td>";
 		$html .= "</tr>";
 	}
-	$html .= "<tr style='text-align: right; font-weight: bold;'><td colspan='3'>Итог:</td><td id='prod_total'></td></tr>";
+	$html .= "<tr style='text-align: right; font-weight: bold;'><td colspan='2' id='discount'>Скидка: <input type='number' min='1' name='discount' value='{$discount}' style='width: 70px; text-align: right;'> руб. (<span></span> %)</td><td>Итог:</td><td id='prod_total'></td></tr>";
 	$html .= "</tbody></table>";
 
 	$html = addslashes($html);

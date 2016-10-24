@@ -9,17 +9,15 @@
 		die('Недостаточно прав для совершения операции');
 	}
 
-	$SH_ID = $_GET["SH_ID"] ? $_GET["SH_ID"] : 0;
-	// Узнаем в каком городе находится выбранный салон
-	if( $SH_ID ) {
-		$query = "SELECT CT_ID FROM Shops WHERE SH_ID = {$SH_ID}";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$CT_ID = mysqli_result($res,0,'CT_ID');
-
-		// Проверка прав на доступ к экрану (если пользователю доступен только город)
-		if( in_array('selling_city', $Rights) and $CT_ID != $USR_City ) {
+	$CT_ID = $_GET["CT_ID"] ? $_GET["CT_ID"] : 0;
+	// Проверка прав на доступ к экрану (если пользователю доступен только город)
+	if( in_array('selling_city', $Rights) ) {
+		if( $CT_ID and $CT_ID != $USR_City ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 			die('Недостаточно прав для совершения операции');
+		}
+		else {
+			$CT_ID = $USR_City;
 		}
 	}
 
@@ -52,7 +50,7 @@
 
 		foreach ($_POST["OP_ID"] as $key => $value) {
 			$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date"][$key]) );
-			$payment_sum = $_POST["payment_sum"][$key];
+			$payment_sum = $_POST["payment_sum"][$key] ? $_POST["payment_sum"][$key] : "NULL";
 			$terminal = $_POST["terminal"][$key];
 			$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer"][$key] ).'\'' : 'NULL';
 
@@ -71,12 +69,18 @@
 	// Обновление цены изделий в заказе
 	if( isset($_POST["price"]) ) {
 		$OD_ID = $_POST["OD_ID"];
+		$discount = $_POST["discount"] ? $_POST["discount"] : "NULL";
+		// Обновление скидки заказа
+		$query = "UPDATE OrdersData SET discount = {$discount} WHERE OD_ID = {$OD_ID}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
 		foreach ($_POST["PT_ID"] as $key => $value) {
+			$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
 			if( $value == 0 ) {
-				$query = "UPDATE OrdersDataBlank SET Price = {$_POST["price"][$key]} WHERE ODB_ID = {$_POST["itemID"][$key]}";
+				$query = "UPDATE OrdersDataBlank SET Price = {$price} WHERE ODB_ID = {$_POST["itemID"][$key]}";
 			}
 			else {
-				$query = "UPDATE OrdersDataDetail SET Price = {$_POST["price"][$key]} WHERE ODD_ID = {$_POST["itemID"][$key]}";
+				$query = "UPDATE OrdersDataDetail SET Price = {$price} WHERE ODD_ID = {$_POST["itemID"][$key]}";
 			}
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
@@ -88,18 +92,19 @@
 ?>
 
 <form method="get">
-	<select name="SH_ID" onchange="this.form.submit()">
-		<option value="">-=Выберите салон=-</option>
+	<select name="CT_ID" onchange="this.form.submit()">
+		<option value="">-=Выберите город=-</option>
 		<?
-		$query = "SELECT SH.SH_ID, CONCAT(CT.City, '/', SH.Shop) Shop, CT.Color
+		$query = "SELECT CT.CT_ID, CT.City, CT.Color
 					FROM Cities CT
 					JOIN Shops SH ON SH.CT_ID = CT.CT_ID AND SH.retail = 1
 					".(in_array('selling_city', $Rights) ? 'WHERE CT.CT_ID = '.$USR_City : '')."
-					ORDER BY CT.City, SH.Shop";
+					GROUP BY CT.CT_ID
+					ORDER BY CT.City";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) )
 		{
-			echo "<option ".($_GET["SH_ID"] == $row["SH_ID"] ? "selected" : "")." value='{$row["SH_ID"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
+			echo "<option ".($CT_ID == $row["CT_ID"] ? "selected" : "")." value='{$row["CT_ID"]}' style='background: {$row["Color"]};'>{$row["City"]}</option>";
 		}
 		?>
 	</select>
@@ -118,6 +123,7 @@
 				<th width="40">Кол-во</th>
 				<th width="5%">Дата продажи</th>
 				<th width="65">Сумма заказа</th>
+				<th width="70">Скидка</th>
 				<th width="65">Оплата</th>
 				<th width="20">Т</th>
 				<th width="5%">Салон</th>
@@ -138,6 +144,7 @@
 				<th width="40"></th>
 				<th width="5%"></th>
 				<th width="65"></th>
+				<th width="70"></th>
 				<th width="65"></th>
 				<th width="20"></th>
 				<th width="5%"></th>
@@ -155,7 +162,9 @@
 						,GROUP_CONCAT(ODD_ODB.Amount SEPARATOR '') Amount
 						,OD.Color
 						,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
-						,SUM(ODD_ODB.Price) Price
+						,SUM(ODD_ODB.Price) - IFNULL(OD.discount, 0) Price
+						,IFNULL(OD.discount, 0) discount
+						,ROUND(IFNULL(OD.discount, 0) / SUM(ODD_ODB.Price) * 100) percent
 						,IFNULL(OP.payment_sum, 0) payment_sum
 						,OP.terminal_payer
 				  FROM OrdersData OD
@@ -196,13 +205,14 @@
 							GROUP BY ODB.ODB_ID
 							ORDER BY PT_ID DESC, itemID
 							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-					WHERE OD.Del = 0 AND OD.ReadyDate IS NOT NULL AND OD.SH_ID = {$SH_ID}
+					WHERE OD.Del = 0 AND OD.ReadyDate IS NOT NULL AND SH.CT_ID = {$CT_ID}
 					GROUP BY OD.OD_ID
 					ORDER BY OD.OD_ID DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$format_price = number_format($row["Price"], 0, '', ' ');
 			$format_payment = number_format($row["payment_sum"], 0, '', ' ');
+			$format_discount = number_format($row['discount'], 0, '', ' ');
 			echo "
 				<tr id='ord{$row["OD_ID"]}'>
 					<td><span></span></td>
@@ -215,6 +225,7 @@
 					<td>{$row["Amount"]}</td>
 					<td><span>{$row["StartDate"]}</span></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
+					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
 					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a></td>
 					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>
 					<td><span>{$row["Shop"]}</span></td>
@@ -318,6 +329,8 @@
 
 			function updprice() {
 				var prod_total = 0;
+				var discount = $('#discount input').val();
+				var percent = 0;
 				$('.prod_price').each(function(){
 					var prod_price = $(this).find('input').val();
 					var prod_amount = $(this).parents('tr').find('.prod_amount').html();
@@ -326,13 +339,16 @@
 					prod_sum = prod_sum.format();
 					$(this).parents('tr').find('.prod_sum').html(prod_sum);
 				});
+				percent = (discount / prod_total * 100).toFixed(2);
+				prod_total = prod_total - discount;
 				prod_total = prod_total.format();
 				$('#prod_total').html(prod_total);
+				$('#discount span').html(percent);
 			}
 
 			updprice();
 
-			$('.prod_price input').on('input', function() {
+			$('.prod_price input, #discount input').on('input', function() {
 				updprice();
 			});
 
