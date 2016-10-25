@@ -221,7 +221,7 @@
 					WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID}
 					GROUP BY OD.OD_ID
 					HAVING Price - payment_sum <> 0 OR Price IS NULL OR DATEDIFF(NOW(), RD) <= {$datediff}
-					ORDER BY IFNULL(OD.ReadyDate, DATE('9999-01-01')) DESC, OD.OD_ID DESC";
+					ORDER BY OD.ReadyDate DESC, OD.OD_ID DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$format_price = number_format($row["Price"], 0, '', ' ');
