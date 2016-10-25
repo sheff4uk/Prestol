@@ -702,7 +702,7 @@
 			  }
 			}
 
-			$query .= " ORDER BY OD.OD_ID";
+			$query .= " ORDER BY OD.AddDate, OD.OD_ID";
 
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )

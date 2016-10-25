@@ -122,7 +122,7 @@
 	<table class="main_table">
 		<thead>
 			<tr>
-				<th width="5%">Дата поступления</th>
+				<th width="5%">Дата отгрузки</th>
 				<th width="51">№ упаковки</th>
 				<th width="5%">№ квитанции</th>
 				<th width="5%">Заказчик</th>
@@ -218,10 +218,10 @@
 							GROUP BY ODB.ODB_ID
 							ORDER BY PT_ID DESC, itemID
 							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-					WHERE OD.Del = 0 AND OD.ReadyDate IS NOT NULL AND SH.CT_ID = {$CT_ID}
+					WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID}
 					GROUP BY OD.OD_ID
 					HAVING Price - payment_sum <> 0 OR Price IS NULL OR DATEDIFF(NOW(), RD) <= {$datediff}
-					ORDER BY OD.OD_ID DESC";
+					ORDER BY IFNULL(OD.ReadyDate, DATE('9999-01-01')) DESC, OD.OD_ID DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$format_price = number_format($row["Price"], 0, '', ' ');
