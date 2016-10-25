@@ -1058,7 +1058,7 @@
 			$('#add_shipment_form').dialog({
 				position: { my: "center top", at: "center top", of: window },
 				draggable: false,
-				width: 600,
+				width: 800,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',

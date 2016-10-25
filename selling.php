@@ -168,6 +168,7 @@
 						,IFNULL(OD.ClientName, '') ClientName
 						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
+						,OD.ReadyDate RD
 						,SH.SH_ID
 						,OD.OrderNumber
 						,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
@@ -219,6 +220,7 @@
 							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 					WHERE OD.Del = 0 AND OD.ReadyDate IS NOT NULL AND SH.CT_ID = {$CT_ID}
 					GROUP BY OD.OD_ID
+					HAVING Price - payment_sum <> 0 OR Price IS NULL OR DATEDIFF(NOW(), RD) <= {$datediff}
 					ORDER BY OD.OD_ID DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
@@ -296,7 +298,7 @@
 <script>
 	$(document).ready(function() {
 
-		// Кнопка добавления заказа
+		// Кнопка добавления платежа
 		$('.add_payment_btn').click( function() {
 			var OD_ID = $(this).attr('id');
 			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID, dataType: "script", async: false });
@@ -326,7 +328,7 @@
 			return false;
 		});
 
-		// Кнопка добавления заказа
+		// Кнопка редактирования суммы заказа
 		$('.update_price_btn').click( function() {
 			var OD_ID = $(this).attr('id');
 			$.ajax({ url: "ajax.php?do=update_price&OD_ID="+OD_ID, dataType: "script", async: false });

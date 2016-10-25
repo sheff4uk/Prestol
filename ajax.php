@@ -1,5 +1,6 @@
 <?
 	include "config.php";
+	$_GET['ajax'] = 1;
 	include "checkrights.php";
 	header( "Content-Type: text/html; charset=UTF-8" );
 
@@ -382,6 +383,8 @@ case "shipment":
 
 		$query = "SELECT OD.OD_ID
 						,OD.Code
+						,OD.Color
+						,OD.IsPainting
 						,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 						,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 						,IF(OD.SHP_ID IS NULL, '', 'checked') checked
@@ -431,13 +434,28 @@ case "shipment":
 
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 		$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
-		$html .= "<table class='main_table' id='to_shipment'><thead><tr><th width='70'>Код</th><th width='15%'>Салон</th><th width='40%'>Заказ</th><th width='130'>Этапы</th></tr></thead><tbody>";
+		$html .= "<table class='main_table' id='to_shipment'><thead><tr><th width='70'>Код</th><th width='10%'>Салон</th><th width='30%'>Заказ</th><th width='20%'>Цвет</th><th width='130'>Этапы</th></tr></thead><tbody>";
 		while( $row = mysqli_fetch_array($res) ) {
 			$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
 			$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox hide' value='{$row["OD_ID"]}'>";
 			$html .= "<label for='ord_sh{$row["OD_ID"]}'".($row["checked"] == 'checked' ? "style='color: red;'" : "").">{$row["Code"]}</label></td>";
 			$html .= "<td>{$row["Shop"]}</td>";
 			$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
+			switch ($row["IsPainting"]) {
+				case 1:
+					$class = "notready";
+					$title = "Не в работе";
+					break;
+				case 2:
+					$class = "inwork";
+					$title = "В работе";
+					break;
+				case 3:
+					$class = "ready";
+					$title = "Готово";
+					break;
+			}
+			$html .= "<td class='{$class}' title='{$title}'>{$row["Color"]}</td>";
 			$html .= "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
 			$html .= "</tr>";
 		}
