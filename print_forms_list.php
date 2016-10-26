@@ -69,7 +69,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$nakladnaya = $row["nakladnaya"] ? "<i class='fa fa-check-square fa-2x' aria-hidden='true'></i>" : "";
 	$schet = $row["schet"] ? "<i class='fa fa-check-square fa-2x' aria-hidden='true'></i>" : "";
 	echo "<tr>";
-	echo "<td>{$summa}</td>";
+	echo "<td class='txtright'>{$summa}</td>";
 	echo "<td><a href='/print_forms.php?pfid={$row["PF_ID"]}' target='_blank'>{$row["Naimenovanie"]}</a></td>";
 	echo "<td>{$number}</td>";
 	//echo "<td><a href='print_forms/nakladnaya_{$row["PF_ID"]}_{$number}.pdf' target='_blank'>{$row["nakladnaya_date"]}</a></td>";
