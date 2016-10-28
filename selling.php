@@ -122,7 +122,7 @@
 	<table class="main_table">
 		<thead>
 			<tr>
-				<th width="5%">Дата отгрузки</th>
+				<th width="6%">Дата отгрузки</th>
 				<th width="51">№ упаковки</th>
 				<th width="5%">№ квитанции</th>
 				<th width="5%">Заказчик</th>
@@ -131,12 +131,13 @@
 				<th width="15%">Цвет</th>
 				<th width="40">Кол-во</th>
 				<th width="10%">Салон</th>
-				<th width="5%">Дата продажи</th>
+				<th width="6%">Дата продажи</th>
 				<th width="65">Сумма заказа</th>
 				<th width="70">Скидка</th>
 				<th width="65">Оплата</th>
 				<th width="20">Т</th>
 				<th width="65">Остаток</th>
+				<th width="45"></th>
 			</tr>
 		</thead>
 	</table>
@@ -144,7 +145,7 @@
 	<table class="main_table">
 		<thead>
 			<tr>
-				<th width="5%"></th>
+				<th width="6%"></th>
 				<th width="51"></th>
 				<th width="5%"></th>
 				<th width="5%"></th>
@@ -153,12 +154,13 @@
 				<th width="15%"></th>
 				<th width="40"></th>
 				<th width="10%"></th>
-				<th width="5%"></th>
+				<th width="6%"></th>
 				<th width="65"></th>
 				<th width="70"></th>
 				<th width="65"></th>
 				<th width="20"></th>
 				<th width="65"></th>
+				<th width="45"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -221,7 +223,7 @@
 					WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID}
 					GROUP BY OD.OD_ID
 					HAVING Price - payment_sum <> 0 OR Price IS NULL OR DATEDIFF(NOW(), RD) <= {$datediff}
-					ORDER BY OD.ReadyDate DESC, OD.OD_ID DESC";
+					ORDER BY OD.ReadyDate DESC, OD.AddDate DESC, OD.OD_ID DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$format_price = number_format($row["Price"], 0, '', ' ');
@@ -246,6 +248,13 @@
 					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a></td>
 					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>
 					<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>
+					<td>";
+			if( in_array('order_add', $Rights) ) {
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
+			}
+			echo "
+					</td>
 				</tr>
 				<script>
 					$('#ord{$row["OD_ID"]} select').val('{$row["SH_ID"]}');
