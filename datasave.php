@@ -135,19 +135,20 @@ if( $_GET["oddid"] )
 	if( $amount > $_POST["Amount"] and $inprogress == 1)
 	{
 		// Перемещение на склад лишних изделий
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Price, is_check, order_date, arrival_date)
-				  SELECT NULL, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount - {$_POST["Amount"]}, {$Price}, 0, order_date, arrival_date FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$odd_id = mysqli_insert_id( $mysqli );
-
-		// Копирование производственных этапов
-		$query = "INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, WD_ID, IsReady, Tariff, Visible)
-				  SELECT {$odd_id}, ST_ID, WD_ID, IsReady, Tariff, Visible FROM OrdersDataSteps
-				  WHERE ODD_ID = {$_GET["oddid"]}";
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, Price, is_check, order_date, arrival_date, sister_ID)
+				  SELECT NULL, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, ".($amount - $_POST["Amount"]).", {$Price}, 0, order_date, arrival_date, {$_GET["oddid"]} FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		// Обновляем этапы чтобы сработал триггер для движения денег
-		$query = "UPDATE OrdersDataSteps SET Old = Old WHERE ODD_ID IN ({$_GET["oddid"]}, {$odd_id})";
+// Добавлено в триггер AddStepsAfterInsert
+//		$odd_id = mysqli_insert_id( $mysqli );
+//		// Копирование производственных этапов
+//		$query = "INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, WD_ID, IsReady, Tariff, Visible)
+//				  SELECT {$odd_id}, ST_ID, WD_ID, IsReady, Tariff, Visible FROM OrdersDataSteps
+//				  WHERE ODD_ID = {$_GET["oddid"]}";
+//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//
+//		// Обновляем этапы чтобы сработал триггер для движения денег
+//		$query = "UPDATE OrdersDataSteps SET Old = Old WHERE ODD_ID IN ({$_GET["oddid"]}, {$odd_id})";
 
 		$_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
 	}

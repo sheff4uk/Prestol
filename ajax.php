@@ -603,7 +603,7 @@ case "update_price":
 					,ODD.Price
 					,ODD.Amount
 
-					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</i></b><br>') Zakaz
+					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</i></b><br>') Zakaz
 
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -618,7 +618,7 @@ case "update_price":
 					,ODB.Price
 					,ODB.Amount
 
-					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(BL.Name, ODB.Other), '</i></b><br>') Zakaz
+					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(BL.Name, ODB.Other), '</i></b><br>') Zakaz
 
 			  FROM OrdersDataBlank ODB
 			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
@@ -664,6 +664,58 @@ case "update_shop":
 	$new_shop = mysqli_result($res,0,'Shop');
 
 	echo "noty({timeout: 3000, text: 'Салон изменен с \"{$old_shop}\" на \"{$new_shop}\"', type: 'success'});";
+
+	break;
+
+// Разделение заказа
+case "order_cut":
+	$OD_ID = $_GET["OD_ID"];
+
+	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
+	$html .= "<input type='hidden' name='location'>";
+	$html .= "<div id='slider' style='text-align: center;'>";
+
+	$query = "SELECT ODD.OD_ID
+					,IFNULL(PM.PT_ID, 2) PT_ID
+					,ODD.ODD_ID itemID
+					,ODD.Amount
+
+					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</i></b><br>') Zakaz
+
+			  FROM OrdersDataDetail ODD
+			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+			  WHERE ODD.OD_ID = {$OD_ID}
+			  GROUP BY ODD.ODD_ID
+			  UNION
+			  SELECT ODB.OD_ID
+					,0 PT_ID
+					,ODB.ODB_ID itemID
+					,ODB.Amount
+
+					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(BL.Name, ODB.Other), '</i></b><br>') Zakaz
+
+			  FROM OrdersDataBlank ODB
+			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+			  WHERE ODB.OD_ID = {$OD_ID}
+			  GROUP BY ODB.ODB_ID
+			  ORDER BY PT_ID DESC, itemID";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	while( $row = mysqli_fetch_array($res) ) {
+		$html .= "<div>";
+		$html .= "<div>{$row["Zakaz"]}</div>";
+		$html .= "<input type='hidden' name='PT_ID[]' value='{$row["PT_ID"]}'>";
+		$html .= "<input type='hidden' name='itemID[]' value='{$row["itemID"]}'>";
+		$html .= "<input type='hidden' name='prod_amount_left[]' value='{$row["Amount"]}'>";
+		$html .= "<input type='hidden' name='prod_amount_right[]' value='0'>";
+		$html .= "<div><b><left>{$row["Amount"]}</left> - <right>0</right></b></div>";
+		$html .= "<span style='display: block;'>{$row["Amount"]}</span>";
+		$html .= "<br></div>";
+	}
+	$html .= "<div>";
+	$html = addslashes($html);
+	echo "window.top.window.$('#order_cut fieldset').html('{$html}');";
 
 	break;
 }

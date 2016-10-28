@@ -116,6 +116,61 @@
 		exit ('<meta http-equiv="refresh" content="0; url=/index.php?shpid='.$_GET["shpid"].'">');
 		die;
 	}
+
+	// Разделение заказа
+	if( isset($_POST["prod_amount_left"]) ) {
+		$OD_ID = $_POST["OD_ID"];
+		$location = $_POST["location"];
+		$left_sum = array_sum($_POST["prod_amount_left"]);
+		$right_sum = array_sum($_POST["prod_amount_right"]);
+
+		if( $left_sum != 0 and $right_sum != 0 ) {
+			// Создание копии заказа
+			$query = "INSERT INTO OrdersData(SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del)
+			SELECT SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$newOD_ID = mysqli_insert_id($mysqli);
+
+			// Цикл по содержимому заказа (используются данные из формы)
+			foreach ($_POST["itemID"] as $key => $value) {
+				$left = $_POST["prod_amount_left"][$key];
+				$right = $_POST["prod_amount_right"][$key];
+				if( $left == 0 ) {
+					if( $_POST["PT_ID"][$key] == 0 ) {
+						$query = "UPDATE OrdersDataBlank SET OD_ID = {$newOD_ID} WHERE ODB_ID = {$value}";
+					}
+					else {
+						$query = "UPDATE OrdersDataDetail SET OD_ID = {$newOD_ID} WHERE ODD_ID = {$value}";
+					}
+					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				}
+				elseif( $right > 0 ) {
+					if( $_POST["PT_ID"][$key] == 0 ) {
+						// Меняем количество изделий в исходном заказе
+						$query = "UPDATE OrdersDataBlank SET Amount = {$left} WHERE ODB_ID = {$value}";
+							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						// Вставляем в новый заказ переносимые изделия
+						$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Material, MT_ID, Amount, Comment, IsExist, order_date, arrival_date, Price, sister_ID)
+						SELECT {$newOD_ID}, BL_ID, Other, Material, MT_ID, {$right}, Comment, IsExist, order_date, arrival_date, Price, {$value} FROM OrdersDataBlank WHERE ODB_ID = {$value}";
+							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					}
+					else {
+						// Меняем количество изделий в исходном заказе
+						$query = "UPDATE OrdersDataDetail SET Amount = {$left} WHERE ODD_ID = {$value}";
+							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						// Вставляем в новый заказ переносимые изделия
+						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Color, Comment, is_check, order_date, arrival_date, Price, sister_ID)
+						SELECT {$newOD_ID}, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, {$right}, Color, Comment, is_check, order_date, arrival_date, Price, {$value} FROM OrdersDataDetail WHERE ODD_ID = {$value}";
+							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					}
+				}
+			}
+		}
+
+		// Перенаправление на исходный экран
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
+		die;
+	}
 ?>
 	
 	<div id="overlay"></div>
@@ -739,6 +794,7 @@
 		echo "<td>";
 		if( in_array('order_add', $Rights) ) {
 			echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+			echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
 		}
 
 		echo "<action>";

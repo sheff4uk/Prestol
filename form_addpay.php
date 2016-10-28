@@ -5,12 +5,6 @@
 		include "config.php";
 		include "header.php";
 
-		// Проверка прав на доступ к экрану
-		if( !in_array('screen_paylog', $Rights) ) {
-			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-			die('Недостаточно прав для совершения операции');
-		}
-
 		$ManDate = '\''.date( 'Y-m-d', strtotime($_POST["ManDate"]) ).'\'';
 		$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
 		$Pay = $_POST["Pay"] <> "" ? $_POST["Pay"] : "NULL";

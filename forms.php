@@ -6,8 +6,6 @@
 	while( $row = mysqli_fetch_array($result) ) {
 		$ModelForm[$row["PM_ID"]][$row["PF_ID"]] = [$row["Form"]];
 	}
-
-//	include "autocomplete.php"; //JavaScript
 ?>
 	<script>
 		// Передаем в JavaScript массив форм столешниц
@@ -335,3 +333,17 @@
 	</form>
 </div>
 <!-- Конец формы добавления этапов производства -->
+
+<!-- Форма разбитя заказа -->
+<div id='order_cut' title='Разделение заказа' style='display:none'>
+	<form method="post" action="index.php">
+		<fieldset>
+
+		</fieldset>
+		<div>
+			<hr>
+			<button style='float: right;'>Сохранить</button>
+		</div>
+	</form>
+</div>
+<!-- Конец формы разбитя заказа -->

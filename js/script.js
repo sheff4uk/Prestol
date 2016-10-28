@@ -556,6 +556,42 @@ $(document).ready(function(){
 		return false;
 	});
 
+	// Форма разделения заказа
+	$('.order_cut').click(function() {
+		var OD_ID = $(this).attr('id');
+		var location = $(this).attr("location");
+		$.ajax({ url: "ajax.php?do=order_cut&OD_ID="+OD_ID, dataType: "script", async: false });
+		$('#order_cut input[name="location"]').val(location);
+
+		$( "#order_cut #slider span" ).each(function() {
+			var value = parseInt( $( this ).text(), 10 );
+			$( this ).empty().slider({
+				range: "min",
+				max: value,
+				value: value,
+				animate: true,
+				slide: function( event, ui ) {
+					var amount = parseInt( $(this).parent('div').find('left').text(), 10 ) + parseInt( $(this).parent('div').find('right').text(), 10 );
+					$(this).parent('div').find('left').text( ui.value );
+					$(this).parent('div').find('right').text( amount - ui.value );
+					$(this).parent('div').find('input[name="prod_amount_left[]"]').val( ui.value );
+					$(this).parent('div').find('input[name="prod_amount_right[]"]').val( amount - ui.value );
+				}
+			});
+		});
+
+		$("#order_cut").dialog(
+		{
+			width: 500,
+			modal: true,
+			show: 'blind',
+			hide: 'explode',
+			closeText: 'Закрыть'
+		});
+
+		return false;
+	});
+
 
 	// Если ткань/пластик заказан - отображается дата заказа и дата ожидания.
 	$('.radiostatus input').change(function(){
