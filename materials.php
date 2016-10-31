@@ -274,7 +274,7 @@
 	</table>
 
 	<!-- Список материалов для буфера обмена -->
-	<textarea id='materials_name' style='position: absolute; top: 32px; left: 1px; z-index: -1;'><?=$materials_name?></textarea>
+	<textarea id='materials_name' style='position: absolute; top: 32px; left: 1px; height: 20px; z-index: -1;'><?=$materials_name?></textarea>
 
 	<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>
 	<p>
