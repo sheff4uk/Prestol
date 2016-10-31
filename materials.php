@@ -132,7 +132,8 @@
 		<button>Фильтр</button>
 	</form>
 
-	<form method='post'>
+	<form method='post' style='position: relative;'>
+		<a id="copy-button" class="button" data-clipboard-target="#materials_name" style="position: absolute; left: 150px;" title="Скопировать список материалов в буфер обмена">Скопировать</a>
 	<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>
 	<table>
 		<thead>
@@ -190,7 +191,7 @@
 								END,
 								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
-								,CONCAT(IFNULL(MT.Material, ''), '<br>') MN
+								,IFNULL(CONCAT(MT.Material, '\r\n'), '') MN
 
 								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
 
@@ -219,7 +220,7 @@
 								END,
 								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
-								,CONCAT(IFNULL(MT.Material, ''), '<br>') MN
+								,IFNULL(CONCAT(MT.Material, '\r\n'), '') MN
 
 								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
 
@@ -271,9 +272,10 @@
 ?>
 		</tbody>
 	</table>
-	<div>
-		<?=$materials_name?>
-	</div>
+
+	<!-- Список материалов для буфера обмена -->
+	<textarea id='materials_name' style='position: absolute; top: 32px; left: 1px; z-index: -1;'><?=$materials_name?></textarea>
+
 	<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>
 	<p>
 		<div class='btnset radiostatus'>
@@ -332,6 +334,12 @@
 
 <script>
 	$(document).ready(function(){
+
+		new Clipboard('#copy-button'); // Копирование материалов в буфер
+		$("#copy-button").click(function() {
+			noty({timeout: 3000, text: 'Список материалов скопирована в буфер обмена', type: 'success'});
+		});
+
 		function selectall(ch)
 		{
 			$('.chbox').prop('checked', ch);
