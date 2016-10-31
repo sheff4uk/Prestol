@@ -368,7 +368,8 @@
 							,WD.Name Worker
 							,ABS(PL.Pay) Pay
 							,REPLACE(PL.Comment, '\r\n', '<br>') Comment
-							,WD.WD_ID, IF(PL.Pay < 0, '-', '') Sign
+							,WD.WD_ID
+							,IF(PL.Pay < 0, '-', '') Sign
 							,IF(PL.Archive = 1, 'pl-archive', '') Archive
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
@@ -383,7 +384,7 @@
 				$format_pay = number_format($row["Pay"], 0, '', ' ');
 				echo "<tr class='{$row["Archive"]}' id='pl{$row["PL_ID"]}'>";
 				echo "<td>{$row["ManDate"]}</td>";
-				echo "<td class='worker' val='{$row["WD_ID"]}'><span>{$row["Worker"]}</span></td>";
+				echo "<td class='worker' val='{$row["WD_ID"]}'><span><a href='?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>";
 				if ($row["Sign"] == '-') {
 					echo "<td></td>";
 					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
