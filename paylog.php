@@ -16,8 +16,10 @@
 
 	$year = date("Y");
 	$month = date("n");
-	$lastyear = date("Y",strtotime("-1 months"));
-	$lastmonth = date("n",strtotime("-1 months"));
+//	$lastyear = date("Y",strtotime("-1 months"));
+//	$lastmonth = date("n",strtotime("-1 months"));
+	$lastyear = $month == 1 ? $year - 1 : $year;
+	$lastmonth = $month == 1 ? 12 : $month - 1;
 
 	$MONTHS = array(1=>'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь');
 ?>
