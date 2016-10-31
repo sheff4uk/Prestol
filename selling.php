@@ -99,6 +99,20 @@
 
 	include "forms.php";
 ?>
+<style>
+	#selling_report {
+		height: 200px;
+		border: 1px solid #bbb;
+		padding: 10px;
+		border-radius: 10px;
+		margin-top: 10px;
+	}
+	#selling_report table {
+		display: inline-block;
+		vertical-align: top;
+		margin-right: 20px;
+	}
+</style>
 
 <form method="get">
 	<select name="CT_ID" onchange="this.form.submit()">
@@ -118,6 +132,121 @@
 		?>
 	</select>
 </form>
+	<br>
+
+	<!-- КНОПКИ ОТЧЕТОВ -->
+	<div style="max-height: 23px;">
+		Отчеты:
+		<?
+		$highlight = ($_GET["year"] == '' or $_GET["month"] == '') ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
+		echo "<a href='?CT_ID={$CT_ID}' class='button' style='{$highlight}'>Все</a> ";
+
+		$query = "SELECT YEAR(OD.StartDate) year, MONTH(OD.StartDate) month FROM OrdersData OD JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID} GROUP BY YEAR(OD.StartDate), MONTH(OD.StartDate) ORDER BY OD.StartDate";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) ) {
+			$highlight = ($_GET["year"] == $row["year"] and $_GET["month"] == $row["month"]) ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
+			echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>{$MONTHS[$row["month"]]} - {$row["year"]}</a> ";
+		}
+		?>
+	</div>
+	<!-- //КНОПКИ ОТЧЕТОВ -->
+
+	<?
+	// ОТЧЕТ ЗА МЕСЯЦ
+	if( $_GET["year"] != '' and $_GET["month"] != '' ) {
+	?>
+		<div id='selling_report'>
+			<table>
+<!--
+				<thead>
+					<tr>
+						<th>&nbsp;</th>
+						<th>&nbsp;</th>
+					</tr>
+				</thead>
+-->
+				<tbody>
+				<?
+					$city_price = 0;
+					$city_discount = 0;
+					$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1 ORDER BY SH_ID";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) ) {
+						echo "<tr>";
+						echo "<td class='nowrap'>ВЫРУЧКА {$row["Shop"]}:</td>";
+						// Получаем сумму выручки по салону
+						$query = "SELECT SUM(ODD_ODB.Price) Price
+									FROM OrdersData OD
+									JOIN (
+										SELECT ODD.OD_ID
+											,ODD.Price * ODD.Amount Price
+										FROM OrdersDataDetail ODD
+										UNION
+										SELECT ODB.OD_ID
+											,ODB.Price * ODB.Amount Price
+										FROM OrdersDataBlank ODB
+									) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+									WHERE OD.Del = 0 AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}";
+						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						$shop_price = mysqli_result($subres,0,'Price');
+						$city_price = $city_price + $shop_price;
+
+						// Получаем скидку по салону
+						$query = "SELECT SUM(discount) discount FROM OrdersData WHERE YEAR(StartDate) = {$_GET["year"]} AND MONTH(StartDate) = {$_GET["month"]} AND SH_ID = {$row["SH_ID"]}";
+						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						$shop_discount = mysqli_result($subres,0,'discount');
+						$city_discount = $city_discount + $shop_discount;
+
+						$shop_price = number_format(($shop_price - $shop_discount), 0, '', ' ');
+						echo "<td class='txtright'>{$shop_price}</td>";
+						echo "</tr>";
+					}
+					$city_price = number_format(($city_price - $city_discount), 0, '', ' ');
+					echo "<thead><tr>";
+					echo "<th class='nowrap'><b>ВСЕГО ЗА {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</b></th>";
+					echo "<th class='txtright'><b>{$city_price}</b></th>";
+					echo "</tr></thead>";
+
+				?>
+				</tbody>
+			</table>
+
+			<table>
+				<tbody>
+				<?
+					$terminal_sum = 0;
+					$query = "SELECT DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
+									,OP.payment_sum
+									,OP.terminal_payer
+								FROM OrdersPayment OP
+								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
+								JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
+								WHERE terminal_payer IS NOT NULL AND YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]}";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($res) ) {
+					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
+					$terminal_sum = $terminal_sum + $row["payment_sum"];
+					echo "<tr>";
+					echo "<td>{$row["payment_date"]}</td>";
+					echo "<td class='nowrap'>{$row["terminal_payer"]}</td>";
+					echo "<td class='txtright'>{$format_sum}</td>";
+					echo "</tr>";
+				}
+				$terminal_sum = number_format($terminal_sum, 0, '', ' ');
+				echo "<thead><tr>";
+				echo "<th colspan='2' class='nowrap'><b>Оплата по ТЕРМИНАЛУ:</b></th>";
+				echo "<th class='txtright'><b>{$terminal_sum}</b></th>";
+				echo "</tr></thead>";
+				?>
+				</tbody>
+			</table>
+
+		</div>
+	<?
+		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100% - 400px)'); }); </script>";
+	}
+	?>
+
 	<br>
 	<table class="main_table">
 		<thead>
@@ -141,7 +270,7 @@
 			</tr>
 		</thead>
 	</table>
-<div class="wr_main_table_body">
+<div class="wr_main_table_body" style="display: none;">
 	<table class="main_table">
 		<thead>
 			<tr>
@@ -221,9 +350,10 @@
 							ORDER BY PT_ID DESC, itemID
 							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 					WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID}
+					".(($_GET["year"] != '' and $_GET["month"] != '') ? ' AND MONTH(OD.StartDate) = '.$_GET["month"].' AND YEAR(OD.StartDate) = '.$_GET["year"].' ' : '')."
 					GROUP BY OD.OD_ID
-					HAVING Price - payment_sum <> 0 OR Price IS NULL OR DATEDIFF(NOW(), RD) <= {$datediff}
-					ORDER BY OD.ReadyDate DESC, OD.AddDate DESC, OD.OD_ID DESC";
+					#HAVING Price - payment_sum <> 0 OR Price IS NULL OR DATEDIFF(NOW(), RD) <= {$datediff}
+					ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, OD.AddDate ASC, OD.OD_ID ASC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$format_price = number_format($row["Price"], 0, '', ' ');
@@ -306,7 +436,10 @@
 
 <script>
 	$(document).ready(function() {
+		//$('.wr_main_table_body').show('slow');
+		$('.wr_main_table_body').css('display', 'block');
 
+		$( ".button" ).button( "option", "classes.ui-button", "highlight" );
 		// Кнопка добавления платежа
 		$('.add_payment_btn').click( function() {
 			var OD_ID = $(this).attr('id');

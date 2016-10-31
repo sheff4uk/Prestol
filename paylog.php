@@ -21,7 +21,6 @@
 	$lastyear = $month == 1 ? $year - 1 : $year;
 	$lastmonth = $month == 1 ? 12 : $month - 1;
 
-	$MONTHS = array(1=>'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь');
 ?>
 	<p>
 		<button class='edit_pay' sign='' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Начислить</button>
