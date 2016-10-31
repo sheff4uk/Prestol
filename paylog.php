@@ -348,15 +348,15 @@
 
 	<div class="log-pay halfblock">
 		<h1>Движение денег</h1>
-		<table>
+		<table class='main_table'>
 			<thead>
 			<tr>
-				<th>Дата</th>
-				<th>Работник</th>
-				<th>Начислено</th>
-				<th>Выдано</th>
-				<th>Примечание</th>
-				<th>Действие</th>
+				<th width='90'>Дата</th>
+				<th width='30%'>Работник</th>
+				<th width='60'>Начислено</th>
+				<th width='60'>Выдано</th>
+				<th width='70%'>Примечание</th>
+				<th width='60'>Действие</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -367,7 +367,7 @@
 							,DATE_FORMAT(PL.ManDate, '%d.%m.%Y') ManDate
 							,WD.Name Worker
 							,ABS(PL.Pay) Pay
-							,PL.Comment
+							,REPLACE(PL.Comment, '\r\n', '<br>') Comment
 							,WD.WD_ID, IF(PL.Pay < 0, '-', '') Sign
 							,IF(PL.Archive = 1, 'pl-archive', '') Archive
 						FROM PayLog PL
@@ -383,7 +383,7 @@
 				$format_pay = number_format($row["Pay"], 0, '', ' ');
 				echo "<tr class='{$row["Archive"]}' id='pl{$row["PL_ID"]}'>";
 				echo "<td>{$row["ManDate"]}</td>";
-				echo "<td class='worker' val='{$row["WD_ID"]}'>{$row["Worker"]}</td>";
+				echo "<td class='worker' val='{$row["WD_ID"]}'><span>{$row["Worker"]}</span></td>";
 				if ($row["Sign"] == '-') {
 					echo "<td></td>";
 					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
@@ -392,7 +392,7 @@
 					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
 					echo "<td></td>";
 				}
-				echo "<td class='comment'><pre>";
+				echo "<td class='comment nowrap' style='z-index: 2;'><span>";
 				// Если запись из этапов производства - выводим код заказа
 				if( strpos($row["Link"],"ODS") === 0 ) {
 					$odd = substr($row["Link"], 4);
@@ -410,7 +410,7 @@
 					$Code = mysqli_result($subres,0,'Code');
 					echo "<b>|{$Code}|</b> ";
 				}
-				echo "{$row["Comment"]}</pre></td>";
+				echo "{$row["Comment"]}</span></td>";
 				echo "<td>";
 				if ($row["Link"] == '') {
 					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' {$row["ManDate"]} class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
