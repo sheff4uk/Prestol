@@ -414,14 +414,14 @@
 				echo "{$row["Comment"]}</span></td>";
 				echo "<td>";
 				if ($row["Link"] == '') {
-					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' {$row["ManDate"]} class='edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
+					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' {$row["ManDate"]} class='button edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
 				}
 				if( strpos($row["Link"],"ODS") === 0 ) { // Если запись из этапов производства - редактируем
 					if( $step == '0' ) {
-						echo "<a href='#' odbid='{$odd}' plid='{$row["PL_ID"]}' class='edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
+						echo "<a href='#' odbid='{$odd}' plid='{$row["PL_ID"]}' class='button edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
 					}
 					else {
-						echo "<a href='#' id='{$odd}' plid='{$row["PL_ID"]}' class='edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
+						echo "<a href='#' id='{$odd}' plid='{$row["PL_ID"]}' class='button edit_steps' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
 					}
 				}
 				echo "</td>";
