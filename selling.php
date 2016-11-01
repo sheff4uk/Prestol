@@ -59,15 +59,20 @@
 
 		foreach ($_POST["OP_ID"] as $key => $value) {
 			$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date"][$key]) );
-			$payment_sum = $_POST["payment_sum"][$key] ? $_POST["payment_sum"][$key] : "NULL";
+			$payment_sum = $_POST["payment_sum"][$key];
 			$terminal = $_POST["terminal"][$key];
 			$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer"][$key] ).'\'' : 'NULL';
 
-			$query = "UPDATE OrdersPayment
-						 SET payment_date = '{$payment_date}'
-							,payment_sum = {$payment_sum}
-							,terminal_payer = {$terminal_payer}
-						WHERE OP_ID = {$value}";
+			if( $payment_sum == '' ) {
+				$query = "DELETE FROM OrdersPayment WHERE OP_ID = {$value}";
+			}
+			else {
+				$query = "UPDATE OrdersPayment
+							 SET payment_date = '{$payment_date}'
+								,payment_sum = {$payment_sum}
+								,terminal_payer = {$terminal_payer}
+							WHERE OP_ID = {$value}";
+			}
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
