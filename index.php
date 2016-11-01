@@ -612,6 +612,7 @@
 					,DATE_FORMAT(IFNULL(OD.ReadyDate, OD.EndDate), '%d.%m.%Y') EndDate
 					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
 					,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
+					,OD.SH_ID
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,OD.OrderNumber
@@ -802,7 +803,7 @@
 		{
 			if( $row["SHP_ID"] == 0 )
 			{
-				if( in_array('order_ready', $Rights) and !isset($_GET["shpid"]) and $row["Archive"] == 0 and $row["IsReady"] ) {
+				if( in_array('order_ready', $Rights) and !isset($_GET["shpid"]) and $row["Archive"] == 0 and $row["IsReady"] and $row["SH_ID"] > 0 ) {
 					echo "<a href='#' class='' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 				}
 			}
