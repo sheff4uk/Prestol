@@ -49,11 +49,16 @@
 		$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer_add"] ).'\'' : 'NULL';
 
 		if( $payment_sum ) {
+			// Записываем новый платеж в таблицу платежей
 			$query = "INSERT INTO OrdersPayment
 						 SET OD_ID = {$OD_ID}
 							,payment_date = '{$payment_date}'
 							,payment_sum = {$payment_sum}
 							,terminal_payer = {$terminal_payer}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			// Записываем дату продажи заказа если ее не было
+			$query = "UPDATE OrdersData SET StartDate = '{$payment_date}' WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
@@ -381,7 +386,7 @@
 					<td><span class='nowrap material'>{$row["Material"]}</span></td>
 					<td>{$row["Color"]}</td>
 					<td class='material'>{$row["Amount"]}</td>
-					<td><span id='{$row["OD_ID"]}'>{$select_shops}</span></td>
+					<td id='{$row["OD_ID"]}'>{$select_shops}</td>
 					<td><span>{$row["StartDate"]}</span></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
@@ -391,8 +396,8 @@
 					<td>";
 			if( in_array('order_add', $Rights) ) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
 			}
+			echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
 			echo "
 					</td>
 				</tr>
@@ -529,7 +534,7 @@
 
 		// Редактирование салона
 		$('.select_shops').on('change', function() {
-			var OD_ID = $(this).parent().attr('id');
+			var OD_ID = $(this).parents('td').attr('id');
 			var val = $(this).val();
 			$.ajax({ url: "ajax.php?do=update_shop&OD_ID="+OD_ID+"&SH_ID="+val, dataType: "script", async: false });
 		});

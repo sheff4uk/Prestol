@@ -8,6 +8,23 @@
 	$location = $_SERVER['REQUEST_URI'];
 	$_SESSION["location"] = $location;
 	
+	// Формируем выпадающее меню салонов в таблицу
+	$query = "SELECT Shops.SH_ID
+					,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
+					,Cities.Color
+				FROM Shops
+				JOIN Cities ON Cities.CT_ID = Shops.CT_ID
+				WHERE Cities.CT_ID IN ({$USR_cities})
+				ORDER BY Cities.City, Shops.Shop";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$select_shops = "<select class='select_shops'>";
+	$select_shops .= "<option value='0' style='background: #999;'>Свободные</option>";
+	while( $row = mysqli_fetch_array($res) ) {
+		$select_shops .= "<option value='{$row["SH_ID"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
+	}
+	$select_shops .= "</select>";
+	$select_shops = addslashes($select_shops);
+
 	// Добавление в базу нового заказа
 	if( isset($_POST["Shop"]) )
 	{
@@ -612,7 +629,7 @@
 					,DATE_FORMAT(IFNULL(OD.ReadyDate, OD.EndDate), '%d.%m.%Y') EndDate
 					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
 					,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
-					,OD.SH_ID
+					,IFNULL(OD.SH_ID, 0) SH_ID
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,OD.OrderNumber
@@ -768,7 +785,7 @@
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
 		echo "<td><span>{$row["StartDate"]}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
+		echo "<td class='shop_cell' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
 		echo "<td><span>{$row["OrderNumber"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 		echo "<td><span class='nowrap material'>{$row["Material"]}</span></td>";
@@ -1138,6 +1155,23 @@
 			echo "$('#add_shipment_form .accordion').accordion( 'option', 'active', 0 );";
 		}
 		?>
+
+		// Редактирование салона
+		$('.shop_cell').dblclick(function() {
+			var SH_ID = $(this).attr('SH_ID');
+			var shop_span = $(this).html();
+			$(this).html('<?=$select_shops?>');
+
+			$(this).find('select').val(SH_ID).focus().on('change', function() {
+				var OD_ID = $(this).parents('td').attr('id');
+				var val = $(this).val();
+				$.ajax({ url: "ajax.php?do=update_shop&OD_ID="+OD_ID+"&SH_ID="+val, dataType: "script", async: false });
+			});
+
+			$(this).find('select').blur(function() {
+				$(this).parents('.shop_cell').html(shop_span);
+			});
+		});
 
 		odd = <?= json_encode($ODD) ?>;
 		odb = <?= json_encode($ODB) ?>;
