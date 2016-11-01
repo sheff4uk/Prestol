@@ -3,7 +3,7 @@
 	$title = 'Престол главная';
 	include "header.php";
 
-	$datediff = 60; // Максимальный период отображения данных
+	$datediff = 6000; // Максимальный период отображения данных
 	
 	$location = $_SERVER['REQUEST_URI'];
 	$_SESSION["location"] = $location;
