@@ -262,7 +262,7 @@
 						<th width="20%">Город</th>
 						<th width="40%">Комментарий</th>
 						<th width="20%">Дата отгрузки</th>
-						<th width="20%">Дата поступления</th>
+<!--						<th width="20%">Дата поступления</th>-->
 						<th width="30"></th>
 					</tr>
 				</thead>
@@ -284,7 +284,7 @@
 						echo "<td><span style='background: {$row["Color"]}'>{$row["City"]}</span></td>";
 						echo "<td>{$row["title"]}</td>";
 						echo "<td><span>{$row["shipping_date_format"]}</span></td>";
-						echo "<td><span>{$row["arrival_date_format"]}</span></td>";
+//						echo "<td><span>{$row["arrival_date_format"]}</span></td>";
 						echo "<td><a href='/?shpid={$row["SHP_ID"]}'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a></td>";
 						echo "</tr>";
 					}
