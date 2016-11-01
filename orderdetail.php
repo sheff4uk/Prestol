@@ -44,7 +44,7 @@
 	// Обновление основной информации о заказе
 	if( isset($_POST["Shop"]) )
 	{
-		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
+		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli,$_POST["ClientName"] );
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
@@ -311,13 +311,13 @@
 	<form method='post'>
 	<table>
 		<thead>
-		<tr>
+		<tr class='nowrap'>
 			<th>Код</th>
 			<th>Заказчик</th>
-			<th>Дата&nbsp;приема</th>
-			<th>Дата&nbsp;сдачи</th>
+			<th>Дата продажи</th>
+			<th>Дата сдачи</th>
 			<th>Салон</th>
-			<th>№&nbsp;квитанции</th>
+			<th>№ квитанции</th>
 			<th>Цвет</th>
 			<th>Лакировка</th>
 			<th>Примечание</th>
@@ -355,8 +355,8 @@
 		<tr>
 			<td class="nowrap"><?=$Code?></td>
 			<td><input type='text' class='clienttags' name='ClientName' size='10' value='<?=$ClientName?>'></td>
-			<td><input required type='text' name='StartDate' size='8' class='date from' value='<?=$StartDate?>' readonly></td>
-			<td><input type='text' name='EndDate' size='8' class='date to' value='<?=$EndDate?>' readonly></td>
+			<td><input type='text' name='StartDate' size='8' class='date from' value='<?=$StartDate?>'></td>
+			<td><input type='text' name='EndDate' size='8' class='date to' value='<?=$EndDate?>'></td>
 			<td style='background: <?=$CTColor?>;'>
 				<select required name='Shop'>
 					<option value="">-=Выберите салон=-</option>

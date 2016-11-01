@@ -9,14 +9,14 @@
 	$_SESSION["location"] = $location;
 	
 	// Добавление в базу нового заказа
-	if( isset($_POST["StartDate"]) )
+	if( isset($_POST["Shop"]) )
 	{
 		if( !in_array('order_add', $Rights) ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 			die('Недостаточно прав для совершения операции');
 		}
 		$AddDate = date("Y-m-d");
-		$StartDate = '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'';
+		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
 		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli, $_POST["ClientName"] );
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
@@ -306,12 +306,12 @@
 					<input type='text' class='clienttags' name='ClientName' size='38'>
 				</div>
 				<div>
-					<label>Дата приема:</label>
-					<input required type='text' name='StartDate' class='date from' size='12' value='<?= date("d.m.Y") ?>' autocomplete='off' readonly>
+					<label>Дата продажи:</label>
+					<input type='text' name='StartDate' class='date from' size='12' value='<?= date("d.m.Y") ?>' autocomplete='off'>
 				</div>
 				<div>
 					<label>Дата сдачи:</label>
-					<input type='text' name='EndDate' class='date to' size='12' autocomplete='off' readonly>
+					<input type='text' name='EndDate' class='date to' size='12' autocomplete='off'>
 				</div>
 				<div>
 					<label>Салон:</label>
@@ -489,7 +489,7 @@
 		<tr>
 			<th width="51"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
 			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
-			<th width="5%"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>приема</label></th>
+			<th width="5%"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
 			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br>сдачи</label></th>
 			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
 			<th width="5%"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>

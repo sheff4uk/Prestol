@@ -141,11 +141,16 @@
 		$highlight = ($_GET["year"] == '' or $_GET["month"] == '') ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
 		echo "<a href='?CT_ID={$CT_ID}' class='button' style='{$highlight}'>Все</a> ";
 
-		$query = "SELECT YEAR(OD.StartDate) year, MONTH(OD.StartDate) month FROM OrdersData OD JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID} GROUP BY YEAR(OD.StartDate), MONTH(OD.StartDate) ORDER BY OD.StartDate";
+		$query = "SELECT IFNULL(YEAR(OD.StartDate), 0) year, IFNULL(MONTH(OD.StartDate), 0) month FROM OrdersData OD JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID} GROUP BY YEAR(OD.StartDate), MONTH(OD.StartDate) ORDER BY OD.StartDate";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$highlight = ($_GET["year"] == $row["year"] and $_GET["month"] == $row["month"]) ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
-			echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>{$MONTHS[$row["month"]]} - {$row["year"]}</a> ";
+			if( $row["year"] == 0 and $row["month"] == 0 ) {
+				echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>Свободные</a> ";
+			}
+			else {
+				echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>{$MONTHS[$row["month"]]} - {$row["year"]}</a> ";
+			}
 		}
 		?>
 	</div>
@@ -153,7 +158,7 @@
 
 	<?
 	// ОТЧЕТ ЗА МЕСЯЦ
-	if( $_GET["year"] != '' and $_GET["month"] != '' ) {
+	if( $_GET["year"] > 0 and $_GET["month"] > 0 ) {
 	?>
 		<div id='selling_report'>
 			<table>
@@ -350,7 +355,7 @@
 							ORDER BY PT_ID DESC, itemID
 							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 					WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID}
-					".(($_GET["year"] != '' and $_GET["month"] != '') ? ' AND MONTH(OD.StartDate) = '.$_GET["month"].' AND YEAR(OD.StartDate) = '.$_GET["year"].' ' : '')."
+					".(($_GET["year"] != '' and $_GET["month"] != '') ? (($_GET["year"] == 0 and $_GET["month"] == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$_GET["month"].' AND YEAR(OD.StartDate) = '.$_GET["year"]) : '')."
 					GROUP BY OD.OD_ID
 					#HAVING Price - payment_sum <> 0 OR Price IS NULL OR DATEDIFF(NOW(), RD) <= {$datediff}
 					ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, OD.AddDate ASC, OD.OD_ID ASC";
