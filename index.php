@@ -324,7 +324,7 @@
 				</div>
 				<div>
 					<label>Дата продажи:</label>
-					<input type='text' name='StartDate' class='date from' size='12' value='<?= date("d.m.Y") ?>' autocomplete='off'>
+					<input type='text' name='StartDate' class='date from' size='12' value='<?= date("d.m.Y") ?>' date='<?= date("d.m.Y") ?>' autocomplete='off'>
 				</div>
 				<div>
 					<label>Дата сдачи:</label>
@@ -820,8 +820,8 @@
 		{
 			if( $row["SHP_ID"] == 0 )
 			{
-				if( in_array('order_ready', $Rights) and !isset($_GET["shpid"]) and $row["Archive"] == 0 and $row["IsReady"] and $row["SH_ID"] > 0 ) {
-					echo "<a href='#' class='' onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+				if( in_array('order_ready', $Rights) and !isset($_GET["shpid"]) and $row["Archive"] == 0 and $row["IsReady"] ) {
+					echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 				}
 			}
 			else {
@@ -1171,6 +1171,21 @@
 			$(this).find('select').blur(function() {
 				$(this).parents('.shop_cell').html(shop_span);
 			});
+		});
+
+		// В форме добавления заказа если выбираем Свободные - дата продажи пустая
+		$('#order_form select[name="Shop"]').on("change", function() {
+			var StartDate = $('#order_form input[name="StartDate"]').attr('date');
+			if( $(this).val() === '0' ) {
+				$('#order_form input[name="StartDate"]').val('');
+			}
+			else {
+				$('#order_form input[name="StartDate"]').val(StartDate);
+			}
+		});
+
+		$('#order_form input[name="StartDate"]').on("change", function() {
+			$(this).attr('date', $(this).val());
 		});
 
 		odd = <?= json_encode($ODD) ?>;

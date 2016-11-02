@@ -32,7 +32,8 @@
 
 	$datediff = 60; // Максимальный период отображения данных
 
-	$location = $_SERVER['REQUEST_URI'];
+	//$location = $_SERVER['REQUEST_URI'];
+	$location = "?CT_ID={$_GET["CT_ID"]}".( ($_GET["year"] != '' and $_GET["month"] != '') ? '&year='.$_GET["year"].'&month='.$_GET["month"] : '' );
 	$_SESSION["location"] = $location;
 
 	if( in_array('selling_city', $Rights) ) {
@@ -40,7 +41,7 @@
 	}
 
 	// Добавление в базу нового платежа (или обновление старого)
-	if( isset($_POST["payment_date_add"]) )
+	if( isset($_GET["add_payment"]) )
 	{
 		$OD_ID = $_POST["OD_ID"];
 		$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date_add"]) );
@@ -65,8 +66,8 @@
 		foreach ($_POST["OP_ID"] as $key => $value) {
 			$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date"][$key]) );
 			$payment_sum = $_POST["payment_sum"][$key];
-			$terminal = $_POST["terminal"][$key];
-			$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer"][$key] ).'\'' : 'NULL';
+			//$terminal = $_POST["terminal"][$key];
+			$terminal_payer = ($_POST["terminal_payer"][$key] != '') ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer"][$key] ).'\'' : 'NULL';
 
 			if( $payment_sum == '' ) {
 				$query = "DELETE FROM OrdersPayment WHERE OP_ID = {$value}";
@@ -82,6 +83,7 @@
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
+		//exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
 
@@ -116,6 +118,13 @@
 		padding: 10px;
 		border-radius: 10px;
 		margin-top: 10px;
+		z-index: 2;
+		position: absolute;
+		width: calc( 100% - 40px );
+		overflow: hidden;
+	}
+	#selling_report:hover {
+		overflow: visible;
 	}
 	#selling_report table {
 		display: inline-block;
@@ -233,15 +242,18 @@
 					$query = "SELECT DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
 									,OP.payment_sum
 									,OP.terminal_payer
+									,OD.Code
 								FROM OrdersPayment OP
 								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
-								WHERE terminal_payer IS NOT NULL AND YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]}";
+								WHERE terminal_payer IS NOT NULL AND YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]}
+								ORDER BY OP.payment_date";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
 					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 					$terminal_sum = $terminal_sum + $row["payment_sum"];
 					echo "<tr>";
+					echo "<td title='№ упаковки'><b>{$row["Code"]}</b></td>";
 					echo "<td>{$row["payment_date"]}</td>";
 					echo "<td class='nowrap'>{$row["terminal_payer"]}</td>";
 					echo "<td class='txtright'>{$format_sum}</td>";
@@ -249,7 +261,7 @@
 				}
 				$terminal_sum = number_format($terminal_sum, 0, '', ' ');
 				echo "<thead><tr>";
-				echo "<th colspan='2' class='nowrap'><b>Оплата по ТЕРМИНАЛУ:</b></th>";
+				echo "<th colspan='3' class='nowrap'><b>Оплата по ТЕРМИНАЛУ:</b></th>";
 				echo "<th class='txtright'><b>{$terminal_sum}</b></th>";
 				echo "</tr></thead>";
 				?>
@@ -258,12 +270,12 @@
 
 		</div>
 	<?
-		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100% - 400px)'); }); </script>";
+		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100% - 400px)'); $('#MT_header').css('margin-top','210px'); }); </script>";
 	}
 	?>
 
 	<br>
-	<table class="main_table">
+	<table class="main_table" id="MT_header">
 		<thead>
 			<tr>
 				<th width="6%">Дата отгрузки</th>
@@ -425,7 +437,7 @@
 	}
 </style>
 <div id='add_payment' title='Добавление оплаты' style='display:none'>
-	<form method='post'>
+	<form method='post' action="<?=$location?>&add_payment=1">
 		<fieldset>
 		</fieldset>
 		<div>
@@ -455,6 +467,7 @@
 		$('.wr_main_table_body').css('display', 'block');
 
 		$( ".button" ).button( "option", "classes.ui-button", "highlight" );
+
 		// Кнопка добавления платежа
 		$('.add_payment_btn').click( function() {
 			var OD_ID = $(this).attr('id');
@@ -471,15 +484,21 @@
 			$('input.date').datepicker();
 			$('#add_payment .terminal').change(function() {
 				var ch = $(this).prop('checked');
-				var terminal_payer = $(this).parents('tr').find('.terminal_payer');
+				var terminal_payer = $(this).parents('tr').find('input[type="text"].terminal_payer');
+				var terminal_payer_hidden = $(this).parents('tr').find('input[type="hidden"].terminal_payer');
 				if( ch ) {
 					$(terminal_payer).prop('disabled', false);
 					$(terminal_payer).prop('required', true);
+					$(terminal_payer_hidden).val( $(terminal_payer).val() );
 				}
 				else {
 					$(terminal_payer).prop('disabled', true);
 					$(terminal_payer).prop('required', false);
+					$(terminal_payer_hidden).val('');
 				}
+			});
+			$('#add_payment .terminal_payer').change(function() {
+				$(this).parent('td').find('input[type="hidden"]').val($(this).val());
 			});
 			$('#add_payment .terminal').change();
 			return false;

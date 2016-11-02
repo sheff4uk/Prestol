@@ -157,9 +157,9 @@
 			<span>&nbsp;х&nbsp;</span>
 			<input required type='number' min='0' step='10' name='Width' style='width: 80px;' autocomplete='off' title="Ширина">
 			<span>&nbsp;/&nbsp;</span>
-			<input type="number" name="PieceAmount" min="1" max="3" autocomplete="off" title="Кол-во вставок">
+			<input type="number" name="PieceAmount" min="1" max="3" style='width: 50px;' autocomplete="off" title="Кол-во вставок">
 			<span>&nbsp;х&nbsp;</span>
-			<input type="number" name="PieceSize" min="200" max="550" step="10" autocomplete="off" title="Размер вставки">
+			<input type="number" name="PieceSize" min="200" max="550" step="10" style='width: 60px;' autocomplete="off" title="Размер вставки">
 		</div>
 		<div>
 			<label>Пластик:</label>

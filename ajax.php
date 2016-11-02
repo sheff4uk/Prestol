@@ -558,14 +558,14 @@ case "add_payment":
 					,terminal_payer
 				FROM OrdersPayment
 				WHERE OD_ID = {$OD_ID}
-				ORDER BY payment_date";
+				ORDER BY OP_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 	while( $row = mysqli_fetch_array($res) ) {
 		$html .= "<tr>";
 		$html .= "<td><input type='hidden' name='OP_ID[]' value='{$row["OP_ID"]}'><input type='text' class='date' name='payment_date[]' value='{$row["payment_date"]}' readonly></td>";
 		$html .= "<td><input type='number' class='payment_sum' min='1' name='payment_sum[]' value='{$row["payment_sum"]}'></td>";
-		$html .= "<td><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal' name='terminal[]' value='1'></td>";
-		$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer[]' value='{$row["terminal_payer"]}'></td>";
+		$html .= "<td><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal'></td>";
+		$html .= "<td><input type='text' class='terminal_payer' value='{$row["terminal_payer"]}'><input type='hidden' class='terminal_payer' name='terminal_payer[]' value='{$row["terminal_payer"]}'></td>";
 		$html .= "</tr>";
 	}
 	$html .= "<tr>";
@@ -678,6 +678,12 @@ case "update_shop":
 	echo "$('.shop_cell[id={$OD_ID}]').html('{$shop_span}');";
 	echo "$('.shop_cell[id={$OD_ID}]').attr('SH_ID', '{$SH_ID}');";
 	echo "noty({timeout: 3000, text: 'Салон изменен с \"{$old_shop}\" на \"{$new_shop}\"', type: 'success'});";
+	if( $SH_ID == 0 ) {
+		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a').css('display', 'none');";
+	}
+	else {
+		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a').css('display', '');";
+	}
 
 	break;
 

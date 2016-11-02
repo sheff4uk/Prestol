@@ -42,7 +42,7 @@
 	}
 
 	// Обновление основной информации о заказе
-	if( isset($_POST["Shop"]) )
+	if( isset($_GET["order_update"]) )
 	{
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
@@ -308,7 +308,7 @@
 	if( $id != "NULL" )
 	{
 ?>
-	<form method='post'>
+	<form method='post' id='order_form' action='<?=$location?>&order_update=1'>
 	<table>
 		<thead>
 		<tr class='nowrap'>
@@ -354,9 +354,9 @@
 		<tbody>
 		<tr>
 			<td class="nowrap"><?=$Code?></td>
-			<td><input type='text' class='clienttags' name='ClientName' size='10' value='<?=$ClientName?>'></td>
-			<td><input type='text' name='StartDate' size='8' class='date from' value='<?=$StartDate?>'></td>
-			<td><input type='text' name='EndDate' size='8' class='date to' value='<?=$EndDate?>'></td>
+			<td><input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>'></td>
+			<td><input type='text' name='StartDate' class='date from' value='<?=$StartDate?>' date='<?=$StartDate?>'></td>
+			<td><input type='text' name='EndDate' class='date to' value='<?=$EndDate?>'></td>
 			<td style='background: <?=$CTColor?>;'>
 				<select required name='Shop'>
 					<option value="">-=Выберите салон=-</option>
@@ -377,8 +377,8 @@
 					?>
 				</select>
 			</td>
-			<td><input type='text' name='OrderNumber' size='10' value='<?=$OrderNumber?>'></td>
-			<td><input required type='text' class='colortags' name='Color' size='20' value='<?=$Color?>' autocomplete='off'></td>
+			<td><input type='text' name='OrderNumber' style='width: 90px;' value='<?=$OrderNumber?>'></td>
+			<td><input required type='text' class='colortags' name='Color' style='width: 160px;' value='<?=$Color?>' autocomplete='off'></td>
 			<td>
 				<div id="IsPainting" class="btnset nowrap">
 					<input type="radio" id="IsP1" name="IsPainting" <?=($IsPainting == 1 ? "checked" : "")?> value="1"><label for="IsP1" title="Не в работе"><i class="fa fa-star-o fa-lg"></i></label>
@@ -709,6 +709,21 @@
 
 		$( ".clienttags" ).autocomplete({ // Автокомплит заказчиков
 			source: "autocomplete.php?do=clienttags"
+		});
+
+		// В форме редактирования заказа если выбираем Свободные - дата продажи пустая
+		$('#order_form select[name="Shop"]').on("change", function() {
+			var StartDate = $('#order_form input[name="StartDate"]').attr('date');
+			if( $(this).val() === '0' ) {
+				$('#order_form input[name="StartDate"]').val('');
+			}
+			else {
+				$('#order_form input[name="StartDate"]').val(StartDate);
+			}
+		});
+
+		$('#order_form input[name="StartDate"]').on("change", function() {
+			$(this).attr('date', $(this).val());
 		});
 
 //		odid = <?= ($id == 'NULL') ? 0 : $id ?>;
