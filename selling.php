@@ -34,7 +34,8 @@
 
 	//$location = $_SERVER['REQUEST_URI'];
 	$location = "?CT_ID={$_GET["CT_ID"]}".( ($_GET["year"] != '' and $_GET["month"] != '') ? '&year='.$_GET["year"].'&month='.$_GET["month"] : '' );
-	$_SESSION["location"] = $location;
+	//$_SESSION["location"] = $location;
+	$_SESSION["location"] = $_SERVER['REQUEST_URI'];
 
 	if( in_array('selling_city', $Rights) ) {
 
@@ -126,10 +127,14 @@
 	#selling_report:hover {
 		overflow: visible;
 	}
+	#selling_report:hover table {
+		box-shadow: 5px 5px 8px #666;
+	}
 	#selling_report table {
 		display: inline-block;
 		vertical-align: top;
 		margin-right: 20px;
+		transition: .3s;
 	}
 </style>
 
