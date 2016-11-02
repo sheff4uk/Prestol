@@ -687,6 +687,24 @@ case "update_shop":
 
 	break;
 
+// Редактирование даты продажи
+case "update_sell_date":
+	$OD_ID = $_GET["OD_ID"];
+	$StartDate = $_GET["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_GET["StartDate"]) ).'\'' : "NULL";
+
+	// Узнаем старую дату продажи
+	$query = "SELECT DATE_FORMAT(StartDate, '%d.%m.%Y') StartDate FROM OrdersData WHERE OD_ID = {$OD_ID}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$old_StartDate = mysqli_result($res,0,'StartDate');
+
+	// Меняем дату продажи
+	$query = "UPDATE OrdersData SET StartDate = {$StartDate} WHERE OD_ID = {$OD_ID}";
+	mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+
+	echo "noty({timeout: 3000, text: 'Дата продажи изменена с \"{$old_StartDate}\" на \"{$_GET["StartDate"]}\"', type: 'success'});";
+
+	break;
+
 // Разделение заказа
 case "order_cut":
 	$OD_ID = $_GET["OD_ID"];
