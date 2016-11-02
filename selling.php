@@ -33,7 +33,7 @@
 	$datediff = 60; // Максимальный период отображения данных
 
 	//$location = $_SERVER['REQUEST_URI'];
-	$location = "?CT_ID={$_GET["CT_ID"]}".( ($_GET["year"] != '' and $_GET["month"] != '') ? '&year='.$_GET["year"].'&month='.$_GET["month"] : '' );
+	$location = "selling.php?CT_ID={$_GET["CT_ID"]}".( ($_GET["year"] != '' and $_GET["month"] != '') ? '&year='.$_GET["year"].'&month='.$_GET["month"] : '' );
 	//$_SESSION["location"] = $location;
 	$_SESSION["location"] = $_SERVER['REQUEST_URI'];
 
