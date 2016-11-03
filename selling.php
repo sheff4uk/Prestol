@@ -84,7 +84,6 @@
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
-		//exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
 
@@ -107,6 +106,35 @@
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
+		die;
+	}
+
+	// Добавление/редактирование расхода
+	if( isset($_GET["add_cost"]) )
+	{
+		$CS_ID = $_POST["CS_ID"];
+		$cost_name = mysqli_real_escape_string( $mysqli, $_POST["cost_name"] );
+		$cost = $_POST["cost"];
+		if( $CS_ID != '' ) { // Редактируем расход
+			if( $cost != '' ) {
+				$query = "UPDATE CostsShops SET cost_name = '{$cost_name}', cost = {$cost} WHERE CS_ID = {$CS_ID}";
+			}
+			else {
+				$query = "DELETE FROM CostsShops WHERE CS_ID = {$CS_ID}";
+			}
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+		else { // Добавляем расход
+			if( $cost != '' ) {
+				$CT_ID = $_POST["CT_ID"];
+				$year = $_POST["year"];
+				$month = $_POST["month"];
+				$query = "INSERT INTO CostsShops SET CT_ID = {$CT_ID}, year = {$year}, month = {$month}, cost_name = '{$cost_name}', cost = {$cost}";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			}
+		}
+
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
 
@@ -273,6 +301,32 @@
 				</tbody>
 			</table>
 
+			<table>
+				<tbody>
+				<?
+					$query = "SELECT * FROM CostsShops WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month={$_GET["month"]}";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					$sum_cost = 0;
+					while( $row = mysqli_fetch_array($res) ) {
+						$sum_cost = $sum_cost + $row["cost"];
+						$format_cost = number_format($row["cost"], 0, '', ' ');
+						echo "<tr>";
+						echo "<td>{$row["cost_name"]}</td>";
+						echo "<td class='txtright'>{$format_cost}</td>";
+						echo "<td><a href='#' class='add_cost_btn' id='{$row["CS_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["cost"]}' title='Изменить расход'><i class='fa fa-pencil fa-lg'></i></a></td>";
+						echo "</tr>";
+					}
+					$sum_cost = number_format($sum_cost, 0, '', ' ');
+				?>
+				</tbody>
+				<thead>
+					<tr>
+						<th>Расходы за <?=$MONTHS[$_GET["month"]]?>:</th>
+						<th class="txtright"><?=$sum_cost?></th>
+						<th><a href="#" class="add_cost_btn" title="Внести расход"><i class="fa fa-plus-square fa-2x" style="color: green;"></i></a></th>
+					</tr>
+				</thead>
+			</table>
 		</div>
 	<?
 		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100% - 400px)'); $('#MT_header').css('margin-top','210px'); }); </script>";
@@ -466,6 +520,31 @@
 </div>
 <!-- Конец формы редактирования суммы заказа -->
 
+<!-- Форма добавления/редактирования расхода -->
+<div id='add_cost' title='Расход' style='display:none'>
+	<form method='post' action='<?=$location?>&add_cost=1'>
+		<fieldset>
+			<input type="hidden" name="CS_ID" id="CS_ID">
+			<input type="hidden" name="CT_ID" id="CT_ID">
+			<input type="hidden" name="year" id="year">
+			<input type="hidden" name="month" id="month">
+			<div style="width: 250px; display: inline-block; margin-right: 20px;">
+				<label for="cost_name">Расход:</label><br>
+				<input type="text" name="cost_name" id="cost_name" style="width: 100%;">
+			</div>
+			<div style="width: 100px; display: inline-block;">
+				<label for="cost">Сумма:</label><br>
+				<input type="number" name="cost" min="1" id="cost" style="width: 100%; text-align: right;">
+			</div>
+		</fieldset>
+		<div>
+			<hr>
+			<button style='float: right;'>Сохранить</button>
+		</div>
+	</form>
+</div>
+<!-- Конец формы добавления/редактирования расхода -->
+
 <script>
 	$(document).ready(function() {
 		//$('.wr_main_table_body').show('slow');
@@ -554,6 +633,39 @@
 			});
 
 			return false;
+		});
+
+		// Кнопка добавления/редактирования расхода
+		$('.add_cost_btn').click( function() {
+			$('#add_cost #CS_ID').val('');
+			$('#add_cost #CT_ID').val('');
+			$('#add_cost #year').val('');
+			$('#add_cost #month').val('');
+			$('#add_cost #cost_name').val('');
+			$('#add_cost #cost').val('');
+
+			var CS_ID = $(this).attr('id');
+
+			if( CS_ID > 0 ) {
+				var cost_name = $(this).attr('cost_name');
+				var cost = $(this).attr('cost');
+				$('#add_cost #CS_ID').val(CS_ID);
+				$('#add_cost #cost_name').val(cost_name);
+				$('#add_cost #cost').val(cost);
+			}
+			else {
+				$('#add_cost #CT_ID').val(<?=$_GET["CT_ID"]?>);
+				$('#add_cost #year').val(<?=$_GET["year"]?>);
+				$('#add_cost #month').val(<?=$_GET["month"]?>);
+			}
+
+			$('#add_cost').dialog({
+				width: 500,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
 		});
 
 		// Редактирование салона
