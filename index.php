@@ -636,6 +636,7 @@
 					,OD.Comment
 					,COUNT(ODD_ODB.itemID) Child
 					,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
+					,GROUP_CONCAT(ODD_ODB.Zakaz_lock SEPARATOR '') Zakaz_lock
 					,OD.Color
 					,OD.IsPainting
 					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
@@ -644,9 +645,11 @@
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,BIT_AND(ODD_ODB.IsReady) IsReady
 					,IFNULL(OD.SHP_ID, 0) SHP_ID
+					,IF(OS.ostatok IS NOT NULL, 1, 0) is_lock
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+			  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 			  LEFT JOIN (SELECT ODD.OD_ID
 			  				   ,{$PRfilterODD}
 							   ,BIT_AND(IF(ODS.Visible = 1 AND ODS.Old = 0, ODS.IsReady, 1)) IsReady
@@ -654,6 +657,8 @@
 							   ,ODD.ODD_ID itemID
 
 							   ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'".(in_array('order_add', $Rights) ? "edit_product', IFNULL(PM.PT_ID, 2), '" : "")."\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a></b><br>') Zakaz
+
+							   ,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</i></b><br>') Zakaz_lock
 
 							   ,CONCAT(IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'m', ODD.ODD_ID, '\' class=\'', IF(MT.removed=1, 'removed ', ''),
 								CASE ODD.IsExist
@@ -683,6 +688,8 @@
 							  ,ODB.ODB_ID itemID
 
 							  ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'blank', ODB.ODB_ID, '\'', 'class=\'".(in_array('order_add', $Rights) ? "edit_order_blank" : "")."\' location=\'{$location}\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</a></b><br>') Zakaz
+
+							  ,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(BL.Name, ODB.Other), '</i></b><br>') Zakaz_lock
 
 							  ,CONCAT(IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span id=\'m', ODB.ODB_ID, '\' class=\'', IF(MT.removed=1, 'removed ', ''),
 								CASE ODB.IsExist
@@ -787,7 +794,12 @@
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
 		echo "<td class='".(in_array('order_add', $Rights) ? "shop_cell" : "")."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
 		echo "<td><span>{$row["OrderNumber"]}</span></td>";
-		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
+		if( $row["is_lock"] ) {
+			echo "<td><span class='nowrap'>{$row["Zakaz_lock"]}</span></td>";
+		}
+		else {
+			echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
+		}
 		echo "<td><span class='nowrap material'>{$row["Material"]}</span></td>";
 		echo "<td val='{$row["IsPainting"]}'";
 			switch ($row["IsPainting"]) {
@@ -810,7 +822,11 @@
 		echo "<td class='X'><input type='checkbox' {$checkedX} value='1'></td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td>";
-		if( in_array('order_add', $Rights) ) {
+
+		if( $row["is_lock"] ) {
+			echo "<i class='fa fa-lock fa-lg' aria-hidden='true' title='Отчетный период закрыт. Заказ нельзя отредактировать.'></i> ";
+		}
+		else if( in_array('order_add', $Rights) ) {
 			echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
 			echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
 		}

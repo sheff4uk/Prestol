@@ -15,13 +15,17 @@
 	{
 		// Проверка прав на доступ к экрану
 		// Проверка города
-		$query = "SELECT 1
+		$query = "SELECT OD.OD_ID
+						,IF(OS.ostatok IS NOT NULL, 1, 0) is_lock
 					FROM OrdersData OD
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 					WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$OD_ID = mysqli_result($res,0,'OD_ID');
+		$is_lock = mysqli_result($res,0,'is_lock');
 
-		if( !in_array('order_add', $Rights) or !mysqli_num_rows($res) ) {
+		if( !in_array('order_add', $Rights) or !($OD_ID > 0) or $is_lock == 1 ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 			die('Недостаточно прав для совершения операции');
 		}
@@ -67,7 +71,9 @@
 				     ,IsPainting = $IsPainting
 				     ,Comment = '{$Comment}'
 				  WHERE OD_ID = {$id}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( !mysqli_query( $mysqli, $query ) ) {
+			$_SESSION["alert"] = mysqli_error( $mysqli );
+		}
 		
 		//header( "Location: ".$location );
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');

@@ -557,7 +557,7 @@ case "add_payment":
 					,IF(IFNULL(terminal_payer, '') = '', 0, 1) terminal
 					,terminal_payer
 				FROM OrdersPayment
-				WHERE OD_ID = {$OD_ID}
+				WHERE OD_ID = {$OD_ID} AND payment_sum IS NOT NULL
 				ORDER BY OP_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 	while( $row = mysqli_fetch_array($res) ) {
@@ -656,7 +656,7 @@ case "update_shop":
 
 	// Меняем салон в заказе
 	$query = "UPDATE OrdersData SET SH_ID = {$SH_ID} WHERE OD_ID = {$OD_ID}";
-	mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'alert'});");
 
 	// Узнаем название нового салона
 	$query = "SELECT IFNULL(SH.Shop, 'Свободные') Shop
@@ -699,7 +699,10 @@ case "update_sell_date":
 
 	// Меняем дату продажи
 	$query = "UPDATE OrdersData SET StartDate = {$StartDate} WHERE OD_ID = {$OD_ID}";
-	mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	if( !mysqli_query( $mysqli, $query ) ) {
+		echo "$('td#{$OD_ID} .sell_date').val('{$old_StartDate}');";
+		die("noty({timeout: 10000, text: '".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'alert'});");
+	}
 
 	echo "noty({timeout: 3000, text: 'Дата продажи изменена с \"{$old_StartDate}\" на \"{$_GET["StartDate"]}\"', type: 'success'});";
 

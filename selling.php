@@ -37,8 +37,16 @@
 	//$_SESSION["location"] = $location;
 	$_SESSION["location"] = $_SERVER['REQUEST_URI'];
 
-	if( in_array('selling_city', $Rights) ) {
-
+	// Узнаем остаток с прошлого месяца.
+	if( $_GET["year"] != '' and $_GET["month"] != '' ) {
+		$lastyear = $_GET["month"] == 1 ? $_GET["year"] - 1 : $_GET["year"];
+		$lastmonth = $_GET["month"] == 1 ? 12 : $_GET["month"] - 1;
+		$nextyear = $_GET["month"] == 12 ? $_GET["year"] + 1 : $_GET["year"];
+		$nextmonth = $_GET["month"] == 12 ? 1 : $_GET["month"] + 1;
+		$query = "SELECT ostatok FROM OstatkiShops WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$lastyear} AND month = {$lastmonth}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( mysqli_num_rows($res) )
+			$last_ostatok = mysqli_result($res,0,'ostatok');
 	}
 
 	// Добавление в базу нового платежа (или обновление старого)
@@ -57,30 +65,31 @@
 							,payment_date = '{$payment_date}'
 							,payment_sum = {$payment_sum}
 							,terminal_payer = {$terminal_payer}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-			// Записываем дату продажи заказа если ее не было
-			$query = "UPDATE OrdersData SET StartDate = '{$payment_date}' WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			if( !mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["alert"] = mysqli_error( $mysqli );
+			}
+			else {
+				// Записываем дату продажи заказа если ее не было
+				$query = "UPDATE OrdersData SET StartDate = '{$payment_date}' WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
+				if( !mysqli_query( $mysqli, $query ) ) {
+					$_SESSION["alert"] = mysqli_error( $mysqli );
+				}
+			}
 		}
 
 		foreach ($_POST["OP_ID"] as $key => $value) {
 			$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date"][$key]) );
-			$payment_sum = $_POST["payment_sum"][$key];
-			//$terminal = $_POST["terminal"][$key];
+			$payment_sum = ($_POST["payment_sum"][$key] != '') ? $_POST["payment_sum"][$key] : 'NULL';
 			$terminal_payer = ($_POST["terminal_payer"][$key] != '') ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer"][$key] ).'\'' : 'NULL';
 
-			if( $payment_sum == '' ) {
-				$query = "DELETE FROM OrdersPayment WHERE OP_ID = {$value}";
+			$query = "UPDATE OrdersPayment
+						 SET payment_date = '{$payment_date}'
+							,payment_sum = {$payment_sum}
+							,terminal_payer = {$terminal_payer}
+						WHERE OP_ID = {$value}";
+			if( !mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["alert"] = mysqli_error( $mysqli );
 			}
-			else {
-				$query = "UPDATE OrdersPayment
-							 SET payment_date = '{$payment_date}'
-								,payment_sum = {$payment_sum}
-								,terminal_payer = {$terminal_payer}
-							WHERE OP_ID = {$value}";
-			}
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
@@ -88,12 +97,14 @@
 	}
 
 	// Обновление цены изделий в заказе
-	if( isset($_POST["price"]) ) {
+	if( isset($_GET["add_price"]) ) {
 		$OD_ID = $_POST["OD_ID"];
 		$discount = $_POST["discount"] ? $_POST["discount"] : "NULL";
 		// Обновление скидки заказа
 		$query = "UPDATE OrdersData SET discount = {$discount} WHERE OD_ID = {$OD_ID}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( !mysqli_query( $mysqli, $query ) ) {
+			$_SESSION["alert"] = mysqli_error( $mysqli );
+		}
 
 		foreach ($_POST["PT_ID"] as $key => $value) {
 			$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
@@ -103,7 +114,9 @@
 			else {
 				$query = "UPDATE OrdersDataDetail SET Price = {$price} WHERE ODD_ID = {$_POST["itemID"][$key]}";
 			}
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			if( !mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["alert"] = mysqli_error( $mysqli );
+			}
 		}
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
 		die;
@@ -133,6 +146,23 @@
 				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			}
 		}
+
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		die;
+	}
+
+	// Блокировка заказа
+	if( isset($_GET["add_locking_date"]) ) {
+		$locking_date = date( 'Y-m-d', strtotime($_POST["locking_date"]) );
+		if( $_POST["locking_date"] != '' ) {
+			$query = "INSERT INTO OstatkiShops
+				SET CT_ID = {$_GET["CT_ID"]}, year = {$_GET["year"]}, month = {$_GET["month"]}, ostatok = {$_POST["ostatok"]}, locking_date = '{$locking_date}'
+				ON DUPLICATE KEY UPDATE ostatok = {$_POST["ostatok"]}, locking_date = '{$locking_date}'";
+		}
+		else {
+			$query = "DELETE FROM OstatkiShops WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month = {$_GET["month"]}";
+		}
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
@@ -193,16 +223,35 @@
 		$highlight = ($_GET["year"] == '' or $_GET["month"] == '') ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
 		echo "<a href='?CT_ID={$CT_ID}' class='button' style='{$highlight}'>Все</a> ";
 
-		$query = "SELECT IFNULL(YEAR(OD.StartDate), 0) year, IFNULL(MONTH(OD.StartDate), 0) month FROM OrdersData OD JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID} GROUP BY YEAR(OD.StartDate), MONTH(OD.StartDate) ORDER BY OD.StartDate";
+		$query = "SELECT IFNULL(YEAR(OD.StartDate), 0) year
+						,IFNULL(MONTH(OD.StartDate), 0) month
+						,IF(OS.year IS NULL, 0, 1) is_lock
+						,IF(DATEDIFF(NOW(), IFNULL(OS.locking_date, NOW())) <= {$datediff}, 1, 0) is_visible
+					FROM OrdersData OD
+					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = {$CT_ID}
+					WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID}
+					GROUP BY YEAR(OD.StartDate), MONTH(OD.StartDate)
+					ORDER BY OD.StartDate";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$highlight = ($_GET["year"] == $row["year"] and $_GET["month"] == $row["month"]) ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
 			if( $row["year"] == 0 and $row["month"] == 0 ) {
 				echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>Свободные</a> ";
+				$OTCHET_MONTHS[] = "{$row["year"]}-{$row["month"]}";
 			}
 			else {
-				echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>{$MONTHS[$row["month"]]} - {$row["year"]}</a> ";
+				if( $row["is_visible"] ) {
+					echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}' ".($row["is_lock"] == 1 ? "title='Месяц закрыт'" : "").">{$MONTHS[$row["month"]]} - {$row["year"]}".($row["is_lock"] == 1 ? " <i class='fa fa-lock' aria-hidden='true'></i>" : "")."</a> ";
+					$OTCHET_MONTHS[] = "{$row["year"]}-{$row["month"]}";
+				}
 			}
+		}
+
+		// Проверяем доступен ли месяц из GET в списке отчетных периодов
+		if( ($_GET["year"] != '' or $_GET["month"] != '') and !in_array("{$_GET["year"]}-{$_GET["month"]}", $OTCHET_MONTHS) ) {
+			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+			die('Недостаточно прав для совершения операции');
 		}
 		?>
 	</div>
@@ -211,17 +260,23 @@
 	<?
 	// ОТЧЕТ ЗА МЕСЯЦ
 	if( $_GET["year"] > 0 and $_GET["month"] > 0 ) {
+		// Узнаем дату закрытия месяца
+		$query = "SELECT DATE_FORMAT(locking_date, '%d.%m.%Y') locking_date
+					FROM OstatkiShops
+					WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month = {$_GET["month"]}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$locking = mysqli_num_rows($res) ? 1 : 0;
+		$locking_date = mysqli_result($res,0,'locking_date');
+
+		// Узнаем закрыт ли следующий месяц
+		$query = "SELECT locking_date
+					FROM OstatkiShops
+					WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$nextyear} AND month = {$nextmonth}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$locking_next = mysqli_num_rows($res) ? 1 : 0;
 	?>
 		<div id='selling_report'>
 			<table>
-<!--
-				<thead>
-					<tr>
-						<th>&nbsp;</th>
-						<th>&nbsp;</th>
-					</tr>
-				</thead>
--->
 				<tbody>
 				<?
 					$city_price = 0;
@@ -258,10 +313,11 @@
 						echo "<td class='txtright'>{$shop_price}</td>";
 						echo "</tr>";
 					}
-					$city_price = number_format(($city_price - $city_discount), 0, '', ' ');
+					$city_price = $city_price - $city_discount;
+					$format_city_price = number_format($city_price, 0, '', ' ');
 					echo "<thead><tr>";
 					echo "<th class='nowrap'><b>ВСЕГО ЗА {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</b></th>";
-					echo "<th class='txtright'><b>{$city_price}</b></th>";
+					echo "<th class='txtright'><b>{$format_city_price}</b></th>";
 					echo "</tr></thead>";
 
 				?>
@@ -279,7 +335,7 @@
 								FROM OrdersPayment OP
 								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
-								WHERE terminal_payer IS NOT NULL AND YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]}
+								WHERE terminal_payer IS NOT NULL AND YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.payment_sum IS NOT NULL
 								ORDER BY OP.payment_date";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
@@ -292,10 +348,10 @@
 					echo "<td class='txtright'>{$format_sum}</td>";
 					echo "</tr>";
 				}
-				$terminal_sum = number_format($terminal_sum, 0, '', ' ');
+				$format_terminal_sum = number_format($terminal_sum, 0, '', ' ');
 				echo "<thead><tr>";
 				echo "<th colspan='3' class='nowrap'><b>Оплата по ТЕРМИНАЛУ:</b></th>";
-				echo "<th class='txtright'><b>{$terminal_sum}</b></th>";
+				echo "<th class='txtright'><b>{$format_terminal_sum}</b></th>";
 				echo "</tr></thead>";
 				?>
 				</tbody>
@@ -313,20 +369,66 @@
 						echo "<tr>";
 						echo "<td>{$row["cost_name"]}</td>";
 						echo "<td class='txtright'>{$format_cost}</td>";
-						echo "<td><a href='#' class='add_cost_btn' id='{$row["CS_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["cost"]}' title='Изменить расход'><i class='fa fa-pencil fa-lg'></i></a></td>";
+						echo "<td>";
+						if( $locking == 0 ) { // Если месяц не закрыт
+							echo "<a href='#' class='add_cost_btn' id='{$row["CS_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["cost"]}' title='Изменить расход'><i class='fa fa-pencil fa-lg'></i></a>";
+						}
+						echo "</td>";
 						echo "</tr>";
 					}
-					$sum_cost = number_format($sum_cost, 0, '', ' ');
+					$format_sum_cost = number_format($sum_cost, 0, '', ' ');
 				?>
 				</tbody>
 				<thead>
 					<tr>
 						<th>Расходы за <?=$MONTHS[$_GET["month"]]?>:</th>
-						<th class="txtright"><?=$sum_cost?></th>
-						<th><a href="#" class="add_cost_btn" title="Внести расход"><i class="fa fa-plus-square fa-2x" style="color: green;"></i></a></th>
+						<th class="txtright"><?=$format_sum_cost?></th>
+						<th>
+						<?
+							if( $locking == 0 ) { // Если месяц не закрыт
+								echo "<a href='#' class='add_cost_btn' title='Внести расход'><i class='fa fa-plus-square fa-2x' style='color: green;'></i></a>";
+							}
+						?>
+						</th>
 					</tr>
 				</thead>
 			</table>
+
+			<div style="display: inline-block; vertical-align:top;">
+			<?
+				echo "<table><thead>";
+				$format_last_ostatok = number_format($last_ostatok, 0, '', ' ');
+				echo "<tr><th>Остаток {$MONTHS[$lastmonth]} {$lastyear}:</th><th class='txtright'>{$format_last_ostatok}</th></tr>";
+				$ostatok = $city_price + $last_ostatok - $terminal_sum - $sum_cost;
+				$format_ostatok = number_format($ostatok, 0, '', ' ');
+				echo "<tr><th>Остаток текущий:</th><th class='txtright'>{$format_ostatok}</th></tr>";
+				echo "</thead></table><br><br>";
+
+				$locking_form = "
+					<form method='post' action='{$location}&add_locking_date=1' id='locking_form'>
+						<input type='text' class='date' name='locking_date' value='{$locking_date}' placeholder='Дата закрытия' autocomplete='off'>
+						<input type='hidden' name='ostatok' value='{$ostatok}'>
+						<button>Cохранить</button>
+						<img src='/img/attention.png' class='attention' title='Разблокировать отчет невозможно так как следующий месяц закрыт.' style='display: none;'>
+					</form>
+				";
+				if( in_array('selling_all', $Rights) ) {
+					echo $locking_form;
+				}
+				else if( $locking_date != '' ) {
+					echo "<h3>Месяц закрыт: {$locking_date}</h3>";
+				}
+			?>
+			<script>
+				$('#locking_form').ready(function() {
+					if( <?=$locking_next?> == 1 ) {
+						$('#locking_form img').css('display', 'inline-block');
+						$('#locking_form input').prop('disabled', true);
+						$('#locking_form button').button( "option", "disabled", true );
+					}
+				});
+			</script>
+			</div>
 		</div>
 	<?
 		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100% - 400px)'); $('#MT_header').css('margin-top','210px'); }); </script>";
@@ -397,8 +499,10 @@
 						,ROUND(IFNULL(OD.discount, 0) / SUM(ODD_ODB.Price) * 100) percent
 						,IFNULL(OP.payment_sum, 0) payment_sum
 						,OP.terminal_payer
+						,IF(OS.ostatok IS NOT NULL, 1, 0) is_lock
 				  FROM OrdersData OD
 				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+				  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 				  LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
 				  LEFT JOIN (SELECT ODD.OD_ID
 								   ,IFNULL(PM.PT_ID, 2) PT_ID
@@ -465,10 +569,15 @@
 					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>
 					<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>
 					<td>";
-			if( in_array('order_add', $Rights) ) {
-				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+			if( $row["is_lock"] ) {
+				echo "<i class='fa fa-lock fa-lg' aria-hidden='true' title='Отчетный период закрыт. Заказ нельзя отредактировать.'></i> ";
 			}
-			echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
+			else {
+				if( in_array('order_add', $Rights) ) {
+					echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+				}
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
+			}
 			echo "
 					</td>
 				</tr>
@@ -509,7 +618,7 @@
 
 <!-- Форма редактирования суммы заказа -->
 <div id='update_price' title='Изменение суммы заказа' style='display:none'>
-	<form method='post'>
+	<form method='post' action="<?=$location?>&add_price=1">
 		<fieldset>
 		</fieldset>
 		<div>

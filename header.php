@@ -70,10 +70,6 @@
 				text        : text,
 				//dismissQueue: false,
 				modal		: true,
-				animation: {
-					open: 'animated bounce',
-					//close: 'animated flipOutX',
-				},
 				buttons     : [
 					{addClass: 'btn btn-primary', text: 'Ok', onClick: function ($noty) {
 						$noty.close();
@@ -96,9 +92,10 @@
 
 <?
 	if( $_SESSION["alert"] != '' ) {
-		echo "<script>alert('{$_SESSION["alert"]}');</script>";
+		echo "<script> $(document).ready(function() {noty({timeout: 10000, text: '{$_SESSION["alert"]}', type: 'alert'});});</script>";
 		$_SESSION["alert"] = '';
 	}
+
 	//$archive = ($_GET["archive"] >= 1) ? $_GET["archive"] : 0;
 	$archive = $_GET["archive"];
 	switch ($archive) {

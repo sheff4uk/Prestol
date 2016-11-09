@@ -129,7 +129,9 @@ if( $_GET["oddid"] )
 				 ,order_date = {$OrderDate}
 				 ,arrival_date = {$ArrivalDate}
 			  WHERE ODD_ID = {$_GET["oddid"]}";
-	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	if( !mysqli_query( $mysqli, $query ) ) {
+		$_SESSION["alert"] = mysqli_error( $mysqli );
+	}
 
 	// Если количество изделий уменьшено и изделие в работе, то переносим их на склад (свободные)
 	if( $amount > $_POST["Amount"] and $inprogress == 1)
@@ -231,7 +233,9 @@ if( $_GET["odbid"] )
 				 ,order_date = {$OrderDate}
 				 ,arrival_date = {$ArrivalDate}
 			  WHERE ODB_ID = {$_GET["odbid"]}";
-	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	if( !mysqli_query( $mysqli, $query ) ) {
+		$_SESSION["alert"] = mysqli_error( $mysqli );
+	}
 
 	// Обновление этапов чтобы сработал триггер
 	$query = "UPDATE OrdersDataSteps SET Old = Old WHERE ODB_ID = {$_GET["odbid"]}";
