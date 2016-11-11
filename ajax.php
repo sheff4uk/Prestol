@@ -642,7 +642,7 @@ case "update_price":
 		$html .= "<td class='prod_sum' style='text-align: right;'></td>";
 		$html .= "</tr>";
 		if( $row["PT_ID"] > 0 ) {
-			$js .= "window.top.window.$( '#prod_price{$row["itemID"]}' ).autocomplete({ source: 'autocomplete.php?do=price&PM_ID={$row["PM_ID"]}&PME_ID={$row["PME_ID"]}' });";
+			$js .= "window.top.window.$( '#prod_price{$row["itemID"]}' ).autocomplete({ source: 'autocomplete.php?do=price&retail=1&PM_ID={$row["PM_ID"]}&PME_ID={$row["PME_ID"]}' });";
 		}
 	}
 	$html .= "<tr style='text-align: right; font-weight: bold;'><td colspan='2' id='discount'>Скидка: <input type='number' min='1' name='discount' value='{$discount}' style='width: 70px; text-align: right;'> руб. (<span></span> %)</td><td>Итог:</td><td id='prod_total'><input type='number' style='width: 70px; text-align: right;'></td></tr>";

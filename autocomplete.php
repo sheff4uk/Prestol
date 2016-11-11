@@ -101,11 +101,13 @@ case "price":
 	// Автокомплит цены изделий
 	if( $_GET["PM_ID"] != '' ) {
 		$mechanism = $_GET["PME_ID"] != '' ? '= '.$_GET["PME_ID"] : 'IS NULL';
-		$query = "SELECT Price, CONCAT(Price, IFNULL(CONCAT(' (', Length, 'x', Width, IFNULL(CONCAT('/', PieceAmount, 'x', PieceSize), ''), ')'), '')) Label
-					FROM OrdersDataDetail
-					WHERE Price IS NOT NULL AND PM_ID = {$_GET["PM_ID"]} AND PME_ID {$mechanism}
-					GROUP BY Price, Length, Width, PieceAmount, PieceSize, PME_ID
-					ORDER BY MAX(ODD_ID) DESC";
+		$query = "SELECT ODD.Price, CONCAT(ODD.Price, IFNULL(CONCAT(' (', ODD.Length, 'x', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), ''), ')'), '')) Label
+					FROM OrdersDataDetail ODD
+					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = {$_GET["retail"]}
+					WHERE ODD.Price IS NOT NULL AND ODD.PM_ID = {$_GET["PM_ID"]} AND ODD.PME_ID {$mechanism}
+					GROUP BY ODD.Price, ODD.Length, ODD.Width, ODD.PieceAmount, ODD.PieceSize, ODD.PME_ID
+					ORDER BY MAX(ODD.ODD_ID) DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) )
 		{
