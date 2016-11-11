@@ -180,10 +180,11 @@
 		z-index: 2;
 		position: absolute;
 		width: calc( 100% - 40px );
-		overflow: hidden;
+		overflow: auto;
+		white-space: nowrap;
 	}
 	#selling_report:hover {
-		overflow: visible;
+		//overflow: visible;
 	}
 	#selling_report:hover table {
 		box-shadow: 5px 5px 8px #666;
