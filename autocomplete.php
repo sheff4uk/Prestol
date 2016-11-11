@@ -96,5 +96,23 @@ case "clienttags":
 	}
 	echo json_encode($ClientTags);
 	break;
+
+case "price":
+	// Автокомплит цены изделий
+	if( $_GET["PM_ID"] != '' ) {
+		$mechanism = $_GET["PME_ID"] != '' ? '= '.$_GET["PME_ID"] : 'IS NULL';
+		$query = "SELECT Price, CONCAT(Price, IFNULL(CONCAT(' (', Length, 'x', Width, IFNULL(CONCAT('/', PieceAmount, 'x', PieceSize), ''), ')'), '')) Label
+					FROM OrdersDataDetail
+					WHERE Price IS NOT NULL AND PM_ID = {$_GET["PM_ID"]} AND PME_ID {$mechanism}
+					GROUP BY Price, Length, Width, PieceAmount, PieceSize, PME_ID
+					ORDER BY MAX(ODD_ID) DESC";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$PriceTags[] = array( "label"=>$row["Label"], "value"=>$row["Price"] );
+		}
+		echo json_encode($PriceTags);
+	}
+	break;
 }
 ?>

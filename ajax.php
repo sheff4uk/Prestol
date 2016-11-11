@@ -589,6 +589,8 @@ case "update_price":
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 	$discount = mysqli_result($res,0,'discount');
 
+	$js = '';
+
 	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 	$html .= "<table class='main_table'><thead><tr>";
 	$html .= "<th>Наименование</th>";
@@ -602,6 +604,8 @@ case "update_price":
 					,ODD.ODD_ID itemID
 					,ODD.Price
 					,ODD.Amount
+					,ODD.PM_ID
+					,ODD.PME_ID
 
 					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</i></b><br>') Zakaz
 
@@ -617,6 +621,8 @@ case "update_price":
 					,ODB.ODB_ID itemID
 					,ODB.Price
 					,ODB.Amount
+					,0 PM_ID
+					,0 PME_ID
 
 					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(BL.Name, ODB.Other), '</i></b><br>') Zakaz
 
@@ -631,16 +637,20 @@ case "update_price":
 		$html .= "<input type='hidden' name='PT_ID[]' value='{$row["PT_ID"]}'>";
 		$html .= "<input type='hidden' name='itemID[]' value='{$row["itemID"]}'>";
 		$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
-		$html .= "<td class='prod_price'><input type='number' min='1' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;'></td>";
+		$html .= "<td class='prod_price'><input type='number' id='prod_price{$row["itemID"]}' min='1' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;'></td>";
 		$html .= "<td class='prod_amount' style='text-align: center;'>{$row["Amount"]}</td>";
 		$html .= "<td class='prod_sum' style='text-align: right;'></td>";
 		$html .= "</tr>";
+		if( $row["PT_ID"] > 0 ) {
+			$js .= "window.top.window.$( '#prod_price{$row["itemID"]}' ).autocomplete({ source: 'autocomplete.php?do=price&PM_ID={$row["PM_ID"]}&PME_ID={$row["PME_ID"]}' });";
+		}
 	}
 	$html .= "<tr style='text-align: right; font-weight: bold;'><td colspan='2' id='discount'>Скидка: <input type='number' min='1' name='discount' value='{$discount}' style='width: 70px; text-align: right;'> руб. (<span></span> %)</td><td>Итог:</td><td id='prod_total'><input type='number' style='width: 70px; text-align: right;'></td></tr>";
 	$html .= "</tbody></table>";
 
 	$html = addslashes($html);
 	echo "window.top.window.$('#update_price fieldset').html('{$html}');";
+	echo $js;
 
 	break;
 

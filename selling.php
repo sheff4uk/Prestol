@@ -759,6 +759,11 @@
 				updprice();
 			});
 
+			$('.prod_price input').on( "autocompleteselect", function( event, ui ) {
+				$(this).val( ui.item.value );
+				updprice();
+			});
+
 			$('#prod_total input').on('input', function() {
 				upddiscount();
 			});
@@ -768,6 +773,13 @@
 					$(this).val('');
 				}
 			});
+
+			// Раскрытие автокомплита на фокусе
+			$( '.prod_price input' ).focus(function(){
+				$(this).autocomplete( "search", "1" );
+			});
+			// Автокомплит поверх диалога
+			$( '.prod_price input' ).autocomplete( "option", "appendTo", "#update_price" );
 
 			return false;
 		});
