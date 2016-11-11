@@ -251,8 +251,7 @@
 
 		// Проверяем доступен ли месяц из GET в списке отчетных периодов
 		if( ($_GET["year"] != '' or $_GET["month"] != '') and !in_array("{$_GET["year"]}-{$_GET["month"]}", $OTCHET_MONTHS) ) {
-			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-			die('Недостаточно прав для совершения операции');
+			die('<h3>'.$MONTHS["{$_GET["month"]}"].'-'.$_GET["year"].' отсутствует в списке доступных отчетов.<h3>');
 		}
 		?>
 	</div>
