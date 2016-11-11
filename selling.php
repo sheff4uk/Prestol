@@ -730,8 +730,26 @@
 				});
 				percent = (discount / prod_total * 100).toFixed(2);
 				prod_total = prod_total - discount;
-				prod_total = prod_total.format();
-				$('#prod_total').html(prod_total);
+				$('#prod_total input').val(prod_total);
+				$('#discount span').html(percent);
+			}
+
+			function upddiscount() {
+				var prod_total = $('#prod_total input').val();
+				var discount = prod_total * -1;
+				var percent = 0;
+				$('.prod_price').each(function(){
+					var prod_price = $(this).find('input').val();
+					var prod_amount = $(this).parents('tr').find('.prod_amount').html();
+					var prod_sum = prod_price * prod_amount;
+					discount = discount + prod_sum;
+				});
+				percent = (discount / prod_total * 100).toFixed(2);
+				prod_total = prod_total - discount;
+				if( discount == 0 ) {
+					discount = '';
+				}
+				$('#discount input').val(discount);
 				$('#discount span').html(percent);
 			}
 
@@ -739,6 +757,16 @@
 
 			$('.prod_price input, #discount input').on('input', function() {
 				updprice();
+			});
+
+			$('#prod_total input').on('input', function() {
+				upddiscount();
+			});
+
+			$('#discount input').on('input', function() {
+				if( $(this).val() == 0 ) {
+					$(this).val('');
+				}
 			});
 
 			return false;

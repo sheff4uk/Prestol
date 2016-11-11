@@ -636,7 +636,7 @@ case "update_price":
 		$html .= "<td class='prod_sum' style='text-align: right;'></td>";
 		$html .= "</tr>";
 	}
-	$html .= "<tr style='text-align: right; font-weight: bold;'><td colspan='2' id='discount'>Скидка: <input type='number' min='1' name='discount' value='{$discount}' style='width: 70px; text-align: right;'> руб. (<span></span> %)</td><td>Итог:</td><td id='prod_total'></td></tr>";
+	$html .= "<tr style='text-align: right; font-weight: bold;'><td colspan='2' id='discount'>Скидка: <input type='number' min='1' name='discount' value='{$discount}' style='width: 70px; text-align: right;'> руб. (<span></span> %)</td><td>Итог:</td><td id='prod_total'><input type='number' style='width: 70px; text-align: right;'></td></tr>";
 	$html .= "</tbody></table>";
 
 	$html = addslashes($html);
