@@ -185,7 +185,7 @@
 			  WHERE OD.OD_ID IN ({$id_list})
 			  AND ODD_ODB.PT_ID IN({$product_types})
 			  GROUP BY ODD_ODB.itemID
-			  ORDER BY OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
+			  ORDER BY OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	// Получаем количество изделий в заказе для группировки ячеек
@@ -202,7 +202,7 @@
 				WHERE OD.OD_ID IN ({$id_list})
 				AND ODD_ODB.PT_ID IN({$product_types})
 				GROUP BY OD.OD_ID
-				ORDER BY OD.OD_ID";
+				ORDER BY OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$odid = 0;
 	while( $row = mysqli_fetch_array($res) )
