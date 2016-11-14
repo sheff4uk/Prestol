@@ -304,7 +304,7 @@ $(document).ready(function(){
 		$('#addtable input[name="Price"]').val('');
 		$('#addtable input[name="Length"]').val(''); //было 1300
 		$('#addtable input[name="Width"]').val(''); //было 800
-		$('#2radio2').prop('checked', true);
+		$('#2radio0').prop('checked', true);
 		$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
 		$('#addtable .radiostatus input[type="radio"]').button('refresh');
 		$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
