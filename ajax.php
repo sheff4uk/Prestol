@@ -381,6 +381,10 @@ case "shipment":
 		}
 		$html .= "<br><br>";
 
+		// Снимаем ограничение в 1024 на GROUP_CONCAT
+		$query = "SET @@group_concat_max_len = 10000;";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
 		$query = "SELECT OD.OD_ID
 						,OD.Code
 						,OD.Color
