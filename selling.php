@@ -328,25 +328,32 @@
 				<tbody>
 				<?
 					$terminal_sum = 0;
+					$cache_sum = 0;
 					$query = "SELECT DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
 									,OP.payment_sum
 									,OP.terminal_payer
 									,OD.Code
+									,IF(OP.terminal_payer IS NULL, 0, 1) terminal
 								FROM OrdersPayment OP
 								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
-								WHERE terminal_payer IS NOT NULL AND YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.payment_sum IS NOT NULL
+								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.payment_sum IS NOT NULL
 								ORDER BY OP.payment_date";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
-					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
-					$terminal_sum = $terminal_sum + $row["payment_sum"];
-					echo "<tr>";
-					echo "<td title='№ упаковки'><b>{$row["Code"]}</b></td>";
-					echo "<td>{$row["payment_date"]}</td>";
-					echo "<td class='nowrap'>{$row["terminal_payer"]}</td>";
-					echo "<td class='txtright'>{$format_sum}</td>";
-					echo "</tr>";
+					if( $row["terminal"] == 1 ) {
+						$format_sum = number_format($row["payment_sum"], 0, '', ' ');
+						$terminal_sum = $terminal_sum + $row["payment_sum"];
+						echo "<tr>";
+						echo "<td title='№ упаковки'><b>{$row["Code"]}</b></td>";
+						echo "<td>{$row["payment_date"]}</td>";
+						echo "<td class='nowrap'>{$row["terminal_payer"]}</td>";
+						echo "<td class='txtright'>{$format_sum}</td>";
+						echo "</tr>";
+					}
+					else {
+						$cache_sum = $cache_sum + $row["payment_sum"];
+					}
 				}
 				$format_terminal_sum = number_format($terminal_sum, 0, '', ' ');
 				echo "<thead><tr>";
@@ -396,12 +403,27 @@
 
 			<div style="display: inline-block; vertical-align:top;">
 			<?
-				echo "<table><thead>";
+				// Вычисляем дебиторку
+				$query = "SELECT SUM(OP.payment_sum) payment_sum
+							FROM OrdersData OD
+							JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$_GET["CT_ID"]}
+							JOIN OrdersPayment OP ON OP.OD_ID = OD.OD_ID
+							WHERE OD.Del = 0 AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]}";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$month_payment_sum = mysqli_result($res,0,'payment_sum');
+				$format_debt = number_format($city_price - $month_payment_sum, 0, '', ' ');
+
 				$format_last_ostatok = number_format($last_ostatok, 0, '', ' ');
-				echo "<tr><th>Остаток {$MONTHS[$lastmonth]} {$lastyear}:</th><th class='txtright'>{$format_last_ostatok}</th></tr>";
-				$ostatok = $city_price + $last_ostatok - $terminal_sum - $sum_cost;
+				$format_cache_sum = number_format($cache_sum, 0, '', ' ');
+				#$ostatok = $city_price + $last_ostatok - $terminal_sum - $sum_cost;
+				$ostatok = $cache_sum + $last_ostatok - $sum_cost;
 				$format_ostatok = number_format($ostatok, 0, '', ' ');
-				echo "<tr><th>Остаток текущий:</th><th class='txtright'>{$format_ostatok}</th></tr>";
+
+				echo "<table><thead>";
+				echo "<tr><th class='txtleft'>Дебиторка {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</th><th class='txtright'>{$format_debt}</th></tr>";
+				echo "<tr><th class='txtleft'>Приход наличных:</th><th class='txtright'>{$format_cache_sum}</th></tr>";
+				echo "<tr><th class='txtleft'>Остаток {$MONTHS[$lastmonth]} {$lastyear}:</th><th class='txtright'>{$format_last_ostatok}</th></tr>";
+				echo "<tr><th class='txtleft'>Остаток {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</th><th class='txtright'>{$format_ostatok}</th></tr>";
 				echo "</thead></table><br><br>";
 
 				$locking_form = "
