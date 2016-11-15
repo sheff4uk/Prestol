@@ -151,7 +151,7 @@
 		die;
 	}
 
-	// Блокировка заказа
+	// Блокировка отчета
 	if( isset($_GET["add_locking_date"]) ) {
 		$locking_date = date( 'Y-m-d', strtotime($_POST["locking_date"]) );
 		if( $_POST["locking_date"] != '' ) {
@@ -165,6 +165,38 @@
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		die;
+	}
+
+	// Отказ
+	if( isset($_GET["order_otkaz"]) ) {
+		$OD_ID = $_POST["OD_ID"];
+		$old_SH_ID = $_POST["old_SH_ID"];
+		$old_StartDate = ($_POST["old_StartDate"] != '') ? '\''.$_POST["old_StartDate"].'\'' : 'NULL';
+		$type = $_POST["type"];
+		$comment = ($_POST["comment"] != '') ? '\''.mysqli_real_escape_string( $mysqli, $_POST["comment"] ).'\'' : 'NULL';
+
+		if( $type > 0 ) {
+			$query = "INSERT INTO Otkazi
+				SET OD_ID = {$OD_ID}, type = {$type}, comment = {$comment}, old_SH_ID = {$old_SH_ID}, old_StartDate = {$old_StartDate}
+				ON DUPLICATE KEY UPDATE type = {$type}, comment = {$comment}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			$query = "UPDATE OrdersData SET StartDate = NULL WHERE OD_ID = {$OD_ID}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			$_SESSION["alert"] = "Заказ перемещен в \"Свободные\"";
+		}
+		else {
+			$query = "DELETE FROM Otkazi WHERE OD_ID = {$OD_ID}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			$query = "UPDATE OrdersData SET StartDate = {$old_StartDate} WHERE OD_ID = {$OD_ID}";
+			//mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			mysqli_query( $mysqli, $query );
+		}
+
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
 		die;
 	}
 
@@ -281,11 +313,14 @@
 				<?
 					$city_price = 0;
 					$city_discount = 0;
+					$city_otkaz = 0;
+					$city_otkaz_discount = 0;
 					$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1 ORDER BY SH_ID";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						echo "<tr>";
 						echo "<td class='nowrap'>ВЫРУЧКА {$row["Shop"]}:</td>";
+
 						// Получаем сумму выручки по салону
 						$query = "SELECT SUM(ODD_ODB.Price) Price
 									FROM OrdersData OD
@@ -304,20 +339,51 @@
 						$city_price = $city_price + $shop_price;
 
 						// Получаем скидку по салону
-						$query = "SELECT SUM(discount) discount FROM OrdersData WHERE YEAR(StartDate) = {$_GET["year"]} AND MONTH(StartDate) = {$_GET["month"]} AND SH_ID = {$row["SH_ID"]}";
+						$query = "SELECT SUM(discount) discount FROM OrdersData OD WHERE OD.Del = 0 AND YEAR(StartDate) = {$_GET["year"]} AND MONTH(StartDate) = {$_GET["month"]} AND SH_ID = {$row["SH_ID"]}";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_discount = mysqli_result($subres,0,'discount');
 						$city_discount = $city_discount + $shop_discount;
 
+						// Получаем сумму отказов по салону
+						$query = "SELECT SUM(ODD_ODB.Price) Price
+									FROM OrdersData OD
+									JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
+									JOIN (
+										SELECT ODD.OD_ID
+											,ODD.Price * ODD.Amount Price
+										FROM OrdersDataDetail ODD
+										UNION
+										SELECT ODB.OD_ID
+											,ODB.Price * ODB.Amount Price
+										FROM OrdersDataBlank ODB
+									) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+									WHERE OD.Del = 0 AND YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}";
+						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						$shop_otkaz = mysqli_result($subres,0,'Price');
+						$city_otkaz = $city_otkaz + $shop_otkaz;
+
+						$query = "SELECT SUM(OD.discount) discount
+									FROM OrdersData OD
+									JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
+									WHERE OD.Del = 0 AND YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}";
+						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						$shop_otkaz_discount = mysqli_result($subres,0,'discount');
+						$city_otkaz_discount = $city_otkaz_discount + $shop_otkaz_discount;
+
 						$shop_price = number_format(($shop_price - $shop_discount), 0, '', ' ');
+						$shop_otkaz = number_format(($shop_otkaz - $shop_otkaz_discount), 0, '', ' ');
 						echo "<td class='txtright'>{$shop_price}</td>";
+						echo "<td class='txtright' title='Сумма отказов' style='color: #911;'>{$shop_otkaz}</td>";
 						echo "</tr>";
 					}
 					$city_price = $city_price - $city_discount;
 					$format_city_price = number_format($city_price, 0, '', ' ');
+					$city_otkaz = $city_otkaz - $city_otkaz_discount;
+					$format_city_otkaz = number_format($city_otkaz, 0, '', ' ');
 					echo "<thead><tr>";
 					echo "<th class='nowrap'><b>ВСЕГО ЗА {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</b></th>";
 					echo "<th class='txtright'><b>{$format_city_price}</b></th>";
+					echo "<th class='txtright' title='Сумма отказов' style='color: #911;'><b>{$format_city_otkaz}</b></th>";
 					echo "</tr></thead>";
 
 				?>
@@ -476,7 +542,8 @@
 				<th width="65">Оплата</th>
 				<th width="20">Т</th>
 				<th width="65">Остаток</th>
-				<th width="45"></th>
+				<th width="65">Отказ</th>
+				<th width="65">Действие</th>
 			</tr>
 		</thead>
 	</table>
@@ -499,7 +566,8 @@
 				<th width="65"></th>
 				<th width="20"></th>
 				<th width="65"></th>
-				<th width="45"></th>
+				<th width="65"></th>
+				<th width="65"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -522,10 +590,15 @@
 						,IFNULL(OP.payment_sum, 0) payment_sum
 						,OP.terminal_payer
 						,IF(OS.ostatok IS NOT NULL, 1, 0) is_lock
+						,IFNULL(OT.type, 0) type
+						,IFNULL(OT.comment, '') comment
+						,IFNULL(OT.old_SH_ID, OD.SH_ID) old_SH_ID
+						,IFNULL(OT.old_StartDate, OD.StartDate) old_StartDate
 				  FROM OrdersData OD
 				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 				  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 				  LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE payment_sum > 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
+				  LEFT JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
 				  LEFT JOIN (SELECT ODD.OD_ID
 								   ,IFNULL(PM.PT_ID, 2) PT_ID
 								   ,ODD.ODD_ID itemID
@@ -565,6 +638,7 @@
 					".(($_GET["year"] != '' and $_GET["month"] != '') ? (($_GET["year"] == 0 and $_GET["month"] == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$_GET["month"].' AND YEAR(OD.StartDate) = '.$_GET["year"]) : '')."
 					GROUP BY OD.OD_ID
 					#HAVING Price - payment_sum <> 0 OR Price IS NULL OR DATEDIFF(NOW(), RD) <= {$datediff}
+					".(($_GET["year"] != '' and $_GET["month"] != '') ? "" : "HAVING Price - payment_sum <> 0 OR is_lock = 0")."
 					ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
@@ -573,6 +647,7 @@
 			$format_discount = number_format($row['discount'], 0, '', ' ');
 			$format_diff = number_format($row["Price"] - $row["payment_sum"], 0, '', ' ');
 			$diff_color = ($row["Price"] == $row["payment_sum"]) ? "#6f6" : (($row["Price"] < $row["payment_sum"]) ? "#f66" : "#fff");
+			$otkaz_cell = ($row["type"] == 1) ? "<b>Замена</b><br>{$row["comment"]}" : (($row["type"] == 2) ? "<b>Отказ</b><br>{$row["comment"]}" : "");
 			echo "
 				<tr id='ord{$row["OD_ID"]}'>
 					<td><span>{$row["ReadyDate"]}</span></td>
@@ -590,6 +665,7 @@
 					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a></td>
 					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>
 					<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>
+					<td><span style='color: #911;'>{$otkaz_cell}</span></td>
 					<td>";
 			if( $row["is_lock"] ) {
 				echo "<i class='fa fa-lock fa-lg' aria-hidden='true' title='Отчетный период закрыт. Заказ нельзя отредактировать.'></i> ";
@@ -599,6 +675,7 @@
 					echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
 				}
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' location='{$location}' payment='{$row["payment_sum"]}' type='{$row["type"]}' comment='{$row["comment"]}' old_SH_ID='{$row["old_SH_ID"]}' old_StartDate='{$row["old_StartDate"]}' title='Пометить как отказ'><i class='fa fa-hand-paper-o fa-lg' aria-hidden='true'></i></a>";
 			}
 			echo "
 					</td>
@@ -675,6 +752,35 @@
 	</form>
 </div>
 <!-- Конец формы добавления/редактирования расхода -->
+
+<!-- Форма отказа -->
+<div id='order_otkaz' title='Статус отказа' style='display:none'>
+	<form method='post' action="<?=$location?>&order_otkaz=1">
+		<fieldset>
+			<input type="hidden" name="OD_ID">
+			<input type="hidden" name="old_SH_ID">
+			<input type="hidden" name="old_StartDate">
+			<label for='type'>Тип отказа:</label>
+			<div class='btnset' id="type" style="display: inline-block;">
+				<label for="otkaz0" title="Отменить отказ">Вернуть</label>
+				<input type="radio" name="type" id="otkaz0" value="0">
+				<label for="otkaz1">Замена</label>
+				<input type="radio" name="type" id="otkaz1" value="1">
+				<label for="otkaz2">Отказ</label>
+				<input type="radio" name="type" id="otkaz2" value="2">
+			</div>
+			<br>
+			<br>
+			<label for="otkaz_comment">Комментарий:</label>
+			<input type="text" name="comment" id="otkaz_comment">
+		</fieldset>
+		<div>
+			<hr>
+			<button style='float: right;'>Сохранить</button>
+		</div>
+	</form>
+</div>
+<!-- Конец формы отказа -->
 
 <script>
 	$(document).ready(function() {
@@ -837,6 +943,38 @@
 				hide: 'explode',
 				closeText: 'Закрыть'
 			});
+		});
+
+		// Кнопка изменения статуса отказа
+		$('.order_otkaz_btn').click( function() {
+			var OD_ID = $(this).attr('id');
+			var old_SH_ID = $(this).attr('old_SH_ID');
+			var old_StartDate = $(this).attr('old_StartDate');
+			var type = $(this).attr('type');
+			var comment = $(this).attr('comment');
+			var payment = $(this).attr('payment');
+
+			// Заполнение формы
+			$('#order_otkaz #otkaz'+type).prop('checked', true);
+			$('#order_otkaz input[type="radio"]').button('refresh');
+			$('#order_otkaz input[name="comment"]').val(comment);
+			$('#order_otkaz input[name="OD_ID"]').val(OD_ID);
+			$('#order_otkaz input[name="old_SH_ID"]').val(old_SH_ID);
+			$('#order_otkaz input[name="old_StartDate"]').val(old_StartDate);
+
+			if( payment > 0 ) {
+				$(this).parents('tr').find('.add_payment_btn span').effect( 'shake', 1000 );
+				noty({timeout: 3000, text: 'Прежде чем пометить заказ как "отказной", обнулите приход по нему.', type: 'error'});
+			}
+			else {
+				$('#order_otkaz').dialog({
+					width: 500,
+					modal: true,
+					show: 'blind',
+					hide: 'explode',
+					closeText: 'Закрыть'
+				});
+			}
 		});
 
 		// Редактирование салона

@@ -563,7 +563,8 @@ td.tscell > i {
 	display: none;
 	position: fixed;
 	top: 90px;
-	width: 100%;
+	width: 50%;
+	left: 25%;
 	z-index: 12;
 	text-align: center;
 //	box-shadow: 0 0 10px #666;
