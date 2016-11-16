@@ -173,12 +173,13 @@
 		$OD_ID = $_POST["OD_ID"];
 		$old_SH_ID = $_POST["old_SH_ID"];
 		$old_StartDate = ($_POST["old_StartDate"] != '') ? '\''.$_POST["old_StartDate"].'\'' : 'NULL';
+		$old_sum = $_POST["old_sum"];
 		$type = $_POST["type"];
 		$comment = ($_POST["comment"] != '') ? '\''.mysqli_real_escape_string( $mysqli, $_POST["comment"] ).'\'' : 'NULL';
 
 		if( $type > 0 ) {
 			$query = "INSERT INTO Otkazi
-				SET OD_ID = {$OD_ID}, type = {$type}, comment = {$comment}, old_SH_ID = {$old_SH_ID}, old_StartDate = {$old_StartDate}
+				SET OD_ID = {$OD_ID}, type = {$type}, comment = {$comment}, old_SH_ID = {$old_SH_ID}, old_StartDate = {$old_StartDate}, old_sum = {$old_sum}
 				ON DUPLICATE KEY UPDATE type = {$type}, comment = {$comment}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -314,7 +315,6 @@
 					$city_price = 0;
 					$city_discount = 0;
 					$city_otkaz = 0;
-					$city_otkaz_discount = 0;
 					$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1 ORDER BY SH_ID";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
@@ -345,40 +345,22 @@
 						$city_discount = $city_discount + $shop_discount;
 
 						// Получаем сумму отказов по салону
-						$query = "SELECT SUM(ODD_ODB.Price) Price
+						$query = "SELECT SUM(OT.old_sum) Price
 									FROM OrdersData OD
 									JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
-									JOIN (
-										SELECT ODD.OD_ID
-											,ODD.Price * ODD.Amount Price
-										FROM OrdersDataDetail ODD
-										UNION
-										SELECT ODB.OD_ID
-											,ODB.Price * ODB.Amount Price
-										FROM OrdersDataBlank ODB
-									) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 									WHERE OD.Del = 0 AND YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_otkaz = mysqli_result($subres,0,'Price');
 						$city_otkaz = $city_otkaz + $shop_otkaz;
 
-						$query = "SELECT SUM(OD.discount) discount
-									FROM OrdersData OD
-									JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
-									WHERE OD.Del = 0 AND YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}";
-						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						$shop_otkaz_discount = mysqli_result($subres,0,'discount');
-						$city_otkaz_discount = $city_otkaz_discount + $shop_otkaz_discount;
-
 						$shop_price = number_format(($shop_price - $shop_discount), 0, '', ' ');
-						$shop_otkaz = number_format(($shop_otkaz - $shop_otkaz_discount), 0, '', ' ');
+						$shop_otkaz = number_format($shop_otkaz, 0, '', ' ');
 						echo "<td class='txtright'>{$shop_price}</td>";
 						echo "<td class='txtright' title='Сумма отказов' style='color: #911;'>{$shop_otkaz}</td>";
 						echo "</tr>";
 					}
 					$city_price = $city_price - $city_discount;
 					$format_city_price = number_format($city_price, 0, '', ' ');
-					$city_otkaz = $city_otkaz - $city_otkaz_discount;
 					$format_city_otkaz = number_format($city_otkaz, 0, '', ' ');
 					echo "<thead><tr>";
 					echo "<th class='nowrap'><b>ВСЕГО ЗА {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</b></th>";
@@ -675,7 +657,7 @@
 					echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
 				}
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' location='{$location}' payment='{$row["payment_sum"]}' type='{$row["type"]}' comment='{$row["comment"]}' old_SH_ID='{$row["old_SH_ID"]}' old_StartDate='{$row["old_StartDate"]}' title='Пометить как отказ'><i class='fa fa-hand-paper-o fa-lg' aria-hidden='true'></i></a>";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' location='{$location}' payment='{$row["payment_sum"]}' type='{$row["type"]}' comment='{$row["comment"]}' old_SH_ID='{$row["old_SH_ID"]}' old_StartDate='{$row["old_StartDate"]}' old_sum='{$row["Price"]}' title='Пометить как отказ'><i class='fa fa-hand-paper-o fa-lg' aria-hidden='true'></i></a>";
 			}
 			echo "
 					</td>
@@ -756,10 +738,14 @@
 <!-- Форма отказа -->
 <div id='order_otkaz' title='Статус отказа' style='display:none'>
 	<form method='post' action="<?=$location?>&order_otkaz=1">
-		<fieldset>
+		<div style="display: inline-block;">
+			<i class='fa fa-hand-paper-o fa-4x' aria-hidden='true'></i>
+		</div>
+		<fieldset style="display: inline-block; width: calc(100% - 65px);">
 			<input type="hidden" name="OD_ID">
 			<input type="hidden" name="old_SH_ID">
 			<input type="hidden" name="old_StartDate">
+			<input type="hidden" name="old_sum">
 			<label for='type'>Тип отказа:</label>
 			<div class='btnset' id="type" style="display: inline-block;">
 				<label for="otkaz0" title="Отменить отказ">Отмена</label>
@@ -950,6 +936,7 @@
 			var OD_ID = $(this).attr('id');
 			var old_SH_ID = $(this).attr('old_SH_ID');
 			var old_StartDate = $(this).attr('old_StartDate');
+			var old_sum = $(this).attr('old_sum');
 			var type = $(this).attr('type');
 			var comment = $(this).attr('comment');
 			var payment = $(this).attr('payment');
@@ -961,6 +948,7 @@
 			$('#order_otkaz input[name="OD_ID"]').val(OD_ID);
 			$('#order_otkaz input[name="old_SH_ID"]').val(old_SH_ID);
 			$('#order_otkaz input[name="old_StartDate"]').val(old_StartDate);
+			$('#order_otkaz input[name="old_sum"]').val(old_sum);
 
 			if( payment > 0 ) {
 				$(this).parents('tr').find('.add_payment_btn span').effect( 'shake', 1000 );
