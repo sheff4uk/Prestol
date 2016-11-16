@@ -379,6 +379,9 @@
 									,OP.terminal_payer
 									,OD.Code
 									,IF(OP.terminal_payer IS NULL, 0, 1) terminal
+									,YEAR(OD.StartDate) year
+									,MONTH(OD.StartDate) month
+									,OD.OD_ID
 								FROM OrdersPayment OP
 								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
@@ -390,7 +393,7 @@
 						$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 						$terminal_sum = $terminal_sum + $row["payment_sum"];
 						echo "<tr>";
-						echo "<td title='№ упаковки'><b>{$row["Code"]}</b></td>";
+						echo "<td title='№ упаковки'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b></td>";
 						echo "<td>{$row["payment_date"]}</td>";
 						echo "<td class='nowrap'>{$row["terminal_payer"]}</td>";
 						echo "<td class='txtright'>{$format_sum}</td>";
