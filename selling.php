@@ -81,11 +81,13 @@
 			$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date"][$key]) );
 			$payment_sum = ($_POST["payment_sum"][$key] != '') ? $_POST["payment_sum"][$key] : 'NULL';
 			$terminal_payer = ($_POST["terminal_payer"][$key] != '') ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer"][$key] ).'\'' : 'NULL';
+			$return_terminal = $_POST["return_terminal"][$key];
 
 			$query = "UPDATE OrdersPayment
 						 SET payment_date = '{$payment_date}'
 							,payment_sum = {$payment_sum}
 							,terminal_payer = {$terminal_payer}
+							,return_terminal = {$return_terminal}
 						WHERE OP_ID = {$value}";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"] = mysqli_error( $mysqli );
@@ -127,14 +129,9 @@
 	{
 		$CS_ID = $_POST["CS_ID"];
 		$cost_name = mysqli_real_escape_string( $mysqli, $_POST["cost_name"] );
-		$cost = $_POST["cost"];
+		$cost = $_POST["cost"] ? $_POST["cost"] : 0;
 		if( $CS_ID != '' ) { // Редактируем расход
-			if( $cost != '' ) {
-				$query = "UPDATE CostsShops SET cost_name = '{$cost_name}', cost = {$cost} WHERE CS_ID = {$CS_ID}";
-			}
-			else {
-				$query = "DELETE FROM CostsShops WHERE CS_ID = {$CS_ID}";
-			}
+			$query = "UPDATE CostsShops SET cost_name = '{$cost_name}', cost = {$cost} WHERE CS_ID = {$CS_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 		else { // Добавляем расход
@@ -385,7 +382,7 @@
 								FROM OrdersPayment OP
 								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.payment_sum IS NOT NULL
+								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) > 0
 								ORDER BY OP.payment_date";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
@@ -415,7 +412,7 @@
 			<table>
 				<tbody>
 				<?
-					$query = "SELECT * FROM CostsShops WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month={$_GET["month"]}";
+					$query = "SELECT * FROM CostsShops WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month={$_GET["month"]} AND cost > 0";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					$sum_cost = 0;
 					while( $row = mysqli_fetch_array($res) ) {
@@ -579,7 +576,7 @@
 				  FROM OrdersData OD
 				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 				  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-				  LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE payment_sum > 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
+				  LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE payment_sum > 0 AND return_terminal = 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
 				  LEFT JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
 				  LEFT JOIN (SELECT ODD.OD_ID
 								   ,IFNULL(PM.PT_ID, 2) PT_ID
@@ -781,7 +778,7 @@
 			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID, dataType: "script", async: false });
 
 			$('#add_payment').dialog({
-				width: 500,
+				width: 550,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
@@ -789,21 +786,40 @@
 			});
 			$('input[name=payment_sum_add]').focus();
 			$('input.date').datepicker();
+
 			$('#add_payment .terminal').change(function() {
 				var ch = $(this).prop('checked');
 				var terminal_payer = $(this).parents('tr').find('input[type="text"].terminal_payer');
 				var terminal_payer_hidden = $(this).parents('tr').find('input[type="hidden"].terminal_payer');
+				var return_terminal = $(this).parents('tr').find('input[type="checkbox"].return_terminal');
+				var return_terminal_hidden = $(this).parents('tr').find('input[type="hidden"].return_terminal');
 				if( ch ) {
 					$(terminal_payer).prop('disabled', false);
 					$(terminal_payer).prop('required', true);
 					$(terminal_payer_hidden).val( $(terminal_payer).val() );
+					$(return_terminal).show();
 				}
 				else {
 					$(terminal_payer).prop('disabled', true);
 					$(terminal_payer).prop('required', false);
 					$(terminal_payer_hidden).val('');
+					$(return_terminal).prop('checked', false);
+					$(return_terminal).hide();
+					$(return_terminal_hidden).val('0');
 				}
 			});
+
+			$('#add_payment .return_terminal').change(function() {
+				var ch = $(this).prop('checked');
+				var return_terminal_hidden = $(this).parents('tr').find('input[type="hidden"].return_terminal');
+				if( ch ) {
+					$(return_terminal_hidden).val('1');
+				}
+				else {
+					$(return_terminal_hidden).val('0');
+				}
+			});
+
 			$('#add_payment .terminal_payer').change(function() {
 				$(this).parent('td').find('input[type="hidden"]').val($(this).val());
 			});
