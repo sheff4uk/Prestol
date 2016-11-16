@@ -527,7 +527,7 @@
 	<table class="main_table" id="MT_header">
 		<thead>
 			<tr>
-				<th width="6%">Дата отгрузки</th>
+				<th width="55">Дата отгрузки</th>
 				<th width="51">№ упаковки</th>
 				<th width="5%">№ квитанции</th>
 				<th width="5%">Заказчик</th>
@@ -551,7 +551,7 @@
 	<table class="main_table">
 		<thead>
 			<tr>
-				<th width="6%"></th>
+				<th width="55"></th>
 				<th width="51"></th>
 				<th width="5%"></th>
 				<th width="5%"></th>
@@ -762,7 +762,7 @@
 			<input type="hidden" name="old_StartDate">
 			<label for='type'>Тип отказа:</label>
 			<div class='btnset' id="type" style="display: inline-block;">
-				<label for="otkaz0" title="Отменить отказ">Вернуть</label>
+				<label for="otkaz0" title="Отменить отказ">Отмена</label>
 				<input type="radio" name="type" id="otkaz0" value="0">
 				<label for="otkaz1">Замена</label>
 				<input type="radio" name="type" id="otkaz1" value="1">
