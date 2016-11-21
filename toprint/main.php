@@ -99,11 +99,11 @@
 		<tbody>
 			<tr class="thead">
 				<?
-					if(isset($_GET["CD"])) echo "<td width='4%'>Код</td>";
-					if(isset($_GET["CN"])) echo "<td width='7%'>Заказчик</td>";
-					if(isset($_GET["SD"])) echo "<td width='4%'>Дата приема</td>";
+					if(isset($_GET["CD"])) echo "<td width='50'>Код</td>";
+					if(isset($_GET["CN"])) echo "<td width='9%'>Заказчик</td>";
+					if(isset($_GET["SD"])) echo "<td width='4%'>Дата продажи</td>";
 					if(isset($_GET["ED"])) echo "<td width='4%'>Дата сдачи</td>";
-					if(isset($_GET["SH"])) echo "<td width='9%'>Салон</td>";
+					if(isset($_GET["SH"])) echo "<td width='7%'>Салон</td>";
 					if(isset($_GET["ON"])) echo "<td width='5%'>№ квитанции</td>";
 					if(isset($_GET["Z"])) echo "<td width='20%'>Заказ</td>";
 					if(isset($_GET["M"])) echo "<td width='15%'>Материал</td>";
@@ -226,8 +226,8 @@
 			echo "<tr>";
 		}
 
-		if(isset($_GET["CD"]) and $span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}' class='nowrap'>{$row["Code"]}</td>";
-		if(isset($_GET["CN"]) and $span) echo "<td width='7%' style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}</td>";
+		if(isset($_GET["CD"]) and $span) echo "<td width='50' style='{$border}' rowspan='{$cnt}' class='nowrap'><b>{$row["Code"]}</b></td>";
+		if(isset($_GET["CN"]) and $span) echo "<td width='9%' style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}</td>";
 		if(isset($_GET["SD"]) and $span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["StartDate"]}</td>";
 		if(isset($_GET["ED"]) and $span) {
 			if( $archive ) {
@@ -237,7 +237,7 @@
 				echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["EndDate"]}</td>";
 			}
 		}
-		if(isset($_GET["SH"]) and $span) echo "<td width='9%' style='{$border}' rowspan='{$cnt}'>{$row["Shop"]}</td>";
+		if(isset($_GET["SH"]) and $span) echo "<td width='7%' style='{$border}' rowspan='{$cnt}'>{$row["Shop"]}</td>";
 		if(isset($_GET["ON"]) and $span) echo "<td width='5%' style='{$border}' rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
 		if(isset($_GET["Z"])) echo "<td width='20%' style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";
 		if(isset($_GET["M"])) echo "<td width='15%' style='{$border}'>{$row["Material"]}</td>";
