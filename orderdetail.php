@@ -680,9 +680,9 @@ if( $id != "NULL" ) {
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "<tr class='ord_log_row' lnk='*{$row["table_key"]}{$row["table_value"]}*'>";
-				echo "<td>{$row["field_name"]}</td>";
-				echo "<td>{$row["old_value"]}</td>";
-				echo "<td>{$row["new_value"]}</td>";
+				echo "<td><b>{$row["field_name"]}</b></td>";
+				echo "<td><i>{$row["old_value"]}</i></td>";
+				echo "<td><i>{$row["new_value"]}</i></td>";
 				echo "<td class='nowrap'>{$row["Name"]}</td>";
 				echo "<td>{$row["Date"]}</td>";
 				echo "<td>{$row["Time"]}</td>";
