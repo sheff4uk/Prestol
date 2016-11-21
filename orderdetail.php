@@ -359,7 +359,7 @@
 	$CTColor = mysqli_result($res,0,'CTColor');
 ?>
 		<tbody>
-		<tr>
+		<tr class='ord_log_row' lnk='*OD_ID<?=$id?>*'>
 			<td class="nowrap"><?=$Code?></td>
 			<td><input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>'></td>
 			<td><input type='text' name='StartDate' class='date from' value='<?=$StartDate?>' date='<?=$StartDate?>'></td>
@@ -652,7 +652,7 @@ if( $id != "NULL" ) {
 			</thead>
 		</table>
 		<div id="order_log_table">
-			<table>
+			<table style="width: 100%;">
 				<thead>
 					<tr>
 						<th width=""></th>

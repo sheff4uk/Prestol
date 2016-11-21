@@ -721,4 +721,5 @@ td.tscell > i {
 	position: absolute;
 	overflow-y: scroll;
 	background: #fff;
+	width: 100%;
 }
