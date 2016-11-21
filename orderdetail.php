@@ -668,9 +668,9 @@ if( $id != "NULL" ) {
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "<tr class='ord_log_row' lnk='*{$row["table_key"]}{$row["table_value"]}*'>";
 				echo "<td><b>{$row["field_name"]}</b></td>";
-				echo "<td style='text-align: right;'><i style='border: 1px solid #999; padding: 2px;'>{$row["old_value"]}</i></td>";
+				echo "<td style='text-align: right;'><i style='background: #ddd; padding: 2px;'>{$row["old_value"]}</i></td>";
 				echo "<td><i class='fa fa-arrow-right'></i></td>";
-				echo "<td style='text-align: left;'><i style='border: 1px solid #999; padding: 2px;'>{$row["new_value"]}</i></td>";
+				echo "<td style='text-align: left;'><i style='background: #fd9; padding: 2px;'>{$row["new_value"]}</i></td>";
 				echo "<td class='nowrap'>{$row["Date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
 				echo "</tr>";
 			}
