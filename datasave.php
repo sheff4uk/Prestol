@@ -128,6 +128,7 @@ if( $_GET["oddid"] )
 				 ,is_check = 1
 				 ,order_date = {$OrderDate}
 				 ,arrival_date = {$ArrivalDate}
+				 ,author = {$_SESSION['id']}
 			  WHERE ODD_ID = {$_GET["oddid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["alert"] = mysqli_error( $mysqli );
@@ -137,8 +138,8 @@ if( $_GET["oddid"] )
 	if( $amount > $_POST["Amount"] and $inprogress == 1)
 	{
 		// Перемещение на склад лишних изделий
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, MT_ID, IsExist, Amount, Comment, Price, is_check, order_date, arrival_date, sister_ID)
-				  SELECT NULL, PM_ID, Length, Width, PF_ID, PME_ID, MT_ID, IsExist, ".($amount - $_POST["Amount"]).", Comment, {$Price}, 0, order_date, arrival_date, {$_GET["oddid"]} FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Comment, Price, is_check, order_date, arrival_date, sister_ID, creator)
+				  SELECT NULL, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, ".($amount - $_POST["Amount"]).", Comment, {$Price}, 0, order_date, arrival_date, {$_GET["oddid"]}, {$_SESSION['id']} FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 // Добавлено в триггер AddStepsAfterInsert
@@ -232,6 +233,7 @@ if( $_GET["odbid"] )
 				 ,IsExist = {$IsExist}
 				 ,order_date = {$OrderDate}
 				 ,arrival_date = {$ArrivalDate}
+				 ,author = {$_SESSION['id']}
 			  WHERE ODB_ID = {$_GET["odbid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["alert"] = mysqli_error( $mysqli );

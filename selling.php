@@ -70,7 +70,7 @@
 			}
 			else {
 				// Записываем дату продажи заказа если ее не было
-				$query = "UPDATE OrdersData SET StartDate = '{$payment_date}' WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
+				$query = "UPDATE OrdersData SET StartDate = '{$payment_date}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
 				if( !mysqli_query( $mysqli, $query ) ) {
 					$_SESSION["alert"] = mysqli_error( $mysqli );
 				}
@@ -103,7 +103,7 @@
 		$OD_ID = $_POST["OD_ID"];
 		$discount = $_POST["discount"] ? $_POST["discount"] : "NULL";
 		// Обновление скидки заказа
-		$query = "UPDATE OrdersData SET discount = {$discount} WHERE OD_ID = {$OD_ID}";
+		$query = "UPDATE OrdersData SET discount = {$discount}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 		if( !mysqli_query( $mysqli, $query ) ) {
 			$_SESSION["alert"] = mysqli_error( $mysqli );
 		}
@@ -111,10 +111,10 @@
 		foreach ($_POST["PT_ID"] as $key => $value) {
 			$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
 			if( $value == 0 ) {
-				$query = "UPDATE OrdersDataBlank SET Price = {$price} WHERE ODB_ID = {$_POST["itemID"][$key]}";
+				$query = "UPDATE OrdersDataBlank SET Price = {$price}, author = {$_SESSION['id']} WHERE ODB_ID = {$_POST["itemID"][$key]}";
 			}
 			else {
-				$query = "UPDATE OrdersDataDetail SET Price = {$price} WHERE ODD_ID = {$_POST["itemID"][$key]}";
+				$query = "UPDATE OrdersDataDetail SET Price = {$price}, author = {$_SESSION['id']} WHERE ODD_ID = {$_POST["itemID"][$key]}";
 			}
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"] = mysqli_error( $mysqli );
@@ -180,7 +180,7 @@
 				ON DUPLICATE KEY UPDATE type = {$type}, comment = {$comment}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-			$query = "UPDATE OrdersData SET StartDate = NULL WHERE OD_ID = {$OD_ID}";
+			$query = "UPDATE OrdersData SET StartDate = NULL, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			$_SESSION["alert"] = "Заказ перемещен в \"Свободные\"";
@@ -189,7 +189,7 @@
 			$query = "DELETE FROM Otkazi WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-			$query = "UPDATE OrdersData SET StartDate = {$old_StartDate} WHERE OD_ID = {$OD_ID}";
+			$query = "UPDATE OrdersData SET StartDate = {$old_StartDate}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 			//mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			mysqli_query( $mysqli, $query );
 		}

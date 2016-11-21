@@ -73,7 +73,11 @@ img.attention {
 }
 
 tr:target td {
-    background: #dfb;
+//    background: #dfb;
+}
+
+tr:target {
+	border: 3px solid #191;
 }
 
 table tbody tr:hover, tbody td.hover {
@@ -583,6 +587,7 @@ td.tscell > i {
 	position: absolute;
 	overflow-y: scroll;
 	background: #fff;
+	overflow-x: hidden;
 }
 
 #copy_link {
@@ -700,4 +705,20 @@ td.tscell > i {
 	width: 400px;
 	height: 400px;
 	opacity: 1;
+}
+
+#wr_order_change_log {
+	height: 250px;
+	margin-top: 10px;
+	background: #fff;
+	border: 1px solid #bbb;
+	padding: 10px;
+	border-radius: 10px;
+	position: relative;
+}
+#order_log_table {
+	height: calc(100% - 80px);
+	position: absolute;
+	overflow-y: scroll;
+	background: #fff;
 }

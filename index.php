@@ -45,8 +45,8 @@
 		$OrderNumber = trim($OrderNumber);
 		$Color = trim($Color);
 		$Comment = trim($Comment);
-		$query = "INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment)
-				  VALUES ('{$ClientName}', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}')";
+		$query = "INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment, creator)
+				  VALUES ('{$ClientName}', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}', {$_SESSION['id']})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
 		// Перенаправление на экран деталей заказа
@@ -66,7 +66,7 @@
 		$id = (int)$_GET["del"];
 
 //		$query = "DELETE FROM OrdersData WHERE OD_ID={$id}";
-		$query = "UPDATE OrdersData SET Del = 1 WHERE OD_ID={$id}";
+		$query = "UPDATE OrdersData SET Del = 1, author = {$_SESSION['id']} WHERE OD_ID={$id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		//header( "Location: /" ); // Перезагружаем экран
@@ -83,7 +83,7 @@
 		}
 		$id = (int)$_GET["ready"];
 		$date = date("Y-m-d");
-		$query = "UPDATE OrdersData SET ReadyDate = '{$date}', IsPainting = 3 WHERE OD_ID={$id}";
+		$query = "UPDATE OrdersData SET ReadyDate = '{$date}', IsPainting = 3, author = {$_SESSION['id']} WHERE OD_ID={$id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		//header( "Location: /" ); // Перезагружаем экран
@@ -126,7 +126,7 @@
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		// Помечаем заказы как отгруженные
-		$query = "UPDATE OrdersData SET ReadyDate = {$shipping_date}, IsPainting = 3 WHERE SHP_ID = {$_GET["shpid"]}";
+		$query = "UPDATE OrdersData SET ReadyDate = {$shipping_date}, IsPainting = 3, author = {$_SESSION['id']} WHERE SHP_ID = {$_GET["shpid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		// Перенаправление на экран этой отгрузки
@@ -143,8 +143,8 @@
 
 		if( $left_sum != 0 and $right_sum != 0 ) {
 			// Создание копии заказа
-			$query = "INSERT INTO OrdersData(SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del)
-			SELECT SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			$query = "INSERT INTO OrdersData(SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del, creator)
+			SELECT SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del, {$_SESSION['id']} FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
@@ -167,8 +167,8 @@
 						$query = "UPDATE OrdersDataBlank SET Amount = {$left} WHERE ODB_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						// Вставляем в новый заказ переносимые изделия
-						$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Material, MT_ID, Amount, Comment, IsExist, order_date, arrival_date, Price, sister_ID)
-						SELECT {$newOD_ID}, BL_ID, Other, Material, MT_ID, {$right}, Comment, IsExist, order_date, arrival_date, Price, {$value} FROM OrdersDataBlank WHERE ODB_ID = {$value}";
+						$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, MT_ID, Amount, Comment, IsExist, order_date, arrival_date, Price, sister_ID, creator)
+						SELECT {$newOD_ID}, BL_ID, Other, MT_ID, {$right}, Comment, IsExist, order_date, arrival_date, Price, {$value}, {$_SESSION['id']} FROM OrdersDataBlank WHERE ODB_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					}
 					else {
@@ -176,8 +176,8 @@
 						$query = "UPDATE OrdersDataDetail SET Amount = {$left} WHERE ODD_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						// Вставляем в новый заказ переносимые изделия
-						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Color, Comment, is_check, order_date, arrival_date, Price, sister_ID)
-						SELECT {$newOD_ID}, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, {$right}, Color, Comment, is_check, order_date, arrival_date, Price, {$value} FROM OrdersDataDetail WHERE ODD_ID = {$value}";
+						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Color, Comment, is_check, order_date, arrival_date, Price, sister_ID, creator)
+						SELECT {$newOD_ID}, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, {$right}, Color, Comment, is_check, order_date, arrival_date, Price, {$value}, {$_SESSION['id']} FROM OrdersDataDetail WHERE ODD_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					}
 				}
@@ -422,7 +422,7 @@
 		<form method='get' action='filter.php'>
 		<thead>
 		<tr>
-			<th width="51"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
+			<th width="53"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_CN' size='8' value='<?= $_SESSION["f_CN"] ?>' class='clienttags <?=($_SESSION["f_CN"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>' class='<?=($_SESSION["f_SD"] != "") ? "filtered" : ""?>'></th>
 			<th width="5%"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>' class='<?=($_SESSION["f_ED"] != "") ? "filtered" : ""?>'></th>
@@ -504,7 +504,7 @@
 		</div>
 		<thead>
 		<tr>
-			<th width="51"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
+			<th width="53"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
 			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
 			<th width="5%"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
 			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br>сдачи</label></th>
@@ -525,7 +525,7 @@
 	<table class="main_table">
 		<thead style="">
 		<tr>
-			<th width="51"></th>
+			<th width="53"></th>
 			<th width="5%"></th>
 			<th width="5%"></th>
 			<th width="5%"></th>

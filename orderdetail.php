@@ -70,6 +70,7 @@
 				     ,Color = '{$Color}'
 				     ,IsPainting = $IsPainting
 				     ,Comment = '{$Comment}'
+					 ,author = {$_SESSION['id']}
 				  WHERE OD_ID = {$id}";
 		if( !mysqli_query( $mysqli, $query ) ) {
 			$_SESSION["alert"] = mysqli_error( $mysqli );
@@ -106,8 +107,8 @@
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 						// Добавляем указанное количество изделий в заказ
-						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, Amount, order_date, arrival_date)
-								SELECT {$id}, PM_ID, Length, Width, PF_ID, PME_ID, Material, IsExist, {$v}, order_date, arrival_date FROM OrdersDataDetail WHERE ODD_ID = {$prodid}";
+						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Price, Comment, order_date, arrival_date, creator)
+								SELECT {$id}, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, {$v}, Price, Comment, order_date, arrival_date, {$_SESSION['id']} FROM OrdersDataDetail WHERE ODD_ID = {$prodid}";
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$odd_id = mysqli_insert_id( $mysqli );
 
@@ -162,8 +163,8 @@
 				$mt_id = "NULL";
 			}
 
-			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Price, Comment, order_date, arrival_date)
-					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Price}, '{$Comment}', {$OrderDate}, {$ArrivalDate})";
+			$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Price, Comment, order_date, arrival_date, creator)
+					  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Price}, '{$Comment}', {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$odd_id = mysqli_insert_id( $mysqli );
 
@@ -236,8 +237,8 @@
 			$mt_id = "NULL";
 		}
 
-		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Amount, Price, Comment, MT_ID, IsExist, order_date, arrival_date)
-				  VALUES ({$id}, {$Blank}, '{$Other}', {$_POST["Amount"]}, {$Price}, '{$Comment}', {$mt_id}, {$IsExist}, {$OrderDate}, {$ArrivalDate})";
+		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Amount, Price, Comment, MT_ID, IsExist, order_date, arrival_date, creator)
+				  VALUES ({$id}, {$Blank}, '{$Other}', {$_POST["Amount"]}, {$Price}, '{$Comment}', {$mt_id}, {$IsExist}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		$odb_id = mysqli_insert_id( $mysqli );
@@ -406,6 +407,7 @@
 <?
 	}
 ?>
+<div class="halfblock">
 	<p>
 		<button class='edit_product1'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
 		<button class='edit_product2'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
@@ -419,20 +421,17 @@
 	</p>
 
 	<!-- Таблица изделий -->
-	<table>
+	<table class="main_table">
 		<thead>
 		<tr>
-			<th>Кол-во</th>
-			<th>Модель</th>
-			<th>Размер</th>
-			<th>Форма</th>
-			<th>Механизм</th>
-			<th>Этапы</th>
-			<th>Материал</th>
-			<th>Поставщик</th>
-			<th>Примечание</th>
-			<th>Цена</th>
-			<th>Действие</th>
+			<th width="60">Кол-во</th>
+			<th width="120">Изделие</th>
+			<th width="100">Этапы</th>
+			<th width="">Материал</th>
+			<th width="">Поставщик</th>
+			<th width="">Примечание</th>
+			<th width="60">Цена</th>
+			<th width="75">Действие</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -487,12 +486,9 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
-		echo "<tr class='{$row["is_check"]}' id='prod{$row["ODD_ID"]}'>";
+		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row {$row["is_check"]}' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
 		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
-		echo "<td>{$row["Model"]}</td>";
-		echo "<td>{$row["Size"]}</td>";
-		echo "<td>{$row["Form"]}</td>";
-		echo "<td>{$row["Mechanism"]}</td>";
+		echo "<td><span>{$row["Model"]}<br>".($row["Size"] != "" ? "{$row["Size"]}<br>" : "").($row["Form"] != "" ? "{$row["Form"]}<br>" : "").($row["Mechanism"] != "" ? "{$row["Mechanism"]}<br>" : "")."</span></td>";
 		echo "<td><a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td>";
 		switch ($row["IsExist"]) {
@@ -569,17 +565,17 @@
 	if( mysqli_num_rows($res) ) {
 	?>
 		<br><br>
-		<table>
+		<table class="main_table">
 			<thead>
 			<tr>
-				<th>Кол-во</th>
-				<th>Заготовка/прочее</th>
-				<th>Этапы</th>
-				<th>Материал</th>
-				<th>Поставщик</th>
-				<th>Примечание</th>
-				<th>Цена</th>
-				<th>Действие</th>
+				<th width="40">Кол-во</th>
+				<th width="150">Заготовка/прочее</th>
+				<th width="">Этапы</th>
+				<th width="">Материал</th>
+				<th width="">Поставщик</th>
+				<th width="">Примечание</th>
+				<th width="60">Цена</th>
+				<th width="75">Действие</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -589,7 +585,7 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
-		echo "<tr id='blank{$row["ODB_ID"]}'>";
+		echo "<tr id='blank{$row["ODB_ID"]}' class='ord_log_row' lnk='*ODB_ID{$row["ODB_ID"]}*'>";
 		echo "<td>{$row["Amount"]}</td>";
 		echo "<td>{$row["Name"]}</td>";
 		echo "<td><a href='#' odbid='{$row["ODB_ID"]}' class='edit_steps nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
@@ -633,12 +629,87 @@
 		}
 		?>
 	</p>
+</div>
 
+<?
+if( $id != "NULL" ) {
+?>
+&nbsp;
+&nbsp;
+<div class="halfblock">
+	<div id="wr_order_change_log">
+		<b>Журнал изменений в заказе:</b><br><br>
+		<table class="main_table">
+			<thead>
+				<tr>
+					<th width="">Название</th>
+					<th width="">Старое значение</th>
+					<th width="">Новое значение</th>
+					<th width="">Автор</th>
+					<th width="75">Дата</th>
+					<th width="60">Время</th>
+				</tr>
+			</thead>
+		</table>
+		<div id="order_log_table">
+			<table>
+				<thead>
+					<tr>
+						<th width=""></th>
+						<th width=""></th>
+						<th width=""></th>
+						<th width=""></th>
+						<th width="75"></th>
+						<th width="60"></th>
+					</tr>
+				</thead>
+				<tbody>
+		<?
+			$query = "SELECT OCL.table_key
+							,OCL.table_value
+							,OCL.field_name
+							,OCL.old_value
+							,OCL.new_value
+							,USR.Name
+							,DATE_FORMAT(DATE(OCL.date_time), '%d.%m.%Y') Date
+							,TIME(OCL.date_time) Time
+						FROM OrdersChangeLog OCL
+						JOIN Users USR ON USR.USR_ID = OCL.author
+						WHERE (table_key = 'OD_ID' AND table_value = {$id}) OR (table_key = 'ODD_ID' AND table_value IN (SELECT ODD_ID FROM OrdersDataDetail WHERE OD_ID = {$id})) OR (table_key = 'ODB_ID' AND table_value IN (SELECT ODB_ID FROM OrdersDataBlank WHERE OD_ID = {$id}))
+						ORDER BY OCL.OCL_ID DESC";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) ) {
+				echo "<tr class='ord_log_row' lnk='*{$row["table_key"]}{$row["table_value"]}*'>";
+				echo "<td>{$row["field_name"]}</td>";
+				echo "<td>{$row["old_value"]}</td>";
+				echo "<td>{$row["new_value"]}</td>";
+				echo "<td class='nowrap'>{$row["Name"]}</td>";
+				echo "<td>{$row["Date"]}</td>";
+				echo "<td>{$row["Time"]}</td>";
+				echo "</tr>";
+			}
+		?>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+<?
+}
+?>
 </body>
 </html>
 
 <script>
 	$(document).ready(function(){
+		$('.ord_log_row').hover(function() {
+			var lnk = $(this).attr('lnk');
+			$('.ord_log_row[lnk="'+lnk+'"] td').css('background', '#ffa');
+		}, function() {
+			var lnk = $(this).attr('lnk');
+			$('.ord_log_row[lnk="'+lnk+'"] td').css('background', 'none');
+		});
+
 		$( ".colortags" ).autocomplete({ // Автокомплит цветов
 			source: "autocomplete.php?do=colortags"
 		});

@@ -253,7 +253,7 @@ case "ispainting":
 	$val = ($val == 3) ? 1 : $val + 1;
 
 	// Обновляем статус лакировки
-	$query = "UPDATE OrdersData SET IsPainting = {$val} WHERE OD_ID = {$id}";
+	$query = "UPDATE OrdersData SET IsPainting = {$val}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 
 	// Получаем статус лакировки из базы
@@ -691,7 +691,7 @@ case "update_shop":
 	$old_shop = mysqli_result($res,0,'Shop') ? mysqli_result($res,0,'Shop') : 'Свободные';
 
 	// Меняем салон в заказе
-	$query = "UPDATE OrdersData SET SH_ID = {$SH_ID} WHERE OD_ID = {$OD_ID}";
+	$query = "UPDATE OrdersData SET SH_ID = {$SH_ID}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'alert'});");
 
 	// Узнаем название нового салона
@@ -734,7 +734,7 @@ case "update_sell_date":
 	$old_StartDate = mysqli_result($res,0,'StartDate');
 
 	// Меняем дату продажи
-	$query = "UPDATE OrdersData SET StartDate = {$StartDate} WHERE OD_ID = {$OD_ID}";
+	$query = "UPDATE OrdersData SET StartDate = {$StartDate}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		echo "$('td#{$OD_ID} .sell_date').val('{$old_StartDate}');";
 		die("noty({timeout: 10000, text: '".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'alert'});");
