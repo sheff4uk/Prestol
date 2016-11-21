@@ -398,7 +398,7 @@
 				<button>Сохранить</button>
 				<br>
 				<br>
-				<a class="button" href="clone_order.php?id=<?=$id?>">Клонировать</a>
+				<a class="button" href="clone_order.php?id=<?=$id?>&author=<?=$_SESSION['id']?>">Клонировать</a>
 			</td>
 		</tr>
 		</tbody>
