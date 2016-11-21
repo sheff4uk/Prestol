@@ -717,9 +717,10 @@ td.tscell > i {
 	position: relative;
 }
 #order_log_table {
-	height: calc(100% - 80px);
+	height: calc(100% - 60px);
 	position: absolute;
 	overflow-y: scroll;
 	background: #fff;
-	width: 100%;
+	width: calc(100% - 20px);
+	box-shadow: 0 0 10px #666;
 }

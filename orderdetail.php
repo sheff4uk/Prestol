@@ -639,28 +639,15 @@ if( $id != "NULL" ) {
 <div class="halfblock">
 	<div id="wr_order_change_log">
 		<b>Журнал изменений в заказе:</b><br><br>
-		<table class="main_table">
-			<thead>
-				<tr>
-					<th width="">Название</th>
-					<th width="">Старое значение</th>
-					<th width="">Новое значение</th>
-					<th width="">Автор</th>
-					<th width="75">Дата</th>
-					<th width="60">Время</th>
-				</tr>
-			</thead>
-		</table>
 		<div id="order_log_table">
 			<table style="width: 100%;">
 				<thead>
 					<tr>
-						<th width=""></th>
-						<th width=""></th>
-						<th width=""></th>
-						<th width=""></th>
-						<th width="75"></th>
-						<th width="60"></th>
+					<th width="">Название</th>
+					<th width="">Старое значение</th>
+					<th width=""><i class='fa fa-arrow-right'></i></th>
+					<th width="">Новое значение</th>
+					<th width="">Дата/Время/Автор</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -681,11 +668,10 @@ if( $id != "NULL" ) {
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "<tr class='ord_log_row' lnk='*{$row["table_key"]}{$row["table_value"]}*'>";
 				echo "<td><b>{$row["field_name"]}</b></td>";
-				echo "<td><i>{$row["old_value"]}</i></td>";
-				echo "<td><i>{$row["new_value"]}</i></td>";
-				echo "<td class='nowrap'>{$row["Name"]}</td>";
-				echo "<td>{$row["Date"]}</td>";
-				echo "<td>{$row["Time"]}</td>";
+				echo "<td style='text-align: right;'><i style='border: 1px solid #999; padding: 2px;'>{$row["old_value"]}</i></td>";
+				echo "<td><i class='fa fa-arrow-right'></i></td>";
+				echo "<td style='text-align: left;'><i style='border: 1px solid #999; padding: 2px;'>{$row["new_value"]}</i></td>";
+				echo "<td class='nowrap'>{$row["Date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
 				echo "</tr>";
 			}
 		?>
