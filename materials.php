@@ -98,8 +98,6 @@
 					<label for='prod1'>Ткань</label>
 				<input type='radio' id='prod2' name='prod' value='2' <?= ($product =="2" ? "checked" : "") ?>>
 					<label for='prod2'>Пластик</label>
-				<input type='radio' id='prod0' name='prod' value='0' <?= ($product =="0" ? "checked" : "") ?>>
-					<label for='prod0'>Прочее</label>
 			</div>
 		</div>
 
@@ -230,7 +228,7 @@
 						  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 						  JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 						  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-						  WHERE ODB.IsExist = {$isexist} AND 0 = {$product}
+						  WHERE ODB.IsExist = {$isexist} AND MT.PT_ID = {$product}
 						  AND (ODB.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
 						  ORDER BY PT_ID DESC, ItemID
 						  ) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID

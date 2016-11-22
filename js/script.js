@@ -62,7 +62,8 @@ function makeform(id, other, location, plid)
 // Функция активирует/деактивирует кнопки наличия ткани/пластика
 function materialonoff(element)
 {
-	if( $(element+' input[name="Material"]').val().length == 0 )
+	var length = $(element+' input[name="Material"]:enabled').val().length;
+	if( length == 0 )
 	{
 		$(element+' .radiostatus input[type="radio"]').prop('disabled', true);
 		// Очистка инпутов дат заказа пластика
@@ -462,6 +463,9 @@ $(document).ready(function(){
 		$('#addblank input[name="Other"]').prop("required", true);
 		$('#addblank select[name="Blanks"]').prop('disabled', false);
 		$('#addblank select[name="Blanks"]').prop('required', true);
+		$('#addblank input[name="Material"]').attr('disabled', false);
+		$('#addblank select[name="Shipper"]').attr('disabled', false);
+		$('#addblank input[name="MPT_ID"]').val('');
 		// Очистка инпутов дат заказа пластика
 		$('#addblank .order_material').hide('fast');
 		$('#addblank .order_material input').attr("required", false);
@@ -486,8 +490,22 @@ $(document).ready(function(){
 			}
 			$('#addblank textarea[name="Comment"]').val(odb[id]['comment']);
 
-			$('#addblank input[name="Material"]').val(odb[id]['material']);
-			$('#addblank select[name="Shipper"]').val(odb[id]['shipper']);
+			// Заполняем ткань/пластик
+			if( odb[id]['MPT_ID'] == 1 ) {
+				$('#addblank input[name="Material"]:eq(0)').val(odb[id]['material']);
+				$('#addblank select[name="Shipper"]:eq(0)').val(odb[id]['shipper']);
+				$('#addblank input[name="Material"]:eq(1)').attr('disabled', true);
+				$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', true);
+				$('#addblank input[name="MPT_ID"]').val('1');
+			}
+			else if( odb[id]['MPT_ID'] == 2 ) {
+				$('#addblank input[name="Material"]:eq(1)').val(odb[id]['material']);
+				$('#addblank select[name="Shipper"]:eq(1)').val(odb[id]['shipper']);
+				$('#addblank input[name="Material"]:eq(0)').attr('disabled', true);
+				$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', true);
+				$('#addblank input[name="MPT_ID"]').val('2');
+			}
+
 			$('#0radio'+odb[id]['isexist']).prop('checked', true);
 			$('#addblank .radiostatus input[type="radio"]').button('refresh');
 			if( odb[id]['isexist'] == 1 ) {
@@ -533,12 +551,40 @@ $(document).ready(function(){
 			}
 		});
 
-		// Если нет материала, то кнопка наличия не активна
-		$('#addblank input[name="Material"]').change( function() {
+		// Если добавлена ткань - то пластик не доступеню. И наоборот.
+		$('#addblank input[name="Material"]:eq(0)').blur(function(){
+			if( $(this).val().length > 0 ) {
+				$('#addblank input[name="Material"]:eq(1)').attr('disabled', true);
+				$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', true);
+				$('#addblank input[name="MPT_ID"]').val('1');
+			}
+			else {
+				$('#addblank input[name="Material"]:eq(1)').attr('disabled', false);
+				$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', false);
+				$('#addblank input[name="MPT_ID"]').val('');
+			}
 			materialonoff('#addblank');
 		});
-		$('#addblank input[name="Material"]').on( "autocompleteselect", function() {
+		$('#addblank input[name="Material"]:eq(1)').blur(function(){
+			if( $(this).val().length > 0 ) {
+				$('#addblank input[name="Material"]:eq(0)').attr('disabled', true);
+				$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', true);
+				$('#addblank input[name="MPT_ID"]').val('2');
+			}
+			else {
+				$('#addblank input[name="Material"]:eq(0)').attr('disabled', false);
+				$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', false);
+				$('#addblank input[name="MPT_ID"]').val('');
+			}
 			materialonoff('#addblank');
+		});
+
+		// Если нет материала, то кнопка наличия не активна
+		$('#addblank input[name="Material"]:eq(0)').on( "autocompleteselect", function() {
+			$('#addblank input[name="Material"]:eq(0)').blur();
+		});
+		$('#addblank input[name="Material"]:eq(1)').on( "autocompleteselect", function() {
+			$('#addblank input[name="Material"]:eq(1)').blur();
 		});
 
 		$("#addblank").dialog(
@@ -552,6 +598,8 @@ $(document).ready(function(){
 
 		// Автокомплит поверх диалога
 		$( ".textileplastictags" ).autocomplete( "option", "appendTo", "#addblank" );
+		$( ".textiletags" ).autocomplete( "option", "appendTo", "#addblank" );
+		$( ".plastictags" ).autocomplete( "option", "appendTo", "#addblank" );
 
 		return false;
 	});

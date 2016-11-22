@@ -180,24 +180,26 @@ if( $_GET["odbid"] )
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 	$Comment = trim($Comment);
+	$MPT_ID = $_POST["MPT_ID"] ? $_POST["MPT_ID"] : 0;
 
 	// Узнаем какой материал был ранее
-	$query = "SELECT IFNULL(MT.Material, '') Material, ODB.MT_ID
+	$query = "SELECT IFNULL(MT.Material, '') Material, ODB.MT_ID, IFNULL(MT.PT_ID, 0) PT_ID
 			  FROM OrdersDataBlank ODB
-			  JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+			  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 			  WHERE ODB.ODB_ID = {$_GET["odbid"]}";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$OldMaterial = mysqli_result($res,0,'Material');
+	$OldMPT_ID = mysqli_result($res,0,'PT_ID');
 
 	// Если материалы не совпадают
-	if( $OldMaterial != $Material ) {
-		$query = "UPDATE Materials SET Count = Count - 1 WHERE Material = '{$OldMaterial}' AND PT_ID = 0";
+	if( $OldMaterial != $Material or $OldMPT_ID != $MPT_ID ) {
+		$query = "UPDATE Materials SET Count = Count - 1 WHERE Material = '{$OldMaterial}' AND PT_ID = {$OldMPT_ID}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		if( $Material != '' ) { // Сохраняем в таблицу материалов полученный материал и узнаем его ID
 			$query = "INSERT INTO Materials
 						SET
-							PT_ID = 0,
+							PT_ID = {$MPT_ID},
 							Material = '{$Material}',
 							SH_ID = {$Shipper},
 							Count = 1
@@ -215,7 +217,7 @@ if( $_GET["odbid"] )
 		if( $Material != '' ) {
 			$mt_id = mysqli_result($res,0,'MT_ID');
 			// Обновляем поставщика у материала
-			$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE Material = '{$OldMaterial}' AND PT_ID = 0";
+			$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE Material = '{$OldMaterial}' AND PT_ID = {$MPT_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 		else {
