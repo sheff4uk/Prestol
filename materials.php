@@ -37,38 +37,37 @@
 			$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
 			$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
 			$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
-			if( strpos($k,"prod") === 0 ) 
+			if( strpos($k,"prod") === 0 )
 			{
 				$prodid = (int)str_replace( "prod", "", $k );
-				if( $product > 0 ) {
-					if( isset($_POST["IsExist"]) ) {
-						$query = "UPDATE OrdersDataDetail
-								  SET IsExist = $val
-									 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
-									 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
-								  WHERE ODD_ID = {$prodid}";
-						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					}
-					if( $_POST["Shipper"] != '' ) {
-						// Обновляем постовщика у материала
-						$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE MT_ID = (SELECT MT_ID FROM OrdersDataDetail WHERE ODD_ID = {$prodid})";
-						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					}
+				if( isset($_POST["IsExist"]) ) {
+					$query = "UPDATE OrdersDataDetail
+							  SET IsExist = $val
+								 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
+								 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
+							  WHERE ODD_ID = {$prodid}";
+					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				}
-				else {
-					if( isset($_POST["IsExist"]) ) {
-						$query = "UPDATE OrdersDataBlank
-								  SET IsExist = $val
-									 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
-									 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
-								  WHERE ODB_ID = {$prodid}";
-						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					}
-					if( $_POST["Shipper"] != '' ) {
-						// Обновляем постовщика у материала
-						$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE MT_ID = (SELECT MT_ID FROM OrdersDataBlank WHERE ODB_ID = {$prodid})";
-						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					}
+				if( $_POST["Shipper"] != '' ) {
+					// Обновляем постовщика у материала
+					$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE MT_ID = (SELECT MT_ID FROM OrdersDataDetail WHERE ODD_ID = {$prodid})";
+					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				}
+			}
+			elseif( strpos($k,"other") === 0 ) {
+				$prodid = (int)str_replace( "other", "", $k );
+				if( isset($_POST["IsExist"]) ) {
+					$query = "UPDATE OrdersDataBlank
+							  SET IsExist = $val
+								 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
+								 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
+							  WHERE ODB_ID = {$prodid}";
+					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				}
+				if( $_POST["Shipper"] != '' ) {
+					// Обновляем постовщика у материала
+					$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE MT_ID = (SELECT MT_ID FROM OrdersDataBlank WHERE ODB_ID = {$prodid})";
+					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				}
 			}
 		}
@@ -222,7 +221,7 @@
 
 								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
 
-								,CONCAT('<input type=\'checkbox\' value=\'1\' name=\'prod', ODB.ODB_ID, '\' class=\'chbox\'><br>') Checkbox
+								,CONCAT('<input type=\'checkbox\' value=\'1\' name=\'other', ODB.ODB_ID, '\' class=\'chbox\'><br>') Checkbox
 
 						  FROM OrdersDataBlank ODB
 						  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
