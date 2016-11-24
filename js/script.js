@@ -154,18 +154,23 @@ $(document).ready(function(){
 //	});
 	$('.edit_steps').click( function()
 	{
-		var location = $(this).attr("location");
-		var id = $(this).attr("id");
-		var odbid = $(this).attr("odbid");
-		plid = $(this).attr("plid");
-		if( typeof plid === "undefined" ) {
-			plid = '';
-		}
-		if( typeof odbid !== "undefined" ) {
-			makeform(odbid, 1, location, plid);
+		if( $(this).parents('.td_step').hasClass('step_confirmed') ) {
+			var location = $(this).attr("location");
+			var id = $(this).attr("id");
+			var odbid = $(this).attr("odbid");
+			plid = $(this).attr("plid");
+			if( typeof plid === "undefined" ) {
+				plid = '';
+			}
+			if( typeof odbid !== "undefined" ) {
+				makeform(odbid, 1, location, plid);
+			}
+			else {
+				makeform(id, 0, location, plid);
+			}
 		}
 		else {
-			makeform(id, 0, location, plid);
+			noty({timeout: 10000, text: 'Заказ не принят в работу. Вы не можете назначать этапы.', type: 'alert'});
 		}
 		return false;
 	});

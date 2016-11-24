@@ -106,6 +106,16 @@ pre {
 	background: #3bec00 !important;
 }
 
+.confirmed {
+	color: #3bec00 !important;
+}
+.not_confirmed {
+	color: #666 !important;
+}
+.edit_confirmed {
+	cursor: pointer;
+}
+
 .unvisible {
 	text-decoration: line-through;
 	filter: grayscale(1) brightness(0.7);

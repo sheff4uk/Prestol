@@ -139,6 +139,7 @@
 			<th>Материал</th>
 			<th>Поставщик</th>
 			<th>Код</th>
+			<th>Принят</th>
 			<th>Заказ</th>
 			<th>Цвет</th>
 			<th>Заказчик</th>
@@ -163,6 +164,7 @@
 					,OD.OrderNumber
 					,OD.Comment
 					,OD.IsPainting
+					,OD.confirmed
 					,IFNULL(OD.Color, '<a href=\"/orderdetail.php\">Свободные</a>') Color
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
@@ -243,6 +245,16 @@
 		echo "<td><span class='nowrap'>{$row["Material"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Shipper"]}</span></td>";
 		echo "<td><a href='orderdetail.php?id={$row["OD_ID"]}' class='nowrap'>{$row["Code"]}</a></td>";
+		// Если заказ принят
+		if( $row["confirmed"] == 1 ) {
+			$class = 'confirmed';
+			$title = 'Принят в работу';
+		}
+		else {
+			$class = 'not_confirmed';
+			$title = 'Не принят в работу';
+		}
+		echo "<td class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 		switch ($row["IsPainting"]) {
 			case 1:

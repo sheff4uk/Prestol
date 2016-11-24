@@ -342,6 +342,7 @@
 					,OD.IsPainting
 					,OD.Comment
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
+					,OD.confirmed
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -357,6 +358,7 @@
 	$IsPainting = mysqli_result($res,0,'IsPainting');
 	$Comment = mysqli_result($res,0,'Comment');
 	$CTColor = mysqli_result($res,0,'CTColor');
+	$confirmed = mysqli_result($res,0,'confirmed');
 ?>
 		<tbody>
 		<tr class='ord_log_row' lnk='*OD_ID<?=$id?>*'>
@@ -405,6 +407,9 @@
 	</table>
 	</form>
 <?
+		if( $confirmed == 1 ) {
+			echo "<div style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em;'>Заказ принят в работу</div>";
+		}
 	}
 ?>
 <div class="halfblock">
@@ -489,7 +494,7 @@
 		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row {$row["is_check"]}' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
 		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
 		echo "<td><span>{$row["Model"]}<br>".($row["Size"] != "" ? "{$row["Size"]}<br>" : "").($row["Form"] != "" ? "{$row["Form"]}<br>" : "").($row["Mechanism"] != "" ? "{$row["Mechanism"]}<br>" : "")."</span></td>";
-		echo "<td><a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td>";
 		switch ($row["IsExist"]) {
 			case 0:
@@ -589,7 +594,7 @@
 		echo "<tr id='blank{$row["ODB_ID"]}' class='ord_log_row' lnk='*ODB_ID{$row["ODB_ID"]}*'>";
 		echo "<td>{$row["Amount"]}</td>";
 		echo "<td>{$row["Name"]}</td>";
-		echo "<td><a href='#' odbid='{$row["ODB_ID"]}' class='edit_steps nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='edit_steps nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td>";
 		switch ($row["IsExist"]) {
 			case 0:

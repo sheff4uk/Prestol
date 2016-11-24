@@ -292,6 +292,40 @@ case "ispainting":
 	echo "noty({timeout: 3000, text: 'Статус лакировки изменен на \"{$status}\"', type: 'success'});";
 	break;
 
+// Смена статуса принятия заказа
+case "confirmed":
+
+	$id = $_GET["od_id"];
+	$val = $_GET["val"];
+	$val = ($val == 0) ? 1 : 0;
+
+	// Обновляем статус принятия заказа
+	$query = "UPDATE OrdersData SET confirmed = {$val}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+
+	// Получаем статус принятия заказа из базы
+	$query = "SELECT confirmed FROM OrdersData WHERE OD_ID = {$id}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$val = mysqli_result($res,0,'confirmed');
+
+	if( $val == 1) {
+		$class = 'confirmed';
+		$status = 'Принят в работу';
+		echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.td_step').addClass('step_confirmed');";
+	}
+	else {
+		$class = 'not_confirmed';
+		$status = 'Не принят в работу';
+		echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.td_step').removeClass('step_confirmed');";
+	}
+
+	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').removeClass('confirmed not_confirmed');";
+	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').addClass('{$class}');";
+	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('title', '{$status}');";
+	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('val', '{$val}');";
+	echo "noty({timeout: 3000, text: 'Статус заказа изменен на \"{$status}\"', type: 'success'});";
+	break;
+
 // Помечаем X в главной таблице
 case "Xlabel":
 

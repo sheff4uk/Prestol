@@ -28,7 +28,7 @@
 	// Добавление в базу нового заказа
 	if( isset($_POST["Shop"]) )
 	{
-		if( !in_array('order_add', $Rights) ) {
+		if( !in_array('order_add', $Rights) and !in_array('order_add_confirm', $Rights) ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 			die('Недостаточно прав для совершения операции');
 		}
@@ -45,8 +45,9 @@
 		$OrderNumber = trim($OrderNumber);
 		$Color = trim($Color);
 		$Comment = trim($Comment);
-		$query = "INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment, creator)
-				  VALUES ('{$ClientName}', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}', {$_SESSION['id']})";
+		$confirmed = in_array('order_add', $Rights) ? 1 : 0;
+		$query = "INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment, creator, confirmed)
+				  VALUES ('{$ClientName}', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}', {$_SESSION['id']}, {$confirmed})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
 		// Перенаправление на экран деталей заказа
@@ -475,6 +476,13 @@
 				</select>
 			</th>
 			<th width="40">
+				<select name="f_CF" style="width: 100%;" onchange="this.form.submit()" class="<?=($_SESSION["f_CF"] != "") ? "filtered" : ""?>">
+					<option></option>
+					<option value="0" <?= ($_SESSION["f_CF"] == "0") ? 'selected' : '' ?>>Нет</option>
+					<option value="1" <?= ($_SESSION["f_CF"] == "1") ? 'selected' : '' ?>>Да</option>
+				</select>
+			</th>
+			<th width="40">
 				<select name="f_X" style="width: 100%;" onchange="this.form.submit()" class="<?=($_SESSION["f_X"] != "") ? "filtered" : ""?>">
 					<option></option>
 					<option value="1" <?= ($_SESSION["f_X"] == 1) ? 'selected' : '' ?>>X</option>
@@ -514,8 +522,9 @@
 			<th width="15%"><input type="checkbox" disabled value="8" checked name="M" class="print_col" id="M"><label for="M">Материал</label></th>
 			<th width="15%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
 			<th width="100"><input type="checkbox" disabled value="10" name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
-			<th width="40"><input type="checkbox" disabled value="11" name="X" class="print_col" id="X"><label for="X">X</label></th>
-			<th width="15%"><input type="checkbox" disabled value="12" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
+			<th width="40"><input type="checkbox" disabled value="11" name="CF" class="print_col" id="CF"><label for="CF">Принят</label></th>
+			<th width="40"><input type="checkbox" disabled value="12" name="X" class="print_col" id="X"><label for="X">X</label></th>
+			<th width="15%"><input type="checkbox" disabled value="13" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
 			<th width="80">Действие</th>
 		</tr>
 		</thead>
@@ -535,6 +544,7 @@
 			<th width="15%"></th>
 			<th width="15%"></th>
 			<th width="100"></th>
+			<th width="40"></th>
 			<th width="40"></th>
 			<th width="15%"></th>
 			<th width="80"></th>
@@ -646,6 +656,7 @@
 					,BIT_AND(ODD_ODB.IsReady) IsReady
 					,IFNULL(OD.SHP_ID, 0) SHP_ID
 					,IF(OS.ostatok IS NOT NULL, 1, 0) is_lock
+					,OD.confirmed
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -755,6 +766,9 @@
 			  if( $_SESSION["f_CR"] != "" ) {
 				  $query .= " AND OD.Color LIKE '%{$_SESSION["f_CR"]}%'";
 			  }
+			  if( $_SESSION["f_CF"] != "" ) {
+				  $query .= " AND OD.confirmed = {$_SESSION["f_CF"]}";
+			  }
 			}
 			else {  // Если в отгрузке - показываем список этой отгрузки
 				$query .= " AND OD.SHP_ID = {$_GET["shpid"]}";
@@ -817,8 +831,18 @@
 					break;
 			}
 		echo " class='".(in_array('order_add', $Rights) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}'>{$row["Color"]}</td>";
-		echo "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
+		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
+		// Если заказ принят
+		if( $row["confirmed"] == 1 ) {
+			$class = 'confirmed';
+			$title = 'Принят в работу';
+		}
+		else {
+			$class = 'not_confirmed';
+			$title = 'Не принят в работу';
+		}
+		echo "<td val='{$row["confirmed"]}' class='".(in_array('order_add', $Rights) ? "edit_confirmed " : "")."{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td class='X'><input type='checkbox' {$checkedX} value='1'></td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td>";
@@ -1114,6 +1138,14 @@
 			var isready = $(this).attr('isready');
 			var archive = $(this).attr('archive');
 			$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val+"&isready="+isready+"&archive="+archive, dataType: "script", async: false });
+		});
+
+		// Смена статуса принятия аяксом
+		$('.edit_confirmed').click(function() {
+			var id = $(this).parents('tr').attr('id');
+			id = id.replace('ord', '');
+			var val = $(this).attr('val');
+			$.ajax({ url: "ajax.php?do=confirmed&od_id="+id+"&val="+val, dataType: "script", async: false });
 		});
 
 		$('.X input[type="checkbox"]').change(function() {
