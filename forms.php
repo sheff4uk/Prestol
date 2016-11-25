@@ -81,13 +81,17 @@
 			<textarea name='Comment' rows='3' cols='38'></textarea>
 		</div>
 		</fieldset>
-
+<?
+	if( in_array('order_add_confirm', $Rights) ) {
+?>
 		<div class="accordion">
 			<h3>Найдено <span></span> "Свободных"</h3>
 			<div>
 			</div>
 		</div>
-	
+<?
+	}
+?>
 		<div>
 			<hr>
 			<input type='submit' value='Сохранить' style='float: right;'>
@@ -198,14 +202,17 @@
 			<textarea name='Comment' rows='3' cols='38'></textarea>
 		</div>
 		</fieldset>
-
+<?
+	if( in_array('order_add_confirm', $Rights) ) {
+?>
 		<div class="accordion">
 			<h3>Найдено <span></span> "Свободных"</h3>
 			<div>
-				<div id="progressbar"></div>
 			</div>
 		</div>
-		
+<?
+	}
+?>
 		<div>
 			<hr>
 			<input type='submit' value='Сохранить' style='float: right;'>

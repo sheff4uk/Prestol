@@ -326,6 +326,49 @@ case "confirmed":
 	echo "noty({timeout: 3000, text: 'Статус заказа изменен на \"{$status}\"', type: 'success'});";
 	break;
 
+// Смена статуса прочитанного собщения в заказе
+case "read_message":
+
+	$id = $_GET["om_id"];
+	$val = $_GET["val"];
+	$val = ($val == 0) ? 1 : 0;
+
+	// Обновляем статус сообщения
+	if( $val == 1 ) {
+		$query = "UPDATE OrdersMessage SET read_user = {$_SESSION['id']}, read_time = NOW() WHERE OM_ID = {$id}";
+	}
+	else {
+		$query = "UPDATE OrdersMessage SET read_user = NULL, read_time = NULL WHERE OM_ID = {$id}";
+	}
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+
+	// Получаем статус статус сообщения
+	$query = "SELECT IFNULL(RUSR.Name, '') read_user
+					,DATE_FORMAT(DATE(OM.read_time), '%d.%m.%Y') read_date
+					,TIME(OM.read_time) read_time
+				FROM OrdersMessage OM
+				LEFT JOIN Users RUSR ON RUSR.USR_ID = OM.read_user
+				WHERE OM_ID = {$id}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$read_user = mysqli_result($res,0,'read_user');
+	$read_date = mysqli_result($res,0,'read_date');
+	$read_time = mysqli_result($res,0,'read_time');
+
+	if( $read_user != '') {
+		$html = "<i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: green;' title='Прочитано: {$read_user} {$read_date} {$read_time}'>";
+		$status = "ПРОЧИТАННОЕ";
+	}
+	else {
+		$html = "<i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: red;'>";
+		$status = "НЕ ПРОЧИТАННОЕ";
+	}
+	$html = addslashes($html);
+	echo "window.top.window.$('#msg{$id}').html('{$html}');";
+	echo "window.top.window.$('#msg{$id}').attr('val', '{$val}');";
+
+	echo "noty({timeout: 3000, text: 'Сообщение отмечено как {$status}', type: 'success'});";
+	break;
+
 // Помечаем X в главной таблице
 case "Xlabel":
 
@@ -361,10 +404,10 @@ case "materials":
 
 			// Меняем в заказах старый id материала на новый
 			if( $ptid > 0 ) {
-				$query = "UPDATE OrdersDataDetail SET MT_ID = {$mtid} WHERE MT_ID = {$oldmtid}";
+				$query = "UPDATE OrdersDataDetail SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
 			}
 			else {
-				$query = "UPDATE OrdersDataBlank SET MT_ID = {$mtid} WHERE MT_ID = {$oldmtid}";
+				$query = "UPDATE OrdersDataBlank SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
 			}
 			mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 

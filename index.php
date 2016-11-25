@@ -28,7 +28,7 @@
 	// Добавление в базу нового заказа
 	if( isset($_POST["Shop"]) )
 	{
-		if( !in_array('order_add', $Rights) and !in_array('order_add_confirm', $Rights) ) {
+		if( !in_array('order_add', $Rights) ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 			die('Недостаточно прав для совершения операции');
 		}
@@ -45,7 +45,7 @@
 		$OrderNumber = trim($OrderNumber);
 		$Color = trim($Color);
 		$Comment = trim($Comment);
-		$confirmed = in_array('order_add', $Rights) ? 1 : 0;
+		$confirmed = in_array('order_add_confirm', $Rights) ? 1 : 0;
 		$query = "INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment, creator, confirmed)
 				  VALUES ('{$ClientName}', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}', {$_SESSION['id']}, {$confirmed})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -144,8 +144,8 @@
 
 		if( $left_sum != 0 and $right_sum != 0 ) {
 			// Создание копии заказа
-			$query = "INSERT INTO OrdersData(SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del, creator)
-			SELECT SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del, {$_SESSION['id']} FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			$query = "INSERT INTO OrdersData(SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del, creator, confirmed)
+			SELECT SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
@@ -165,7 +165,7 @@
 				elseif( $right > 0 ) {
 					if( $_POST["PT_ID"][$key] == 0 ) {
 						// Меняем количество изделий в исходном заказе
-						$query = "UPDATE OrdersDataBlank SET Amount = {$left} WHERE ODB_ID = {$value}";
+						$query = "UPDATE OrdersDataBlank SET Amount = {$left}, author = NULL WHERE ODB_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						// Вставляем в новый заказ переносимые изделия
 						$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, MT_ID, Amount, Comment, IsExist, order_date, arrival_date, Price, sister_ID, creator)
@@ -174,7 +174,7 @@
 					}
 					else {
 						// Меняем количество изделий в исходном заказе
-						$query = "UPDATE OrdersDataDetail SET Amount = {$left} WHERE ODD_ID = {$value}";
+						$query = "UPDATE OrdersDataDetail SET Amount = {$left}, author = NULL WHERE ODD_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						// Вставляем в новый заказ переносимые изделия
 						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Color, Comment, is_check, order_date, arrival_date, Price, sister_ID, creator)
@@ -808,7 +808,7 @@
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
 		echo "<td class='".(in_array('order_add', $Rights) ? "shop_cell" : "")."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
 		echo "<td><span>{$row["OrderNumber"]}</span></td>";
-		if( $row["is_lock"] ) {
+		if( $row["is_lock"] or ( $row["confirmed"] and !in_array('order_add_confirm', $Rights) ) ) {
 			echo "<td><span class='nowrap'>{$row["Zakaz_lock"]}</span></td>";
 		}
 		else {
@@ -830,7 +830,7 @@
 					$title = "Готово";
 					break;
 			}
-		echo " class='".(in_array('order_add', $Rights) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}'>{$row["Color"]}</td>";
+		echo " class='".(in_array('order_add_confirm', $Rights) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}'>{$row["Color"]}</td>";
 		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		// Если заказ принят
@@ -842,7 +842,10 @@
 			$class = 'not_confirmed';
 			$title = 'Не принят в работу';
 		}
-		echo "<td val='{$row["confirmed"]}' class='".(in_array('order_add', $Rights) ? "edit_confirmed " : "")."{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
+		if( in_array('order_add_confirm', $Rights) ) {
+			$class = $class." edit_confirmed";
+		}
+		echo "<td val='{$row["confirmed"]}' class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td class='X'><input type='checkbox' {$checkedX} value='1'></td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td>";

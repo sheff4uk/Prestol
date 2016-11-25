@@ -718,19 +718,50 @@ td.tscell > i {
 }
 
 #wr_order_change_log {
-	height: 250px;
+	height: 300px;
 	margin-top: 10px;
 	background: #fff;
-	border: 1px solid #bbb;
+	//border: 1px solid #bbb;
 	padding: 10px;
-	border-radius: 10px;
+	//border-radius: 10px;
 	position: relative;
 }
-#order_log_table {
+#order_log_table, #order_message {
 	height: calc(100% - 60px);
 	position: absolute;
 	overflow-y: scroll;
 	background: #fff;
 	width: calc(100% - 20px);
-	box-shadow: 0 0 10px #666;
+	box-shadow: 0 0 1px #666;
+}
+#navbar_workflow {
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	margin: 15px 0;
+	border-radius: 50%;
+	cursor: pointer;
+	position: relative;
+}
+#navbar_workflow > div {
+	width: 10px;
+	height: 10px;
+	opacity: 0;
+	background: #fff;
+	border: solid 1px #bbb;
+	border-radius: 10px;
+	padding: 10px;
+	overflow-y: auto;
+	box-shadow: 5px 5px 10px #bbb;
+	transition: .3s;
+	-webkit-transition: .3s;
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: -1;
+}
+#navbar_workflow:hover > div {
+	width: 400px;
+	height: 400px;
+	opacity: 1;
 }

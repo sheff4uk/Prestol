@@ -4,6 +4,46 @@
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	include "checkrights.php";
+
+	if( in_array('order_add', $Rights) ) {
+		$query = "SELECT OM.OD_ID, OD.Code, OM.Message, OM.priority
+					FROM OrdersMessage OM
+					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
+					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+					WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NULL AND OD.Del = 0 AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+					ORDER BY OM.OM_ID DESC";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		$workflow_color = "green";
+		$workflow_table = "
+			<table class='main_table'>
+				<thead>
+					<tr>
+						<th width='60'>Код</th>
+						<th>Сообщение</th>
+					</tr>
+				</thead>
+				<tbody>
+		";
+
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$workflow_table .= "
+				<tr".($row["priority"] ? " style='font-weight: bold;'" : "").">
+					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'>{$row["Code"]}</a></td>
+					<td>{$row["Message"]}</td>
+				</tr>
+			";
+			if( $row["priority"] == 0 and $workflow_color != 'red' ) {
+				$workflow_color = "yellow";
+			}
+			else {
+				$workflow_color = "red";
+			}
+		}
+		$workflow_table .= "</tbody></table>";
+	}
+//echo $workflow_table;
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -11,7 +51,7 @@
 	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=13'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=14'>
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
@@ -117,6 +157,9 @@
 	<nav class="navbar">
 		<div class="navbar-header"  id="main">
 			<a class="navbar-brand" href="/" title="На главную">ПРЕСТОЛ</a>
+			<div id="navbar_workflow" style="background: <?=$workflow_color?>; box-shadow: 0 0 3px 3px <?=$workflow_color?>;">
+				<div><?=$workflow_table?></div>
+			</div>
 		</div>
 <?
 	// Узнаем кол-во непроверенных свободных

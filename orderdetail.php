@@ -54,7 +54,7 @@
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 		$OrderNumber = mysqli_real_escape_string( $mysqli,$_POST["OrderNumber"] );
 		$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
-		$IsPainting = $_POST["IsPainting"];
+		//$IsPainting = $_POST["IsPainting"];
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 		// Удаляем лишние пробелы
 		$ClientName = trim($ClientName);
@@ -68,7 +68,7 @@
 				     ,SH_ID = $Shop
 				     ,OrderNumber = '{$OrderNumber}'
 				     ,Color = '{$Color}'
-				     ,IsPainting = $IsPainting
+				     ,IsPainting = ".( isset($_POST["IsPainting"]) ? $_POST["IsPainting"] : "IsPainting" )."
 				     ,Comment = '{$Comment}'
 					 ,author = {$_SESSION['id']}
 				  WHERE OD_ID = {$id}";
@@ -103,7 +103,7 @@
 					}
 					else {
 						// Изменяем количество изделий в свободных
-						$query = "UPDATE OrdersDataDetail SET Amount = {$amount} - {$v} WHERE ODD_ID = {$prodid}";
+						$query = "UPDATE OrdersDataDetail SET Amount = {$amount} - {$v}, author = NULL WHERE ODD_ID = {$prodid}";
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 						// Добавляем указанное количество изделий в заказ
@@ -308,6 +308,25 @@
 		die;
 	}
 
+	// Добавление в базу нового сообщения
+	if( isset($_GET["add_message"]) )
+	{
+		$Message = mysqli_real_escape_string( $mysqli,$_POST["message"] );
+		$query = "INSERT INTO OrdersMessage
+					 SET OD_ID = {$id}
+						,Message = '{$Message}'
+						,priority = {$_POST["priority"]}
+						,author = {$_SESSION['id']}
+						,destination = ".( in_array('order_add_confirm', $Rights) ? "0" : "1" );
+		if( !mysqli_query( $mysqli, $query ) ) {
+			$_SESSION["alert"] = mysqli_error( $mysqli );
+		}
+
+		//exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		die;
+	}
+
 	include "forms.php";
 
 	echo "<p><a href='{$_SESSION["location"]}#ord{$_GET["id"]}' class='button'><< Вернуться</a></p>";
@@ -397,10 +416,8 @@
 			</td>
 			<td><textarea name='Comment' rows='6' cols='15'><?=$Comment?></textarea></td>
 			<td>
-				<button>Сохранить</button>
-				<br>
-				<br>
-				<a class="button" href="clone_order.php?id=<?=$id?>&author=<?=$_SESSION['id']?>">Клонировать</a>
+				<?=(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) ? "<button>Сохранить</button><br><br>" : "")?>
+				<a class="button" href="clone_order.php?id=<?=$id?>&author=<?=$_SESSION['id']?>&confirmed=<?=(in_array('order_add_confirm', $Rights) ? 1 : 0)?>">Клонировать</a>
 			</td>
 		</tr>
 		</tbody>
@@ -494,7 +511,7 @@
 		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row {$row["is_check"]}' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
 		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
 		echo "<td><span>{$row["Model"]}<br>".($row["Size"] != "" ? "{$row["Size"]}<br>" : "").($row["Form"] != "" ? "{$row["Form"]}<br>" : "").($row["Mechanism"] != "" ? "{$row["Mechanism"]}<br>" : "")."</span></td>";
-		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='edit_steps nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td>";
 		switch ($row["IsExist"]) {
 			case 0:
@@ -511,17 +528,24 @@
 		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td class='txtright'>{$format_price}</td>";
-		echo "<td><a href='#' id='{$row["ODD_ID"]}' free='{$free}' class='button edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></a>";
+		echo "<td>";
 		
-		// Не показываем кнопку "Удалить" только в свободных если прогресс не 0
-		if( !($id == "NULL" && $row["inprogress"] != 0) )
-		{
-			$delmessage = "Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?";
-			?>
-			<a class='button' onclick='if(confirm("<?=addslashes($delmessage)?>", "?id=<?=$id?>&del=<?=$row["ODD_ID"]?>")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>
-			<?
+		if( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) {
+			echo "<a href='#' id='{$row["ODD_ID"]}' free='{$free}' class='button edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></a>";
+
+			// Не показываем кнопку "Удалить" только в свободных если прогресс не 0
+			if( !($id == "NULL" && $row["inprogress"] != 0) )
+			{
+				$delmessage = "Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?";
+				?>
+				<a class='button' onclick='if(confirm("<?=addslashes($delmessage)?>", "?id=<?=$id?>&del=<?=$row["ODD_ID"]?>")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>
+				<?
+			}
 		}
-		echo "<img hidden='true' src='/img/attention.png' class='attention' title='Требуется проверка данных после переноса изделий в \"Свободные\".'></td></tr>";
+		if( in_array('order_add_confirm', $Rights) ) {
+			echo "<img hidden='true' src='/img/attention.png' class='attention' title='Требуется проверка данных после переноса изделий в \"Свободные\".'>";
+		}
+		echo "</td></tr>";
 
 		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["SH_ID"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
 	}
@@ -594,7 +618,7 @@
 		echo "<tr id='blank{$row["ODB_ID"]}' class='ord_log_row' lnk='*ODB_ID{$row["ODB_ID"]}*'>";
 		echo "<td>{$row["Amount"]}</td>";
 		echo "<td>{$row["Name"]}</td>";
-		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='edit_steps nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td>";
 		switch ($row["IsExist"]) {
 			case 0:
@@ -644,7 +668,10 @@ if( $id != "NULL" ) {
 &nbsp;
 <div class="halfblock">
 	<div id="wr_order_change_log">
-		<b>Журнал изменений в заказе:</b><br><br>
+		<ul>
+			<li><a href="#order_message">Сообщения</a></li>
+			<li><a href="#order_log_table">Журнал изменений в заказе</a></li>
+		</ul>
 		<div id="order_log_table">
 			<table style="width: 100%;">
 				<thead>
@@ -684,16 +711,123 @@ if( $id != "NULL" ) {
 				</tbody>
 			</table>
 		</div>
+		<div id="order_message">
+			<table style="width: 100%;">
+				<thead>
+					<tr>
+					<th width="40"><a href="#" class="add_message_btn" title="Добавить сообщение"><i class="fa fa-plus-square fa-2x" style="color: green;"></i></a></th>
+					<th width="">Сообщение</th>
+					<th width="">Дата/Время/Автор</th>
+					</tr>
+				</thead>
+				<tbody>
+		<?
+			$query = "SELECT OM.OM_ID
+							,OM.Message
+							,OM.priority
+							,USR.Name
+							,DATE_FORMAT(DATE(OM.date_time), '%d.%m.%Y') Date
+							,TIME(OM.date_time) Time
+							,IFNULL(RUSR.Name, '') read_user
+							,DATE_FORMAT(DATE(OM.read_time), '%d.%m.%Y') read_date
+							,TIME(OM.read_time) read_time
+							,OM.destination
+						FROM OrdersMessage OM
+						JOIN Users USR ON USR.USR_ID = OM.author
+						LEFT JOIN Users RUSR ON RUSR.USR_ID = OM.read_user
+						WHERE OM.OD_ID = {$id}
+						ORDER BY OM.OM_ID DESC";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) ) {
+				if( $row["read_user"] != '' ) {
+					if( (in_array('order_add_confirm', $Rights) and $row["destination"] == 1) or (!in_array('order_add_confirm', $Rights) and $row["destination"] == 0) ) {
+						$letter_btn = "<a href='#' class='read_message_btn' id='msg{$row["OM_ID"]}' val='1'><i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: green;' title='Прочитано: {$row["read_user"]} {$row["read_date"]} {$row["read_time"]}'></a>";
+					}
+					else {
+						$letter_btn = "<i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: green; opacity: .3;' title='Прочитано: {$row["read_user"]} {$row["read_date"]} {$row["read_time"]}'>";
+					}
+				}
+				else {
+					if( (in_array('order_add_confirm', $Rights) and $row["destination"] == 1) or (!in_array('order_add_confirm', $Rights) and $row["destination"] == 0) ) {
+						$letter_btn = "<a href='#' class='read_message_btn' id='msg{$row["OM_ID"]}' val='0'><i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: red;'></a>";
+					}
+					else {
+						$letter_btn = "<i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: red; opacity: .3;'>";
+					}
+				}
+				echo "<tr".($row["priority"] ? " style='font-weight: bold;'" : "").">";
+				echo "<td>{$letter_btn}</td>";
+				echo "<td>{$row["Message"]}</td>";
+				echo "<td class='nowrap'>{$row["Date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
+				echo "</tr>";
+			}
+		?>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>
 <?
 }
 ?>
+<!-- Форма добавления сообщения к заказу -->
+<div id='add_message' title='Сообщение' style='display:none'>
+	<form method='post' action='<?=$location?>&add_message=1'>
+		<fieldset>
+			<div>
+				<label for="message">Текст сообщения:</label><br>
+				<textarea name="message" id="message" style="width: 100%; height: 100px;"></textarea>
+			</div>
+			<br>
+			<div>
+				<label for="priority">Приоритет:</label><br>
+				<div id='priority' class='btnset'>
+					<input type='radio' id='reg_msg' name='priority' value='0' <?=( $confirmed == 0 ? "checked" : "" )?>>
+						<label for='reg_msg'>Обычное</label>
+					<input type='radio' id='imp_msg' name='priority' value='1' <?=( $confirmed == 1 ? "checked" : "" )?>>
+						<label for='imp_msg'>Срочное</label>
+				</div>
+			</div>
+		</fieldset>
+		<div>
+			<hr>
+			<button style='float: right;'>Сохранить</button>
+		</div>
+	</form>
+</div>
+<!-- Конец формы добавления сообщения к заказу -->
 </body>
 </html>
 
 <script>
 	$(document).ready(function(){
+		// Отмечаем письмо как прочитанное аяксом
+		$('.read_message_btn').click(function() {
+			var id = $(this).attr('id');
+			id = id.replace('msg', '');
+			var val = $(this).attr('val');
+			$.ajax({ url: "ajax.php?do=read_message&om_id="+id+"&val="+val, dataType: "script", async: false });
+		});
+
+		// Кнопка добавления сообщения к заказу
+		$('.add_message_btn').click( function() {
+			$('#add_message').dialog({
+				width: 500,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
+		});
+
+		$( "#wr_order_change_log" ).tabs();
+
+		<?
+		if( !in_array('order_add_confirm', $Rights) ) {
+			echo "$( '#IsPainting input' ).button( 'option', 'disabled', true );";
+		}
+		?>
+
 		$('.ord_log_row').hover(function() {
 			var lnk = $(this).attr('lnk');
 			$('.ord_log_row[lnk="'+lnk+'"] td').css('background', '#ffa');

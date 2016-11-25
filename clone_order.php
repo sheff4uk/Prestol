@@ -3,8 +3,8 @@
 
 	if( isset($_GET["id"]) ) {
 		$AddDate = date("Y-m-d");
-		$query = "INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment, creator)
-				  SELECT CLientName, '{$AddDate}', StartDate, EndDate, SH_ID, OrderNumber, Color, Comment, {$_GET["author"]}
+		$query = "INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment, creator, confirmed)
+				  SELECT CLientName, '{$AddDate}', StartDate, EndDate, SH_ID, OrderNumber, Color, Comment, {$_GET["author"]}, {$_GET["confirmed"]}
 				  FROM OrdersData
 				  WHERE OD_ID = {$_GET["id"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
