@@ -100,7 +100,7 @@
 			if( typeof id !== "undefined" ) // Редактирование платежа
 			{
 				var pay = $(this).parents('tr').find('.pay').attr('val');
-				var comment = $(this).parents('tr').find('.comment > pre').html();
+				var comment = $(this).parents('tr').find('.comment > span').html();
 				$('#addpay input[name="Pay"]').val(pay);
 				$('#addpay textarea[name="Comment"]').val(comment);
 				$('#addpay input[name="PL_ID"]').val(id);
