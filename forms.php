@@ -242,7 +242,7 @@
 						$query = "SELECT BL.BL_ID, BL.Name, IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
 								  FROM BlankList BL
 								  LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
-								  WHERE BL.PT_ID = 1
+								  WHERE BL.PT_ID = 1 AND PB.BL_ID IS NOT NULL
 								  GROUP BY BL.BL_ID
 								  ORDER BY BL.Name";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -257,7 +257,7 @@
 						$query = "SELECT BL.BL_ID, BL.Name, IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
 								  FROM BlankList BL
 								  LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
-								  WHERE BL.PT_ID = 2
+								  WHERE BL.PT_ID = 2 AND PB.BL_ID IS NOT NULL
 								  GROUP BY BL.BL_ID
 								  ORDER BY BL.Name";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
