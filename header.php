@@ -157,9 +157,15 @@
 	<nav class="navbar">
 		<div class="navbar-header"  id="main">
 			<a class="navbar-brand" href="/" title="На главную">ПРЕСТОЛ</a>
+			<?
+			if( in_array('order_add', $Rights) ) {
+			?>
 			<div id="navbar_workflow" style="background: <?=$workflow_color?>; box-shadow: 0 0 3px 3px <?=$workflow_color?>;">
 				<div><?=$workflow_table?></div>
 			</div>
+			<?
+			}
+			?>
 		</div>
 <?
 	// Узнаем кол-во непроверенных свободных
