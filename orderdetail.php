@@ -428,6 +428,9 @@
 			echo "<div style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em;'>Заказ принят в работу</div>";
 		}
 	}
+	else {
+		$confirmed = 1;
+	}
 ?>
 <div class="halfblock">
 	<p>
