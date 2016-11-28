@@ -550,8 +550,6 @@
 		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["SH_ID"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"] );
 	}
 ?>
-		</tbody>
-	</table>
 	<!-- Конец таблицы изделий -->
 
 	<!-- Таблица заготовок -->
@@ -591,26 +589,6 @@
 	}
 	$query .= " GROUP BY ODB.ODB_ID ORDER BY ODB.ODB_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-	if( mysqli_num_rows($res) ) {
-	?>
-		<br><br>
-		<table class="main_table">
-			<thead>
-			<tr>
-				<th width="40">Кол-во</th>
-				<th width="150">Заготовка/прочее</th>
-				<th width="">Этапы</th>
-				<th width="">Материал</th>
-				<th width="">Поставщик</th>
-				<th width="">Примечание</th>
-				<th width="60">Цена</th>
-				<th width="75">Действие</th>
-			</tr>
-			</thead>
-			<tbody>
-	<?
-	}
 
 	while( $row = mysqli_fetch_array($res) )
 	{
