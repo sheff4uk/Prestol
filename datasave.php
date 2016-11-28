@@ -121,13 +121,13 @@ if( $_GET["oddid"] )
 				 ,PF_ID = {$Form}
 				 ,PME_ID = {$Mechanism}
 				 ,MT_ID = {$mt_id}
-				 ,IsExist = {$IsExist}
+				 ,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
 				 ,Amount = {$_POST["Amount"]}
 				 ,Price = {$Price}
 				 ,Comment = '{$Comment}'
 				 ,is_check = 1
-				 ,order_date = {$OrderDate}
-				 ,arrival_date = {$ArrivalDate}
+				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
+				 ,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 				 ,author = {$_SESSION['id']}
 			  WHERE ODD_ID = {$_GET["oddid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
@@ -232,9 +232,9 @@ if( $_GET["odbid"] )
 				 ,Price = {$Price}
 				 ,Comment = '{$Comment}'
 				 ,MT_ID = {$mt_id}
-				 ,IsExist = {$IsExist}
-				 ,order_date = {$OrderDate}
-				 ,arrival_date = {$ArrivalDate}
+				 ,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
+				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
+				 ,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 				 ,author = {$_SESSION['id']}
 			  WHERE ODB_ID = {$_GET["odbid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {

@@ -131,8 +131,8 @@ pre {
 .txtleft {
 	text-align: left;
 }
-.addproduct > form > fieldset > div > label,
-.addproduct > form > fieldset > div > div > label {
+.addproduct > form > fieldset > div label,
+.addproduct > form > fieldset label.ui-button {
 	display: block;
 	float: left;
 	width: 100px;

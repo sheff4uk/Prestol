@@ -58,6 +58,9 @@
 				?>
 			</select>
 		</div>
+		<?
+		if( in_array('order_add_confirm', $Rights) ) {
+		?>
 		<div>
 			<label>Наличие:</label>
 			<div class='btnset radiostatus'>
@@ -76,6 +79,9 @@
 			&nbsp;&nbsp;-&nbsp;&nbsp;
 			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 		</div>
+		<?
+		}
+		?>
 		<div>
 			<label>Примечание:</label>
 			<textarea name='Comment' rows='3' cols='38'></textarea>
@@ -179,6 +185,9 @@
 				?>
 			</select>
 		</div>
+		<?
+		if( in_array('order_add_confirm', $Rights) ) {
+		?>
 		<div>
 			<label>Наличие:</label>
 			<div class='btnset radiostatus'>
@@ -197,6 +206,9 @@
 			&nbsp;&nbsp;-&nbsp;&nbsp;
 			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 		</div>
+		<?
+		}
+		?>
 		<div>
 			<label>Примечание:</label>
 			<textarea name='Comment' rows='3' cols='38'></textarea>
@@ -302,6 +314,9 @@
 				</select>
 			</div>
 			<input type="hidden" name="MPT_ID">
+			<?
+			if( in_array('order_add_confirm', $Rights) ) {
+			?>
 			<div>
 				<label>Наличие:</label>
 				<div class='btnset radiostatus'>
@@ -320,6 +335,9 @@
 				&nbsp;&nbsp;-&nbsp;&nbsp;
 				<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 			</div>
+			<?
+			}
+			?>
 			<div>
 				<label>Примечание:</label>
 				<textarea name='Comment' rows='3' style='width: 300px;'></textarea>
