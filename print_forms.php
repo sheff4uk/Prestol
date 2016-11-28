@@ -501,7 +501,7 @@
           <td><input required type="text" autocomplete="off" name="tovar_ed[]" id="tovar_ed" class="f3"></td>
           <td><input type="text" autocomplete="off" name="tovar_okei[]" id="tovar_okei" class="f1"></td>
           <td><input type="text" autocomplete="off" name="tovar_massa[]" id="tovar_massa" class="f4"></td>
-          <td><input required type="number" autocomplete="off" min="1" name="tovar_kolvo[]" id="tovar_kolvo" class="f5"></td>
+          <td><input required type="text" autocomplete="off" min="1" name="tovar_kolvo[]" id="tovar_kolvo" class="f5 tovar_kol"></td>
           <td><input required type="number" autocomplete="off" min="0" name="tovar_tcena[]" id="tovar_tcena" class="f6"></td>
           <td><i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i></td>
         </tr>
@@ -522,6 +522,51 @@
 </table>
 
 <script type="text/javascript">
+
+var fn = function(){
+	var tr = $(this).parents("tr").get(0);
+	var tovar_kol = $("input.tovar_kol", tr).val();
+
+	tovar_kol = proverka(tovar_kol);
+
+	$("input.tovar_kol", tr).val(tovar_kol);
+
+	if (parseFloat(tovar_kol).toFixed() != "NaN") $("input.tovar_kol", tr).val(tovar_kol);
+
+	return false;
+};
+
+$(function(){
+	$(document).on('blur',"input.tovar_kol",fn);
+});
+
+function proverka(input) {
+	var count = 0;
+    ch = input.replace(/[^\d.,]/g, ''); //разрешаем вводить только числа, запятую и точку
+	ch= ch.replace(/[,]/g,'.'); //преобразуем запятую в точку
+    pos = ch.indexOf('.'); // проверяем, есть ли в строке точка
+	while ( pos != -1 ) {
+		count++;
+		pos = ch.indexOf(".",pos+1);
+	}
+    if(count>1){ // если точкек много
+				if (ch.charAt(ch.length-1 )=='.')
+				{
+					long = count - (count*2)+1;
+					ch = ch.slice(0, long); // удаляем лишнее
+				}
+				else
+				{
+					pos = ch.lastIndexOf('.');
+					pos = ch.lastIndexOf('.',pos+1);
+
+					ch = ch.slice(0,pos); // удаляем лишнее
+				}
+    }
+    input = ch; // приписываем в инпут новое значение
+	return input;
+}
+
 var d = document;
 
 function addRow(ed, okei, massa, name, amount, price, item, pt)
@@ -580,7 +625,7 @@ function addRow(ed, okei, massa, name, amount, price, item, pt)
     td2.innerHTML = '<input required type="text" autocomplete="off" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />';
     td3.innerHTML = '<input type="text" autocomplete="off" value="'+okei+'" name="tovar_okei[]" id="tovar_okei" class="f1" />';
     td4.innerHTML = '<input type="text" autocomplete="off" value="'+massa+'" name="tovar_massa[]" id="tovar_massa" class="f4" />';
-    td5.innerHTML = '<input required type="number" autocomplete="off" min="1" value="'+amount+'" name="tovar_kolvo[]" id="tovar_kolvo" class="f5" />';
+    td5.innerHTML = '<input required type="text" autocomplete="off" min="1" value="'+amount+'" name="tovar_kolvo[]" id="tovar_kolvo" class="f5 tovar_kol" />';
 	td6.innerHTML = '<input required type="number" autocomplete="off" min="0" value="'+price+'" name="tovar_tcena[]" id="tovar_tcena" class="f6" /><input type="hidden" name="item[]" id="item" value="'+item+'" class="f7"><input type="hidden" name="pt[]" id="pt" value="'+pt+'" class="f8">';
     td7.innerHTML = '<i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i>';
 

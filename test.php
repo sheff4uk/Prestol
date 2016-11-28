@@ -1,4 +1,5 @@
 <?
+phpinfo();
 //	$from = "admin@fabrikaprestol.ru";
 //	$to = "sheff4uk@gmail.com";
 //	$subject = "Подтверждение регистрации Престол";

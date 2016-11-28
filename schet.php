@@ -4,11 +4,11 @@
 	$title = 'Счет на оплату';
 	include "header.php";
 
-	// Проверка прав на доступ к экрану
-	if( !in_array('print_schet', $Rights) ) {
-		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-		die('Недостаточно прав для совершения операции');
-	}
+//	// Проверка прав на доступ к экрану
+//	if( !in_array('print_schet', $Rights) ) {
+//		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+//		die('Недостаточно прав для совершения операции');
+//	}
 
 	// Записываем в сессию и в базу порядковый номер накладной
 	if( empty($_SESSION["schet_year"]) or empty($_SESSION["schet_count"]) ) {
