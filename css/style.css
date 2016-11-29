@@ -756,9 +756,9 @@ td.tscell > i {
 	transition: .3s;
 	-webkit-transition: .3s;
 	position: absolute;
-	left: 0;
-	top: 0;
-	z-index: -1;
+	left: 10px;
+	top: 10px;
+	z-index: 1;
 }
 #navbar_workflow:hover > div {
 	width: 400px;
