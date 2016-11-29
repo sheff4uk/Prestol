@@ -20,7 +20,7 @@
 					FROM OrdersData OD
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-					WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}";
+					WHERE (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops})) AND OD_ID = {$_GET["id"]}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$OD_ID = mysqli_result($res,0,'OD_ID');
 		$is_lock = mysqli_result($res,0,'is_lock');
@@ -393,9 +393,10 @@
 					$query = "SELECT Shops.SH_ID
 									,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
 									,IF(Shops.SH_ID = {$Shop}, 'selected', '') AS selected
-									,Cities.Color CTColor
+									,Cities.Color
 								FROM Shops
 								JOIN Cities ON Cities.CT_ID = Shops.CT_ID
+								WHERE Cities.CT_ID IN ({$USR_cities}) OR Shops.SH_ID IN ({$USR_shops})
 								ORDER BY Cities.City, Shops.Shop";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) )

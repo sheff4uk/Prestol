@@ -14,7 +14,7 @@
 					,Cities.Color
 				FROM Shops
 				JOIN Cities ON Cities.CT_ID = Shops.CT_ID
-				WHERE Cities.CT_ID IN ({$USR_cities})
+				WHERE Cities.CT_ID IN ({$USR_cities}) OR Shops.SH_ID IN ({$USR_shops})
 				ORDER BY Cities.City, Shops.Shop";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$select_shops = "<select class='select_shops'>";
@@ -342,7 +342,7 @@
 										,Cities.Color
 									FROM Shops
 									JOIN Cities ON Cities.CT_ID = Shops.CT_ID
-									WHERE Cities.CT_ID IN ({$USR_cities})
+									WHERE Cities.CT_ID IN ({$USR_cities}) OR Shops.SH_ID IN ({$USR_shops})
 									ORDER BY Cities.City, Shops.Shop";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
@@ -721,7 +721,7 @@
 						GROUP BY ODB.ODB_ID
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-			  WHERE OD.Del = 0 AND IFNULL(CT.CT_ID, 0) IN ({$USR_cities})";
+			  WHERE OD.Del = 0 AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops}))";
 
 			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
 			  switch ($archive) {
@@ -806,7 +806,7 @@
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
 		echo "<td><span>{$row["StartDate"]}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td class='".(in_array('order_add', $Rights) ? "shop_cell" : "")."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
+		echo "<td class='".( ( in_array('order_add', $Rights) and !( $row["is_lock"] or ( $row["confirmed"] and !in_array('order_add_confirm', $Rights) ) ) ) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
 		echo "<td><span>{$row["OrderNumber"]}</span></td>";
 		if( $row["is_lock"] or ( $row["confirmed"] and !in_array('order_add_confirm', $Rights) ) ) {
 			echo "<td><span class='nowrap'>{$row["Zakaz_lock"]}</span></td>";
