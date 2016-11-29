@@ -244,7 +244,7 @@
 			$table_space = mysqli_result($res,1,'space');
 			$table_boxes = mysqli_result($res,1,'boxes');
 			echo "
-				<div style='position: absolute; right: 130px; top: 60px; border: 1px solid #bbb; padding: 10px; border-radius: 10px;'>
+				<div style='position: absolute; right: 200px; top: 60px; border: 1px solid #bbb; padding: 10px; border-radius: 10px;'>
 					<b class='nowrap'>Объем стульев: {$chair_space} м<sup>3</sup> (Коробок: {$chair_boxes})</b>
 					<br>
 					<b class='nowrap'>Объем столов: {$table_space} м<sup>3</sup> (Коробок: {$table_boxes})</b>
