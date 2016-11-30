@@ -106,8 +106,8 @@
 					if(isset($_GET["SH"])) echo "<td width='7%'>Салон</td>";
 					if(isset($_GET["ON"])) echo "<td width='5%'>№ квитанции</td>";
 					if(isset($_GET["Z"])) echo "<td width='20%'>Заказ</td>";
-					if(isset($_GET["M"])) echo "<td width='15%'>Материал</td>";
-					if(isset($_GET["CR"])) echo "<td width='15%'>Цвет</td>";
+					if(isset($_GET["M"])) echo "<td width='15%'>Пластик/ткань</td>";
+					if(isset($_GET["CR"])) echo "<td width='15%'>Цвет покраски</td>";
 					if(isset($_GET["PR"])) echo "<td width='8%'>Этапы</td>";
 					if(isset($_GET["IP"])) echo "<td width='2%'>Лак.</td>";
 					if(isset($_GET["N"])) echo "<td width='15%'>Примечание</td>";
@@ -132,6 +132,7 @@
 					,ODD_ODB.Material
 					,IFNULL(ODD_ODB.Steps, '') Steps
 					,IFNULL(OD.Comment, '') Comment
+					,IF(OD.SH_ID IS NULL, 1, 0) is_free
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -185,11 +186,11 @@
 			  WHERE OD.OD_ID IN ({$id_list})
 			  AND ODD_ODB.PT_ID IN({$product_types})
 			  GROUP BY ODD_ODB.itemID
-			  ORDER BY OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
+			  ORDER BY is_free, OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	// Получаем количество изделий в заказе для группировки ячеек
-	$query = "SELECT IFNULL(COUNT(1), 1) Cnt, OD.OD_ID
+	$query = "SELECT IFNULL(COUNT(1), 1) Cnt, OD.OD_ID, IF(OD.SH_ID IS NULL, 1, 0) is_free
 				FROM OrdersData OD
 				LEFT JOIN (
 					SELECT ODD.OD_ID, IFNULL(PM.PT_ID, 2) PT_ID
@@ -202,7 +203,7 @@
 				WHERE OD.OD_ID IN ({$id_list})
 				AND ODD_ODB.PT_ID IN({$product_types})
 				GROUP BY OD.OD_ID
-				ORDER BY OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
+				ORDER BY is_free, OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$odid = 0;
 	while( $row = mysqli_fetch_array($res) )
