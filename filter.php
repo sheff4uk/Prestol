@@ -15,7 +15,8 @@
 	$_SESSION["f_X"] = $_GET["f_X"];	// Пометка X
 	$_SESSION["f_IP"] = $_GET["f_IP"];	// Cтатус лакировки
 	$_SESSION["f_CR"] = $_GET["f_CR"];	// Цвет
-	$_SESSION["f_M"] = $_GET["f_M"];	// Материал
+//	$_SESSION["f_M"] = $_GET["f_M"];	// Материал
+	$_SESSION["f_M"] = $_GET["MT_ID"];	// Материал
 	$_SESSION["f_PR"] = $_GET["f_PR"];	// Работник
 	$_SESSION["f_CF"] = $_GET["f_CF"];	// Статус принятия заказа
 	if( substr($_GET["f_PR"], 0, 1) === "0" ) {		// Статус этапа

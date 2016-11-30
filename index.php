@@ -430,7 +430,7 @@
 			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags <?=($_SESSION["f_SH"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_SH"] ?>'></th>
 			<th width="5%"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>' class="<?=($_SESSION["f_ON"] != "") ? "filtered" : ""?>"></th>
 			<th width="25%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class="<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>"></th>
-			<th width="15%"><input type='text' name='f_M' size='8' class='textileplastictags <?=($_SESSION["f_M"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_M"] ?>'></th>
+			<th width="15%" id="MT_filter"><div><select name="MT_ID[]" multiple style="width: 100%; display: none;"></select></div></th>
 			<th width="15%" style="font-size: 0;">
 				<style>
 					.IsPainting {
@@ -552,6 +552,8 @@
 		</thead>
 		<tbody>
 <?
+	$MT_IDs = $_SESSION["f_M"] != "" ? implode(",", $_SESSION["f_M"]) : "";
+
 	if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" and !isset($_GET["shpid"]) ) {
 		if( $_SESSION["f_PR"] === "0" ) {
 			$PRfilterODD = "BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
@@ -629,8 +631,9 @@
 		$SelectStepODB = "''";
 	}
 
-	$is_orders_ready = 1; // Собираем готовые заказы чтобы можно ставить дату отгрузки (когда все готовы должна получиться 1)
-	$orders_count = 0; // Счетчик готовых заказов
+	$is_orders_ready = 1;	// Собираем готовые заказы чтобы можно ставить дату отгрузки (когда все готовы должна получиться 1)
+	$orders_count = 0;		// Счетчик готовых заказов
+	$orders_IDs = "0";		// Список ID заказов для Select2 материалов
 
 	$query = "SELECT OD.OD_ID
 					,OD.Code
@@ -652,6 +655,7 @@
 					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
 					,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 					,BIT_OR(IFNULL(ODD_ODB.PRfilter, 1)) PRfilter
+					,BIT_OR(IFNULL(ODD_ODB.MTfilter, 1)) MTfilter
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,BIT_AND(ODD_ODB.IsReady) IsReady
 					,IFNULL(OD.SHP_ID, 0) SHP_ID
@@ -666,6 +670,7 @@
 							   ,BIT_AND(IF(ODS.Visible = 1 AND ODS.Old = 0, ODS.IsReady, 1)) IsReady
 							   ,IFNULL(PM.PT_ID, 2) PT_ID
 							   ,ODD.ODD_ID itemID
+							   ,".( $MT_IDs != "" ? "IF(ODD.MT_ID IN ({$MT_IDs}), 1, 0)" : "1" )." MTfilter
 
 							   ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'".(in_array('order_add', $Rights) ? "edit_product', IFNULL(PM.PT_ID, 2), '" : "")."\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a></b><br>') Zakaz
 
@@ -697,6 +702,7 @@
 							  ,BIT_AND(IF(ODS.Visible = 1 AND ODS.Old = 0, ODS.IsReady, 1)) IsReady
 							  ,0 PT_ID
 							  ,ODB.ODB_ID itemID
+							   ,".( $MT_IDs != "" ? "IF(ODB.MT_ID IN ({$MT_IDs}), 1, 0)" : "1" )." MTfilter
 
 							  ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'blank', ODB.ODB_ID, '\'', 'class=\'".(in_array('order_add', $Rights) ? "edit_order_blank" : "")."\' location=\'{$location}\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</a></b><br>') Zakaz
 
@@ -774,15 +780,15 @@
 				$query .= " AND OD.SHP_ID = {$_GET["shpid"]}";
 			}
 
-			$query .= " GROUP BY OD.OD_ID HAVING PRfilter";
+			$query .= " GROUP BY OD.OD_ID HAVING PRfilter AND MTfilter";
 
 			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
 			  if( $_SESSION["f_Z"] != "" ) {
 				  $query .= " AND Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
 			  }
-			  if( $_SESSION["f_M"] != "" ) {
-				  $query .= " AND Material LIKE '%{$_SESSION["f_M"]}%'";
-			  }
+//			  if( $_SESSION["f_M"] != "" ) {
+//				  $query .= " AND Material LIKE '%{$_SESSION["f_M"]}%'";
+//			  }
 			  if( $_SESSION["f_X"] == "1" ) {
 				  $X_ord = '0';
 				  foreach( $_SESSION as $k => $v)
@@ -801,6 +807,7 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
+		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'>{$row["Code"]}</span></td>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
@@ -947,6 +954,30 @@
 </body>
 </html>
 
+<?
+	// Генерируем Select2 для фильтра материалов
+	$MT_filter = '';
+	$query = "SELECT MT.MT_ID, CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Material
+				FROM Materials MT
+				LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+				JOIN (
+					SELECT ODD.OD_ID, ODD.MT_ID, ODD.IsExist
+					FROM OrdersDataDetail ODD
+					UNION
+					SELECT ODB.OD_ID, ODB.MT_ID, ODB.IsExist
+					FROM OrdersDataBlank ODB
+					) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID AND ODD_ODB.OD_ID IN ({$orders_IDs})
+				GROUP BY MT.MT_ID
+				ORDER BY MT.Material";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) ) {
+		$selected = in_array($row["MT_ID"], $_SESSION["f_M"]) ? "selected" : "";
+		$MT_filter .= "<option {$selected} value='{$row["MT_ID"]}'>{$row["Material"]}</option>";
+	}
+	$MT_filter = addslashes($MT_filter);
+
+?>
+
 <!-- Форма добавления наименования отгрузки -->
 <div id='add_shipment_form' title='Параметры отгрузки' style='display:none'>
 	<form method='post'>
@@ -987,6 +1018,18 @@
 
 <script>
 	$(document).ready(function(){
+
+		// Фильтр по материалам (инициализация)
+		$('#MT_filter > div > select').html('<?=$MT_filter?>');
+		$('#MT_filter select').select2({
+			placeholder: "Выберите интересующие материалы",
+			allowClear: true,
+			closeOnSelect: false,
+			language: "ru"
+		}).on("select2:select", function() { $('.select2-selection li').attr('title', ''); });
+		$('.select2-selection li').attr('title', '');
+		// Добавляем класс filtered если отфильтровано по материалам
+		<?=( $_SESSION["f_M"] != "" ? "$('.select2-selection ul').addClass('filtered');" : "" )?>
 
 		if(!<?=$is_orders_ready?> || !<?=$orders_count?>) {
 			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);

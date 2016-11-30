@@ -450,7 +450,7 @@ input.amount {
     padding: 4px 0;
     box-shadow: 5px 5px 8px #666;
 }
-.main_table th:hover {
+.main_table th:not(#MT_filter):hover {
 	color: #fff;
 }
 .main_table .X input[type="checkbox"] {
@@ -764,4 +764,19 @@ td.tscell > i {
 	width: 400px;
 	height: 400px;
 	opacity: 1;
+}
+
+#MT_filter {
+	position: relative;
+}
+#MT_filter > div {
+	position: absolute;
+	left: 0;
+	top: 3px;
+	min-width: 300px;
+	height: 21px;
+	overflow: hidden;
+}
+#MT_filter:hover > div {
+	overflow: visible;
 }
