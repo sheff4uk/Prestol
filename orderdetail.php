@@ -475,6 +475,7 @@
 					,ODD.PieceSize
 					,ODD.PF_ID
 					,ODD.PME_ID
+					,ODD.MT_ID
 					,IFNULL(MT.Material, '') Material
 					,IF(MT.removed=1, 'removed ', '') removed
 					,IF(ODD.MT_ID IS NULL, '', IFNULL(SH.Shipper, '-=Другой=-')) Shipper
@@ -516,19 +517,22 @@
 		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
 		echo "<td><span>{$row["Model"]}<br>".($row["Size"] != "" ? "{$row["Size"]}<br>" : "").($row["Form"] != "" ? "{$row["Form"]}<br>" : "").($row["Mechanism"] != "" ? "{$row["Mechanism"]}<br>" : "")."</span></td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
-		echo "<td>";
+		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
 			case 0:
-				echo "<span class='{$row["removed"]}bg-red'>";
+				echo "bg-red'>";
 				break;
 			case 1:
-				echo "{$row["clock"]}<span class='{$row["removed"]}bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
+				echo "bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
 				break;
 			case 2:
-				echo "<span class='{$row["removed"]}bg-green'>";
+				echo "bg-green'>";
 				break;
 		}
-		echo "{$row["Material"]}</span></td>";
+		echo "{$row["Material"]}</span>";
+		echo "<input type='text' class='materialtags' style='display: none;'>";
+		echo "<input type='checkbox' style='display: none;' title='Выведен'>";
+		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td class='txtright'>{$format_price}</td>";
@@ -565,6 +569,8 @@
 					,IFNULL(BL.Name, ODB.Other) Name
 					,ODB.Other
 					,ODB.Comment
+					,ODB.MT_ID
+					,MT.PT_ID
 					,IFNULL(MT.Material, '') Material
 					,IF(MT.removed=1, 'removed ', '') removed
 					,IF(ODB.MT_ID IS NULL, '', IFNULL(SH.Shipper, '-=Другой=-')) Shipper
@@ -601,19 +607,22 @@
 		echo "<td>{$row["Amount"]}</td>";
 		echo "<td>{$row["Name"]}</td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
-		echo "<td>";
+		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
 			case 0:
-				echo "<span class='{$row["removed"]}bg-red'>";
+				echo "bg-red'>";
 				break;
 			case 1:
-				echo "{$row["clock"]}<span class='{$row["removed"]}bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
+				echo "bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
 				break;
 			case 2:
-				echo "<span class='{$row["removed"]}bg-green'>";
+				echo "bg-green'>";
 				break;
 		}
-		echo "{$row["Material"]}</span></td>";
+		echo "{$row["Material"]}</span>";
+		echo "<input type='text' class='materialtags' style='display: none;'>";
+		echo "<input type='checkbox' style='display: none;' title='Выведен'>";
+		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td class='txtright'>{$format_price}</td>";

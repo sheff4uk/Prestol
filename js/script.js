@@ -681,4 +681,84 @@ $(document).ready(function(){
 			$('#addblank input[name="Tariff"]').val( BlankTariff[blank] );
 		}
 	});
+/////////////////////////////////////////////
+	// Изменение материала аяксом
+		$('.mt_edit').on('dblclick', function() {
+			var t = $(this).html();
+			var inpt = $(this).parent('.wr_mt').children('input[type="text"]');
+			var chbx = $(this).parent('.wr_mt').children('input[type="checkbox"]');
+			$(inpt).val(t);
+			$(this).hide('fast');
+			$(inpt).show('fast');
+			if( $(this).hasClass('removed') )
+				$(chbx).prop('checked', true);
+			else
+				$(chbx).prop('checked', false);
+			$(chbx).show('fast');
+			$(inpt).focus();
+		});
+
+		var timeoutID;
+		var ESC;
+
+		$('.mt_edit ~ input').keydown(function(e) {
+			if( e.keyCode === 27 ) {
+				var spn = $(this).parent('.wr_mt').children('span');
+				var inpt = $(this).parent('.wr_mt').children('input[type="text"]');
+				var chbx = $(this).parent('.wr_mt').children('input[type="checkbox"]');
+				ESC = 1;
+				$(inpt).hide('fast');
+				$(chbx).hide('fast');
+				$(spn).show('fast');
+				$(spn).css('display' , '');
+				noty({timeout: 3000, text: 'Изменения отменены.', type: 'error'});
+				return false;
+			}
+		});
+
+		$('.mt_edit ~ input').focus(function () {
+			if (timeoutID) {
+				clearTimeout(timeoutID);
+				timeoutID = null;
+			}
+		});
+
+		$('.mt_edit ~ input').blur(function () {
+			if( ESC != 1 )
+				releaseTheHounds(this);
+			ESC = 0;
+		});
+
+		function releaseTheHounds(th) {
+			timeoutID = setTimeout(function () {
+				var t = $(th).parent('.wr_mt').children('input[type="text"]').val();
+				var spn = $(th).parent('.wr_mt').children('span');
+				var inpt = $(th).parent('.wr_mt').children('input[type="text"]');
+				var chbx = $(th).parent('.wr_mt').children('input[type="checkbox"]');
+				var oldt = $(spn).html();
+				var mtid = $(spn).attr('mtid');
+				var ptid = $(spn).attr('ptid');
+				var removed = $(chbx).prop('checked');
+				if( t != '') {
+					$(inpt).hide('fast');
+					$(chbx).hide('fast');
+					$.ajax({ url: "ajax.php?do=materials&val="+t+"&oldval="+oldt+"&removed="+removed+"&ptid="+ptid, dataType: "script", async: true });
+					if( t != oldt || $(spn).hasClass('removed') != removed ) {
+						$('.mt'+mtid).hide('fast');
+						$('.mt'+mtid).html(t);
+						if( removed ) {
+							$('.mt'+mtid).addClass('removed');
+						}
+						else {
+							$('.mt'+mtid).removeClass('removed');
+						}
+					}
+					$('.mt'+mtid).show('fast');
+				}
+				else {
+					noty({timeout: 3000, text: 'Название материала не может быть пустым!', type: 'error'});
+				}
+			}, 1);
+		}
+//////////////////////////////////////////
 });

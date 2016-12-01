@@ -182,7 +182,7 @@
 
 								,CONCAT('<div', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), '</div>') Zakaz
 
-								,CONCAT('<div>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span mtid=\'', ODD.MT_ID, '\' class=\'mt', ODD.MT_ID, IF(MT.removed = 1, ' removed', ''), ' material ',
+								,CONCAT('<div class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'{$product}\' mtid=\'', ODD.MT_ID, '\' class=\'mt', ODD.MT_ID, IF(MT.removed = 1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
 								CASE ODD.IsExist
 									WHEN 0 THEN 'bg-red'
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
@@ -211,7 +211,7 @@
 
 								,CONCAT('<div', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</div>') Zakaz
 
-								,CONCAT('<div>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span mtid=\'', ODB.MT_ID, '\' class=\'mt', ODB.MT_ID, IF(MT.removed = 1, ' removed', ''), ' material ',
+								,CONCAT('<div class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'{$product}\' mtid=\'', ODB.MT_ID, '\' class=\'mt', ODB.MT_ID, IF(MT.removed = 1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
 								CASE ODB.IsExist
 									WHEN 0 THEN 'bg-red'
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
@@ -395,82 +395,6 @@
 			closeOnSelect: false,
 			language: "ru"
 		});
-
-		$('.material').on('click', function() {
-			var t = $(this).html();
-			var inpt = $(this).parent('div').children('input[type="text"]');
-			var chbx = $(this).parent('div').children('input[type="checkbox"]');
-			$(inpt).val(t);
-			$(this).hide('fast');
-			$(inpt).show('fast');
-			if( $(this).hasClass('removed') )
-				$(chbx).prop('checked', true);
-			else
-				$(chbx).prop('checked', false);
-			$(chbx).show('fast');
-			$(inpt).focus();
-		});
-
-		var timeoutID;
-		var ESC;
-
-		$('.material ~ input').keydown(function(e) {
-			if( e.keyCode === 27 ) {
-				var spn = $(this).parent('div').children('span');
-				var inpt = $(this).parent('div').children('input[type="text"]');
-				var chbx = $(this).parent('div').children('input[type="checkbox"]');
-				ESC = 1;
-				$(inpt).hide('fast');
-				$(chbx).hide('fast');
-				$(spn).show('fast');
-				noty({timeout: 3000, text: 'Изменения отменены.', type: 'error'});
-				return false;
-			}
-		});
-
-		$('.material ~ input').focus(function () {
-			if (timeoutID) {
-				clearTimeout(timeoutID);
-				timeoutID = null;
-			}
-		});
-
-		$('.material ~ input').blur(function () {
-			if( ESC != 1 )
-				releaseTheHounds(this);
-			ESC = 0;
-		});
-
-		function releaseTheHounds(th) {
-			timeoutID = setTimeout(function () {
-				var t = $(th).parent('div').children('input[type="text"]').val();
-				var spn = $(th).parent('div').children('span');
-				var inpt = $(th).parent('div').children('input[type="text"]');
-				var chbx = $(th).parent('div').children('input[type="checkbox"]');
-				var oldt = $(spn).html();
-				var mtid = $(spn).attr('mtid');
-				var removed = $(chbx).prop('checked');
-				if( t != '') {
-					$(inpt).hide('fast');
-					$(chbx).hide('fast');
-					$.ajax({ url: "ajax.php?do=materials&val="+t+"&oldval="+oldt+"&removed="+removed+"&ptid=<?=$product?>", dataType: "script", async: true });
-					if( t != oldt || $(spn).hasClass('removed') != removed ) {
-						$('.mt'+mtid).hide('fast');
-						$('.mt'+mtid).html(t);
-						if( removed ) {
-							$('.mt'+mtid).addClass('removed');
-						}
-						else {
-							$('.mt'+mtid).removeClass('removed');
-						}
-					}
-					$('.mt'+mtid).show('fast');
-				}
-				else {
-					noty({timeout: 3000, text: 'Название материала не может быть пустым!', type: 'error'});
-				}
-			}, 1);
-		}
 
 		// Автокомплит материалов
 		<?
