@@ -530,7 +530,7 @@
 				break;
 		}
 		echo "{$row["Material"]}</span>";
-		echo "<input type='text' class='materialtags' style='display: none;'>";
+		echo "<input type='text' class='materialtags_{$row["PT_ID"]}' style='display: none;' title='Для отмены изменений нажмите клавишу ESC'>";
 		echo "<input type='checkbox' style='display: none;' title='Выведен'>";
 		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";
@@ -620,7 +620,7 @@
 				break;
 		}
 		echo "{$row["Material"]}</span>";
-		echo "<input type='text' class='materialtags' style='display: none;'>";
+		echo "<input type='text' class='materialtags_{$row["PT_ID"]}' style='display: none;' title='Для отмены изменений нажмите клавишу ESC'>";
 		echo "<input type='checkbox' style='display: none;' title='Выведен'>";
 		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";

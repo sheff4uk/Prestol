@@ -188,7 +188,7 @@
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
 									WHEN 2 THEN 'bg-green'
 								END,
-								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
+								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\' title=\'Для отмены изменений нажмите клавишу ESC\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
 								,IFNULL(CONCAT(MT.Material, '\r\n'), '') MN
 
@@ -217,7 +217,7 @@
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
 									WHEN 2 THEN 'bg-green'
 								END,
-								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
+								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\' title=\'Для отмены изменений нажмите клавишу ESC\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
 								,IFNULL(CONCAT(MT.Material, '\r\n'), '') MN
 
@@ -394,21 +394,6 @@
 			allowClear: true,
 			closeOnSelect: false,
 			language: "ru"
-		});
-
-		// Автокомплит материалов
-		<?
-		switch( $product )
-		{
-			case "0": $mt_do = "textileplastictags"; break;
-			case "1": $mt_do = "textiletags"; break;
-			case "2": $mt_do = "plastictags"; break;
-
-		}
-		?>
-
-		$( ".materialtags" ).autocomplete({
-			source: "autocomplete.php?do=<?=$mt_do?>"
 		});
 	});
 </script>

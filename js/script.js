@@ -760,5 +760,13 @@ $(document).ready(function(){
 				}
 			}, 1);
 		}
+
+		// Автокомплит материалов
+		$( ".materialtags_1" ).autocomplete({
+			source: "autocomplete.php?do=textiletags"
+		});
+		$( ".materialtags_2" ).autocomplete({
+			source: "autocomplete.php?do=plastictags"
+		});
 //////////////////////////////////////////
 });
