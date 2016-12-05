@@ -251,15 +251,18 @@ case "ispainting":
 	$archive = $_GET["archive"];
 	$val = $_GET["val"];
 	$val = ($val == 3) ? 1 : $val + 1;
+	$shpid = $_GET["shpid"];
 
 	// Обновляем статус лакировки
 	$query = "UPDATE OrdersData SET IsPainting = {$val}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 
-	// Получаем статус лакировки из базы
-	$query = "SELECT IsPainting FROM OrdersData WHERE OD_ID = {$id}";
+	// Получаем статус лакировки и отгрузку из базы
+	$query = "SELECT IsPainting, IFNULL(SHP_ID, 0) SHP_ID, IFNULL(SH_ID, 0) SH_ID FROM OrdersData WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 	$val = mysqli_result($res,0,'IsPainting');
+	$SHP_ID = mysqli_result($res,0,'SHP_ID');
+	$SH_ID = mysqli_result($res,0,'SH_ID');
 
 	switch ($val) {
 		case 1:
@@ -280,15 +283,38 @@ case "ispainting":
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').addClass('{$class}');";
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('title', '{$status}');";
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('val', '{$val}');";
-//	if( $isready == 1 and $archive != 1 ) {
-//		if( $val == 3 and in_array('order_ready', $Rights) ) {
-//			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a  href=\"#\" class=\"\" onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
-////			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action a').button();";
-//		}
-//		else {
-//			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('');";
-//		}
-//	}
+
+	// Если из отгрузки
+	if( $shpid > 0 ) {
+		// Узнаем все ли этапы завершены
+		$query = "SELECT BIT_AND(IF(OD.IsPainting = 3, 1, 0)) IsPainting, BIT_AND(ODD_ODB.IsReady) IsReady
+					FROM OrdersData OD
+					JOIN (
+						SELECT ODD.OD_ID, ODS.IsReady
+						FROM OrdersDataDetail ODD
+						JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
+						UNION
+						SELECT ODB.OD_ID, ODS.IsReady
+						FROM OrdersDataBlank ODB
+						JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1 AND ODS.Old = 0
+					) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+					WHERE OD.SHP_ID = {$shpid}";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		$painting = mysqli_result($res,0,'IsPainting');
+		$ready = mysqli_result($res,0,'IsReady');
+		$is_orders_ready = ( $painting and $ready ) ? 1 : 0;
+
+		echo "check_shipping({$is_orders_ready}, 1);";
+	}
+	elseif( $isready == 1 and $archive != 1 and $SHP_ID == 0 ) {
+		if( $val == 3 and in_array('order_ready', $Rights) ) {
+			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a  href=\"#\" class=\"\" ".( $SH_ID == 0 ? 'style=\"display: none;\"' : '')." onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
+//			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action a').button();";
+		}
+		else {
+			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('');";
+		}
+	}
 	echo "noty({timeout: 3000, text: 'Статус лакировки изменен на \"{$status}\"', type: 'success'});";
 	break;
 

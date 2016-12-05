@@ -870,7 +870,7 @@
 		{
 			if( $row["SHP_ID"] == 0 )
 			{
-				if( in_array('order_ready', $Rights) and !isset($_GET["shpid"]) and $row["Archive"] == 0 and $row["IsReady"] ) {
+				if( in_array('order_ready', $Rights) and !isset($_GET["shpid"]) and $row["Archive"] == 0 and $row["IsReady"] and $row["IsPainting"] == 3 ) {
 					echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Готово'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 				}
 			}
@@ -1017,6 +1017,26 @@
 </div>
 
 <script>
+	function check_shipping(ready, count) {
+		if(!ready || !count) {
+			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
+			$('#wr_shipping_date button').hide('fast');
+			$('#wr_shipping_date font').show('fast');
+			if( !<?=$orders_count?> ) {
+				$('#wr_shipping_date font').html('&nbsp;&nbsp;Список пуст!');
+			}
+			else {
+				$('#wr_shipping_date font').html('&nbsp;&nbsp;В списке присутствуют незавершенные этапы!');
+			}
+		}
+		else {
+			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', false);
+			$('#wr_shipping_date button').show('fast');
+			$('#wr_shipping_date font').hide('fast');
+			$('#wr_shipping_date font').html();
+		}
+	}
+
 	$(document).ready(function(){
 
 		// Фильтр по материалам (инициализация)
@@ -1031,17 +1051,8 @@
 		// Добавляем класс filtered если отфильтровано по материалам
 		<?=( $_SESSION["f_M"] != "" ? "$('.select2-selection ul').addClass('filtered');" : "" )?>
 
-		if(!<?=$is_orders_ready?> || !<?=$orders_count?>) {
-			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
-			$('#wr_shipping_date button').hide('fast');
-			$('#wr_shipping_date font').show('fast');
-			if( !<?=$orders_count?> ) {
-				$('#wr_shipping_date font').html('&nbsp;&nbsp;Список пуст!');
-			}
-			else {
-				$('#wr_shipping_date font').html('&nbsp;&nbsp;В списке присутствуют незавершенные этапы!');
-			}
-		}
+		// Проверяем можно ли отгружать
+		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?>);
 
 		$( ".shopstags" ).autocomplete({ // Автокомплит салонов
 			source: "autocomplete.php?do=shopstags"
@@ -1183,7 +1194,7 @@
 			var val = $(this).attr('val');
 			var isready = $(this).attr('isready');
 			var archive = $(this).attr('archive');
-			$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val+"&isready="+isready+"&archive="+archive, dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val+"&isready="+isready+"&archive="+archive+"&shpid=<?=$_GET["shpid"]?>", dataType: "script", async: false });
 		});
 
 		// Смена статуса принятия аяксом
