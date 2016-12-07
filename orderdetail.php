@@ -456,7 +456,7 @@
 			<th width="">Материал</th>
 			<th width="">Поставщик</th>
 			<th width="">Примечание</th>
-			<th width="60">Цена</th>
+<!--			<th width="60">Цена</th>-->
 			<th width="75">Действие</th>
 		</tr>
 		</thead>
@@ -535,7 +535,7 @@
 		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
-		echo "<td class='txtright'>{$format_price}</td>";
+//		echo "<td class='txtright'>{$format_price}</td>";
 		echo "<td>";
 		
 		if( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) {
@@ -625,8 +625,8 @@
 		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
-		echo "<td class='txtright'>{$format_price}</td>";
-		echo "<td><a href='#' id='{$row["ODB_ID"]}' class='button edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a>";
+//		echo "<td class='txtright'>{$format_price}</td>";
+		echo "<td><a href='#' id='{$row["ODB_ID"]}' class='button edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
 		if( $row["inprogress"] == 0 ) {
 			$delmessage = "Удалить {$row["Name"]}({$row["Amount"]} шт.)?";
 			echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";

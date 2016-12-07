@@ -23,7 +23,7 @@
 			&nbsp;&nbsp;&nbsp;
 			<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Уменьшение кол-ва приведет к перемещению лишних изделий на склад.'>
 		</div>
-		<div>
+		<div style='display: none;'>
 			<label>Цена за шт:</label>
 			<input type='number' min='0' style='width: 100px;' name='Price' autocomplete="off">
 		</div>
@@ -117,7 +117,7 @@
 			&nbsp;&nbsp;&nbsp;
 			<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Уменьшение кол-ва приведет к перемещению лишних изделий на склад.'>
 		</div>
-		<div>
+		<div style='display: none;'>
 			<label>Цена за шт:</label>
 			<input type='number' min='0' style='width: 100px;' name='Price' autocomplete="off">
 		</div>
@@ -241,7 +241,7 @@
 				<label>Kол-во:</label>
 				<input required type='number' min='1' value='1' style='width: 50px;' name='Amount' autocomplete="off">
 			</div>
-			<div>
+			<div style='display: none;'>
 				<label>Цена за шт:</label>
 				<input type='number' min='0' style='width: 100px;' name='Price' autocomplete="off">
 			</div>
