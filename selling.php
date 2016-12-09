@@ -350,13 +350,13 @@
 						$shop_otkaz = mysqli_result($subres,0,'Price');
 						$city_otkaz = $city_otkaz + $shop_otkaz;
 
-						$shop_price = number_format(($shop_price - $shop_discount), 0, '', ' ');
+						$shop_price = number_format(($shop_price - $shop_discount + $shop_otkaz), 0, '', ' ');
 						$shop_otkaz = number_format($shop_otkaz, 0, '', ' ');
 						echo "<td class='txtright'>{$shop_price}</td>";
 						echo "<td class='txtright' title='Сумма отказов' style='color: #911;'>{$shop_otkaz}</td>";
 						echo "</tr>";
 					}
-					$city_price = $city_price - $city_discount;
+					$city_price = $city_price - $city_discount + $city_otkaz;
 					$format_city_price = number_format($city_price, 0, '', ' ');
 					$format_city_otkaz = number_format($city_otkaz, 0, '', ' ');
 					echo "<thead><tr>";
