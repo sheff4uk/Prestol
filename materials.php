@@ -112,7 +112,7 @@
 				<input type='radio' id='ready_all' name='ready' checked >
 					<label for='ready_all'>Все</label>
 				<input type='radio' id='ready_0' name='ready' value='0' <?= ($_GET["ready"] == "0" ? "checked" : "") ?>>
-					<label for='ready_0'>Не готово</label>
+					<label for='ready_0'>В работе</label>
 				<input type='radio' id='ready_1' name='ready' value='1' <?= ($_GET["ready"] == "1" ? "checked" : "") ?>>
 					<label for='ready_1'>Готово</label>
 			</div>
@@ -152,7 +152,7 @@
 							FROM Materials MT
 							LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 							JOIN (
-								SELECT ODD.OD_ID, ODD.MT_ID, ODD.IsExist, IFNULL(ODS_ST.WD_ID, 0) WD_ID, IFNULL(ODS_ST.IsReady, 0) IsReady
+								SELECT ODD.OD_ID, ODD.MT_ID, ODD.IsExist, IFNULL(ODS_ST.WD_ID, 0) WD_ID, IF(ODS_ST.IsReady = 1, 1, IF(ODS_ST.IsReady = 0 AND ODS_ST.WD_ID IS NOT NULL, 0, NULL)) IsReady
 								FROM OrdersDataDetail ODD
 								LEFT JOIN (
 									SELECT ODS.ODD_ID, ODS.WD_ID, ODS.IsReady
@@ -162,7 +162,7 @@
 									GROUP BY ODS.ODD_ID
 								) ODS_ST ON ODS_ST.ODD_ID = ODD.ODD_ID
 								UNION
-								SELECT ODB.OD_ID, ODB.MT_ID, ODB.IsExist, IFNULL(ODS_ST.WD_ID, 0) WD_ID, IFNULL(ODS_ST.IsReady, 0) IsReady
+								SELECT ODB.OD_ID, ODB.MT_ID, ODB.IsExist, IFNULL(ODS_ST.WD_ID, 0) WD_ID, IF(ODS_ST.IsReady = 1, 1, IF(ODS_ST.IsReady = 0 AND ODS_ST.WD_ID IS NOT NULL, 0, NULL)) IsReady
 								FROM OrdersDataBlank ODB
 								LEFT JOIN (
 									SELECT ODS.ODB_ID, ODS.WD_ID, ODS.IsReady
@@ -265,7 +265,8 @@
 								,CONCAT('<input type=\'checkbox\' value=\'1\' name=\'prod', ODD.ODD_ID, '\' class=\'chbox\'><br>') Checkbox
 
 								,IFNULL(ODS_ST.WD_ID, 0) WD_ID
-								,IFNULL(ODS_ST.IsReady, 0) IsReady
+								#,IFNULL(ODS_ST.IsReady, 0) IsReady
+								,IF(ODS_ST.IsReady = 1, 1, IF(ODS_ST.IsReady = 0 AND ODS_ST.WD_ID IS NOT NULL, 0, NULL)) IsReady
 
 						  FROM OrdersDataDetail ODD
 						  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -308,7 +309,8 @@
 								,CONCAT('<input type=\'checkbox\' value=\'1\' name=\'other', ODB.ODB_ID, '\' class=\'chbox\'><br>') Checkbox
 
 								,IFNULL(ODS_ST.WD_ID, 0) WD_ID
-								,IFNULL(ODS_ST.IsReady, 0) IsReady
+								#,IFNULL(ODS_ST.IsReady, 0) IsReady
+								,IF(ODS_ST.IsReady = 1, 1, IF(ODS_ST.IsReady = 0 AND ODS_ST.WD_ID IS NOT NULL, 0, NULL)) IsReady
 
 						  FROM OrdersDataBlank ODB
 						  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
