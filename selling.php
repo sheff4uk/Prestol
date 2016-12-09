@@ -316,7 +316,7 @@
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						echo "<tr>";
-						echo "<td class='nowrap'>ВЫРУЧКА {$row["Shop"]}:</td>";
+						echo "<td class='nowrap'><a href='{$location}&SH_ID={$row["SH_ID"]}' ".( $_GET["SH_ID"] == $row["SH_ID"] ? "style='color: #D65C4F;'" : "" ).">ВЫРУЧКА {$row["Shop"]}:</a></td>";
 
 						// Получаем сумму выручки по салону
 						$query = "SELECT SUM(ODD_ODB.Price) Price
@@ -360,7 +360,7 @@
 					$format_city_price = number_format($city_price, 0, '', ' ');
 					$format_city_otkaz = number_format($city_otkaz, 0, '', ' ');
 					echo "<thead><tr>";
-					echo "<th class='nowrap'><b>ВСЕГО ЗА {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</b></th>";
+					echo "<th class='nowrap'><b><a href='{$location}' ".( !isset($_GET["SH_ID"]) ? "style='color: #D65C4F;'" : "" ).">ВСЕГО ЗА {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</a></b></th>";
 					echo "<th class='txtright'><b>{$format_city_price}</b></th>";
 					echo "<th class='txtright' title='Сумма отказов' style='color: #911;'><b>{$format_city_otkaz}</b></th>";
 					echo "</tr></thead>";
@@ -577,7 +577,7 @@
 						,IFNULL(OT.old_SH_ID, OD.SH_ID) old_SH_ID
 						,IFNULL(OT.old_StartDate, OD.StartDate) old_StartDate
 				  FROM OrdersData OD
-				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1".( isset($_GET["SH_ID"]) ? " AND SH.SH_ID = {$_GET["SH_ID"]}" : "" )."
 				  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 				  LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE payment_sum > 0 AND return_terminal = 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
 				  LEFT JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
