@@ -306,6 +306,7 @@
 		$locking_next = mysqli_num_rows($res) ? 1 : 0;
 	?>
 		<div id='selling_report'>
+			<div style="display: inline-block; vertical-align:top;">
 			<table>
 				<tbody>
 				<?
@@ -368,6 +369,38 @@
 				?>
 				</tbody>
 			</table>
+			<br>
+			<br>
+			<table>
+				<thead>
+					<tr>
+						<th>Код</th>
+						<th>Салон</th>
+						<th>Сумма</th>
+						<th>Примечание</th>
+					</tr>
+				</thead>
+				<tbody>
+					<?
+					$query = "SELECT OD.Code, SH.Shop, OT.old_sum, CONCAT(IF(OT.type = 1, 'Замена', 'Отказ'), '<br>', IFNULL(OT.comment, '')) comment
+								FROM OrdersData OD
+								JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
+								JOIN Shops SH ON SH.SH_ID = OT.old_SH_ID AND CT_ID = {$CT_ID} AND retail = 1
+								WHERE OD.Del = 0 AND YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]}";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) ) {
+						$format_old_price = number_format($row["old_sum"], 0, '', ' ');
+						echo "<tr>";
+						echo "<td>{$row["Code"]}</td>";
+						echo "<td>{$row["Shop"]}</td>";
+						echo "<td class='txtright'>{$format_old_price}</td>";
+						echo "<td style='color: #911;'>{$row["comment"]}</td>";
+						echo "</tr>";
+					}
+					?>
+				</tbody>
+			</table>
+			</div>
 
 			<table>
 				<tbody>
