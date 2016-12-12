@@ -346,7 +346,7 @@
 						$query = "SELECT SUM(OT.old_sum) Price
 									FROM OrdersData OD
 									JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
-									WHERE OD.Del = 0 AND YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]} AND OT.old_SH_ID = {$row["SH_ID"]}";
+									WHERE OD.Del = 0 AND YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]} AND OT.old_SH_ID = {$row["SH_ID"]} AND OT.type = 2";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_otkaz = mysqli_result($subres,0,'Price');
 						$city_otkaz = $city_otkaz + $shop_otkaz;
