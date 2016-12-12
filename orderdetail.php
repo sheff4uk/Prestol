@@ -219,11 +219,12 @@
 		$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 		$Comment = trim($Comment);
+		$MPT_ID = $_POST["MPT_ID"] ? $_POST["MPT_ID"] : 0;
 
 		if( $Material != '' ) { // Сохраняем в таблицу материалов полученный материал и узнаем его ID
 			$query = "INSERT INTO Materials
 						SET
-							PT_ID = 0,
+							PT_ID = {$MPT_ID},
 							Material = '{$Material}',
 							SH_ID = {$Shipper},
 							Count = 1
