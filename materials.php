@@ -283,7 +283,7 @@
 						  ) ODS_ST ON ODS_ST.ODD_ID = ODD.ODD_ID
 						  WHERE ODD.IsExist = {$isexist} AND IFNULL(PM.PT_ID, 2) = {$product}
 						  AND (ODD.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
-						  UNION
+						  UNION ALL
 						  SELECT ODB.OD_ID
 								,ODB.ODB_ID ItemID
 								,0 PT_ID

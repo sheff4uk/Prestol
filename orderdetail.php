@@ -627,11 +627,15 @@
 		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
 //		echo "<td class='txtright'>{$format_price}</td>";
-		echo "<td><a href='#' id='{$row["ODB_ID"]}' class='button edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
-		if( $row["inprogress"] == 0 ) {
-			$delmessage = "Удалить {$row["Name"]}({$row["Amount"]} шт.)?";
-			echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+		echo "<td>";
+		if( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) {
+			echo "<a href='#' id='{$row["ODB_ID"]}' class='button edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+			if( $row["inprogress"] == 0 ) {
+				$delmessage = "Удалить {$row["Name"]}({$row["Amount"]} шт.)?";
+				echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+			}
 		}
+		echo "</td></tr>";
 
 		$ODB[$row["ODB_ID"]] = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["SH_ID"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "MPT_ID"=>$row["MPT_ID"] );
 	}

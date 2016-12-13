@@ -293,7 +293,7 @@ case "ispainting":
 						SELECT ODD.OD_ID, ODS.IsReady
 						FROM OrdersDataDetail ODD
 						JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
-						UNION
+						UNION ALL
 						SELECT ODB.OD_ID, ODS.IsReady
 						FROM OrdersDataBlank ODB
 						JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1 AND ODS.Old = 0
@@ -513,7 +513,7 @@ case "shipment":
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 						GROUP BY ODD.ODD_ID
-						UNION
+						UNION ALL
 						SELECT ODB.OD_ID
 							  ,0 PT_ID
 							  ,ODB.ODB_ID itemID
@@ -742,7 +742,7 @@ case "update_price":
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  WHERE ODD.OD_ID = {$OD_ID}
 			  GROUP BY ODD.ODD_ID
-			  UNION
+			  UNION ALL
 			  SELECT ODB.OD_ID
 					,0 PT_ID
 					,ODB.ODB_ID itemID
@@ -866,7 +866,7 @@ case "order_cut":
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  WHERE ODD.OD_ID = {$OD_ID}
 			  GROUP BY ODD.ODD_ID
-			  UNION
+			  UNION ALL
 			  SELECT ODB.OD_ID
 					,0 PT_ID
 					,ODB.ODB_ID itemID

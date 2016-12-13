@@ -160,7 +160,7 @@
 						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 						GROUP BY ODD.ODD_ID
-						UNION
+						UNION ALL
 						SELECT ODB.OD_ID
 							  ,ODB.ODB_ID itemID
 							  ,0 PT_ID

@@ -696,7 +696,7 @@
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 						GROUP BY ODD.ODD_ID
-						UNION
+						UNION ALL
 						SELECT ODB.OD_ID
 							  ,{$PRfilterODB}
 							  ,BIT_AND(IF(ODS.Visible = 1 AND ODS.Old = 0, ODS.IsReady, 1)) IsReady

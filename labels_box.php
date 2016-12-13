@@ -228,7 +228,7 @@ $(document).ready(function() {
 					LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 					LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 					LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-					UNION
+					UNION ALL
 					SELECT ODB.OD_ID
 						  ,ODB.ODB_ID ItemID
 						  ,0 PT_ID
