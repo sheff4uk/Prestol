@@ -357,8 +357,8 @@
 						echo "<td class='txtright' title='Сумма отказов' style='color: #911;'>{$shop_otkaz}</td>";
 						echo "</tr>";
 					}
-					$city_price = $city_price - $city_discount + $city_otkaz;
-					$format_city_price = number_format($city_price, 0, '', ' ');
+					$city_price = $city_price - $city_discount;
+					$format_city_price = number_format($city_price - $city_discount + $city_otkaz, 0, '', ' ');
 					$format_city_otkaz = number_format($city_otkaz, 0, '', ' ');
 					echo "<thead><tr>";
 					echo "<th class='nowrap'><b><a href='{$location}' ".( !isset($_GET["SH_ID"]) ? "style='color: #D65C4F;'" : "" ).">ВСЕГО ЗА {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</a></b></th>";
