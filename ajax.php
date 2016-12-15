@@ -696,7 +696,7 @@ case "add_payment":
 	}
 	$html .= "<tr>";
 	$html .= "<td><input type='text' class='date' name='payment_date_add' value='{$payment_date}' readonly></td>";
-	$html .= "<td><input type='number' class='payment_sum' min='1' name='payment_sum_add'></td>";
+	$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
 	$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
 	$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
 //	$html .= "<td></td>";
