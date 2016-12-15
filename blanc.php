@@ -256,6 +256,7 @@ case "torg12":
 		curl_setopt($curl, CURLOPT_REFERER, 'https://service-online.su/forms/buh/tovarnaya-nakladnaya/');
 		curl_setopt($curl, CURLOPT_POST, 1);
 		curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($_POST));
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 		$out = curl_exec($curl);
 		$filename = 'nakladnaya_'.$id.'_'.$_POST["nomer"].'.pdf';
 		file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
@@ -302,6 +303,7 @@ case "schet":
 		curl_setopt($curl, CURLOPT_REFERER, 'https://service-online.su/forms/buh/schet/');
 		curl_setopt($curl, CURLOPT_POST, 1);
 		curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($_POST));
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 		$out = curl_exec($curl);
 		$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
 		file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
