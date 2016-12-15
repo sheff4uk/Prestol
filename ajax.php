@@ -655,7 +655,7 @@ case "add_payment":
 	$html .= "<th>Сумма</th>";
 	$html .= "<th>Терминал</th>";
 	$html .= "<th>Фамилия</th>";
-	$html .= "<th>Возврат</th>";
+//	$html .= "<th>Возврат</th>";
 	$html .= "</tr></thead><tbody>";
 
 	$query = "SELECT OP_ID
@@ -665,7 +665,7 @@ case "add_payment":
 					,terminal_payer
 					,return_terminal
 				FROM OrdersPayment
-				WHERE OD_ID = {$OD_ID} AND IFNULL(payment_sum, 0) > 0
+				WHERE OD_ID = {$OD_ID} AND IFNULL(payment_sum, 0) != 0
 				ORDER BY OP_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 	$payment_count = 0; // Счетчик кол-ва платежей
@@ -673,10 +673,10 @@ case "add_payment":
 		$html .= "<tr>";
 		if( $row["return_terminal"] == 0 ) {
 			$html .= "<td><input type='hidden' name='OP_ID[]' value='{$row["OP_ID"]}'><input type='text' class='date' name='payment_date[]' value='{$row["payment_date"]}' readonly></td>";
-			$html .= "<td><input type='number' class='payment_sum' min='1' name='payment_sum[]' value='{$row["payment_sum"]}'></td>";
+			$html .= "<td><input type='number' class='payment_sum' name='payment_sum[]' value='{$row["payment_sum"]}'></td>";
 			$html .= "<td><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal'></td>";
 			$html .= "<td><input type='text' class='terminal_payer' value='{$row["terminal_payer"]}'><input type='hidden' class='terminal_payer' name='terminal_payer[]' value='{$row["terminal_payer"]}'></td>";
-			$html .= "<td><input type='checkbox' class='return_terminal' ".($row["return_terminal"] == 1 ? "checked" : "")."><input type='hidden' class='return_terminal' name='return_terminal[]' value='{$row["return_terminal"]}'></td>";
+//			$html .= "<td><input type='checkbox' class='return_terminal' ".($row["return_terminal"] == 1 ? "checked" : "")."><input type='hidden' class='return_terminal' name='return_terminal[]' value='{$row["return_terminal"]}'></td>";
 			$payment_count++;
 		}
 		else {
@@ -684,7 +684,7 @@ case "add_payment":
 			$html .= "<td>{$row["payment_sum"]}</td>";
 			$html .= "<td>".($row["terminal"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
 			$html .= "<td>{$row["terminal_payer"]}</td>";
-			$html .= "<td>Возврат</td>";
+//			$html .= "<td>Возврат</td>";
 		}
 		$html .= "</tr>";
 	}
@@ -699,7 +699,7 @@ case "add_payment":
 	$html .= "<td><input type='number' class='payment_sum' min='1' name='payment_sum_add'></td>";
 	$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
 	$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
-	$html .= "<td></td>";
+//	$html .= "<td></td>";
 	$html .= "</tr></tbody></table>";
 
 	$html = addslashes($html);

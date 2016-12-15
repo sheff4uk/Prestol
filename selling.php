@@ -81,13 +81,13 @@
 			$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date"][$key]) );
 			$payment_sum = ($_POST["payment_sum"][$key] != '') ? $_POST["payment_sum"][$key] : 'NULL';
 			$terminal_payer = ($_POST["terminal_payer"][$key] != '') ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer"][$key] ).'\'' : 'NULL';
-			$return_terminal = $_POST["return_terminal"][$key];
+//			$return_terminal = $_POST["return_terminal"][$key];
 
 			$query = "UPDATE OrdersPayment
 						 SET payment_date = '{$payment_date}'
 							,payment_sum = {$payment_sum}
 							,terminal_payer = {$terminal_payer}
-							,return_terminal = {$return_terminal}
+							#,return_terminal = {$return_terminal}
 						WHERE OP_ID = {$value}";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"] = mysqli_error( $mysqli );
@@ -418,7 +418,7 @@
 								FROM OrdersPayment OP
 								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) > 0
+								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0
 								ORDER BY OP.payment_date";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
@@ -489,7 +489,7 @@
 							FROM OrdersData OD
 							JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$_GET["CT_ID"]}
 							JOIN OrdersPayment OP ON OP.OD_ID = OD.OD_ID
-							WHERE OD.Del = 0 AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]}";
+							WHERE OD.Del = 0 AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND return_terminal = 0";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				$month_payment_sum = mysqli_result($res,0,'payment_sum');
 				$format_debt = number_format($city_price - $month_payment_sum, 0, '', ' ');
@@ -612,7 +612,7 @@
 				  FROM OrdersData OD
 				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1".( isset($_GET["SH_ID"]) ? " AND SH.SH_ID = {$_GET["SH_ID"]}" : "" )."
 				  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-				  LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE payment_sum > 0 AND return_terminal = 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
+				  LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE return_terminal = 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
 				  LEFT JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
 				  LEFT JOIN (SELECT ODD.OD_ID
 								   ,IFNULL(PM.PT_ID, 2) PT_ID
@@ -1002,7 +1002,7 @@
 			$('#order_otkaz input[name="old_StartDate"]').val(old_StartDate);
 			$('#order_otkaz input[name="old_sum"]').val(old_sum);
 
-			if( payment > 0 ) {
+			if( payment != 0 ) {
 				$(this).parents('tr').find('.add_payment_btn span').effect( 'shake', 1000 );
 				noty({timeout: 3000, text: 'Прежде чем пометить заказ как "отказной", обнулите приход по нему.', type: 'error'});
 			}
