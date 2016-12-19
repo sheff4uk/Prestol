@@ -516,14 +516,40 @@
 			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
 			<th width="5%"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
 			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br>сдачи</label></th>
-			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
+			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label>
+			<?
+				if( isset($_GET["shpid"]) ) {
+					$query = "SELECT SH.SH_ID, SH.Shop
+								FROM OrdersData OD
+								JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+								WHERE OD.SHP_ID = {$_GET["shpid"]}
+								GROUP BY OD.SH_ID";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					echo "<select style='width: 100%;' onchange='location.href = \"/?shpid={$_GET["shpid"]}&shop=\"+this.value+\"&X={$_GET["X"]}\";'>";
+					echo "<option></option>";
+					while( $row = mysqli_fetch_array($res) ) {
+						$selected = $_GET["shop"] == $row["SH_ID"] ? 'selected' : '';
+						echo "<option {$selected} value='{$row["SH_ID"]}'>{$row["Shop"]}</option>";
+					}
+					echo "</select>";
+				}
+			?>
+			</th>
 			<th width="5%"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>
 			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
 			<th width="15%"><input type="checkbox" disabled value="8" checked name="M" class="print_col" id="M"><label for="M">Материал</label></th>
 			<th width="15%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
 			<th width="100"><input type="checkbox" disabled value="10" name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
 			<th width="40"><input type="checkbox" disabled value="11" name="CF" class="print_col" id="CF"><label for="CF">Принят</label></th>
-			<th width="40"><input type="checkbox" disabled value="12" name="X" class="print_col" id="X"><label for="X">X</label></th>
+			<th width="40"><input type="checkbox" disabled value="12" name="X" class="print_col" id="X"><label for="X">X</label>
+			<?
+				if( isset($_GET["shpid"]) ) {
+					$checked = $_GET["X"] ? 'checked' : '';
+					$X = $_GET["X"] ? "" : "1";
+					echo "<input {$checked} id='ship_X' type='checkbox' onchange='location.href = \"/?shpid={$_GET["shpid"]}&shop={$_GET["shop"]}&X={$X}\";' style='width: 20px; height: 20px;'>";
+				}
+			?>
+			</th>
 			<th width="15%"><input type="checkbox" disabled value="13" checked name="N" class="print_col" id="N"><label for="N">Примечание</label></th>
 			<th width="80">Действие</th>
 		</tr>
@@ -778,28 +804,29 @@
 			}
 			else {  // Если в отгрузке - показываем список этой отгрузки
 				$query .= " AND OD.SHP_ID = {$_GET["shpid"]}";
+				if( $_GET["shop"] != "" ) {
+					$query .= " AND OD.SH_ID = {$_GET["shop"]}";
+				}
 			}
 
 			$query .= " GROUP BY OD.OD_ID HAVING PRfilter AND MTfilter";
 
 			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
-			  if( $_SESSION["f_Z"] != "" ) {
-				  $query .= " AND Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
-			  }
-//			  if( $_SESSION["f_M"] != "" ) {
-//				  $query .= " AND Material LIKE '%{$_SESSION["f_M"]}%'";
-//			  }
-			  if( $_SESSION["f_X"] == "1" ) {
-				  $X_ord = '0';
-				  foreach( $_SESSION as $k => $v)
-				  {
-					  if( strpos($k,"X_") === 0 )
-					  {
-						  $X_ord .= ','.str_replace( "X_", "", $k );
-					  }
-				  }
-				  $query .= " AND OD.OD_ID IN ({$X_ord})";
-			  }
+				if( $_SESSION["f_Z"] != "" ) {
+					$query .= " AND Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
+				}
+			}
+
+			if( $_SESSION["f_X"] == "1" or $_GET["X"] == "1" ) {
+				$X_ord = '0';
+				foreach( $_SESSION as $k => $v)
+				{
+					if( strpos($k,"X_") === 0 )
+					{
+						$X_ord .= ','.str_replace( "X_", "", $k );
+					}
+				}
+				$query .= " AND OD.OD_ID IN ({$X_ord})";
 			}
 
 			$query .= " ORDER BY OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
@@ -877,7 +904,7 @@
 			else {
 				echo "<a href='/?shpid={$row["SHP_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a>";
 			}
-			if( !$row["IsReady"] ) {
+			if( !$row["IsReady"] || $row["IsPainting"] != 3 ) {
 				$is_orders_ready = 0;
 			}
 			$orders_count++;
@@ -1017,23 +1044,31 @@
 </div>
 
 <script>
-	function check_shipping(ready, count) {
-		if(!ready || !count) {
+	function check_shipping(ready, count, filter) {
+		if( filter ) {
 			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
 			$('#wr_shipping_date button').hide('fast');
-			$('#wr_shipping_date font').show('fast');
-			if( !<?=$orders_count?> ) {
-				$('#wr_shipping_date font').html('&nbsp;&nbsp;Список пуст!');
-			}
-			else {
-				$('#wr_shipping_date font').html('&nbsp;&nbsp;В списке присутствуют незавершенные этапы!');
-			}
-		}
-		else {
-			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', false);
-			$('#wr_shipping_date button').show('fast');
 			$('#wr_shipping_date font').hide('fast');
 			$('#wr_shipping_date font').html();
+		}
+		else {
+			if(!ready || !count) {
+				$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
+				$('#wr_shipping_date button').hide('fast');
+				$('#wr_shipping_date font').show('fast');
+				if( !<?=$orders_count?> ) {
+					$('#wr_shipping_date font').html('&nbsp;&nbsp;Список пуст!');
+				}
+				else {
+					$('#wr_shipping_date font').html('&nbsp;&nbsp;В списке присутствуют незавершенные этапы!');
+				}
+			}
+			else {
+				$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', false);
+				$('#wr_shipping_date button').show('fast');
+				$('#wr_shipping_date font').hide('fast');
+				$('#wr_shipping_date font').html();
+			}
 		}
 	}
 
@@ -1052,7 +1087,7 @@
 		<?=( $_SESSION["f_M"] != "" ? "$('.select2-selection ul').addClass('filtered');" : "" )?>
 
 		// Проверяем можно ли отгружать
-		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?>);
+		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?> ,<?=($_GET["shop"] != "" or $_GET["X"] != "") ? 1 : 0?>);
 
 		$( ".shopstags" ).autocomplete({ // Автокомплит салонов
 			source: "autocomplete.php?do=shopstags"
@@ -1194,7 +1229,7 @@
 			var val = $(this).attr('val');
 			var isready = $(this).attr('isready');
 			var archive = $(this).attr('archive');
-			$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val+"&isready="+isready+"&archive="+archive+"&shpid=<?=$_GET["shpid"]?>", dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val+"&isready="+isready+"&archive="+archive+"&shpid=<?=$_GET["shpid"]?>&filter=<?=(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)?>", dataType: "script", async: false });
 		});
 
 		// Смена статуса принятия аяксом

@@ -252,6 +252,7 @@ case "ispainting":
 	$val = $_GET["val"];
 	$val = ($val == 3) ? 1 : $val + 1;
 	$shpid = $_GET["shpid"];
+	$filter = $_GET["filter"];
 
 	// Обновляем статус лакировки
 	$query = "UPDATE OrdersData SET IsPainting = {$val}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
@@ -304,7 +305,7 @@ case "ispainting":
 		$ready = mysqli_result($res,0,'IsReady');
 		$is_orders_ready = ( $painting and $ready ) ? 1 : 0;
 
-		echo "check_shipping({$is_orders_ready}, 1);";
+		echo "check_shipping({$is_orders_ready}, 1, {$filter});";
 	}
 	elseif( $isready == 1 and $archive != 1 and $SHP_ID == 0 ) {
 		if( $val == 3 and in_array('order_ready', $Rights) ) {

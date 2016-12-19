@@ -3,7 +3,7 @@ $(document).ready(function() {
 	var open_modal = $('.open_modal');
 	var close = $('.modal_close, #overlay');
 	var modal = $('.modal_div, #print_tbl');
-	var col = $('#print_tbl thead input[type="checkbox"]');
+	var col = $('#print_tbl thead input[type="checkbox"]:not(#ship_X)');
 	var row = $('.print_row');
 
 	open_modal.click( function(event){
@@ -64,6 +64,7 @@ $(document).ready(function() {
 		$('#print_tbl tr').css('opacity', '');
 		$('#print_tbl td:last-child, #print_tbl th:last-child').css('display', '');
 		col.prop( "disabled", true );
+		$("#ship_X").prop( "disabled", false );
 	});
 	
 	col.change(function() {
