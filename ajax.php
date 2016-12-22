@@ -922,7 +922,7 @@ case "material_list":
 	$odbids = $_GET["odbids"];
 	$materials_name = "";
 
-	$query = "SELECT MT.Material, CONCAT('(', ROUND(SUM(ODD_ODB.MT_amount), 1), ' мп)') MT_amount
+	$query = "SELECT MT.Material, CONCAT('- ', GROUP_CONCAT(ROUND(ODD_ODB.MT_amount, 1) SEPARATOR '+'), ' м.п.') MT_amount
 				FROM Materials MT
 				JOIN (
 					SELECT MT_ID, MT_amount
