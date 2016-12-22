@@ -558,7 +558,7 @@
 				<th width="20">Т</th>
 				<th width="65">Остаток</th>
 				<th width="65">Отказ</th>
-				<th width="65">Действие</th>
+				<th width="70">Действие</th>
 			</tr>
 		</thead>
 	</table>
@@ -582,7 +582,7 @@
 				<th width="20"></th>
 				<th width="65"></th>
 				<th width="65"></th>
-				<th width="65"></th>
+				<th width="70"></th>
 			</tr>
 		</thead>
 		<tbody>

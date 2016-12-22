@@ -897,5 +897,50 @@ case "order_cut":
 	echo "window.top.window.$('#order_cut fieldset').html('{$html}');";
 
 	break;
+
+// Обновление метража
+case "footage":
+	$oddid = $_GET["oddid"];
+	$odbid = $_GET["odbid"];
+	$val = $_GET["val"] ? $_GET["val"] : "NULL";
+
+	if( $oddid ) {
+		$query = "UPDATE OrdersDataDetail SET MT_amount = {$val} WHERE ODD_ID = {$oddid}";
+	}
+	else {
+		$query = "UPDATE OrdersDataBlank SET MT_amount = {$val} WHERE ODB_ID = {$odbid}";
+	}
+	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'alert'});");
+
+	echo "noty({timeout: 3000, text: 'Метраж обновлен на: <b>\"{$val}\"</b>', type: 'success'});";
+
+	break;
+
+// Формирование списка материалов для заказа
+case "material_list":
+	$oddids = $_GET["oddids"];
+	$odbids = $_GET["odbids"];
+	$materials_name = "";
+
+	$query = "SELECT MT.Material, CONCAT('(', ROUND(SUM(ODD_ODB.MT_amount), 1), ' мп)') MT_amount
+				FROM Materials MT
+				JOIN (
+					SELECT MT_ID, MT_amount
+					FROM OrdersDataDetail
+					WHERE ODD_ID IN ($oddids)
+					UNION ALL
+					SELECT MT_ID, MT_amount
+					FROM OrdersDataBlank
+					WHERE ODB_ID IN ($odbids)
+				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
+				GROUP BY MT.MT_ID";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	while( $row = mysqli_fetch_array($res) ) {
+		$materials_name .= $row["Material"]."\\t".$row["MT_amount"]."\\r\\n";
+	}
+	//$materials_name = addslashes( $materials_name );
+	echo "window.top.window.$('#materials_name').html('{$materials_name}');";
+
+	break;
 }
 ?>

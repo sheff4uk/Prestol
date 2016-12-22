@@ -196,6 +196,7 @@
 			<th></th>
 			<th>Материал</th>
 			<th>Поставщик</th>
+			<?=($product == 1 ? "<th>Метраж</th>" : "")?>
 			<th>Код</th>
 			<th>Принят</th>
 			<th>Работник</th>
@@ -212,6 +213,8 @@
 		<tbody>
 <?
 //	if( $product > 0 ) {
+	$oddids = ""; // Будем собирать ID видимых изделий
+	$odbids = ""; // Будем собирать ID видимых заготовок
 	$materials_name = "";
 	$query = "SELECT OD.OD_ID
 					,OD.Code
@@ -230,7 +233,10 @@
 					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
 					,GROUP_CONCAT(ODD_ODB.MN SEPARATOR '') MN
 					,GROUP_CONCAT(ODD_ODB.Shipper SEPARATOR '') Shipper
+					,GROUP_CONCAT(ODD_ODB.MT_amount SEPARATOR '') MT_amount
 					,GROUP_CONCAT(ODD_ODB.Checkbox SEPARATOR '') Checkbox
+					,GROUP_CONCAT(ODD_ODB.ODD_ID SEPARATOR ',') ODD_ID
+					,GROUP_CONCAT(ODD_ODB.ODB_ID SEPARATOR ',') ODB_ID
 					,WD.Name
 					,IF(ODD_ODB.IsReady = 1, 'ready', 'inwork') ready_status
 					,IF(OS.ostatok IS NOT NULL, 1, 0) is_lock
@@ -242,6 +248,8 @@
 			  RIGHT JOIN (
 						  SELECT ODD.OD_ID
 								,ODD.ODD_ID ItemID
+								,ODD.ODD_ID
+								,0 ODB_ID
 								,IFNULL(PM.PT_ID, 2) PT_ID
 
 							   ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'".(in_array('order_add', $Rights) ? "edit_product', IFNULL(PM.PT_ID, 2), '" : "")."\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a></b><br>') Zakaz
@@ -261,6 +269,8 @@
 								,IFNULL(CONCAT(MT.Material, '\r\n'), '') MN
 
 								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
+
+								,CONCAT( '<input class=\'footage\' type=\'number\' step=\'0.1\' min=\'0\' style=\'width: 50px; height: 19px;\' value=\'', IFNULL(ODD.MT_amount, ''), '\' oddid=\'', ODD.ODD_ID, '\'>' ) MT_amount
 
 								,CONCAT('<input type=\'checkbox\' value=\'1\' name=\'prod', ODD.ODD_ID, '\' class=\'chbox\'><br>') Checkbox
 
@@ -286,6 +296,8 @@
 						  UNION ALL
 						  SELECT ODB.OD_ID
 								,ODB.ODB_ID ItemID
+								,0 ODD_ID
+								,ODB.ODB_ID
 								,0 PT_ID
 
 								,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'blank', ODB.ODB_ID, '\'', 'class=\'".(in_array('order_add', $Rights) ? "edit_order_blank" : "")."\' location=\'{$location}\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</a></b><br>') Zakaz
@@ -305,6 +317,8 @@
 								,IFNULL(CONCAT(MT.Material, '\r\n'), '') MN
 
 								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
+
+								,CONCAT( '<input class=\'footage\' type=\'number\' step=\'0.1\' min=\'0\' style=\'width: 50px; height: 19px;\' value=\'', IFNULL(ODB.MT_amount, ''), '\' odbid=\'', ODB.ODB_ID, '\'>' ) MT_amount
 
 								,CONCAT('<input type=\'checkbox\' value=\'1\' name=\'other', ODB.ODB_ID, '\' class=\'chbox\'><br>') Checkbox
 
@@ -333,11 +347,14 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
+		$oddids .= $row["ODD_ID"].","; // Собираем ID видимых изделий
+		$odbids .= $row["ODB_ID"].","; // Собираем ID видимых заготовок
 		$materials_name .= $row["MN"];
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td>{$row["Checkbox"]}</td>";
 		echo "<td><span class='nowrap'>{$row["Material"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Shipper"]}</span></td>";
+		if( $product == 1 ) echo "<td>{$row["MT_amount"]}</td>";
 		echo "<td><a href='orderdetail.php?id={$row["OD_ID"]}' class='nowrap'>{$row["Code"]}</a></td>";
 		// Если заказ принят
 		if( $row["confirmed"] == 1 ) {
@@ -436,7 +453,10 @@
 ?>
 		</tbody>
 	</table>
-
+<?
+	echo "<p>{$oddids}<br></p>";
+	echo "<p>{$odbids}<br></p>";
+?>
 	<!-- Список материалов для буфера обмена -->
 	<textarea id='materials_name' style='position: absolute; top: 34px; left: 1px; height: 20px; z-index: -1;'><?=$materials_name?></textarea>
 
@@ -511,7 +531,13 @@
 			$('#selectallbottom').prop('checked', ch);
 			return false;
 		}
-			
+
+		function material_list() {
+			$.ajax({ url: "ajax.php?do=material_list&oddids=<?=$oddids?>0&odbids=<?=$odbids?>0", dataType: "script", async: false });
+		}
+
+		material_list();
+
 		$(function() {
 			$('#selectalltop').change(function(){
 				ch = $('#selectalltop').prop('checked');
@@ -541,6 +567,14 @@
 
 		$('#material input').change(function(){
 			$('select[name="WD_ID"] option').removeAttr('selected');
+		});
+
+		$('.footage').on('blur', function() {
+			var val = $(this).val();
+			var oddid = $(this).attr('oddid');
+			var odbid = $(this).attr('odbid');
+			$.ajax({ url: "ajax.php?do=footage&oddid="+oddid+"&odbid="+odbid+"&val="+val, dataType: "script", async: false });
+			material_list();
 		});
 
 		$('#isexist input, #material input, #ready input, #worker').change(function(){
