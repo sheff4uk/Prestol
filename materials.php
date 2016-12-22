@@ -215,7 +215,6 @@
 //	if( $product > 0 ) {
 	$oddids = ""; // Будем собирать ID видимых изделий
 	$odbids = ""; // Будем собирать ID видимых заготовок
-	$materials_name = "";
 	$query = "SELECT OD.OD_ID
 					,OD.Code
 					,OD.ClientName
@@ -231,7 +230,6 @@
 					,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 					,GROUP_CONCAT(ODD_ODB.Zakaz_lock SEPARATOR '') Zakaz_lock
 					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
-					,GROUP_CONCAT(ODD_ODB.MN SEPARATOR '') MN
 					,GROUP_CONCAT(ODD_ODB.Shipper SEPARATOR '') Shipper
 					,GROUP_CONCAT(ODD_ODB.MT_amount SEPARATOR '') MT_amount
 					,GROUP_CONCAT(ODD_ODB.Checkbox SEPARATOR '') Checkbox
@@ -265,8 +263,6 @@
 									WHEN 2 THEN 'bg-green'
 								END,
 								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\' title=\'Для отмены изменений нажмите клавишу ESC\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
-
-								,IFNULL(CONCAT(MT.Material, '\r\n'), '') MN
 
 								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
 
@@ -314,8 +310,6 @@
 								END,
 								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\' title=\'Для отмены изменений нажмите клавишу ESC\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
-								,IFNULL(CONCAT(MT.Material, '\r\n'), '') MN
-
 								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
 
 								,CONCAT( '<input class=\'footage\' type=\'number\' step=\'0.1\' min=\'0\' style=\'width: 50px; height: 19px;\' value=\'', IFNULL(ODB.MT_amount, ''), '\' odbid=\'', ODB.ODB_ID, '\'>' ) MT_amount
@@ -349,7 +343,6 @@
 	{
 		$oddids .= $row["ODD_ID"].","; // Собираем ID видимых изделий
 		$odbids .= $row["ODB_ID"].","; // Собираем ID видимых заготовок
-		$materials_name .= $row["MN"];
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td>{$row["Checkbox"]}</td>";
 		echo "<td><span class='nowrap'>{$row["Material"]}</span></td>";
@@ -453,12 +446,9 @@
 ?>
 		</tbody>
 	</table>
-<?
-	echo "<p>{$oddids}<br></p>";
-	echo "<p>{$odbids}<br></p>";
-?>
+
 	<!-- Список материалов для буфера обмена -->
-	<textarea id='materials_name' style='position: absolute; top: 34px; left: 1px; height: 20px; z-index: -1;'><?=$materials_name?></textarea>
+	<textarea id='materials_name' style='position: absolute; top: 34px; left: 1px; height: 20px; z-index: -1;'></textarea>
 
 	<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>
 	<p>
