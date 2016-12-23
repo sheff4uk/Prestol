@@ -45,6 +45,10 @@
 			<img src='/img/attention.png' class='attention' id='Model' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 		</div>
 		<div>
+			<label>Патина:</label>
+			<input type="text" name="patina" placeholder="Цвет патины">
+		</div>
+		<div>
 			<label>Ткань:</label>
 			<input type='text' class='textiletags' name='Material' style='width: 200px;'>
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
@@ -136,6 +140,10 @@
 			</select>
 			&nbsp;&nbsp;&nbsp;
 			<img src='/img/attention.png' class='attention' id='Model' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
+		</div>
+		<div>
+			<label>Патина:</label>
+			<input type="text" name="patina" placeholder="Цвет патины">
 		</div>
 		<div>
 			<label>Форма:</label>
@@ -284,6 +292,10 @@
 			<div>
 				<label>Прочее:</label>
 				<input required class='othertags' type='text' style='width: 300px;' name='Other' autocomplete="off">
+			</div>
+			<div>
+				<label>Патина:</label>
+				<input type="text" name="patina" placeholder="Цвет патины">
 			</div>
 			<div>
 				<label>Ткань:</label>

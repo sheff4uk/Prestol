@@ -43,7 +43,7 @@
 							  ,IFNULL(PM.PT_ID, 2) PT_ID
 							  ,ODD.Amount
 							  ,IFNULL(ODD.Price, 'NULL') Price
-							  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, '')) Zakaz
+							  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), '')) Zakaz
 						FROM OrdersDataDetail ODD
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
@@ -54,7 +54,7 @@
 							  ,0 PT_ID
 							  ,ODB.Amount
 							  ,IFNULL(ODB.Price, 'NULL') Price
-							  ,CONCAT(IFNULL(BL.Name, ODB.Other)) Zakaz
+							  ,CONCAT(IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), '')) Zakaz
 						FROM OrdersDataBlank ODB
 						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 						) ODD_ODB

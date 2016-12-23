@@ -17,7 +17,7 @@
 				SELECT ODD.OD_ID
 					  ,ODD.ODD_ID ItemID
 					  ,IFNULL(PM.PT_ID, 2) PT_ID
-					  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, '')) Zakaz
+					  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), '')) Zakaz
 					  ,ODD.Amount
 					  ,ODD.Price
 				FROM OrdersDataDetail ODD
@@ -28,7 +28,7 @@
 				SELECT ODB.OD_ID
 					  ,ODB.ODB_ID ItemID
 					  ,0 PT_ID
-					  ,IFNULL(BL.Name, ODB.Other) Zakaz
+					  ,CONCAT(IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), '')) Zakaz
 					  ,ODB.Amount
 					  ,ODB.Price
 				FROM OrdersDataBlank ODB

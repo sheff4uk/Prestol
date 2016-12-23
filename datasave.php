@@ -64,9 +64,12 @@ if( $_GET["oddid"] )
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
+	$patina = mysqli_real_escape_string( $mysqli,$_POST["patina"] );
 	// Удаляем лишние пробелы
 	$Material = trim($Material);
 	$Comment = trim($Comment);
+	$patina = trim($patina);
+
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 
@@ -129,6 +132,7 @@ if( $_GET["oddid"] )
 				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
 				 ,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 				 ,author = {$_SESSION['id']}
+				 ,patina = '{$patina}'
 			  WHERE ODD_ID = {$_GET["oddid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["alert"] = mysqli_error( $mysqli );
@@ -180,6 +184,8 @@ if( $_GET["odbid"] )
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 	$Comment = trim($Comment);
+	$patina = mysqli_real_escape_string( $mysqli,$_POST["patina"] );
+	$patina = trim($patina);
 	$MPT_ID = $_POST["MPT_ID"] ? $_POST["MPT_ID"] : 0;
 
 	// Узнаем какой материал был ранее
@@ -236,6 +242,7 @@ if( $_GET["odbid"] )
 				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
 				 ,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 				 ,author = {$_SESSION['id']}
+				 ,patina = '{$patina}'
 			  WHERE ODB_ID = {$_GET["odbid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["alert"] = mysqli_error( $mysqli );

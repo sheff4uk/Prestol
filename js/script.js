@@ -222,6 +222,7 @@ $(document).ready(function(){
 			$('#addchair input[name="Price"]').val(odd[id]['price']);
 			$('#addchair select[name="Model"]').val(odd[id]['model']);
 			$('#addchair textarea[name="Comment"]').val(odd[id]['comment']);
+			$('#addchair input[name="patina"]').val(odd[id]['patina']);
 			$('#addchair input[name="Material"]').val(odd[id]['material']);
 			$('#addchair select[name="Shipper"]').val(odd[id]['shipper']);
 			$('#1radio'+odd[id]['isexist']).prop('checked', true);
@@ -356,6 +357,7 @@ $(document).ready(function(){
 			$('#addtable input[name="PieceAmount"]').val(odd[id]['PieceAmount']);
 			$('#addtable input[name="PieceSize"]').val(odd[id]['PieceSize']);
 			$('#addtable textarea[name="Comment"]').val(odd[id]['comment']);
+			$('#addtable input[name="patina"]').val(odd[id]['patina']);
 			$('#addtable input[name="Material"]').val(odd[id]['material']);
 			$('#addtable select[name="Shipper"]').val(odd[id]['shipper']);
 			$('#2radio'+odd[id]['isexist']).prop('checked', true);
@@ -494,6 +496,7 @@ $(document).ready(function(){
 				$('#addblank select[name="Blanks"]').prop('required', false);
 			}
 			$('#addblank textarea[name="Comment"]').val(odb[id]['comment']);
+			$('#addblank input[name="patina"]').val(odb[id]['patina']);
 
 			// Заполняем ткань/пластик
 			if( odb[id]['MPT_ID'] == 1 ) {

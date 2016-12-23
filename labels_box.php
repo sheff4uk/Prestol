@@ -222,7 +222,7 @@ $(document).ready(function() {
 						  ,ODD.Amount
 						  ,IFNULL(PM.InTheBox, 0) InTheBox
 						  ,IF(ODD.PME_ID = 2, 3, IFNULL(PM.BoxOnItem, 0)) BoxOnItem
-						  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, '')) Zakaz
+						  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), '')) Zakaz
 					FROM OrdersDataDetail ODD
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 					LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
@@ -238,7 +238,7 @@ $(document).ready(function() {
 						  ,ODB.Amount
 						  ,1 InTheBox
 						  ,1 BoxOnItem
-						  ,CONCAT(IFNULL(BL.Name, ODB.Other)) Zakaz
+						  ,CONCAT(IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), '')) Zakaz
 					FROM OrdersDataBlank ODB
 					LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 					LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID

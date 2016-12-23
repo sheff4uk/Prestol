@@ -50,7 +50,7 @@
 	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=19'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=20'>
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
@@ -58,7 +58,7 @@
 	<script src="js/ui/jquery-ui.js"></script>
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
 	<script src="js/modal.js?v=6"></script>
-	<script src="js/script.js?v=10" type="text/javascript"></script>
+	<script src="js/script.js?v=11" type="text/javascript"></script>
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
 	<script type="text/javascript" src="js/noty/packaged/jquery.noty.packaged.min.js"></script>
