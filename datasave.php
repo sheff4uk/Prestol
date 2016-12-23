@@ -132,7 +132,7 @@ if( $_GET["oddid"] )
 				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
 				 ,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 				 ,author = {$_SESSION['id']}
-				 ,patina = '{$patina}'
+				 ,patina = IF('{$patina}' = '', NULL, '{$patina}')
 			  WHERE ODD_ID = {$_GET["oddid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["alert"] = mysqli_error( $mysqli );
@@ -242,7 +242,7 @@ if( $_GET["odbid"] )
 				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
 				 ,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 				 ,author = {$_SESSION['id']}
-				 ,patina = '{$patina}'
+				 ,patina = IF('{$patina}' = '', NULL, '{$patina}')
 			  WHERE ODB_ID = {$_GET["odbid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["alert"] = mysqli_error( $mysqli );
