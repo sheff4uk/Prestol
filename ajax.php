@@ -935,7 +935,7 @@ case "material_list":
 					WHERE ODB_ID IN ($odbids)
 				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
-	$length = mysqli_result($res,0,'length');
+	$length = mysqli_result($res,0,'length') ? mysqli_result($res,0,'length') : 0;
 
 	$query = "SELECT RPAD(MT.Material, {$length}, ' ') Material, CONCAT('- ', GROUP_CONCAT(ROUND(ODD_ODB.MT_amount, 1) SEPARATOR '+'), ' м.п.') MT_amount
 				FROM Materials MT
