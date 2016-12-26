@@ -922,7 +922,22 @@ case "material_list":
 	$odbids = $_GET["odbids"];
 	$materials_name = "";
 
-	$query = "SELECT MT.Material, CONCAT('- ', GROUP_CONCAT(ROUND(ODD_ODB.MT_amount, 1) SEPARATOR '+'), ' м.п.') MT_amount
+	// Находим строку с максимальной длиной
+	$query = "SELECT MAX(CHAR_LENGTH(MT.Material)) length
+				FROM Materials MT
+				JOIN (
+					SELECT MT_ID, MT_amount
+					FROM OrdersDataDetail
+					WHERE ODD_ID IN ($oddids)
+					UNION ALL
+					SELECT MT_ID, MT_amount
+					FROM OrdersDataBlank
+					WHERE ODB_ID IN ($odbids)
+				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$length = mysqli_result($res,0,'length');
+
+	$query = "SELECT RPAD(MT.Material, {$length}, ' ') Material, CONCAT('- ', GROUP_CONCAT(ROUND(ODD_ODB.MT_amount, 1) SEPARATOR '+'), ' м.п.') MT_amount
 				FROM Materials MT
 				JOIN (
 					SELECT MT_ID, MT_amount
