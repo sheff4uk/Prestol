@@ -26,7 +26,9 @@ else {
 	</script>
 	<select name="year" id="year" onchange="this.form.submit()">
 <?
-	$query = "SELECT year FROM PrintForms WHERE IFNULL(summa, 0) > 0 GROUP BY year";
+	$query = "SELECT year FROM PrintForms WHERE IFNULL(summa, 0) > 0 GROUP BY year
+				UNION
+				SELECT YEAR(NOW())";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
 		echo "<option value='{$row["year"]}'>{$row["year"]}</option>";
