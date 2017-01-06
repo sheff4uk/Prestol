@@ -533,7 +533,6 @@
 				echo "<table><thead>";
 				echo "<tr><th class='txtleft'>Дебиторка {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</th><th class='txtright'>{$format_debt}</th></tr>";
 				echo "<tr><th class='txtleft'>Приход наличных:</th><th class='txtright'>{$format_pay_in}</th></tr>";
-				echo "<tr><th class='txtleft'>Расход наличных:</th><th class='txtright'>{$pay_out}</th></tr>";
 //				echo "<tr><th class='txtleft'>Остаток {$MONTHS[$lastmonth]} {$lastyear}:</th><th class='txtright'>{$format_last_ostatok}</th></tr>";
 //				echo "<tr><th class='txtleft'>Остаток {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</th><th class='txtright'>{$format_ostatok}</th></tr>";
 				echo "</thead></table><br><br>";
