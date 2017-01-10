@@ -652,6 +652,7 @@ case "add_payment":
 
 	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 	$html .= "<table><thead><tr>";
+	$html .= "<th></th>";
 	$html .= "<th>Дата</th>";
 	$html .= "<th>Сумма</th>";
 	$html .= "<th>Терминал</th>";
@@ -665,14 +666,17 @@ case "add_payment":
 					,IF(IFNULL(terminal_payer, '') = '', 0, 1) terminal
 					,terminal_payer
 					,return_terminal
+					,IFNULL(CT_ID, 0) CT_ID
 				FROM OrdersPayment
 				WHERE OD_ID = {$OD_ID} AND IFNULL(payment_sum, 0) != 0
 				ORDER BY OP_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 	$payment_count = 0; // Счетчик кол-ва платежей
+	$factory_payment = "<i class='fa fa-money' aria-hidden='true' title='Оплата наличными на производстве'></i>";
 	while( $row = mysqli_fetch_array($res) ) {
 		$html .= "<tr>";
-		if( $row["return_terminal"] == 0 ) {
+		if( in_array('order_add_confirm', $Rights) or $row["CT_ID"] ) {
+			$html .= "<td>".($row["CT_ID"] ? '' : $factory_payment)."</td>";
 			$html .= "<td><input type='hidden' name='OP_ID[]' value='{$row["OP_ID"]}'><input type='text' class='date' name='payment_date[]' value='{$row["payment_date"]}' readonly></td>";
 			$html .= "<td><input type='number' class='payment_sum' name='payment_sum[]' value='{$row["payment_sum"]}'></td>";
 			$html .= "<td><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal'></td>";
@@ -681,6 +685,7 @@ case "add_payment":
 			$payment_count++;
 		}
 		else {
+			$html .= "<td>{$factory_payment}</td>";
 			$html .= "<td>{$row["payment_date"]}</td>";
 			$html .= "<td>{$row["payment_sum"]}</td>";
 			$html .= "<td>".($row["terminal"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
@@ -696,6 +701,7 @@ case "add_payment":
 		$payment_date = date('d.m.Y');
 	}
 	$html .= "<tr>";
+	$html .= "<td>".(in_array('order_add_confirm', $Rights) ? $factory_payment : '')."</td>";
 	$html .= "<td><input type='text' class='date' name='payment_date_add' value='{$payment_date}' readonly></td>";
 	$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
 	$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";

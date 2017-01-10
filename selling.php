@@ -65,7 +65,7 @@
 							,payment_date = '{$payment_date}'
 							,payment_sum = {$payment_sum}
 							,terminal_payer = {$terminal_payer}
-							,CT_ID = {$CT_ID}";
+							,CT_ID = ".(in_array('order_add_confirm', $Rights) ? 'NULL' : $CT_ID);
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"] = mysqli_error( $mysqli );
 			}
