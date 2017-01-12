@@ -84,3 +84,4 @@ while( $row = mysqli_fetch_array($res) ) {
 ?>
 	</tbody>
 </table>
+<?=$query?>
