@@ -49,6 +49,7 @@
 							  SET IsExist = $val
 								 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
 								 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
+								 ,author = {$_SESSION['id']}
 							  WHERE ODD_ID = {$prodid}";
 					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				}
@@ -65,6 +66,7 @@
 							  SET IsExist = $val
 								 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
 								 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
+								 ,author = {$_SESSION['id']}
 							  WHERE ODB_ID = {$prodid}";
 					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				}
