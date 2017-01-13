@@ -30,8 +30,8 @@
 	}
 	$select_shops .= "</select>";
 
-//	$datediff = 60; // Максимальный период отображения данных
-	$datediff = $_SESSION['id'] == 1 ? 600 : 60;
+	$datediff = 60; // Максимальный период отображения данных
+//	$datediff = $_SESSION['id'] == 1 ? 600 : 60;
 
 	//$location = $_SERVER['REQUEST_URI'];
 	$location = "selling.php?CT_ID={$_GET["CT_ID"]}".( ($_GET["year"] != '' and $_GET["month"] != '') ? '&year='.$_GET["year"].'&month='.$_GET["month"] : '' );
