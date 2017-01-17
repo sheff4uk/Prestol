@@ -283,18 +283,22 @@
 					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = {$CT_ID}
 					WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID}
 					GROUP BY YEAR(OD.StartDate), MONTH(OD.StartDate)
-					ORDER BY OD.StartDate";
+					UNION
+					SELECT YEAR(NOW()), MONTH(NOW()), 0, 1
+					ORDER BY year, month";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) ) {
-			$highlight = ($_GET["year"] == $row["year"] and $_GET["month"] == $row["month"]) ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
-			if( $row["year"] == 0 and $row["month"] == 0 ) {
-				echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>Свободные</a> ";
-				$OTCHET_MONTHS[] = "{$row["year"]}-{$row["month"]}";
-			}
-			else {
-				if( $row["is_visible"] ) {
-					echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}' ".($row["is_lock"] == 1 ? "title='Месяц закрыт'" : "").">{$MONTHS[$row["month"]]} - {$row["year"]}".($row["is_lock"] == 1 ? " <i class='fa fa-lock' aria-hidden='true'></i>" : "")."</a> ";
+		if( $CT_ID ) {
+			while( $row = mysqli_fetch_array($res) ) {
+				$highlight = ($_GET["year"] == $row["year"] and $_GET["month"] == $row["month"]) ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
+				if( $row["year"] == 0 and $row["month"] == 0 ) {
+					echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>Свободные</a> ";
 					$OTCHET_MONTHS[] = "{$row["year"]}-{$row["month"]}";
+				}
+				else {
+					if( $row["is_visible"] ) {
+						echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}' ".($row["is_lock"] == 1 ? "title='Месяц закрыт'" : "").">{$MONTHS[$row["month"]]} - {$row["year"]}".($row["is_lock"] == 1 ? " <i class='fa fa-lock' aria-hidden='true'></i>" : "")."</a> ";
+						$OTCHET_MONTHS[] = "{$row["year"]}-{$row["month"]}";
+					}
 				}
 			}
 		}
@@ -546,11 +550,13 @@
 						<img src='/img/attention.png' class='attention' title='Разблокировать отчет невозможно так как следующий месяц закрыт.' style='display: none;'>
 					</form>
 				";
-				if( in_array('selling_all', $Rights) ) {
-					echo $locking_form;
-				}
-				else if( $locking_date != '' ) {
-					echo "<h3>Месяц закрыт: {$locking_date}</h3>";
+				if( date('Y') != $_GET["year"] or date('n') != $_GET["month"] ) {
+					if( in_array('selling_all', $Rights) ) {
+						echo $locking_form;
+					}
+					else if( $locking_date != '' ) {
+						echo "<h3>Месяц закрыт: {$locking_date}</h3>";
+					}
 				}
 			?>
 			<script>
@@ -597,6 +603,7 @@
 						?>
 					</select>
 				</th>
+				<th width="100">Примечание</th>
 				<th width="100">Дата продажи</th>
 				<th width="65">Сумма заказа</th>
 				<th width="70">Скидка</th>
@@ -623,6 +630,7 @@
 				<th width="40"></th>
 				<th width="10%"></th>
 				<th width="100"></th>
+				<th width="100"></th>
 				<th width="65"></th>
 				<th width="70"></th>
 				<th width="65"></th>
@@ -639,6 +647,7 @@
 						,IFNULL(OD.ClientName, '') ClientName
 						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
+						,OD.sell_comment
 						,OD.ReadyDate RD
 						,SH.SH_ID
 						,OD.OrderNumber
@@ -722,6 +731,7 @@
 					<td>{$row["Color"]}</td>
 					<td class='material'>{$row["Amount"]}</td>
 					<td id='{$row["OD_ID"]}'><span>{$select_shops}</span></td>
+					<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
 					<td id='{$row["OD_ID"]}'><input type='text' class='date sell_date' value='{$row["StartDate"]}'></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
@@ -1080,6 +1090,13 @@
 			var OD_ID = $(this).parents('td').attr('id');
 			var val = $(this).val();
 			$.ajax({ url: "ajax.php?do=update_sell_date&OD_ID="+OD_ID+"&StartDate="+val, dataType: "script", async: false });
+		});
+
+		// Редактирование примечания к реализации
+		$('.sell_comment').on('change', function() {
+			var OD_ID = $(this).parents('td').attr('id');
+			var val = $(this).val();
+			$.ajax({ url: "ajax.php?do=update_sell_comment&OD_ID="+OD_ID+"&sell_comment="+val, dataType: "script", async: false });
 		});
 	});
 </script>

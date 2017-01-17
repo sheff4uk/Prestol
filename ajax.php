@@ -316,7 +316,7 @@ case "ispainting":
 			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('');";
 		}
 	}
-	echo "noty({timeout: 3000, text: 'Статус лакировки изменен на \"{$status}\"', type: 'success'});";
+	echo "noty({timeout: 3000, text: 'Статус лакировки изменен на <b>{$status}</b>', type: 'success'});";
 	break;
 
 // Смена статуса принятия заказа
@@ -350,7 +350,7 @@ case "confirmed":
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').addClass('{$class}');";
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('title', '{$status}');";
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('val', '{$val}');";
-	echo "noty({timeout: 3000, text: 'Статус заказа изменен на \"{$status}\"', type: 'success'});";
+	echo "noty({timeout: 3000, text: 'Статус заказа изменен на <b>{$status}</b>', type: 'success'});";
 	break;
 
 // Смена статуса прочитанного собщения в заказе
@@ -453,7 +453,7 @@ case "materials":
 			$query = "UPDATE Materials SET Material = '{$val}' WHERE Material = '{$oldval}' AND PT_ID = {$ptid}";
 			mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 		}
-		echo "noty({timeout: 3000, text: 'Название материала изменено на \"{$val}\"', type: 'success'});";
+		echo "noty({timeout: 3000, text: 'Название материала изменено на <b>{$val}</b>', type: 'success'});";
 	}
 	$query = "SELECT removed FROM Materials WHERE Material = '{$val}' AND PT_ID = {$ptid}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
@@ -821,7 +821,7 @@ case "update_shop":
 
 	echo "$('.shop_cell[id={$OD_ID}]').html('{$shop_span}');";
 	echo "$('.shop_cell[id={$OD_ID}]').attr('SH_ID', '{$SH_ID}');";
-	echo "noty({timeout: 3000, text: 'Салон изменен с \"{$old_shop}\" на \"{$new_shop}\"', type: 'success'});";
+	echo "noty({timeout: 3000, text: 'Салон изменен с <b>{$old_shop}</b> на <b>{$new_shop}</b>', type: 'success'});";
 	if( $SH_ID == 0 ) {
 		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a').css('display', 'none');";
 	}
@@ -848,7 +848,30 @@ case "update_sell_date":
 		die("noty({timeout: 10000, text: '".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'alert'});");
 	}
 
-	echo "noty({timeout: 3000, text: 'Дата продажи изменена с \"{$old_StartDate}\" на \"{$_GET["StartDate"]}\"', type: 'success'});";
+	echo "noty({timeout: 3000, text: 'Дата продажи изменена с <b>{$old_StartDate}</b> на <b>{$_GET["StartDate"]}</b>', type: 'success'});";
+
+	break;
+
+// Редактирование примечания к реализации
+case "update_sell_comment":
+	$OD_ID = $_GET["OD_ID"];
+	$sell_comment = trim( mysqli_real_escape_string( $mysqli, $_GET["sell_comment"] ) );
+
+	// Узнаем старое примечание
+	$query = "SELECT sell_comment FROM OrdersData WHERE OD_ID = {$OD_ID}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$old_sell_comment = mysqli_result($res,0,'sell_comment');
+
+	// Меняем примечание
+	$query = "UPDATE OrdersData SET sell_comment = '{$sell_comment}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
+	if( !mysqli_query( $mysqli, $query ) ) {
+		echo "$('td#{$OD_ID} .sell_comment').val('{$old_sell_comment}');";
+		die("noty({timeout: 10000, text: '".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'alert'});");
+	}
+
+	$old_sell_comment = htmlspecialchars($old_sell_comment, ENT_QUOTES);
+	$sell_comment = htmlspecialchars($sell_comment, ENT_QUOTES);
+	echo "noty({timeout: 3000, text: 'Комментарий изменен с <b>{$old_sell_comment}</b> на <b>{$sell_comment}</b>', type: 'success'});";
 
 	break;
 
