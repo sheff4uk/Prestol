@@ -488,7 +488,7 @@ else {
 								FROM OrdersPayment OP
 								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID AND OD.Del = 0
 								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NOT NULL
-								ORDER BY OP.payment_date";
+								ORDER BY OP.payment_date DESC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
 					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
@@ -527,7 +527,7 @@ else {
 								FROM OrdersPayment OP
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID} AND IFNULL(OP.payment_sum, 0) > 0 AND OP.terminal_payer IS NULL
-								ORDER BY OP.payment_date";
+								ORDER BY OP.payment_date DESC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
 					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
@@ -571,7 +571,7 @@ else {
 								FROM OrdersPayment OP
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL
-								ORDER BY OP.payment_date";
+								ORDER BY OP.payment_date DESC";
 
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					$sum_cost = 0;
