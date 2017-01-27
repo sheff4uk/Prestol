@@ -964,6 +964,7 @@ else {
 			});
 			$('input[name=payment_sum_add]').focus();
 			$('input.date').datepicker();
+			$( "#add_payment input.date" ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
 
 			$('#add_payment .terminal').change(function() {
 				var ch = $(this).prop('checked');
