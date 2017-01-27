@@ -227,7 +227,7 @@
 						HAVING IsActive = 1 OR Hours > 0";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
-				echo "<tr><td class='worker' val='{$row["WD_ID"]}' deftariff='{$row["deftariff"]}' defbonus='{$row["defbonus"]}'><span>{$row["Name"]}</span>";
+				echo "<tr><td class='worker' val='{$row["WD_ID"]}' deftariff='{$row["deftariff"]}' defbonus='{$row["defbonus"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Name"]}</a>";
 				echo "<div class='tariffs' style='display: none;'>{$row["tariffs"]}</div></td>";
 
 				// Получаем список часов по работнику за месяц
