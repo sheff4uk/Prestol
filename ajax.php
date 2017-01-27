@@ -665,7 +665,6 @@ case "add_payment":
 					,payment_sum
 					,IF(IFNULL(terminal_payer, '') = '', 0, 1) terminal
 					,terminal_payer
-					,return_terminal
 					,IFNULL(CT_ID, 0) CT_ID
 				FROM OrdersPayment
 				WHERE OD_ID = {$OD_ID} AND IFNULL(payment_sum, 0) != 0
@@ -681,7 +680,6 @@ case "add_payment":
 			$html .= "<td><input type='number' class='payment_sum' name='payment_sum[]' value='{$row["payment_sum"]}'></td>";
 			$html .= "<td><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal'></td>";
 			$html .= "<td><input type='text' class='terminal_payer' value='{$row["terminal_payer"]}'><input type='hidden' class='terminal_payer' name='terminal_payer[]' value='{$row["terminal_payer"]}'></td>";
-//			$html .= "<td><input type='checkbox' class='return_terminal' ".($row["return_terminal"] == 1 ? "checked" : "")."><input type='hidden' class='return_terminal' name='return_terminal[]' value='{$row["return_terminal"]}'></td>";
 			$payment_count++;
 		}
 		else {
