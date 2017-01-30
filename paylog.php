@@ -100,11 +100,11 @@
 					echo "<tr>";
 					echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
 					echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
-					echo "<td class='txtright'><span nowrap'>{$format_avg_pay_out}</span></td>";
+					echo "<td class='txtright'><span class='nowrap'>{$format_MPI}</span></td>";
+					echo "<td class='txtright'><span class='nowrap'>{$format_MPO}</span></td>";
+					echo "<td class='txtright'><span class='nowrap'>{$format_LMPI}</span></td>";
+					echo "<td class='txtright'><span class='nowrap'>{$format_LMPO}</span></td>";
+					echo "<td class='txtright'><span class='nowrap' style='color: #911;'>{$format_avg_pay_out}</span></td>";
 					echo "</tr>";
 					$total_sum = $total_sum + $row["Sum"];
 					$total_MPI = $total_MPI + $row["PayIn"];
@@ -128,7 +128,7 @@
 					echo "<td class='txtright'><b>{$total_MPO}</b></td>";
 					echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
 					echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
-					echo "<td class='txtright'><b>{$total_avg_pay_out}</b></td>";
+					echo "<td class='txtright'style='color: #911;'><b>{$total_avg_pay_out}</b></td>";
 					echo "</tr>";
 				}
 				?>
@@ -166,6 +166,7 @@
 						<th rowspan="2">Баланс</th>
 						<th colspan="2" class="nowrap"><?=$MONTHS[$month]?> <?=$year?></th>
 						<th colspan="2" class="nowrap"><?=$MONTHS[$lastmonth]?> <?=$lastyear?></th>
+						<th rowspan="2">Среднегодовая<br>выдача</th>
 					</tr>
 						<th>Начислено</th>
 						<th>Выдано</th>
@@ -181,9 +182,17 @@
 					$total_MPO = 0;
 					$total_LMPI = 0;
 					$total_LMPO = 0;
+					$total_avg_pay_out = 0;
 
 					while( $row = mysqli_fetch_array($res) )
 					{
+						// Узнаем среднегодовую получку
+						$query = "SELECT ROUND(AVG(PayOut)) avg_pay_out
+									FROM MonthlyPayInOut
+									WHERE WD_ID = {$row["WD_ID"]} AND NOT ( Year = YEAR(NOW()) AND Month = MONTH(NOW()) ) AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365 AND PayOut > 0";
+						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						$avg_pay_out = mysqli_result($subres, 0, 'avg_pay_out');
+
 						if( $row["Sum"] < 0 )
 							$color = ' bg-red';
 						else
@@ -193,25 +202,29 @@
 						$format_MPO = number_format($row["PayOut"], 0, '', ' ');
 						$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
 						$format_LMPO = number_format($row["LastPayOut"], 0, '', ' ');
+						$format_avg_pay_out = number_format($avg_pay_out, 0, '', ' ');
 						echo "<tr>";
 						echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
 						echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
-						echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
-						echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
-						echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
-						echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
+						echo "<td class='txtright'><span class='nowrap'>{$format_MPI}</span></td>";
+						echo "<td class='txtright'><span class='nowrap'>{$format_MPO}</span></td>";
+						echo "<td class='txtright'><span class='nowrap'>{$format_LMPI}</span></td>";
+						echo "<td class='txtright'><span class='nowrap'>{$format_LMPO}</span></td>";
+						echo "<td class='txtright'><span class='nowrap' style='color: #911;'>{$format_avg_pay_out}</span></td>";
 						echo "</tr>";
 						$total_sum = $total_sum + $row["Sum"];
 						$total_MPI = $total_MPI + $row["PayIn"];
 						$total_MPO = $total_MPO + $row["PayOut"];
 						$total_LMPI = $total_LMPI + $row["LastPayIn"];
 						$total_LMPO = $total_LMPO + $row["LastPayOut"];
+						$total_avg_pay_out = $total_avg_pay_out + $avg_pay_out;
 					}
 					$total_sum = number_format($total_sum, 0, '', ' ');
 					$total_MPI = number_format($total_MPI, 0, '', ' ');
 					$total_MPO = number_format($total_MPO, 0, '', ' ');
 					$total_LMPI = number_format($total_LMPI, 0, '', ' ');
 					$total_LMPO = number_format($total_LMPO, 0, '', ' ');
+					$total_avg_pay_out = number_format($total_avg_pay_out, 0, '', ' ');
 
 					if( !isset($_GET["worker"]) ) {
 						echo "<tr>";
@@ -221,6 +234,7 @@
 						echo "<td class='txtright'><b>{$total_MPO}</b></td>";
 						echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
 						echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
+						echo "<td class='txtright'style='color: #911;'><b>{$total_avg_pay_out}</b></td>";
 						echo "</tr>";
 					}
 				?>
@@ -255,6 +269,7 @@
 						<th rowspan="2">Баланс</th>
 						<th colspan="2" class="nowrap"><?=$MONTHS[$month]?> <?=$year?></th>
 						<th colspan="2" class="nowrap"><?=$MONTHS[$lastmonth]?> <?=$lastyear?></th>
+						<th rowspan="2">Среднегодовая<br>выдача</th>
 					</tr>
 						<th>Начислено</th>
 						<th>Выдано</th>
@@ -270,9 +285,17 @@
 					$total_MPO = 0;
 					$total_LMPI = 0;
 					$total_LMPO = 0;
+					$total_avg_pay_out = 0;
 
 					while( $row = mysqli_fetch_array($res) )
 					{
+						// Узнаем среднегодовую получку
+						$query = "SELECT ROUND(AVG(PayOut)) avg_pay_out
+									FROM MonthlyPayInOut
+									WHERE WD_ID = {$row["WD_ID"]} AND NOT ( Year = YEAR(NOW()) AND Month = MONTH(NOW()) ) AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365 AND PayOut > 0";
+						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						$avg_pay_out = mysqli_result($subres, 0, 'avg_pay_out');
+
 						if( $row["Sum"] < 0 )
 							$color = ' bg-red';
 						else
@@ -282,25 +305,29 @@
 						$format_MPO = number_format($row["PayOut"], 0, '', ' ');
 						$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
 						$format_LMPO = number_format($row["LastPayOut"], 0, '', ' ');
+						$format_avg_pay_out = number_format($avg_pay_out, 0, '', ' ');
 						echo "<tr>";
 						echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
 						echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
-						echo "<td class='txtright'><span nowrap'>{$format_MPI}</span></td>";
-						echo "<td class='txtright'><span nowrap'>{$format_MPO}</span></td>";
-						echo "<td class='txtright'><span nowrap'>{$format_LMPI}</span></td>";
-						echo "<td class='txtright'><span nowrap'>{$format_LMPO}</span></td>";
+						echo "<td class='txtright'><span class='nowrap'>{$format_MPI}</span></td>";
+						echo "<td class='txtright'><span class='nowrap'>{$format_MPO}</span></td>";
+						echo "<td class='txtright'><span class='nowrap'>{$format_LMPI}</span></td>";
+						echo "<td class='txtright'><span class='nowrap'>{$format_LMPO}</span></td>";
+						echo "<td class='txtright'><span class='nowrap' style='color: #911;'>{$format_avg_pay_out}</span></td>";
 						echo "</tr>";
 						$total_sum = $total_sum + $row["Sum"];
 						$total_MPI = $total_MPI + $row["PayIn"];
 						$total_MPO = $total_MPO + $row["PayOut"];
 						$total_LMPI = $total_LMPI + $row["LastPayIn"];
 						$total_LMPO = $total_LMPO + $row["LastPayOut"];
+						$total_avg_pay_out = $total_avg_pay_out + $avg_pay_out;
 					}
 					$total_sum = number_format($total_sum, 0, '', ' ');
 					$total_MPI = number_format($total_MPI, 0, '', ' ');
 					$total_MPO = number_format($total_MPO, 0, '', ' ');
 					$total_LMPI = number_format($total_LMPI, 0, '', ' ');
 					$total_LMPO = number_format($total_LMPO, 0, '', ' ');
+					$total_avg_pay_out = number_format($total_avg_pay_out, 0, '', ' ');
 
 					if( !isset($_GET["worker"]) ) {
 						echo "<tr>";
@@ -310,6 +337,7 @@
 						echo "<td class='txtright'><b>{$total_MPO}</b></td>";
 						echo "<td class='txtright'><b>{$total_LMPI}</b></td>";
 						echo "<td class='txtright'><b>{$total_LMPO}</b></td>";
+						echo "<td class='txtright'style='color: #911;'><b>{$total_avg_pay_out}</b></td>";
 						echo "</tr>";
 					}
 				?>
