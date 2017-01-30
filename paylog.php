@@ -83,7 +83,7 @@
 					// Узнаем среднегодовую получку
 					$query = "SELECT ROUND(AVG(PayOut)) avg_pay_out
 								FROM MonthlyPayInOut
-								WHERE WD_ID = {$row["WD_ID"]} AND NOT ( Year = YEAR(NOW()) AND Month = MONTH(NOW()) ) AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365 AND PayOut > 0";
+								WHERE WD_ID = {$row["WD_ID"]} AND NOT ( Year = YEAR(NOW()) AND Month = MONTH(NOW()) ) AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365";
 					$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					$avg_pay_out = mysqli_result($subres, 0, 'avg_pay_out');
 
@@ -189,7 +189,7 @@
 						// Узнаем среднегодовую получку
 						$query = "SELECT ROUND(AVG(PayOut)) avg_pay_out
 									FROM MonthlyPayInOut
-									WHERE WD_ID = {$row["WD_ID"]} AND NOT ( Year = YEAR(NOW()) AND Month = MONTH(NOW()) ) AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365 AND PayOut > 0";
+									WHERE WD_ID = {$row["WD_ID"]} AND NOT ( Year = YEAR(NOW()) AND Month = MONTH(NOW()) ) AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$avg_pay_out = mysqli_result($subres, 0, 'avg_pay_out');
 
@@ -292,7 +292,7 @@
 						// Узнаем среднегодовую получку
 						$query = "SELECT ROUND(AVG(PayOut)) avg_pay_out
 									FROM MonthlyPayInOut
-									WHERE WD_ID = {$row["WD_ID"]} AND NOT ( Year = YEAR(NOW()) AND Month = MONTH(NOW()) ) AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365 AND PayOut > 0";
+									WHERE WD_ID = {$row["WD_ID"]} AND NOT ( Year = YEAR(NOW()) AND Month = MONTH(NOW()) ) AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$avg_pay_out = mysqli_result($subres, 0, 'avg_pay_out');
 
