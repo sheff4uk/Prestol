@@ -54,14 +54,17 @@
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
+	<link rel='stylesheet' type='text/css' href='plugins/jReject-master/css/jquery.reject.css'>
 	<script src="js/jquery-1.11.3.min.js"></script>
 	<script src="js/ui/jquery-ui.js"></script>
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
 	<script src="js/modal.js?v=6"></script>
-	<script src="js/script.js?v=11" type="text/javascript"></script>
+	<script src="js/script.js?v=12" type="text/javascript"></script>
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
-	<script type="text/javascript" src="js/noty/packaged/jquery.noty.packaged.min.js"></script>
+	<script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript"></script>
+	<script src="plugins/jReject-master/js/jquery.reject.js" type="text/javascript"></script>
+
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.4.0/clipboard.min.js"></script>
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
@@ -69,6 +72,24 @@
 
 	<script>
 		$(document).ready(function(){
+			//Проверка браузера
+			$.reject({
+				reject: {
+					safari: true, // Apple Safari
+					//chrome: true, // Google Chrome
+					//firefox: true, // Mozilla Firefox
+					msie: true, // Microsoft Internet Explorer
+					//opera: true, // Opera
+					konqueror: true, // Konqueror (Linux)
+					unknown: true // Everything else
+				},
+				close: false,
+				display: ['chrome','firefox','opera'],
+				header: 'Ваш браузер устарел',
+				paragraph1: 'Вы пользуетесь устаревшим браузером, который не поддерживает современные веб-стандарты и представляет угрозу безопасности Ваших данных.',
+				paragraph2: 'Пожалуйста, установите современный браузер:',
+				closeMessage: ''
+			});
 
 			// Принудительное перемещение к якорю после перезагрузки страницы
 			var loc = window.location.hash.replace("#","");

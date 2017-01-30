@@ -194,7 +194,7 @@ $(document).ready(function(){
 		$('#addchair input, #addchair select').prop('disabled', false);
 		$('#addchair input[type="text"], #addchair select').val('');
 		$('#addchair textarea').val('');
-		$('#addchair input[name="Amount"]').val('1');
+		$('#addchair input[name="Amount"]').val('');
 		$('#addchair input[name="Price"]').val('');
 		$('#1radio0').prop('checked', true);
 		$('#addchair .radiostatus input[type="radio"]').prop('disabled', true);
@@ -307,7 +307,7 @@ $(document).ready(function(){
 		$('#addtable input, #addtable select').prop('disabled', false);
 		$('#addtable input[type="text"], #addtable select').val('');
 		$('#addtable textarea').val('');
-		$('#addtable input[name="Amount"]').val('1');
+		$('#addtable input[name="Amount"]').val('');
 		$('#addtable input[name="Price"]').val('');
 		$('#addtable input[name="Length"]').val(''); //было 1300
 		$('#addtable input[name="Width"]').val(''); //было 800
@@ -461,7 +461,7 @@ $(document).ready(function(){
 
 		// Очистка диалога
 		$('#addblank textarea, #addblank select, #addblank input[type="text"]').val('');
-		$('#addblank input[name="Amount"]').val('1');
+		$('#addblank input[name="Amount"]').val('');
 		$('#addblank input[name="Price"]').val('');
 		$('#0radio0').prop('checked', true);
 		$('#addblank .radiostatus input[type="radio"]').prop('disabled', true);
