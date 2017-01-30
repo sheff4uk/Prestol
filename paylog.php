@@ -59,7 +59,7 @@
 						<th rowspan="2">Баланс</th>
 						<th colspan="2" class="nowrap"><?=$MONTHS[$month]?> <?=$year?></th>
 						<th colspan="2" class="nowrap"><?=$MONTHS[$lastmonth]?> <?=$lastyear?></th>
-						<th rowspan="2">Среднегодовая</th>
+						<th rowspan="2">Среднегодовая выдача</th>
 					</tr>
 					<tr>
 						<th>Начислено</th>
