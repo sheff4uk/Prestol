@@ -249,7 +249,7 @@
 				echo "<tr>";
 				echo "<td>{$row["Date"]}</td>";
 				echo "<td>{$row["Time"]}</td>";
-				echo "<td class='worker' val='{$row["WD_ID"]}'>{$row["Worker"]}</td>";
+				echo "<td class='worker' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>";
 				echo "<td class='blank {$row["Bold"]}' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>";
 				echo "<td class='amount txtright'>{$row["Amount"]}</td>";
 				echo "<td class='tariff txtright'>{$row["Tariff"]}</td>";
