@@ -657,7 +657,6 @@ case "add_payment":
 	$html .= "<th>Сумма</th>";
 	$html .= "<th>Терминал</th>";
 	$html .= "<th>Фамилия</th>";
-//	$html .= "<th>Возврат</th>";
 	$html .= "</tr></thead><tbody>";
 
 	$query = "SELECT OP_ID
@@ -675,7 +674,9 @@ case "add_payment":
 	while( $row = mysqli_fetch_array($res) ) {
 		$html .= "<tr>";
 		if( in_array('order_add_confirm', $Rights) or $row["CT_ID"] ) {
-			$html .= "<td>".($row["CT_ID"] ? '' : $factory_payment)."</td>";
+			$factory_payment_chbox = "<input type='checkbox' ".($row["CT_ID"] ? '' : 'checked')." class='factory_payment' title='Оплата наличными на производстве'><input type='hidden' value='".($row["CT_ID"] ? '0' : '1')."' class='h_factory_payment' name='factory_payment[]'>";
+
+			$html .= "<td>".(in_array('order_add_confirm', $Rights) ? $factory_payment_chbox : '')."</td>";
 			$html .= "<td><input type='hidden' name='OP_ID[]' value='{$row["OP_ID"]}'><input type='text' class='date' name='payment_date[]' value='{$row["payment_date"]}' readonly></td>";
 			$html .= "<td><input type='number' class='payment_sum' name='payment_sum[]' value='{$row["payment_sum"]}'></td>";
 			$html .= "<td><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal'></td>";
@@ -688,7 +689,6 @@ case "add_payment":
 			$html .= "<td>{$row["payment_sum"]}</td>";
 			$html .= "<td>".($row["terminal"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
 			$html .= "<td>{$row["terminal_payer"]}</td>";
-//			$html .= "<td>Возврат</td>";
 		}
 		$html .= "</tr>";
 	}
@@ -699,12 +699,11 @@ case "add_payment":
 		$payment_date = date('d.m.Y');
 	}
 	$html .= "<tr>";
-	$html .= "<td>".(in_array('order_add_confirm', $Rights) ? $factory_payment : '')."</td>";
+	$html .= "<td><input type='checkbox' ".(in_array('order_add_confirm', $Rights) ? 'checked' : '')." class='factory_payment' title='Оплата наличными на производстве'><input type='hidden' value='".(in_array('order_add_confirm', $Rights) ? '1' : '0')."' class='h_factory_payment' name='factory_payment_add'></td>";
 	$html .= "<td><input type='text' class='date' name='payment_date_add' value='{$payment_date}' readonly></td>";
 	$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
 	$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
 	$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
-//	$html .= "<td></td>";
 	$html .= "</tr></tbody></table>";
 
 	$html = addslashes($html);

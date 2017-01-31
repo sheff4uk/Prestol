@@ -46,6 +46,7 @@
 		$payment_sum = $_POST["payment_sum_add"];
 		$terminal = $_POST["terminal_add"];
 		$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer_add"] ).'\'' : 'NULL';
+		$factory_payment = $_POST["factory_payment_add"];
 
 		if( $payment_sum ) {
 			// Записываем новый платеж в таблицу платежей
@@ -54,7 +55,7 @@
 							,payment_date = '{$payment_date}'
 							,payment_sum = {$payment_sum}
 							,terminal_payer = {$terminal_payer}
-							,CT_ID = ".(in_array('order_add_confirm', $Rights) ? 'NULL' : $CT_ID);
+							,CT_ID = ".($factory_payment ? 'NULL' : $CT_ID);
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"] = mysqli_error( $mysqli );
 			}
@@ -71,11 +72,13 @@
 			$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date"][$key]) );
 			$payment_sum = ($_POST["payment_sum"][$key] != '') ? $_POST["payment_sum"][$key] : 'NULL';
 			$terminal_payer = ($_POST["terminal_payer"][$key] != '') ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer"][$key] ).'\'' : 'NULL';
+			$factory_payment = $_POST["factory_payment"][$key];
 
 			$query = "UPDATE OrdersPayment
 						 SET payment_date = '{$payment_date}'
 							,payment_sum = {$payment_sum}
 							,terminal_payer = {$terminal_payer}
+							".(in_array('order_add_confirm', $Rights) ? ",CT_ID = ".($factory_payment ? 'NULL' : $CT_ID) : '')."
 						WHERE OP_ID = {$value}";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"] = mysqli_error( $mysqli );
@@ -955,6 +958,16 @@ else {
 			var OD_ID = $(this).attr('id');
 			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID, dataType: "script", async: false });
 
+			if( <?= (in_array('order_add_confirm', $Rights) ? 'true' : 'false') ?> ) {
+				//$('#add_payment .factory_payment').attr('disabled', false);
+				$('#add_payment .factory_payment').show();
+			}
+			else {
+				//$('#add_payment .factory_payment').attr('disabled', true);
+				$('#add_payment .factory_payment').hide();
+
+			}
+
 			$('#add_payment').dialog({
 				width: 550,
 				modal: true,
@@ -965,6 +978,17 @@ else {
 			$('input[name=payment_sum_add]').focus();
 			$('input.date').datepicker();
 			$( "#add_payment input.date" ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
+
+			$('#add_payment .factory_payment').change(function() {
+				var ch = $(this).prop('checked');
+				var factory_payment = $(this).parents('tr').find('.h_factory_payment');
+				if( ch ) {
+					$(factory_payment).val('1');
+				}
+				else {
+					$(factory_payment).val('0');
+				}
+			});
 
 			$('#add_payment .terminal').change(function() {
 				var ch = $(this).prop('checked');

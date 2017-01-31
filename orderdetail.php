@@ -640,7 +640,8 @@
 		if( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) {
 			echo "<a href='#' id='{$row["ODB_ID"]}' class='button edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
 			if( $row["inprogress"] == 0 ) {
-				$delmessage = "Удалить {$row["Name"]}({$row["Amount"]} шт.)?";
+				$name = addslashes($row["Name"]);
+				$delmessage = "Удалить {$name} ({$row["Amount"]} шт.)?";
 				echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 			}
 		}
