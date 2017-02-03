@@ -123,15 +123,16 @@
 		$cost_date = date( 'Y-m-d', strtotime($_POST["cost_date"]) );
 		$cost = $_POST["cost"] ? $_POST["cost"] : 0;
 		$cost = ($_POST["sign"] == '-') ? $cost * -1 : $cost;
+		$send = $_POST["send"] ? $_POST["send"] : "NULL";
 
 		if( $OP_ID != '' ) { // Редактируем расход
-			$query = "UPDATE OrdersPayment SET cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost} WHERE OP_ID = {$OP_ID}";
+			$query = "UPDATE OrdersPayment SET cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send} WHERE OP_ID = {$OP_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 		else { // Добавляем расход
 			if( $cost ) {
 				$CT_ID = $_POST["CT_ID"];
-				$query = "INSERT INTO OrdersPayment SET CT_ID = {$CT_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}";
+				$query = "INSERT INTO OrdersPayment SET CT_ID = {$CT_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}";
 				if( !mysqli_query( $mysqli, $query ) ) {
 					$_SESSION["alert"] = mysqli_error( $mysqli );
 				}
@@ -571,6 +572,7 @@ else {
 									,YEAR(OD.StartDate) year
 									,MONTH(OD.StartDate) month
 									,OD.OD_ID
+									,send
 								FROM OrdersPayment OP
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL
@@ -582,13 +584,14 @@ else {
 						$sum_cost = $sum_cost + $row["payment_sum"];
 						$format_cost = number_format($row["payment_sum"], 0, '', ' ');
 						$cost_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : $row["cost_name"];
+						$send = $row["send"] ? '<i class="fa fa-arrow-circle-right" aria-hidden="true" title="Отправка наличных с курьером"></i> ' : '';
 						echo "<tr>";
-						echo "<td>{$cost_name}</td>";
+						echo "<td>{$send}{$cost_name}</td>";
 						echo "<td>{$row["payment_date_short"]}</td>";
 						echo "<td class='txtright'>{$format_cost}</td>";
 						echo "<td>";
-						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
-							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='-' title='Изменить расход'><i class='fa fa-pencil fa-lg'></i></a>";
+						if( $locking == 0 and $row["Code"] == '' and $row["send"] != 2 ) { // Если месяц не закрыт
+							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='-' send='{$row["send"]}' title='Изменить расход'><i class='fa fa-pencil fa-lg'></i></a>";
 						}
 						echo "</td>";
 						echo "</tr>";
@@ -892,15 +895,19 @@ else {
 			<input type="hidden" name="OP_ID" id="OP_ID">
 			<input type="hidden" name="CT_ID" id="CT_ID">
 			<input type="hidden" name="sign" id="sign">
-			<div style="width: 200px; display: inline-block; margin-right: 15px;">
+			<div style="width: 230px; display: inline-block; margin-right: 15px; vertical-align: top;">
 				<label for="cost_name">Наименование:</label><br>
 				<input type="text" name="cost_name" id="cost_name" style="width: 100%;">
+				<div id="wr_send" style="display: inline-block;">
+					<input type="checkbox" name="send" id="send" value="1">
+					<label for="send">Отправка наличных с курьером</label>
+				</div>
 			</div>
-			<div style="width: 90px; display: inline-block; margin-right: 15px;">
+			<div style="width: 90px; display: inline-block; margin-right: 15px; vertical-align: top;">
 				<label for="cost_name">Дата:</label><br>
 				<input readonly type="text" name="cost_date" class="date" id="cost_date" style="width: 100%;">
 			</div>
-			<div style="width: 100px; display: inline-block;">
+			<div style="width: 100px; display: inline-block; vertical-align: top;">
 				<label for="cost">Сумма:</label><br>
 				<input type="number" name="cost" min="1" id="cost" style="width: 100%; text-align: right;">
 			</div>
@@ -1105,21 +1112,27 @@ else {
 			var sign = $(this).attr('sign');
 			var cost_date = $(this).attr('cost_date');
 
+			// Очистка диалога
 			$('#add_cost #OP_ID').val('');
 			$('#add_cost #CT_ID').val('');
 			$('#add_cost #sign').val(sign);
 			$('#add_cost #cost_name').val('');
 			$('#add_cost #cost_date').val(cost_date);
 			$('#add_cost #cost').val('');
+			$('#send').prop('checked', false);
 
 			var OP_ID = $(this).attr('id');
 
 			if( OP_ID > 0 ) {
 				var cost_name = $(this).attr('cost_name');
 				var cost = $(this).attr('cost');
+				var send = $(this).attr('send');
 				$('#add_cost #OP_ID').val(OP_ID);
 				$('#add_cost #cost_name').val(cost_name);
 				$('#add_cost #cost').val(cost);
+				if( send ) {
+					$('#add_cost #send').prop('checked', true);
+				}
 			}
 			else {
 				var CT_ID = $(this).attr('CT_ID');
@@ -1127,7 +1140,7 @@ else {
 			}
 
 			$('#add_cost').dialog({
-				width: 500,
+				width: 550,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
@@ -1137,9 +1150,11 @@ else {
 
 			if (sign == '-') {
 				$('#add_cost').dialog('option', 'title', 'РАСХОД');
+				$('#wr_send').show();
 			}
 			else {
 				$('#add_cost').dialog('option', 'title', 'ПРИХОД');
+				$('#wr_send').hide();
 			}
 			return false;
 		});
