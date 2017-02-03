@@ -413,6 +413,7 @@
 							,WD.WD_ID
 							,IF(PL.Pay < 0, '-', '') Sign
 							,IF(PL.Archive = 1, 'pl-archive', '') Archive
+							,PL.bank
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
 						WHERE DATEDIFF(NOW(), PL.ManDate) <= {$datediff} AND PL.Pay <> 0";
@@ -428,8 +429,9 @@
 				echo "<td>{$row["ManDate"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'><span><a href='?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>";
 				if ($row["Sign"] == '-') {
+					$bank = $row["bank"] ? ' <i title="Безнал" class="fa fa-credit-card" aria-hidden="true"></i>' : '';
 					echo "<td></td>";
-					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
+					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}{$bank}</td>";
 				}
 				else {
 					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
@@ -457,7 +459,7 @@
 				echo "{$row["Comment"]}</span></td>";
 				echo "<td".( (strpos($row["Link"],"ODS") === 0 and $confirmed) ? " class='td_step step_confirmed'" : "" ).">";
 				if ($row["Link"] == '') {
-					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' {$row["ManDate"]} class='edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
+					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' bank='{$row["bank"]}' class='edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
 				}
 				if( strpos($row["Link"],"ODS") === 0 ) { // Если запись из этапов производства - редактируем
 					if( $step == '0' ) {
