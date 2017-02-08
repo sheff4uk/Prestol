@@ -18,12 +18,13 @@ else {
 }
 ?>
 <form>
-	<label for="year">Год:</label>
 	<script>
 		$( document ).ready(function() {
 			$("#year option[value='<?=$year?>']").prop('selected', true);
+			$("#payer option[value='<?=$_GET["payer"]?>']").prop('selected', true);
 		});
 	</script>
+	<label for="year">Год:</label>
 	<select name="year" id="year" onchange="this.form.submit()">
 <?
 	$query = "SELECT year FROM PrintForms WHERE IFNULL(summa, 0) > 0 GROUP BY year
@@ -32,6 +33,18 @@ else {
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
 		echo "<option value='{$row["year"]}'>{$row["year"]}</option>";
+	}
+?>
+	</select>
+	&nbsp;&nbsp;
+	<label for="payer">Плательщик:</label>
+	<select name="payer" id="payer" onchange="this.form.submit()">
+		<option></option>
+<?
+	$query = "SELECT KA_ID, Naimenovanie FROM Kontragenty ORDER BY count DESC";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) ) {
+		echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]}</option>";
 	}
 ?>
 	</select>
@@ -62,7 +75,7 @@ $query = "SELECT PF_ID
 			LEFT JOIN Cities CT ON CT.CT_ID = PF.CT_ID
 			LEFT JOIN Users USR ON USR.USR_ID = PF.USR_ID
 			LEFT JOIN Kontragenty KA ON KA.KA_ID = PF.platelshik_id
-			WHERE IFNULL(PF.summa, 0) > 0 AND year = {$year}".(in_array('print_forms_view_autor', $Rights) ? " AND PF.USR_ID = {$_SESSION['id']}" : ""). "
+			WHERE IFNULL(PF.summa, 0) > 0 AND year = {$year}".(in_array('print_forms_view_autor', $Rights) ? " AND PF.USR_ID = {$_SESSION['id']}" : "").($_GET["payer"] ? " AND KA.KA_ID = {$_GET["payer"]}" : "")."
 			ORDER BY PF.PF_ID DESC";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {

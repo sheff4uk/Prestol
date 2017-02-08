@@ -108,7 +108,6 @@
 	$ostatok = mysqli_result($res,0,'ostatok');
 	$format_ostatok = number_format($ostatok, 0, '', ' ');
 	$now_date = date('d.m.Y');
-
 ?>
 
 <div style="width: 1000px; margin: auto;">
