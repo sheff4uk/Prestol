@@ -129,7 +129,8 @@
 						,CT.City
 				FROM OrdersPayment OP
 				JOIN Cities CT ON CT.CT_ID = OP.CT_ID
-				WHERE send = 1 AND payment_sum < 0";
+				WHERE send = 1 AND payment_sum < 0
+				ORDER BY OP.payment_date DESC";
 
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
