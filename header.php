@@ -102,7 +102,7 @@
 			// Календарь
 			$( "input.date" ).datepicker({
 				dateFormat: 'dd.mm.yy',
-				onClose: function( selectedDate ) {
+				onSelect: function( selectedDate ) {
 					if( $(this).hasClass( "from" ) ) {
 						$(this).parents( "form" ).find( ".to" ).datepicker( "option", "minDate", selectedDate );
 					}
@@ -218,6 +218,9 @@
 		}
 		if( in_array('screen_paylog', $Rights) ) {
 			$menu["Платежи"] = "paylog.php";
+		}
+		if( in_array('screen_paylog', $Rights) ) {
+			$menu["Касса"] = "cash.php";
 		}
 		$menu["Выход (".$_SESSION['name'].")"] = "exit.php";
 //		$menu = array ("Материалы" => "materials.php"

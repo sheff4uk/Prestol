@@ -127,7 +127,9 @@
 
 		if( $OP_ID != '' ) { // Редактируем расход
 			$query = "UPDATE OrdersPayment SET cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send} WHERE OP_ID = {$OP_ID}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			if( !mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["alert"] = mysqli_error( $mysqli );
+			}
 		}
 		else { // Добавляем расход
 			if( $cost ) {
@@ -501,7 +503,7 @@ else {
 					echo "<td title='№ упаковки'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b></td>";
 					echo "<td>{$row["payment_date"]}</td>";
 					echo "<td class='nowrap'>{$row["terminal_payer"]}</td>";
-					echo "<td class='txtright'>{$format_sum}</td>";
+					echo "<td class='txtright'><b>{$format_sum}</b></td>";
 					echo "</tr>";
 				}
 				$format_terminal_sum = number_format($terminal_sum, 0, '', ' ');
@@ -540,7 +542,7 @@ else {
 					echo "<tr>";
 					echo "<td>{$cache_name}</td>";
 					echo "<td>{$row["payment_date_short"]}</td>";
-					echo "<td class='txtright'>{$format_sum}</td>";
+					echo "<td class='txtright'><b>{$format_sum}</b></td>";
 					echo "<td>";
 						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
 							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='+' title='Изменить приход'><i class='fa fa-pencil fa-lg'></i></a>";
@@ -584,11 +586,11 @@ else {
 						$sum_cost = $sum_cost + $row["payment_sum"];
 						$format_cost = number_format($row["payment_sum"], 0, '', ' ');
 						$cost_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : $row["cost_name"];
-						$send = $row["send"] ? '<i class="fa fa-arrow-circle-right" aria-hidden="true" title="Отправка наличных с курьером"></i> ' : '';
+						$send = $row["send"] ? '<i class="fa fa-arrow-circle-right fa-lg" aria-hidden="true" title="Отправка наличных с курьером"></i> ' : '';
 						echo "<tr>";
 						echo "<td>{$send}{$cost_name}</td>";
 						echo "<td>{$row["payment_date_short"]}</td>";
-						echo "<td class='txtright'>{$format_cost}</td>";
+						echo "<td class='txtright'><b>{$format_cost}</b></td>";
 						echo "<td>";
 						if( $locking == 0 and $row["Code"] == '' and $row["send"] != 2 ) { // Если месяц не закрыт
 							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='-' send='{$row["send"]}' title='Изменить расход'><i class='fa fa-pencil fa-lg'></i></a>";
@@ -607,55 +609,6 @@ else {
 					</tr>
 				</thead>
 			</table>
-
-			<div style="display: inline-block; vertical-align:top;">
-			<?
-//				// Вычисляем дебиторку
-//				$query = "SELECT SUM(OP.payment_sum) payment_sum
-//							FROM OrdersData OD
-//							JOIN OrdersPayment OP ON OP.OD_ID = OD.OD_ID
-//							WHERE OD.Del = 0 AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID}";
-//				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//				$month_payment_sum = mysqli_result($res,0,'payment_sum');
-//				$format_debt = number_format($city_price - $city_discount - $month_payment_sum, 0, '', ' ');
-
-//				$format_last_ostatok = number_format($last_ostatok, 0, '', ' ');
-//				$format_cache_sum = number_format($cache_sum, 0, '', ' ');
-//				$ostatok = $cache_sum + $last_ostatok - $sum_cost;
-//				$format_ostatok = number_format($ostatok, 0, '', ' ');
-
-//				// Узнаем приход за месяц
-//				$query = "SELECT IFNULL(pay_in, 0) pay_in, IFNULL(pay_out, 0) pay_out FROM OstatkiShops WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month = {$_GET["month"]}";
-//				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//				if( mysqli_num_rows($res) ) {
-//					$pay_in = mysqli_result($res,0,'pay_in');
-//					$pay_out = mysqli_result($res,0,'pay_out');
-//				}
-//				else {
-//					$pay_in = 0;
-//					$pay_out = 0;
-//				}
-//				$format_pay_in = number_format($pay_in, 0, '', ' ');
-
-//				echo "<table><thead>";
-//				echo "<tr><th class='txtleft'>Дебиторка {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</th><th class='txtright'>{$format_debt}</th></tr>";
-//				echo "<tr><th class='txtleft'>Приход наличных:</th><th class='txtright'>{$format_pay_in}</th></tr>";
-//				echo "<tr><th class='txtleft'>Остаток {$MONTHS[$lastmonth]} {$lastyear}:</th><th class='txtright'>{$format_last_ostatok}</th></tr>";
-//				echo "<tr><th class='txtleft'>Остаток {$MONTHS[$_GET["month"]]} {$_GET["year"]}:</th><th class='txtright'>{$format_ostatok}</th></tr>";
-//				echo "</thead></table><br><br>";
-			?>
-<!--
-			<script>
-				$('#locking_form').ready(function() {
-					if( <?=$locking_next?> == 1 ) {
-						$('#locking_form img').css('display', 'inline-block');
-						$('#locking_form input').prop('disabled', true);
-						$('#locking_form button').button( "option", "disabled", true );
-					}
-				});
-			</script>
--->
-			</div>
 		</div>
 	<?
 		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100% - 400px)'); $('#MT_header').css('margin-top','210px'); }); </script>";
