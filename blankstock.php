@@ -263,8 +263,6 @@
 		</table>
 	</div>
 
-</body>
-</html>
 <script>
 	$(document).ready(function() {
 		// Форма добавления заготовок
@@ -302,3 +300,7 @@
 		});
 	});
 </script>
+
+<?
+	include "footer.php";
+?>

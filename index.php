@@ -980,8 +980,6 @@
 	</div>
 	</form>
 </div>
-</body>
-</html>
 
 <?
 	// Генерируем Select2 для фильтра материалов
@@ -1335,3 +1333,7 @@
 		odb = <?= json_encode($ODB) ?>;
 	});
 </script>
+
+<?
+	include "footer.php";
+?>

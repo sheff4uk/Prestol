@@ -477,5 +477,6 @@
 		</table>
 	</div>
 
-</body>
-</html>
+<?
+	include "footer.php";
+?>

@@ -227,5 +227,7 @@
 			echo "</p>";
 		}
 ?>
-</body>
-</html>
+
+<?
+	include "footer.php";
+?>

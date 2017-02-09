@@ -127,7 +127,7 @@
 	</div>
 	</form>
 </div>
-</body>
+
 <script>
 	function set_target(action, target) {
 		//if target is not empty form is submitted into a new window
@@ -274,4 +274,7 @@ $(document).ready(function() {
 ?>
 });
 </script>
-</html>
+
+<?
+	include "footer.php";
+?>

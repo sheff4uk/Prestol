@@ -646,4 +646,6 @@ function set_target(action, target) {
 }
 </script>
 
-</body></html>
+<?
+	include "footer.php";
+?>

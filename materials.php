@@ -507,9 +507,6 @@
 	<input type='submit' value='Применить'>
 	</form>
 
-</body>
-</html>
-
 <script>
 	$(document).ready(function(){
 
@@ -657,3 +654,7 @@
 		odb = <?= json_encode($ODB) ?>;
 	});
 </script>
+
+<?
+	include "footer.php";
+?>

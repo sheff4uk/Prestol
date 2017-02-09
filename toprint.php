@@ -47,11 +47,13 @@
     <div class="printlist">
 		<p><a class='button btnPrint' href='toprint/other.php'>Лакировка+Обивка+Упаковка</a></p>
 	</div>
-</body>
-</html>
 
 <script>
 	$(document).ready(function() {
 		$(".btnPrint").printPage();
 	});
 </script>
+
+<?
+	include "footer.php";
+?>

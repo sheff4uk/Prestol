@@ -802,8 +802,6 @@ if( $id != "NULL" ) {
 	</form>
 </div>
 <!-- Конец формы добавления сообщения к заказу -->
-</body>
-</html>
 
 <script>
 	$(document).ready(function(){
@@ -947,3 +945,7 @@ if( $id != "NULL" ) {
 		$( "input.to" ).datepicker( "option", "minDate", "<?=$StartDate?>" );
 	});
 </script>
+
+<?
+	include "footer.php";
+?>

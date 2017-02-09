@@ -339,3 +339,7 @@
 		});
 	});
 </script>
+
+<?
+	include "footer.php";
+?>

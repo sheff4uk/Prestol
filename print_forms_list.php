@@ -97,3 +97,7 @@ while( $row = mysqli_fetch_array($res) ) {
 ?>
 	</tbody>
 </table>
+
+<?
+	include "footer.php";
+?>

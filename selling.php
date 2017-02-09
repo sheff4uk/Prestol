@@ -1168,3 +1168,7 @@ else {
 		});
 	});
 </script>
+
+<?
+	include "footer.php";
+?>
