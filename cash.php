@@ -152,21 +152,24 @@
 
 	<div style="text-align: center; margin: 10px;">
 		<p><b>Период (включительно):</b></p>
-		<form method="post">
-			<input type="text" name="cash_from" class="date from" value="<?=$cash_from?>" title="Начальная дата">
-			&nbsp;&nbsp;-&nbsp;&nbsp;
-			<input type="text" name="cash_to" class="date to" value="<?=$cash_to?>" title="Конечная дата">
+		<form method="post" style="font-weight: bold;">
+			[
+			<input type="text" name="cash_from" class="date from" value="<?=$cash_from?>">
+			&nbsp;&ndash;&nbsp;
+			<input readonly type="text" name="cash_to" class="date to" value="<?=$cash_to?>">
+			 ]
 		</form>
 	</div>
 
 	<div style="position: relative;">
 		<div style="width: 49%; position: absolute; left: 0;">
-		<table style="width: 100%;">
+		<table style="width: 100%;" class="main_table">
 			<thead>
 				<tr>
-					<th>ПРИХОД наличных:</th>
-					<th colspan="2" class='txtright' id=cash_in></th>
-					<th><a href="#" class="add_cost_btn" cost_date="<?=$now_date?>" sign="+" title="Внести приход"><i class="fa fa-plus-square fa-2x" style="color: green;"></i></a></th>
+					<th width="300">ПРИХОД наличных:</th>
+					<th width="80"></th>
+					<th width="80" class='txtright' id=cash_in></th>
+					<th width="30"><a href="#" class="add_cost_btn" cost_date="<?=$now_date?>" sign="+" title="Внести приход"><i class="fa fa-plus-square fa-2x" style="color: green;"></i></a></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -189,7 +192,7 @@
 					$cash_in = $cash_in + $row["payment_sum"];
 					$payment_sum = number_format($row["payment_sum"], 0, '', ' ');
 					echo "<tr>";
-					echo "<td>{$row["cost_name"]}</td>";
+					echo "<td><span class='nowrap'>{$row["cost_name"]}</span></td>";
 					echo "<td>{$row["payment_date"]}</td>";
 					echo "<td class='txtright'><b>{$payment_sum}</b></td>";
 					if( $row["is_edit"] ) {
@@ -207,12 +210,13 @@
 		</div>
 
 		<div style="width: 49%; position: absolute; right: 0;">
-		<table style="width: 100%;">
+		<table style="width: 100%;" class="main_table">
 			<thead>
 				<tr>
-					<th>РАСХОД наличных:</th>
-					<th colspan="2" class='txtright' id='cash_out'></th>
-					<th><a href="#" class="add_cost_btn" cost_date="<?=$now_date?>" sign="-" title="Внести расход"><i class="fa fa-minus-square fa-2x" style="color: red;"></i></a></th>
+					<th width="300">РАСХОД наличных:</th>
+					<th width="80"></th>
+					<th width="80" class='txtright' id='cash_out'></th>
+					<th width="30"><a href="#" class="add_cost_btn" cost_date="<?=$now_date?>" sign="-" title="Внести расход"><i class="fa fa-minus-square fa-2x" style="color: red;"></i></a></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -233,7 +237,7 @@
 					$cash_out = $cash_out + $row["payment_sum"];
 					$payment_sum = number_format($row["payment_sum"], 0, '', ' ');
 					echo "<tr>";
-					echo "<td>{$row["cost_name"]}</td>";
+					echo "<td><span class='nowrap'>{$row["cost_name"]}</span></td>";
 					echo "<td>{$row["payment_date"]}</td>";
 					echo "<td class='txtright'><b>{$payment_sum}</b></td>";
 					if( $row["is_edit"] ) {
@@ -288,6 +292,10 @@
 		// Сабмитаем форму выбора периода при изменении даты
 		$( "input.date.from, input.date.to" ).datepicker( 'option', 'onClose', function(date) { $(this).parent('form').submit(); } );
 
+		// Ограничиваем период вибора дат для фильтрации
+		$( "input.date.from, input.date.to" ).datepicker( "option", "minDate", "<?=( date('d.m.Y', mktime(0, 0, 0, date("m")-1, 1, date("Y"))) )?>" );
+		$( "input.date.from, input.date.to" ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
+
 		// Кнопка добавления/редактирования расхода
 		$('.add_cost_btn').click( function() {
 			var sign = $(this).attr('sign');
@@ -317,6 +325,8 @@
 				hide: 'explode',
 				closeText: 'Закрыть'
 			});
+
+			$( "#cost_date" ).datepicker( "option", "minDate", "<?=( date('d.m.Y', mktime(0, 0, 0, date("m")-1, 1, date("Y"))) )?>" );
 			$( "#cost_date" ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
 
 			if (sign == '-') {
