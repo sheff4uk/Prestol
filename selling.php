@@ -611,7 +611,7 @@ else {
 			</table>
 		</div>
 	<?
-		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100% - 400px)'); $('#MT_header').css('margin-top','210px'); }); </script>";
+		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100vh - 430px)'); $('#MT_header').css('margin-top','210px'); }); </script>";
 	}
 	?>
 
