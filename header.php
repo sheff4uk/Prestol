@@ -106,7 +106,7 @@
 			// Календарь
 			$( "input.date" ).datepicker({
 				dateFormat: 'dd.mm.yy',
-				onSelect: function( selectedDate ) {
+				onClose: function( selectedDate ) {
 					if( $(this).hasClass( "from" ) ) {
 						$(this).parents( "form" ).find( ".to" ).datepicker( "option", "minDate", selectedDate );
 					}
