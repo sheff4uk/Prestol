@@ -213,7 +213,7 @@
 				die('Недостаточно прав для совершения операции');
 			}
 
-			echo "<h3>Отгрузка на <span style='background: {$Color};'>{$City}</span>".($shp_title != '' ? ' ('.$shp_title.')' : '')."</h3>";
+			echo "<h3 style='margin: 10px 0;'>Отгрузка на <span style='background: {$Color};'>{$City}</span>".($shp_title != '' ? ' ('.$shp_title.')' : '')."</h3>";
 
 			if( in_array('add_shipment', $Rights) ) {
 				echo "<div id='wr_shipping_date'><form method='post'><label>Отгрузка состоялась: <input type='text' name='shipping_date' value='{$shipping_date}' class='date'></label><button style='margin-left: 10px;'>Сoхранить</button>";
