@@ -589,15 +589,16 @@ td.tscell > i {
 }
 
 #print_tbl {
-	height: calc(100% - 150px);
+	height: calc(100vh - 175px);
 }
 
 .wr_main_table_body {
-	height: calc(100% - 200px);
-	position: absolute;
+	height: calc(100vh - 220px);
+//	position: absolute;
 	overflow-y: scroll;
 	background: #fff;
 	overflow-x: hidden;
+	margin-right: -15px;
 }
 
 #copy_link {

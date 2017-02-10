@@ -161,8 +161,8 @@
 		</form>
 	</div>
 
-	<div style="position: relative;">
-		<div style="width: 49%; position: absolute; left: 0;">
+	<div style="display: flex;">
+		<div style="width: 49%; margin-right: 20px;">
 		<table style="width: 100%;" class="main_table">
 			<thead>
 				<tr>
@@ -209,7 +209,7 @@
 		</table>
 		</div>
 
-		<div style="width: 49%; position: absolute; right: 0;">
+		<div style="width: 49%;">
 		<table style="width: 100%;" class="main_table">
 			<thead>
 				<tr>
