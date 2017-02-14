@@ -194,7 +194,7 @@
 	<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>
 	<table>
 		<thead>
-		<tr>
+		<tr class="nowrap">
 			<th></th>
 			<th>Материал</th>
 			<th>Поставщик</th>
@@ -204,11 +204,7 @@
 			<th>Работник</th>
 			<th>Заказ</th>
 			<th>Цвет</th>
-			<th>Заказчик</th>
-			<th>Дата продажи</th>
-			<th>Дата сдачи</th>
-			<th>Салон</th>
-			<th>№ квитанции</th>
+			<th>Заказчик<br>Дата продажи - Дата сдачи<br>Салон (№ квитанции)</th>
 			<th>Примечание</th>
 		</tr>
 		</thead>
@@ -384,11 +380,16 @@
 				echo "<td></td>";
 				break;
 		}
-		echo "<td>{$row["ClientName"]}</td>";
-		echo "<td>{$row["StartDate"]}</td>";
-		echo "<td><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></td>";
-		echo "<td style='background: {$row["CTColor"]};'>{$row["Shop"]}</td>";
-		echo "<td>{$row["OrderNumber"]}</td>";
+//		echo "<td>{$row["ClientName"]}</td>";
+//		echo "<td>{$row["StartDate"]}</td>";
+//		echo "<td><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></td>";
+//		echo "<td style='background: {$row["CTColor"]};'>{$row["Shop"]}</td>";
+//		echo "<td>{$row["OrderNumber"]}</td>";
+		echo "<td style='background: {$row["CTColor"]};' class='nowrap'>";
+		echo "{$row["ClientName"]}<br>";
+		echo "{$row["StartDate"]} - <span class='{$row["Deadline"]}'>{$row["EndDate"]}</span><br>";
+		echo "{$row["Shop"]} ({$row["OrderNumber"]})<br>";
+		echo "</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "</tr>";
 
