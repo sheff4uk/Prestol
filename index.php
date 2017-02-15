@@ -190,7 +190,7 @@
 		die;
 	}
 ?>
-	
+
 	<div id="overlay"></div>
 	<? include "forms.php"; ?>
 
@@ -333,7 +333,7 @@
 				</div>
 				<div>
 					<label>Салон:</label>
-					<select required name='Shop' style="width: 150px;">
+					<select required name='Shop' style="width: 300px;">
 						<option value="">-=Выберите салон=-</option>
 						<option value="0" style="background: #999;">Свободные</option>
 						<?
@@ -1073,6 +1073,16 @@
 	}
 
 	$(document).ready(function(){
+
+		// Select2 для выбора салона
+		$('select[name="Shop"]').select2({
+			placeholder: "Выберите салон",
+			language: "ru"
+		});
+		// Костыль для Select2 чтобы работал поиск
+//		$.ui.dialog.prototype._allowInteraction = function (e) {
+//			return true;
+//		};
 
 		// Фильтр по материалам (инициализация)
 		$('#MT_filter > div > select').html('<?=$MT_filter?>');

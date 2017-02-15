@@ -365,7 +365,7 @@
 					,OD.Color
 					,OD.IsPainting
 					,OD.Comment
-					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
+					,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
 					,OD.confirmed
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -390,7 +390,8 @@
 			<td><input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>'></td>
 			<td><input type='text' name='StartDate' class='date from' value='<?=$StartDate?>' date='<?=$StartDate?>'></td>
 			<td><input type='text' name='EndDate' class='date to' value='<?=$EndDate?>'></td>
-			<td style='background: <?=$CTColor?>;'>
+			<td>
+				<div style='box-shadow: 0px 0px 5px 5px <?=$CTColor?>;'>
 				<select required name='Shop'>
 					<option value="">-=Выберите салон=-</option>
 					<option value="0" selected style="background: #999;">Свободные</option>
@@ -406,10 +407,11 @@
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) )
 					{
-						echo "<option value='{$row["SH_ID"]}' {$row["selected"]} style='background: {$row["CTColor"]};'>{$row["Shop"]}</option>";
+						echo "<option value='{$row["SH_ID"]}' {$row["selected"]} style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
 					}
 					?>
 				</select>
+				</div>
 			</td>
 			<td><input type='text' name='OrderNumber' style='width: 90px;' value='<?=$OrderNumber?>'></td>
 			<td><input required type='text' class='colortags' name='Color' style='width: 160px;' value='<?=$Color?>' autocomplete='off'></td>
@@ -805,6 +807,12 @@ if( $id != "NULL" ) {
 
 <script>
 	$(document).ready(function(){
+		// Select2 для выбора салона
+		$('select[name="Shop"]').select2({
+			placeholder: "Выберите салон",
+			language: "ru"
+		});
+
 		// Отмечаем письмо как прочитанное аяксом
 		$('.read_message_btn').click(function() {
 			var id = $(this).attr('id');

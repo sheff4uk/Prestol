@@ -30,7 +30,7 @@
 		<div>
 			<label>Модель:</label>
 			<input type='hidden' id='Model'>
-			<select name='Model' required>
+			<select name='Model' required style="width: 300px;">
 			<?
 				echo "<option value=''>-=Выберите модель=-</option>";
 				$query = "SELECT * FROM ProductModels WHERE PT_ID = 1 ORDER BY Model";
@@ -127,7 +127,7 @@
 		</div>
 		<div>
 			<label>Модель:</label>
-			<select name="Model">
+			<select name="Model" style="width: 300px;">
 			<?
 				echo "<option value=''>-=Выберите модель=-</option>";
 				$query = "SELECT * FROM ProductModels WHERE PT_ID = 2 ORDER BY Model";
@@ -255,7 +255,7 @@
 			</div>
 			<div>
 				<label>Заготовка:</label>
-				<select required name="Blanks">
+				<select required name="Blanks" style="width: 300px;">
 					<option value="">-=Выберите заготовку=-</option>
 					<optgroup label="Стулья">
 						<?
@@ -388,3 +388,21 @@
 	</form>
 </div>
 <!-- Конец формы разбитя заказа -->
+
+<script>
+	$(document).ready(function() {
+		// Select2
+		$('select[name="Model"]').select2({
+			placeholder: "Выберите модель",
+			language: "ru"
+		});
+		$('select[name="Blanks"]').select2({
+			placeholder: "Выберите заготовку",
+			language: "ru"
+		});
+		// Костыль для Select2 чтобы работал поиск
+		$.ui.dialog.prototype._allowInteraction = function (e) {
+			return true;
+		};
+	});
+</script>
