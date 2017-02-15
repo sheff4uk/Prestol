@@ -510,6 +510,12 @@
 
 <script>
 	$(document).ready(function(){
+		// Расстановка tabindex для метража
+		var tabindex = 0;
+		$('.footage').each(function() {
+			tabindex = tabindex + 1;
+			$(this).attr('tabindex', tabindex);
+		});
 
 		new Clipboard('#copy-button'); // Копирование материалов в буфер
 		$("#copy-button").click(function() {
@@ -561,7 +567,7 @@
 			$('select[name="WD_ID"] option').removeAttr('selected');
 		});
 
-		$('.footage').on('blur', function() {
+		$('.footage').on('change', function() {
 			var val = $(this).val();
 			var oddid = $(this).attr('oddid');
 			var odbid = $(this).attr('odbid');
