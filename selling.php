@@ -226,6 +226,12 @@
 		margin-right: 20px;
 		transition: .3s;
 	}
+	#accordion a {
+		color: #428bca !important;
+	}
+	#accordion a:hover {
+		color: #D65C4F !important;
+	}
 </style>
 
 <form method="get" style="display: inline-block;">
@@ -257,8 +263,13 @@
 	if( $CT_ID ) {
 ?>
 <h3 style="display: inline-block; margin: 10px 20px;">Остаток наличных: <?=$format_ostatok?></h3>
+<!--
 <a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='+' CT_ID='<?=$CT_ID?>' title='Внести приход'><i class='fa fa-plus-square fa-2x' style='color: green;'></i></a>
 <a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='-' CT_ID='<?=$CT_ID?>' title='Внести расход'><i class='fa fa-minus-square fa-2x' style='color: red;'></i></a>
+-->
+<a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='+' CT_ID='<?=$CT_ID?>' title='Внести приход'><i class='fa fa-plus fa-lg' style='color: white; background: green; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>
+<a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='-' CT_ID='<?=$CT_ID?>' title='Внести расход'><i class='fa fa-minus fa-lg' style='color: white; background: red; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>
+<a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='' CT_ID='<?=$CT_ID?>' title='Внести отправку денег'><i class='fa fa-exchange fa-lg' style="color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;"></i></a>
 <?
 				 }
 else {
@@ -517,7 +528,10 @@ else {
 				</thead>
 			</table>
 
-			<table>
+		<div id="accordion" style="display: inline-block; width: 400px;">
+			<h3 id="section1"></h3>
+			<div>
+			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
 				<?
 					$cache_sum = 0;
@@ -538,12 +552,12 @@ else {
 				while( $row = mysqli_fetch_array($res) ) {
 					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 					$cache_sum = $cache_sum + $row["payment_sum"];
-					$cache_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : $row["cost_name"];
+					$cache_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : "<span>{$row["cost_name"]}</span>";
 					echo "<tr>";
-					echo "<td>{$cache_name}</td>";
-					echo "<td>{$row["payment_date_short"]}</td>";
-					echo "<td class='txtright'><b>{$format_sum}</b></td>";
-					echo "<td>";
+					echo "<td width='240'>{$cache_name}</td>";
+					echo "<td width='49'>{$row["payment_date_short"]}</td>";
+					echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
+					echo "<td width='22'>";
 						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
 							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='+' title='Изменить приход'><i class='fa fa-pencil fa-lg'></i></a>";
 						}
@@ -553,16 +567,54 @@ else {
 				$format_cache_sum = number_format($cache_sum, 0, '', ' ');
 				?>
 				</tbody>
-				<thead>
-					<tr>
-						<th colspan='2' class='nowrap'>ПРИХОД наличных:</th>
-						<th class="txtright"><?=$format_cache_sum?></th>
-						<th></th>
-					</tr>
-				</thead>
 			</table>
+			</div>
 
-			<table>
+			<h3 id="section2"></h3>
+			<div>
+			<table class="main_table" style="margin: 0; display: table;">
+				<tbody>
+				<?
+					$query = "SELECT OP.OP_ID
+									,DATE_FORMAT(OP.payment_date, '%d.%m') payment_date_short
+									,DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
+									,OP.cost_name
+									,ABS(OP.payment_sum) payment_sum
+									,OD.Code
+									,YEAR(OD.StartDate) year
+									,MONTH(OD.StartDate) month
+									,OD.OD_ID
+								FROM OrdersPayment OP
+								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
+								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NULL
+								ORDER BY OP.payment_date DESC";
+
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					$sum_cost = 0;
+					while( $row = mysqli_fetch_array($res) ) {
+						$sum_cost = $sum_cost + $row["payment_sum"];
+						$format_cost = number_format($row["payment_sum"], 0, '', ' ');
+						$cost_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : "<span>{$row["cost_name"]}</span>";
+						echo "<tr>";
+						echo "<td width='240'>{$cost_name}</td>";
+						echo "<td width='49'>{$row["payment_date_short"]}</td>";
+						echo "<td width='70' class='txtright'><b>{$format_cost}</b></td>";
+						echo "<td width='22'>";
+						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
+							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='-' title='Изменить расход'><i class='fa fa-pencil fa-lg'></i></a>";
+						}
+						echo "</td>";
+						echo "</tr>";
+					}
+					$format_sum_cost = number_format($sum_cost, 0, '', ' ');
+				?>
+				</tbody>
+			</table>
+			</div>
+
+			<h3 id="section3">Section 3</h3>
+			<div>
+			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
 				<?
 					$query = "SELECT OP.OP_ID
@@ -577,41 +629,35 @@ else {
 									,send
 								FROM OrdersPayment OP
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL
+								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NOT NULL
 								ORDER BY OP.payment_date DESC";
 
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					$sum_cost = 0;
+					$sum_send = 0;
 					while( $row = mysqli_fetch_array($res) ) {
-						$sum_cost = $sum_cost + $row["payment_sum"];
+						$sum_send = $sum_send + $row["payment_sum"];
 						$format_cost = number_format($row["payment_sum"], 0, '', ' ');
-						$cost_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : $row["cost_name"];
-						$send = $row["send"] ? '<i class="fa fa-arrow-circle-right fa-lg" aria-hidden="true" title="Отправка наличных с курьером"></i> ' : '';
+						$cost_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : "<span>{$row["cost_name"]}</span>";
 						echo "<tr>";
-						echo "<td>{$send}{$cost_name}</td>";
-						echo "<td>{$row["payment_date_short"]}</td>";
-						echo "<td class='txtright'><b>{$format_cost}</b></td>";
-						echo "<td>";
+						echo "<td width='240'>{$cost_name}</td>";
+						echo "<td width='49'>{$row["payment_date_short"]}</td>";
+						echo "<td width='70' class='txtright'><b>{$format_cost}</b></td>";
+						echo "<td width='22'>";
 						if( $locking == 0 and $row["Code"] == '' and $row["send"] != 2 ) { // Если месяц не закрыт
-							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='-' send='{$row["send"]}' title='Изменить расход'><i class='fa fa-pencil fa-lg'></i></a>";
+							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='' send='{$row["send"]}' title='Изменить отправку'><i class='fa fa-pencil fa-lg'></i></a>";
 						}
 						echo "</td>";
 						echo "</tr>";
 					}
-					$format_sum_cost = number_format($sum_cost, 0, '', ' ');
+					$format_sum_send = number_format($sum_send, 0, '', ' ');
 				?>
 				</tbody>
-				<thead>
-					<tr>
-						<th colspan="2" class="nowrap">РАСХОД наличных:</th>
-						<th class="txtright"><?=$format_sum_cost?></th>
-						<th></th>
-					</tr>
-				</thead>
 			</table>
+			</div>
 		</div>
+	</div>
 	<?
-		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100vh - 430px)'); $('#MT_header').css('margin-top','210px'); }); </script>";
+		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100vh - 430px)'); $('#MT_header').css('margin-top','210px'); $('#section1').html('ПРИХОД наличных: {$format_cache_sum}'); $('#section2').html('РАСХОД наличных: {$format_sum_cost}'); $('#section3').html('ОТПРАВКА наличных: {$format_sum_send}'); }); </script>";
 	}
 	?>
 
@@ -851,9 +897,9 @@ else {
 			<div style="width: 230px; display: inline-block; margin-right: 15px; vertical-align: top;">
 				<label for="cost_name">Наименование:</label><br>
 				<input type="text" name="cost_name" id="cost_name" style="width: 100%;">
-				<div id="wr_send" style="display: inline-block;">
+				<div id="wr_send" style="display: none">
 					<input type="checkbox" name="send" id="send" value="1">
-					<label for="send">Отправка наличных с курьером</label>
+					<label for="send">Отправка наличных</label>
 				</div>
 			</div>
 			<div style="width: 90px; display: inline-block; margin-right: 15px; vertical-align: top;">
@@ -908,6 +954,12 @@ else {
 
 <script>
 	$(document).ready(function() {
+		$( "#accordion" ).accordion({
+			active: false,
+			collapsible: true,
+			heightStyle: "content"
+		});
+
 		//$('.wr_main_table_body').show('slow');
 		$('.wr_main_table_body').css('display', 'block');
 
@@ -1068,7 +1120,6 @@ else {
 			// Очистка диалога
 			$('#add_cost #OP_ID').val('');
 			$('#add_cost #CT_ID').val('');
-			$('#add_cost #sign').val(sign);
 			$('#add_cost #cost_name').val('');
 			$('#add_cost #cost_date').val(cost_date);
 			$('#add_cost #cost').val('');
@@ -1103,11 +1154,16 @@ else {
 
 			if (sign == '-') {
 				$('#add_cost').dialog('option', 'title', 'РАСХОД');
-				$('#wr_send').show();
+				$('#add_cost #sign').val(sign);
+			}
+			else if (sign == '+') {
+				$('#add_cost').dialog('option', 'title', 'ПРИХОД');
+				$('#add_cost #sign').val(sign);
 			}
 			else {
-				$('#add_cost').dialog('option', 'title', 'ПРИХОД');
-				$('#wr_send').hide();
+				$('#add_cost').dialog('option', 'title', 'ОТПРАВКА ДЕНЕГ');
+				$('#wr_send input').prop('checked', true);
+				$('#add_cost #sign').val('-');
 			}
 			return false;
 		});
