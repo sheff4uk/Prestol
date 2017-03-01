@@ -930,7 +930,7 @@ case "footage":
 	$odbid = $_GET["odbid"];
 	$val = $_GET["val"] ? $_GET["val"] : "NULL";
 
-	if( $oddid ) {
+	if( $oddid != 'undefined' ) {
 		$query = "UPDATE OrdersDataDetail SET MT_amount = {$val} WHERE ODD_ID = {$oddid}";
 	}
 	else {
