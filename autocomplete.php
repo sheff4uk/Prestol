@@ -105,9 +105,11 @@ case "price":
 					FROM OrdersDataDetail ODD
 					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = {$_GET["retail"]}
-					WHERE ODD.Price IS NOT NULL AND ODD.PM_ID = {$_GET["PM_ID"]} AND ODD.PME_ID {$mechanism} AND DATEDIFF(NOW(),OD.AddDate) <= 60
+					WHERE ODD.Price IS NOT NULL AND ODD.PM_ID = {$_GET["PM_ID"]} AND ODD.PME_ID {$mechanism}
+					#AND DATEDIFF(NOW(),OD.AddDate) <= 60
 					GROUP BY ODD.Price, ODD.Length, ODD.Width, ODD.PieceAmount, ODD.PieceSize, ODD.PME_ID
-					ORDER BY MAX(ODD.ODD_ID) DESC";
+					ORDER BY MAX(ODD.ODD_ID) DESC
+					LIMIT 8";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) )
 		{
