@@ -255,7 +255,7 @@
 
 <?
 	// Узнаем общий остаток наличных
-	$query = "SELECT SUM(pay_in) - SUM(pay_out) ostatok FROM `OstatkiShops` WHERE CT_ID = {$CT_ID}";
+	$query = "SELECT SUM(IFNULL(pay_in,0)) - SUM(IFNULL(pay_out,0)) ostatok FROM `OstatkiShops` WHERE CT_ID = {$CT_ID}";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$ostatok = mysqli_result($res,0,'ostatok');
 	$format_ostatok = number_format($ostatok, 0, '', ' ');
