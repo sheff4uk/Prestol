@@ -194,6 +194,10 @@
 	<div id="overlay"></div>
 	<? include "forms.php"; ?>
 
+	<div style="position: absolute; top: 75px; width: 300px; left: calc(50% - 150px); font-size: 16px; text-align: center;">
+		Найдено <b id="counter"></b> результатов.
+	</div>
+
 	<?
 	if( isset($_GET["shpid"]) ) {
 		$query = "SELECT SHP.title, CT.CT_ID, CT.City, CT.Color, DATE_FORMAT(SHP.shipping_date, '%d.%m.%Y') shipping_date
@@ -659,6 +663,7 @@
 
 	$is_orders_ready = 1;	// Собираем готовые заказы чтобы можно ставить дату отгрузки (когда все готовы должна получиться 1)
 	$orders_count = 0;		// Счетчик готовых заказов
+	$counter = 0;			// Счетчик видимых заказов
 	$orders_IDs = "0";		// Список ID заказов для Select2 материалов
 
 	$query = "SELECT OD.OD_ID
@@ -892,6 +897,8 @@
 			echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
 		}
 
+		$counter++;
+
 		echo "<action>";
 		if( $row["Child"] ) // Если заказ не пустой
 		{
@@ -1073,6 +1080,8 @@
 	}
 
 	$(document).ready(function(){
+
+		$('#counter').html('<?=$counter?>');
 
 		// Select2 для выбора салона
 		$('select[name="Shop"]').select2({
