@@ -34,10 +34,10 @@
 	$email = trim($email);
 
 	//добавляем проверку на длину логина и пароля
-	if (strlen($login) < 3 or strlen($login) > 15) {
+	if (mb_strlen($login) < 3 or mb_strlen($login) > 15) {
 		exit ("Логин должен состоять не менее чем из 3 символов и не более чем из 15.");
 	}
-	if (strlen($passwd) < 3 or strlen($passwd) > 15) {
+	if (mb_strlen($passwd) < 3 or mb_strlen($passwd) > 15) {
 		exit ("Пароль должен состоять не менее чем из 3 символов и не более чем из 15.");
 	}
 
