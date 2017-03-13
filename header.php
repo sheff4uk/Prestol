@@ -50,7 +50,7 @@
 	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=22'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=23'>
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
@@ -73,6 +73,16 @@
 
 	<script>
 		$(document).ready(function(){
+			$('.aside-nav-control').click(function() {
+				$('.aside-nav').addClass('opened');
+				$('body').css('overflow', 'hidden');
+			});
+
+			$('.aside-nav .close_btn').click(function() {
+				$('.aside-nav').removeClass('opened');
+				$('body').css('overflow', '');
+			});
+
 			$('#body_wraper').show();
 			$('#loading').hide();
 
@@ -183,6 +193,9 @@
 	<!-- NAVBAR -->
 	<nav class="navbar">
 		<div class="navbar-header"  id="main">
+			<div class="aside-nav-control navbar-brand">
+				<i class="fa fa-bars fa-lg"></i>
+			</div>
 			<a class="navbar-brand" href="/" title="На главную">ПРЕСТОЛ</a>
 			<?
 			if( in_array('order_add', $Rights) ) {
@@ -229,7 +242,7 @@
 		if( in_array('screen_paylog', $Rights) ) {
 			$menu["Касса"] = "cash.php";
 		}
-		$menu["Выход (".$_SESSION['name'].")"] = "exit.php";
+//		$menu["Выход (".$_SESSION['name'].")"] = "exit.php";
 //		$menu = array ("Материалы" => "materials.php"
 ////					  ,"Производство" => "workers.php?worker=0&type=1&isready=0"
 //					  ,"Свободные{$ischeckcount}" => "/orderdetail.php?free=1"
@@ -244,11 +257,21 @@
 		$class = strpos($_SERVER["REQUEST_URI"], $url) !== false ? "class='active'" : "";
 		echo "<li $class><a href='$url'>$title</a></li>";
 	}
+	echo "<li class='exit'><a href='exit.php'>Выход ({$_SESSION['name']})</a></li>";
 	echo "</ul>";
-?>
-	</nav>
-	<!-- END NAVBAR -->
-<?
+	echo "</nav>";
+
+	echo "<div class='aside-nav'>";
+	echo "<div class='close_btn'><i class='fa fa-times fa-2x'></i></div>";
+	echo "<ul>";
+	foreach ($menu as $title=>$url) {
+		$class = strpos($_SERVER["REQUEST_URI"], $url) !== false ? "class='active'" : "";
+		echo "<li $class><a href='$url'>$title</a></li>";
+	}
+	echo "</ul>";
+	echo "</div>";
+	// END NAVBAR
+
 	$MONTHS = array(1=>'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь');
 ?>
 	<div id="body_wraper" style="display: none;">

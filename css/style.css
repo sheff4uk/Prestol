@@ -781,3 +781,94 @@ td.tscell > i {
 #MT_filter:hover > div {
 	overflow: visible;
 }
+
+.aside-nav {
+	display: none;
+	padding-top: 40px;
+	-webkit-transform: translateX(-100%);
+	-moz-transform: translateX(-100%);
+	-ms-transform: translateX(-100%);
+	-o-transform: translateX(-100%);
+	transform: translateX(-100%);
+	width: calc(100% - 100px);
+	background: #ffffff;
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1600;
+}
+
+.aside-nav {
+	-webkit-transition: -webkit-transform .2s linear;
+	-moz-transition: -moz-transform .2s linear;
+	-ms-transition: -ms-transform .2s linear;
+	-o-transition: -o-transform .2s linear;
+	transition: transform .2s linear;
+}
+
+.aside-nav.opened {
+	-webkit-transform: translateX(0);
+	-moz-transform: translateX(0);
+	-ms-transform: translateX(0);
+	-o-transform: translateX(0);
+	transform: translateX(0);
+	overflow-y: auto;
+}
+
+.aside-nav-control {
+	margin-right: 20px;
+}
+
+.navbar-header div.navbar-brand {
+	display: none;
+}
+
+.aside-nav .close_btn {
+	width: 30px;
+	height: 30px;
+	position: absolute;
+	top: 20px;
+	right: 20px;
+}
+
+.aside-nav ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.aside-nav a {
+	color: #7f7f80;
+	vertical-align: middle;
+	line-height: 48px;
+	height: 48px;
+	font-size: 16px;
+	display: block;
+	border-bottom: 1px solid #e9eaec;
+	padding-left: 15px;
+	max-width: 100%;
+	overflow: hidden;
+	white-space: nowrap;
+	-ms-text-overflow: ellipsis;
+	text-overflow: ellipsis;
+	text-decoration: none;
+}
+
+.aside-nav li.active a {
+	color: #D65C4F;
+}
+
+@media (max-width: 1024px) {
+	.aside-nav {
+		display: block;
+	}
+
+	.navbar-nav > li:not(.exit) {
+		display: none;
+	}
+
+	.navbar-header div.navbar-brand {
+		display: block;
+	}
+}
