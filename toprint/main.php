@@ -107,7 +107,8 @@
 					if(isset($_GET["ON"])) echo "<td width='5%'>№ квитанции</td>";
 					if(isset($_GET["Z"])) echo "<td width='20%'>Заказ</td>";
 					if(isset($_GET["M"])) echo "<td width='15%'>Пластик/ткань</td>";
-					if(isset($_GET["CR"])) echo "<td width='15%'>Цвет покраски</td>";
+					if(isset($_GET["CR"])) echo "<td width='10%'>Цвет покраски</td>";
+					if(isset($_GET["CR"])) echo "<td width='5%'>Патина</td>";
 					if(isset($_GET["PR"])) echo "<td width='8%'>Этапы</td>";
 					if(isset($_GET["IP"])) echo "<td width='2%'>Лак.</td>";
 					if(isset($_GET["N"])) echo "<td width='15%'>Примечание</td>";
@@ -127,6 +128,7 @@
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
 					,OD.OrderNumber
 					,ODD_ODB.Zakaz
+					,ODD_ODB.Patina
 					,OD.Color
 					,OD.IsPainting
 					,ODD_ODB.Material
@@ -140,6 +142,7 @@
 			  				   ,ODD.ODD_ID itemID
 			  				   ,IFNULL(PM.PT_ID, 2) PT_ID
 							   ,CONCAT('<b>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
+							   ,ODD.Patina
 							   ,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
 							   		IF(PM.PT_ID = 1 AND IFNULL(MT.Material, '') != '',
 										CASE ODD.IsExist
@@ -165,6 +168,7 @@
 							  ,ODB.ODB_ID itemID
 							  ,0 PT_ID
 							  ,CONCAT('<b>', ODB.Amount, '</b> ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), ''), IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' <b>(', ODB.Comment, ')</b>'))) Zakaz
+							  ,ODB.Patina
 							  ,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
 							  		IF(IFNULL(MT.Material, '') != '',
 										CASE ODB.IsExist
@@ -242,7 +246,10 @@
 		if(isset($_GET["ON"]) and $span) echo "<td width='5%' style='{$border}' rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
 		if(isset($_GET["Z"])) echo "<td width='20%' style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";
 		if(isset($_GET["M"])) echo "<td width='15%' style='{$border}'>{$row["Material"]}</td>";
-		if(isset($_GET["CR"]) and $span) echo "<td width='15%' style='{$border}' rowspan='{$cnt}'>{$row["Color"]}</td>";
+		if(isset($_GET["CR"]) and $span) echo "<td width='10%' style='{$border}' rowspan='{$cnt}'>{$row["Color"]}</td>";
+
+		if(isset($_GET["CR"])) echo "<td width='5%' style='{$border}'>{$row["Patina"]}</td>";
+
 		if(isset($_GET["PR"])) echo "<td width='8%' style='{$border}'><span class='nowrap'>{$row["Steps"]}</span></td>";
 		if(isset($_GET["IP"]) and $span) {
 			echo "<td width='2%' style='{$border}' rowspan='{$cnt}'>";
