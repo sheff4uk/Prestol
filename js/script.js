@@ -220,7 +220,7 @@ $(document).ready(function(){
 		{
 			$('#addchair input[name="Amount"]').val(odd[id]['amount']);
 			$('#addchair input[name="Price"]').val(odd[id]['price']);
-			$('#addchair select[name="Model"]').val(odd[id]['model']);
+			$('#addchair select[name="Model"]').val(odd[id]['model']).trigger('change');
 			$('#addchair textarea[name="Comment"]').val(odd[id]['comment']);
 			$('#addchair input[name="patina"]').val(odd[id]['patina']);
 			$('#addchair input[name="Material"]').val(odd[id]['material']);
@@ -347,7 +347,7 @@ $(document).ready(function(){
 //			}
 			$('#addtable input[name="Amount"]').val(odd[id]['amount']);
 			$('#addtable input[name="Price"]').val(odd[id]['price']);
-			$('#addtable select[name="Model"]').val(odd[id]['model']);
+			$('#addtable select[name="Model"]').val(odd[id]['model']).trigger('change');
 			//$('#form'+odd[id]['form']).prop('checked', true);
 			//$('#addtable input[name="Form"]').button("refresh");
 			$('#mechanism'+odd[id]['mechanism']).prop('checked', true);
@@ -486,7 +486,7 @@ $(document).ready(function(){
 			$('#addblank input[name="Amount"]').val(odb[id]['amount']);
 			$('#addblank input[name="Price"]').val(odb[id]['price']);
 			if( odb[id]['blank'] > 0 ) {
-				$('#addblank select[name="Blanks"]').val(odb[id]['blank']);
+				$('#addblank select[name="Blanks"]').val(odb[id]['blank']).trigger('change');
 				$('#addblank input[name="Other"]').prop('disabled', true);
 				$('#addblank input[name="Other"]').prop("required", false);
 			}
