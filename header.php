@@ -1,4 +1,6 @@
 <?
+//ini_set('display_errors', 1);
+//error_reporting(E_ALL);
 	// Снимаем ограничение в 1024 на GROUP_CONCAT
 	$query = "SET @@group_concat_max_len = 10000;";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -60,7 +62,7 @@
 	<script src="js/ui/jquery-ui.js"></script>
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
 	<script src="js/modal.js?v=6"></script>
-	<script src="js/script.js?v=12" type="text/javascript"></script>
+	<script src="js/script.js?v=13" type="text/javascript"></script>
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
 	<script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript"></script>
@@ -171,7 +173,7 @@
 	}
 
 	//$archive = ($_GET["archive"] >= 1) ? $_GET["archive"] : 0;
-	$archive = $_GET["archive"];
+	$archive = isset($_GET["archive"]) ? $_GET["archive"] : 0;
 	switch ($archive) {
 		case 0:
 			$BG = "#fff";
@@ -242,7 +244,7 @@
 		if( in_array('screen_paylog', $Rights) ) {
 			$menu["Касса"] = "cash.php";
 		}
-//		$menu["Выход (".$_SESSION['name'].")"] = "exit.php";
+		$menu["Выход (".$_SESSION['name'].")"] = "exit.php";
 //		$menu = array ("Материалы" => "materials.php"
 ////					  ,"Производство" => "workers.php?worker=0&type=1&isready=0"
 //					  ,"Свободные{$ischeckcount}" => "/orderdetail.php?free=1"
@@ -257,7 +259,7 @@
 		$class = strpos($_SERVER["REQUEST_URI"], $url) !== false ? "class='active'" : "";
 		echo "<li $class><a href='$url'>$title</a></li>";
 	}
-	echo "<li class='exit'><a href='exit.php'>Выход ({$_SESSION['name']})</a></li>";
+//	echo "<li class='exit'><a href='exit.php'>Выход ({$_SESSION['name']})</a></li>";
 	echo "</ul>";
 	echo "</nav>";
 
