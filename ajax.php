@@ -167,11 +167,11 @@ case "livesearch":
 			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID";
-	$query .= " WHERE ODD.OD_ID IS NULL";
-	$query .= ( $pt == 1 ) ? " AND PM.PT_ID = {$pt}" : "";
-	$query .= ($_GET["model"] and $_GET["model"] <> "undefined") ? " AND (ODD.PM_ID = {$_GET["model"]} OR ODD.PM_ID IS NULL)" : "";
-	$query .= ($_GET["form"] and $_GET["form"] <> "undefined") ? " AND ODD.PF_ID = {$_GET["form"]}" : "";
-	$query .= ($_GET["mechanism"] and $_GET["mechanism"] <> "undefined") ? " AND ODD.PME_ID = {$_GET["mechanism"]}" : "";
+	$query .= " WHERE ODD.OD_ID IS NULL AND PM.PT_ID = {$pt}";
+//	$query .= ( $pt == 1 ) ? " AND PM.PT_ID = {$pt}" : "";
+//	$query .= ($_GET["model"] and $_GET["model"] <> "undefined") ? " AND (ODD.PM_ID = {$_GET["model"]} OR ODD.PM_ID IS NULL)" : "";
+//	$query .= ($_GET["form"] and $_GET["form"] <> "undefined") ? " AND ODD.PF_ID = {$_GET["form"]}" : "";
+//	$query .= ($_GET["mechanism"] and $_GET["mechanism"] <> "undefined") ? " AND ODD.PME_ID = {$_GET["mechanism"]}" : "";
 //	$query .= ($_GET["length"] and $_GET["length"] <> "undefined") ? " AND ODD.Length = {$_GET["length"]}" : "";
 //	$query .= ($_GET["width"] and $_GET["width"] <> "undefined") ? " AND ODD.Width = {$_GET["width"]}" : "";
 //	$query .= ($_GET["material"]) ? " AND MT.Material LIKE '%{$_GET["material"]}%'" : "";
@@ -236,8 +236,8 @@ case "livesearch":
 	echo "$('#{$_GET["this"]} .accordion .chbox').each(function(){";
 	echo "if( $(this).prop('checked') ) { amount += parseInt($('~ span > input', this).val()); $('~ span > input', this).prop( 'disabled', false );}";
 	echo "else { $('~ span > input', this).prop( 'disabled', true ); }});";
-	echo "if( amount ){ $('#{$_GET["this"]} fieldset').prop('disabled', true); $( '#{$_GET["this"]} #forms, #{$_GET["this"]} #mechanisms' ).buttonset( 'option', 'disabled', true ); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(amount); $('#{$_GET["this"]} input[name=free]').val(1);}";
-	echo "else{ $('#{$_GET["this"]} fieldset').prop('disabled', false); $( '#{$_GET["this"]} #forms, #{$_GET["this"]} #mechanisms' ).buttonset( 'option', 'disabled', false ); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(1); $('#{$_GET["this"]} input[name=free]').val(0);}";
+	echo "if( amount ){ $('#{$_GET["this"]} fieldset').prop('disabled', true); $( '#{$_GET["this"]} #forms, #{$_GET["this"]} #mechanisms' ).buttonset( 'option', 'disabled', true ); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(amount); $('#{$_GET["this"]} input[name=free]').val(1); $('select[name=Model]').select2('enable',false);}";
+	echo "else{ $('#{$_GET["this"]} fieldset').prop('disabled', false); $( '#{$_GET["this"]} #forms, #{$_GET["this"]} #mechanisms' ).buttonset( 'option', 'disabled', false ); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(''); $('#{$_GET["this"]} input[name=free]').val(0); $('select[name=Model]').select2('enable');}";
 	echo "materialonoff('#{$_GET["this"]}');";
 	echo "return false;";
 	echo "});";
@@ -643,6 +643,7 @@ case "shipment":
 // Форма добавления платежа к заказу
 case "add_payment":
 	$OD_ID = $_GET["OD_ID"];
+	$FA_ID = $_GET["FA_ID"];
 
 	// Узнаем фамилию заказчика и дату продажи
 	$query = "SELECT ClientName, DATE_FORMAT(StartDate, '%d.%m.%Y') StartDate FROM OrdersData WHERE OD_ID = {$OD_ID}";
@@ -652,11 +653,17 @@ case "add_payment":
 
 	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 	$html .= "<table><thead><tr>";
-	$html .= "<th></th>";
+	$html .= "<th style='width: 56px;'>{$CT_ID}</th>";
 	$html .= "<th>Дата</th>";
 	$html .= "<th>Сумма</th>";
-	$html .= "<th>Терминал</th>";
-	$html .= "<th>Фамилия</th>";
+	if( $FA_ID ) {
+		$html .= "<th>Терминал</th>";
+		$html .= "<th>Фамилия</th>";
+	}
+	else {
+		$html .= "<th style='display: none;'>Терминал</th>";
+		$html .= "<th style='display: none;'>Фамилия</th>";
+	}
 	$html .= "</tr></thead><tbody>";
 
 	$query = "SELECT OP_ID
@@ -665,30 +672,52 @@ case "add_payment":
 					,IF(IFNULL(terminal_payer, '') = '', 0, 1) terminal
 					,terminal_payer
 					,IFNULL(CT_ID, 0) CT_ID
+					,IFNULL(FA_ID, 0) FA_ID
 				FROM OrdersPayment
 				WHERE OD_ID = {$OD_ID} AND IFNULL(payment_sum, 0) != 0
 				ORDER BY OP_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 	$payment_count = 0; // Счетчик кол-ва платежей
-	$factory_payment = "<i class='fa fa-money' aria-hidden='true' title='Оплата наличными на производстве'></i>";
+	$factory_payment = "<i class='fa fa-money' aria-hidden='true' title='Оплата на производстве'></i>";
+
 	while( $row = mysqli_fetch_array($res) ) {
 		$html .= "<tr>";
 		if( in_array('order_add_confirm', $Rights) or $row["CT_ID"] ) {
-			$factory_payment_chbox = "<input type='checkbox' ".($row["CT_ID"] ? '' : 'checked')." class='factory_payment' title='Оплата наличными на производстве'><input type='hidden' value='".($row["CT_ID"] ? '0' : '1')."' class='h_factory_payment' name='factory_payment[]'>";
 
-			$html .= "<td>".(in_array('order_add_confirm', $Rights) ? $factory_payment_chbox : '')."</td>";
+			$factory_payment_select = "<select style='width: 50px;' class='account' name='FA_ID[]'><option value=''>Салон</option>";
+			$query = "SELECT FA_ID, name, IF(FA_ID = {$row["FA_ID"]}, 'selected', '') selected FROM FinanceAccount";
+			$subres = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+			while( $subrow = mysqli_fetch_array($subres) ) {
+				$factory_payment_select .= "<option {$subrow["selected"]} value='{$subrow["FA_ID"]}'>{$subrow["name"]}</option>";
+			}
+			$factory_payment_select .= "</select>";
+
+			$html .= "<td>".(in_array('order_add_confirm', $Rights) ? $factory_payment_select : '')."<input type='hidden' class='account' name='FA_ID[]' value=''></td>";
 			$html .= "<td><input type='hidden' name='OP_ID[]' value='{$row["OP_ID"]}'><input type='text' class='date' name='payment_date[]' value='{$row["payment_date"]}' readonly></td>";
 			$html .= "<td><input type='number' class='payment_sum' name='payment_sum[]' value='{$row["payment_sum"]}'></td>";
-			$html .= "<td><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal'></td>";
-			$html .= "<td><input type='text' class='terminal_payer' value='{$row["terminal_payer"]}'><input type='hidden' class='terminal_payer' name='terminal_payer[]' value='{$row["terminal_payer"]}'></td>";
+			if( $FA_ID ) {
+				$html .= "<td><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal'></td>";
+				$html .= "<td><input type='text' class='terminal_payer' value='{$row["terminal_payer"]}'><input type='hidden' class='terminal_payer' name='terminal_payer[]' value='{$row["terminal_payer"]}'></td>";
+			}
+			else {
+				$html .= "<td style='display: none;'><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal'></td>";
+				$html .= "<td style='display: none;'><input type='text' class='terminal_payer' value='{$row["terminal_payer"]}'><input type='hidden' class='terminal_payer' name='terminal_payer[]' value='{$row["terminal_payer"]}'></td>";
+			}
+
 			$payment_count++;
 		}
 		else {
 			$html .= "<td>{$factory_payment}</td>";
 			$html .= "<td>{$row["payment_date"]}</td>";
 			$html .= "<td>{$row["payment_sum"]}</td>";
-			$html .= "<td>".($row["terminal"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
-			$html .= "<td>{$row["terminal_payer"]}</td>";
+			if( $FA_ID ) {
+				$html .= "<td>".($row["terminal"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
+				$html .= "<td>{$row["terminal_payer"]}</td>";
+			}
+			else {
+				$html .= "<td style='display: none;'>".($row["terminal"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
+				$html .= "<td style='display: none;'>{$row["terminal_payer"]}</td>";
+			}
 		}
 		$html .= "</tr>";
 	}
@@ -698,12 +727,31 @@ case "add_payment":
 	else {
 		$payment_date = date('d.m.Y');
 	}
-	$html .= "<tr>";
-	$html .= "<td><input type='checkbox' ".(in_array('order_add_confirm', $Rights) ? 'checked' : '')." class='factory_payment' title='Оплата наличными на производстве'><input type='hidden' value='".(in_array('order_add_confirm', $Rights) ? '1' : '0')."' class='h_factory_payment' name='factory_payment_add'></td>";
+	$html .= "<tr style='background: #6f6;'>";
+
+	if( in_array('order_add_confirm', $Rights) ) {
+		$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'><option value=''>Салон</option>";
+		$query = "SELECT FA_ID, name, IF(FA_ID = 1, 'selected', '') selected FROM FinanceAccount";
+		$subres = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		while( $subrow = mysqli_fetch_array($subres) ) {
+			$html .= "<option {$subrow["selected"]} value='{$subrow["FA_ID"]}'>{$subrow["name"]}</option>";
+		}
+		$html .= "</select></td>";
+	}
+	else {
+		$html .= "<td></td>";
+	}
+
 	$html .= "<td><input type='text' class='date' name='payment_date_add' value='{$payment_date}' readonly></td>";
 	$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
-	$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
-	$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
+	if( $FA_ID ) {
+		$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
+		$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
+	}
+	else {
+		$html .= "<td style='display: none;'><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
+		$html .= "<td style='display: none;'><input type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
+	}
 	$html .= "</tr></tbody></table>";
 
 	$html = addslashes($html);
@@ -983,6 +1031,58 @@ case "material_list":
 	}
 	//$materials_name = addslashes( $materials_name );
 	echo "window.top.window.$('#materials_name').html('{$materials_name}');";
+
+	break;
+
+// При смене типа операции меняется категория (в финансах)
+case "cash_category":
+	$type = $_GET["type"];
+
+	if( $type == 0 ) {
+		$html = "<label for='category'>На счет:</label><br>";
+		$html .= "<select required name='to_account' id='to_account' style='width: 300px;'>";
+		$html .= "<option value=''></option>";
+
+		$html .= "<optgroup label='Нал'>";
+		$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$html .= "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+		}
+		$html .= "</optgroup>";
+
+		$html .= "<optgroup label='Безнал'>";
+		$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$html .= "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+		}
+		$html .= "</optgroup>";
+
+		$html .= "</select>";
+		$html = addslashes($html);
+		echo "window.top.window.$('#wr_category').html('{$html}');";
+		echo "window.top.window.$('#wr_category select[name=to_account]').select2({ placeholder: 'Выберите счет', language: 'ru' });";
+	}
+	else {
+		$html = "<label for='category'>Категория:</label><br>";
+		$html .= "<select required name='category' id='category' style='width: 300px;'>";
+		$html .= "<option value=''></option>";
+
+		$query = "SELECT FC_ID, name FROM FinanceCategory WHERE type = {$type}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$html .= "<option value='{$row["FC_ID"]}'>{$row["name"]}</option>";
+		}
+
+		$html .= "</select>";
+		$html = addslashes($html);
+		echo "window.top.window.$('#wr_category').html('{$html}');";
+		echo "window.top.window.$('#wr_category select[name=category]').select2({ placeholder: 'Выберите категорию', language: 'ru' });";
+	}
 
 	break;
 }

@@ -254,7 +254,8 @@ $(document).ready(function(){
 			}
 		}
 
-		$('#addchair select[name="Model"]').change( function() { livesearch(this); });
+//		$('#addchair select[name="Model"]').change( function() { livesearch(this); });
+		$.ajax({ url: "ajax.php?do=livesearch&this=addchair&type=1", dataType: "script", async: false });
 
 		// Если нет ткани, то кнопка наличия не активна
 		$('#addchair input[name="Material"]').change( function() {
@@ -413,12 +414,13 @@ $(document).ready(function(){
 
 			$('#addtable input[name="Form"]').change( function() {
 				form = $(this).val();
-				//console.log(form);
 			});
 
-			livesearch(this);
+//			livesearch(this);
 		});
 		
+		$.ajax({ url: "ajax.php?do=livesearch&this=addtable&type=2", dataType: "script", async: false });
+
 		// Если нет пластика, то кнопка наличия не активна
 		$('#addtable input[name="Material"]').change( function() {
 			materialonoff('#addtable');
@@ -670,9 +672,9 @@ $(document).ready(function(){
 	// Живой поиск в "Свободных" при вводе параметров в форму
 //	$('select[name="Model"]').change( function() { livesearch(this); });
 //	$('input[name="Length"], input[name="Width"]').change( function() { livesearch(this); });
-	$('#forms, #mechanisms').on("change", function(){ livesearch(this); });
-	$('input[name="Material"]').keyup( function() { livesearch(this); });
-	$('input[name="Material"]').on( 'autocompleteselect', function( event, ui ) { $(this).val( ui.item.value ); livesearch(this); } );
+//	$('#forms, #mechanisms').on("change", function(){ livesearch(this); });
+//	$('input[name="Material"]').keyup( function() { livesearch(this); });
+//	$('input[name="Material"]').on( 'autocompleteselect', function( event, ui ) { $(this).val( ui.item.value ); livesearch(this); } );
 
 	// В форме заготовки при смене заготовки меняем тариф
 	$('#addblank select[name="Blank"]').change(function(){
