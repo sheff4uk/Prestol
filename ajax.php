@@ -145,7 +145,7 @@ case "livesearch":
 	$query = "SELECT ODD.ODD_ID
 					,PM.PT_ID
 					,ODD.Amount
-					,PM.Model
+					,IFNULL(PM.Model, 'Столешница') Model
 					,CONCAT(PF.Form, ' ', PME.Mechanism) Form
 					,IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), '') Size
 					,CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Material
@@ -167,7 +167,7 @@ case "livesearch":
 			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID";
-	$query .= " WHERE ODD.OD_ID IS NULL AND PM.PT_ID = {$pt}";
+	$query .= " WHERE ODD.OD_ID IS NULL AND IFNULL(PM.PT_ID, 2) = {$pt}";
 //	$query .= ( $pt == 1 ) ? " AND PM.PT_ID = {$pt}" : "";
 //	$query .= ($_GET["model"] and $_GET["model"] <> "undefined") ? " AND (ODD.PM_ID = {$_GET["model"]} OR ODD.PM_ID IS NULL)" : "";
 //	$query .= ($_GET["form"] and $_GET["form"] <> "undefined") ? " AND ODD.PF_ID = {$_GET["form"]}" : "";
