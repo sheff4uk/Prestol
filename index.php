@@ -265,7 +265,7 @@
 			<form method="get">
 				<select name="archive" onchange="this.form.submit()">
 					<option value="0" <?=($archive == 0) ? "selected" : ""?>>В работе</option>
-					<option value="1" <?=($archive == 1) ? "selected" : ""?>>Готовые</option>
+					<option value="1" <?=($archive == 1) ? "selected" : ""?>>Отгруженные</option>
 					<option value="2" <?=($archive == 2) ? "selected" : ""?>>Все</option>
 				</select>
 			</form>
