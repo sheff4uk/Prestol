@@ -139,9 +139,9 @@
 			<thead>
 			<tr>
 				<th>Заготовка</th>
-				<th title="Количество заготовок с учетом текущей потребности на основании заказов.">Запас</th>
-				<th>В заказах<br>до покраски</th>
+<!--				<th title="Количество заготовок с учетом текущей потребности на основании заказов.">Запас</th>-->
 				<th title="Фактическое наличие неокрашенных заготовок на производстве.">Наличие</th>
+				<th>В заказах<br>до покраски</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -193,9 +193,9 @@
 					$colorP = ( $row["AmountBeforePainting"] < 0 ) ? ' bg-red' : '';
 					echo "<tr>";
 					echo "<td class='{$row["Bold"]}'><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'> {$row["Name"]}</td>";
-					echo "<td class='txtright'><span class='{$color}'>{$row["Amount"]}</span></td>";
+//					echo "<td class='txtright'><span class='{$color}'>{$row["Amount"]}</span></td>";
+					echo "<td class='txtright'><span class='{$colorP}'><b>{$row["AmountBeforePainting"]}</b></span></td>";
 					echo "<td class='txtright'><span>{$row["BeforePainting"]}</span></td>";
-					echo "<td class='txtright'><span class='{$colorP}'>{$row["AmountBeforePainting"]}</span></td>";
 					echo "</tr>";
 				}
 			?>
