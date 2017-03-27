@@ -58,7 +58,7 @@
 	}
 
 	// Удаление заказа
-	if( $_GET["del"] )
+	if( isset($_GET["del"]) )
 	{
 		if( !in_array('order_add', $Rights) ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
@@ -76,7 +76,7 @@
 	}
 
 	// Подтверждение готовности заказа
-	if( $_GET["ready"] )
+	if( isset($_GET["ready"]) )
 	{
 		if( !in_array('order_ready', $Rights) ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
@@ -93,7 +93,7 @@
 	}
 
 	// Добавление отгрузки
-	if( $_POST["CT_ID"] ) {
+	if( isset($_POST["CT_ID"]) ) {
 		//$shipping_date = date( 'Y-m-d', strtotime($_POST["shipping_date"]) );
 		$shp_title = mysqli_real_escape_string( $mysqli, $_POST["shp_title"] );
 		if( isset($_GET["shpid"]) ) {
@@ -391,7 +391,7 @@
 	}
 
 	// Кнопка отгрузки
-	if( in_array('add_shipment', $Rights) and $shipping_date == '' ) {
+	if( in_array('add_shipment', $Rights) and (isset($shipping_date) ? $shipping_date : '') == '' ) {
 		echo '<div id="add_shipment" title="Сформировать список на отгрузку"></div>';
 	}
 

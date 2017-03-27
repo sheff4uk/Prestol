@@ -26,10 +26,11 @@
 		$product = 1;
 	}
 
-	if( $_GET["ready"] == "on" ) unset( $_GET["ready"] );
-	if( $_GET["WD_ID"] == "" ) unset( $_GET["WD_ID"] );
+	if( isset($_GET["ready"]) and $_GET["ready"] == "on" ) unset( $_GET["ready"] );
+	if( isset($_GET["WD_ID"]) and $_GET["WD_ID"] == "" ) unset( $_GET["WD_ID"] );
 
-	$MT_IDs = implode(",", $_GET["MT_ID"]);
+	$MT_ID = isset($_GET["MT_ID"]) ? $_GET["MT_ID"] : array();
+	$MT_IDs = implode(",", $MT_ID);
 	$MT_IDs = $MT_IDs == "" ? "0" : $MT_IDs;
 
 	// Применение статуса материала или смена поставщика
@@ -113,9 +114,9 @@
 			<div class='btnset' id='ready'>
 				<input type='radio' id='ready_all' name='ready' checked >
 					<label for='ready_all'>Все</label>
-				<input type='radio' id='ready_0' name='ready' value='0' <?= ($_GET["ready"] == "0" ? "checked" : "") ?>>
+				<input type='radio' id='ready_0' name='ready' value='0' <?= ((isset($_GET["ready"]) and $_GET["ready"] == "0") ? "checked" : "") ?>>
 					<label for='ready_0'>В работе</label>
-				<input type='radio' id='ready_1' name='ready' value='1' <?= ($_GET["ready"] == "1" ? "checked" : "") ?>>
+				<input type='radio' id='ready_1' name='ready' value='1' <?= ((isset($_GET["ready"]) and $_GET["ready"] == "1") ? "checked" : "") ?>>
 					<label for='ready_1'>Готово</label>
 			</div>
 		</div>
@@ -124,7 +125,7 @@
 			<label for='worker'>Работник:&nbsp;</label><br>
 			<select name="WD_ID" id="worker">
 				<option value>Все</option>
-				<option <?= ($_GET["WD_ID"] === "0") ? "selected" : "" ?> value="0">Не назначен</option>
+				<option <?= (isset($_GET["WD_ID"]) and $_GET["WD_ID"] === "0") ? "selected" : "" ?> value="0">Не назначен</option>
 				<?
 				$query = "SELECT WD.WD_ID, WD.Name
 							FROM WorkersData WD
@@ -388,7 +389,7 @@
 		echo "<td style='background: {$row["CTColor"]};' class='nowrap'>";
 		echo "{$row["ClientName"]}<br>";
 		echo "{$row["StartDate"]} - <span class='{$row["Deadline"]}'>{$row["EndDate"]}</span><br>";
-		echo "{$row["Shop"]} ({$row["OrderNumber"]})<br>";
+		echo "{$row["Shop"]} <b>{$row["OrderNumber"]}</b>";
 		echo "</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "</tr>";
@@ -420,7 +421,9 @@
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $sub_row = mysqli_fetch_array($result) )
 		{
-			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "price"=>$sub_row["Price"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "PieceAmount"=>$sub_row["PieceAmount"], "PieceSize"=>$sub_row["PieceSize"], "color"=>$sub_row["Color"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "shipper"=>$sub_row["Shipper"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"], "patina"=>$sub_row["patina"] );
+			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "price"=>$sub_row["Price"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "PieceAmount"=>$sub_row["PieceAmount"], "PieceSize"=>$sub_row["PieceSize"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "shipper"=>$sub_row["Shipper"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"], "patina"=>$sub_row["patina"] );
+
+			echo "<script> var odd = ".(json_encode($ODD))."; </script>";
 		}
 
 		$query = "SELECT ODB.ODB_ID
@@ -446,6 +449,8 @@
 		while( $sub_row = mysqli_fetch_array($result) )
 		{
 			$ODB[$sub_row["ODB_ID"]] = array( "amount"=>$sub_row["Amount"], "price"=>$sub_row["Price"], "blank"=>$sub_row["BL_ID"], "other"=>$sub_row["Other"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "shipper"=>$sub_row["Shipper"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"], "MPT_ID"=>$sub_row["MPT_ID"], "patina"=>$sub_row["patina"] );
+
+			echo "<script> var odb = ".(json_encode($ODB))."; </script>";
 		}
 	}
 ?>
@@ -657,8 +662,6 @@
 			}
 		});
 
-		odd = <?= json_encode($ODD) ?>;
-		odb = <?= json_encode($ODB) ?>;
 	});
 </script>
 

@@ -135,7 +135,7 @@ if( $_GET["oddid"] )
 				 ,patina = IF('{$patina}' = '', NULL, '{$patina}')
 			  WHERE ODD_ID = {$_GET["oddid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
-		$_SESSION["alert"] = mysqli_error( $mysqli );
+		$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
 	}
 
 	// Если количество изделий уменьшено и изделие в работе, то переносим их на склад (свободные)
@@ -245,7 +245,7 @@ if( $_GET["odbid"] )
 				 ,patina = IF('{$patina}' = '', NULL, '{$patina}')
 			  WHERE ODB_ID = {$_GET["odbid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
-		$_SESSION["alert"] = mysqli_error( $mysqli );
+		$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
 	}
 
 	// Обновление этапов чтобы сработал триггер

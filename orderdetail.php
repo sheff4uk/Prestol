@@ -11,7 +11,7 @@
 	}
 	include "header.php";
 
-	if( (int)$_GET["id"] > 0 )
+	if( isset($_GET["id"]) and (int)$_GET["id"] > 0 )
 	{
 		// Проверка прав на доступ к экрану
 		// Проверка города
@@ -73,7 +73,7 @@
 					 ,author = {$_SESSION['id']}
 				  WHERE OD_ID = {$id}";
 		if( !mysqli_query( $mysqli, $query ) ) {
-			$_SESSION["alert"] = mysqli_error( $mysqli );
+			$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
 		}
 		
 		//header( "Location: ".$location );
@@ -82,10 +82,10 @@
 	}
 
 	// Добавление в базу нового изделия. Заполнение этапов.
-	if ( $_GET["add"] )
+	if ( isset($_GET["add"]) and $_GET["add"] == 1 )
 	{
 		// Добавление в заказ свободных изделий
-		if( $_POST["free"] ) {
+		if( isset($_POST["free"]) and $_POST["free"] == 1 ) {
 			foreach( $_POST as $k => $v)
 			{
 				if( strpos($k,"amount") === 0 )
@@ -203,12 +203,12 @@
 		}
 	}
 	else {
-		$odd_id = $_SESSION["odd_id"]; // Читаем из сессии id вставленной записи
+		$odd_id = isset($_SESSION["odd_id"]) ? $_SESSION["odd_id"] : ""; // Читаем из сессии id вставленной записи
 		unset($_SESSION["odd_id"]); // Очищаем сессию
 	}
 
 	// Добавление к заказу заготовки или прочего
-	if ( $_GET["addblank"] ) {
+	if ( isset($_GET["addblank"]) and $_GET["addblank"] == 1 ) {
 		$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 		$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
 		$Other = trim($_POST["Other"]);
@@ -261,12 +261,12 @@
 		die;
 	}
 	else {
-		$odb_id = $_SESSION["odb_id"]; // Читаем из сессии id вставленной записи
+		$odb_id = isset($_SESSION["odb_id"]) ? $_SESSION["odb_id"] : ""; // Читаем из сессии id вставленной записи
 		unset($_SESSION["odb_id"]); // Очищаем сессию
 	}
 
 	// Удаление изделия (перемещение в свободные)
-	if( $_GET["del"] )
+	if( isset($_GET["del"]) )
 	{
 		$odd_id = (int)$_GET["del"];
 
@@ -299,7 +299,7 @@
 	}
 
 	// Удаление заготовки из заказа
-	if( $_GET["delblank"] ) {
+	if( isset($_GET["delblank"]) ) {
 		$odb_id = (int)$_GET["delblank"];
 
 		$query = "DELETE FROM OrdersDataSteps WHERE ODB_ID={$odb_id}";
@@ -324,7 +324,7 @@
 						,author = {$_SESSION['id']}
 						,destination = ".( in_array('order_add_confirm', $Rights) ? "0" : "1" );
 		if( !mysqli_query( $mysqli, $query ) ) {
-			$_SESSION["alert"] = mysqli_error( $mysqli );
+			$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
 		}
 
 		//exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
@@ -334,10 +334,9 @@
 
 	include "forms.php";
 
-	echo "<p><a href='{$_SESSION["location"]}#ord{$_GET["id"]}' class='button'><< Вернуться</a></p>";
-
 	if( $id != "NULL" )
 	{
+		echo "<p><a href='{$_SESSION["location"]}#ord{$_GET["id"]}' class='button'><< Вернуться</a></p>";
 ?>
 	<form method='post' id='order_form' action='<?=$location?>&order_update=1'>
 	<table>
@@ -431,6 +430,14 @@
 		</tbody>
 	</table>
 	</form>
+
+	<script>
+		$(document).ready(function() {
+//			$("input.from[name='StartDate']").datepicker("disable");
+			$( "input.from" ).datepicker( "option", "maxDate", "<?=$EndDate?>" );
+			$( "input.to" ).datepicker( "option", "minDate", "<?=$StartDate?>" );
+		});
+	</script>
 <?
 		if( $confirmed == 1 ) {
 			echo "<div style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em;'>Заказ принят в работу</div>";
@@ -519,6 +526,8 @@
 	}
 	$query .= " GROUP BY ODD.ODD_ID ORDER BY IFNULL(PM.PT_ID, 2) DESC, PM.Model, ODD.ODD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+	$ODD = array();
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
@@ -611,6 +620,7 @@
 	$query .= " GROUP BY ODB.ODB_ID ORDER BY ODB.ODB_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
+	$ODB = array();
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
@@ -947,10 +957,6 @@ if( $id != "NULL" ) {
 
 		odd = <?= json_encode($ODD); ?>;
 		odb = <?= json_encode($ODB); ?>;
-
-//		$("input.from[name='StartDate']").datepicker("disable");
-		$( "input.from" ).datepicker( "option", "maxDate", "<?=$EndDate?>" );
-		$( "input.to" ).datepicker( "option", "minDate", "<?=$StartDate?>" );
 	});
 </script>
 

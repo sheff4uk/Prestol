@@ -12,18 +12,18 @@
 		$Sign = $_POST["sign"];
 		$location = $_POST["location"];
 		$plid = $_POST["plid"];
-		$bank = $_POST["bank"] ? $_POST["bank"] : "NULL";
+		$account = $_POST["account"] ? $_POST["account"] : "NULL";
 
 		// Редактирование
 		if( $_POST["PL_ID"] <> "" ) {
 			$query = "UPDATE PayLog
-					  SET ManDate = {$ManDate}, WD_ID = {$Worker}, Pay = {$Sign}{$Pay}, Comment = '{$Comment}', bank = {$bank}
+					  SET ManDate = {$ManDate}, WD_ID = {$Worker}, Pay = {$Sign}{$Pay}, Comment = '{$Comment}', FA_ID = {$account}
 					  WHERE PL_ID = '{$_POST["PL_ID"]}'";
 		}
 		// Добавление
 		else {
-			$query = "INSERT INTO PayLog(ManDate, WD_ID, Pay, Comment, bank)
-					  VALUES ({$ManDate}, {$Worker}, {$Sign}{$Pay}, '{$Comment}', {$bank})";
+			$query = "INSERT INTO PayLog(ManDate, WD_ID, Pay, Comment, FA_ID)
+					  VALUES ({$ManDate}, {$Worker}, {$Sign}{$Pay}, '{$Comment}', {$account})";
 		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -71,10 +71,32 @@
 			<div>
 				<label>Сумма:</label>
 				<input required type='number' name='Pay' min='0' style="text-align:right; width: 90px;">
-				<div style="display: inline-block; height: 15px;" id="wr_bank">
-					<input type="checkbox" name="bank" id="bank" class="button" value="1">
-					<label for="bank"></label>
-				</div>
+			</div>
+			<div id="wr_account">
+				<label>Счет:</label>
+				<select name="account" id="account">
+					<option value="">-=Выберите счёт=-</option>
+					<optgroup label="Нал">
+						<?
+						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+						}
+						?>
+					</optgroup>
+					<optgroup label="Безнал">
+						<?
+						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+						}
+						?>
+					</optgroup>
+				</select>
 			</div>
 			<div>
 				<label>Примечание:</label>
@@ -117,14 +139,11 @@
 			{
 				var pay = $(this).parents('tr').find('.pay').attr('val');
 				var comment = $(this).parents('tr').find('.comment > span').html();
-				var bank = $(this).attr('bank');
+				var account = $(this).attr('account');
 				$('#addpay input[name="Pay"]').val(pay);
 				$('#addpay textarea[name="Comment"]').val(comment);
 				$('#addpay input[name="PL_ID"]').val(id);
-				if( bank ) {
-					$( '#bank' ).prop('checked', true);
-					$( '#bank' ).button("refresh");
-				}
+				$('#account').val(account);
 			}
 			if( typeof $(this).attr('comment') !== "undefined" ) { // Добавление премии из табеля
 				var pay = $(this).attr('pay');
@@ -144,11 +163,13 @@
 
 			if (sign == '-') {
 				$('#addpay').dialog('option', 'title', 'Выдать');
-				$('#wr_bank').show();
+				$('#wr_account').show();
+				$('#account').prop('required',true);
 			}
 			else {
 				$('#addpay').dialog('option', 'title', 'Начислить');
-				$('#wr_bank').hide();
+				$('#wr_account').hide();
+				$('#account').prop('required',false);
 			}
 			return false;
 		});

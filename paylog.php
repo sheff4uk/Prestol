@@ -413,9 +413,11 @@
 							,WD.WD_ID
 							,IF(PL.Pay < 0, '-', '') Sign
 							,IF(PL.Archive = 1, 'pl-archive', '') Archive
-							,PL.bank
+							,FA.bank
+							,FA.FA_ID
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
+						LEFT JOIN FinanceAccount FA ON FA.FA_ID = PL.FA_ID
 						WHERE DATEDIFF(NOW(), PL.ManDate) <= {$datediff} AND PL.Pay <> 0";
 			if( isset($_GET["worker"]) ) {
 				$query .= " AND PL.WD_ID = {$_GET["worker"]}";
@@ -459,7 +461,7 @@
 				echo "{$row["Comment"]}</span></td>";
 				echo "<td".( (strpos($row["Link"],"ODS") === 0 and $confirmed) ? " class='td_step step_confirmed'" : "" ).">";
 				if ($row["Link"] == '') {
-					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' bank='{$row["bank"]}' class='edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
+					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' account='{$row["FA_ID"]}' class='edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
 				}
 				if( strpos($row["Link"],"ODS") === 0 ) { // Если запись из этапов производства - редактируем
 					if( $step == '0' ) {
