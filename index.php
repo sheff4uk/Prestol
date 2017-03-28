@@ -198,6 +198,12 @@
 		Найдено <b id="counter"></b> результатов.
 	</div>
 
+	<? if($archive == 1) { ?>
+	<div style="position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: #ed362f;">
+		<b>Внимание! В списке отгруженных заказов отображаются первые 500 записей. Чтобы найти интересующие заказы воспользуйтесь фильтром.</b>
+	</div>
+	<? } ?>
+
 	<?
 	if( isset($_GET["shpid"]) ) {
 		$query = "SELECT SHP.title, CT.CT_ID, CT.City, CT.Color, DATE_FORMAT(SHP.shipping_date, '%d.%m.%Y') shipping_date
