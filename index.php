@@ -522,12 +522,21 @@
 				else {
 					$checked = "checked";
 				}
-				echo "<input {$checked} type='checkbox' name='shop[]' id='shop_{$row["SH_ID"]}' value='{$row["SH_ID"]}' onchange='this.form.submit()'>";
+				echo "<input {$checked} type='checkbox' name='shop[]' id='shop_{$row["SH_ID"]}' value='{$row["SH_ID"]}'>";
 				echo "<label for='shop_{$row["SH_ID"]}'>{$row["Shop"]}</label>";
 			}
 			?>
 		</div>
+		<button style="position: absolute; top: -22px; left: calc(50% - 40px); width: 80px; display: none;">Фильтр</button>
 	</form>
+	<script>
+		$(document).ready(function() {
+			$('#shipping_filter .btnset input[type="checkbox"]').change(function() {
+				$('#shipping_filter button').show('fast');
+			});
+//			alert();
+		});
+	</script>
 	<!-- //Фильтр для отгрузки -->
 	<?
 	}
