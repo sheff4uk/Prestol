@@ -503,7 +503,7 @@
 	else {
 	?>
 	<!-- Фильтр для отгрузки -->
-	<form id='shipping_filter' method='get'>
+	<form id='shipping_filter' method='get' style="display: inline-block; position: absolute; top: 113px; left: calc(50% - 300px); width: 600px; text-align: center;">
 		<input type="hidden" name="shpid" value="<?=$_GET["shpid"]?>">
 		<div class="btnset">
 			<?
@@ -513,9 +513,11 @@
 						WHERE OD.SHP_ID = {$_GET["shpid"]}
 						GROUP BY OD.SH_ID";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$check_shops = 1; // Если при выходе из цикла будет 1, то выбраны все салоны
 			while( $row = mysqli_fetch_array($res) ) {
 				if( isset($_GET["shop"]) ) {
 					$checked = in_array($row["SH_ID"], $_GET["shop"]) ? "checked" : "";
+					$check_shops = $check_shops * in_array($row["SH_ID"], $_GET["shop"]) ? 1 : 0;
 				}
 				else {
 					$checked = "checked";
@@ -1122,7 +1124,7 @@
 		<?=( $_SESSION["f_M"] != "" ? "$('.select2-selection ul').addClass('filtered');" : "" )?>
 
 		// Проверяем можно ли отгружать
-		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?> ,<?=($_GET["shop"] != "" or $_GET["X"] != "") ? 1 : 0?>);
+		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?> ,<?=(($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0?>);
 
 		$( ".shopstags" ).autocomplete({ // Автокомплит салонов
 			source: "autocomplete.php?do=shopstags"
