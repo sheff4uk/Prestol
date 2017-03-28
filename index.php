@@ -266,7 +266,7 @@
 				<select name="archive" onchange="this.form.submit()">
 					<option value="0" <?=($archive == 0) ? "selected" : ""?>>В работе</option>
 					<option value="1" <?=($archive == 1) ? "selected" : ""?>>Отгруженные</option>
-					<option value="2" <?=($archive == 2) ? "selected" : ""?>>Все</option>
+<!--					<option value="2" <?=($archive == 2) ? "selected" : ""?>>Все</option>-->
 				</select>
 			</form>
 		</p>
@@ -789,11 +789,13 @@
 					$query .= " AND OD.ReadyDate IS NULL";
 					break;
 				case 1:
-					$query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
+//					$query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
+					$query .= " AND OD.ReadyDate IS NOT NULL";
+					$limit = " LIMIT 500";
 					break;
-				case 2:
-					$query .= " AND ((OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}) OR (OD.ReadyDate IS NULL))";
-					break;
+//				case 2:
+//					$query .= " AND ((OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}) OR (OD.ReadyDate IS NULL))";
+//					break;
 			  }
 			  if( $_SESSION["f_CD"] != "" ) {
 				  $query .= " AND OD.Code LIKE '%{$_SESSION["f_CD"]}%'";
@@ -862,6 +864,7 @@
 			}
 
 			$query .= " ORDER BY OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
+			$query .= $limit;
 
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
