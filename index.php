@@ -500,10 +500,40 @@
 	</table>
 	<?
 	}
+	else {
+	?>
+	<!-- Фильтр для отгрузки -->
+	<form id='shipping_filter' method='get'>
+		<input type="hidden" name="shpid" value="<?=$_GET["shpid"]?>">
+		<div class="btnset">
+			<?
+			$query = "SELECT SH.SH_ID, SH.Shop
+						FROM OrdersData OD
+						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+						WHERE OD.SHP_ID = {$_GET["shpid"]}
+						GROUP BY OD.SH_ID";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) ) {
+				if( isset($_GET["shop"]) ) {
+					$checked = in_array($row["SH_ID"], $_GET["shop"]) ? "checked" : "";
+				}
+				else {
+					$checked = "checked";
+				}
+				echo "<input {$checked} type='checkbox' name='shop[]' id='shop_{$row["SH_ID"]}' value='{$row["SH_ID"]}' onchange='this.form.submit()'>";
+				echo "<label for='shop_{$row["SH_ID"]}'>{$row["Shop"]}</label>";
+			}
+			?>
+		</div>
+	</form>
+	<!-- //Фильтр для отгрузки -->
+	<?
+	}
 	?>
 	<!-- //ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
 
 <div id="print_tbl">
+
 	<!-- Главная таблица -->
 	<form id='printtable'>
 	<div class="wr_main_table_head"> <!-- Обертка шапки -->
@@ -520,25 +550,7 @@
 			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
 			<th width="5%"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
 			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br>сдачи</label></th>
-			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label>
-			<?
-				if( isset($_GET["shpid"]) ) {
-					$query = "SELECT SH.SH_ID, SH.Shop
-								FROM OrdersData OD
-								JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-								WHERE OD.SHP_ID = {$_GET["shpid"]}
-								GROUP BY OD.SH_ID";
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					echo "<select style='width: 100%;' onchange='location.href = \"/?shpid={$_GET["shpid"]}&shop=\"+this.value+\"&X={$_GET["X"]}\";'>";
-					echo "<option></option>";
-					while( $row = mysqli_fetch_array($res) ) {
-						$selected = $_GET["shop"] == $row["SH_ID"] ? 'selected' : '';
-						echo "<option {$selected} value='{$row["SH_ID"]}'>{$row["Shop"]}</option>";
-					}
-					echo "</select>";
-				}
-			?>
-			</th>
+			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
 			<th width="5%"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>
 			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
 			<th width="15%"><input type="checkbox" disabled value="8" checked name="M" class="print_col" id="M"><label for="M">Материал</label></th>
@@ -550,7 +562,7 @@
 				if( isset($_GET["shpid"]) ) {
 					$checked = $_GET["X"] ? 'checked' : '';
 					$X = $_GET["X"] ? "" : "1";
-					echo "<input {$checked} id='ship_X' type='checkbox' onchange='location.href = \"/?shpid={$_GET["shpid"]}&shop={$_GET["shop"]}&X={$X}\";' style='width: 20px; height: 20px;'>";
+					echo "<input {$checked} name='X' value='1' form='shipping_filter' id='ship_X' type='checkbox' onchange='this.form.submit()' style='width: 20px; height: 20px;'>";
 				}
 			?>
 			</th>
@@ -809,8 +821,12 @@
 			}
 			else {  // Если в отгрузке - показываем список этой отгрузки
 				$query .= " AND OD.SHP_ID = {$_GET["shpid"]}";
-				if( $_GET["shop"] != "" ) {
-					$query .= " AND OD.SH_ID = {$_GET["shop"]}";
+				if( isset($_GET["shop"]) ) {
+					$shops = "0";
+					foreach( $_GET["shop"] as $k => $v) {
+						$shops .= ",".$v;
+					}
+					$query .= " AND OD.SH_ID IN({$shops})";
 				}
 			}
 
@@ -1309,8 +1325,8 @@
 
 		<?
 		if( isset($_GET["shpid"]) ) { // Если в отгрузке - заполняем форму отгрузки
-			echo "$('select[name=CT_ID]').val('{$CT_ID}');";
-			echo "$('input[name=shp_title]').val('{$shp_title}');";
+			echo "$('#add_shipment_form select[name=CT_ID]').val('{$CT_ID}');";
+			echo "$('#add_shipment_form input[name=shp_title]').val('{$shp_title}');";
 			echo '$.ajax({ url: "ajax.php?do=shipment&CT_ID='.$CT_ID.'&shpid='.$_GET["shpid"].'", dataType: "script", async: false });';
 			echo "$('#add_shipment_form .accordion').accordion( 'option', 'active', 0 );";
 		}

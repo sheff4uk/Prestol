@@ -631,7 +631,7 @@ case "shipment":
 			$query = "SELECT SH_ID FROM OrdersData WHERE SHP_ID = {$_GET["shpid"]} GROUP BY SH_ID";
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
 			while( $row = mysqli_fetch_array($res) ) {
-				echo "$('#shop".$row["SH_ID"]."').prop('checked', true).change();";
+				echo "$('#add_shipment_form #shop".$row["SH_ID"]."').prop('checked', true).change();";
 			}
 		}
 		else {
