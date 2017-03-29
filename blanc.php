@@ -259,12 +259,12 @@ case "torg12":
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 		$out = curl_exec($curl);
 
-		$url = $out;
-		$url = str_replace("<html><head><meta http-equiv='refresh' content='0; url=", "https://service-online.su", $url);
-		$url = str_replace("'></head></html>", "", $url);
-		$url = preg_replace("/\xEF\xBB\xBF/", "", $url);
-		$url = trim($url);
-		$out = file_get_contents($url);
+//		$url = $out;
+//		$url = str_replace("<html><head><meta http-equiv='refresh' content='0; url=", "https://service-online.su", $url);
+//		$url = str_replace("'></head></html>", "", $url);
+//		$url = preg_replace("/\xEF\xBB\xBF/", "", $url);
+//		$url = trim($url);
+//		$out = file_get_contents($url);
 
 		$filename = 'nakladnaya_'.$id.'_'.$_POST["nomer"].'.pdf';
 		file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
@@ -314,12 +314,12 @@ case "schet":
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 		$out = curl_exec($curl);
 
-		$url = $out;
-		$url = str_replace("<html><head><meta http-equiv='refresh' content='0; url=", "https://service-online.su", $url);
-		$url = str_replace("'></head></html>", "", $url);
-		$url = preg_replace("/\xEF\xBB\xBF/", "", $url);
-		$url = trim($url);
-		$out = file_get_contents($url);
+//		$url = $out;
+//		$url = str_replace("<html><head><meta http-equiv='refresh' content='0; url=", "https://service-online.su", $url);
+//		$url = str_replace("'></head></html>", "", $url);
+//		$url = preg_replace("/\xEF\xBB\xBF/", "", $url);
+//		$url = trim($url);
+//		$out = file_get_contents($url);
 
 		$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
 		file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
