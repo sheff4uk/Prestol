@@ -20,7 +20,7 @@
 //		$cash_from = date('d.m.Y', mktime(0, 0, 0, date("m")-1, date("d"), date("Y")));
 		$cash_to = date('d.m.Y');
 	}
-
+///////////////////////////////////////////////////////////////////////
 	// Изменение периода отображения
 	if( isset($_POST["cash_from"]) ) {
 		$_SESSION["cash_from"] = $_POST["cash_from"];
@@ -28,35 +28,7 @@
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
-
-	// Принятие платежа
-	if( isset($_GET["cost_name"]) )
-	{
-		$OP_ID = $_GET["OP_ID"];
-		$payment_sum = $_GET["payment_sum"];
-		$cost_name = mysqli_real_escape_string( $mysqli, $_GET["cost_name"]);
-
-		$query = "UPDATE OrdersPayment
-				  SET send = 2
-				  WHERE OP_ID = {$OP_ID}";
-		if( !mysqli_query( $mysqli, $query ) ) {
-			$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
-		}
-		else {
-			$query = "INSERT INTO OrdersPayment
-						SET payment_date = NOW(),
-							payment_sum = {$payment_sum},
-							cost_name = '{$cost_name}',
-							send = 2";
-			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
-			}
-		}
-
-		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
-		die;
-	}
-
+///////////////////////////////////////////////////////////////////////
 	// Добавление/редактирование операции
 	if( isset($_GET["add_operation"]) )
 	{
@@ -104,6 +76,43 @@
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
+////////////////////////////////////////////////////////////////////////////////
+	// Принятие выручки
+	if( isset($_GET["add_send"]) )
+	{
+		$OP_ID = $_POST["OP_ID"];
+		$FA_ID = $_POST["account"];
+
+		$query = "UPDATE OrdersPayment
+				  SET send = 2
+				  WHERE OP_ID = {$OP_ID}";
+		if( !mysqli_query( $mysqli, $query ) ) {
+			$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+		}
+		else {
+			$query = "INSERT INTO Finance (money, date, FA_ID, FC_ID, comment, OP_ID)
+
+					SELECT ABS(OP.payment_sum) money
+						#,OP.payment_date date
+						,NOW() date
+						,{$FA_ID} FA_ID
+						,3 FC_ID
+						,OP.cost_name comment
+						,OP.OP_ID
+					FROM OrdersPayment OP
+					LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
+					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+					LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+					WHERE OP.OP_ID = {$OP_ID}";
+			if( !mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+			}
+		}
+
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		die;
+	}
+///////////////////////////////////////////////////////////////////////////////////
 ?>
 
 <style>
@@ -168,7 +177,8 @@
 			echo "<td>{$row["City"]} ({$row["cost_name"]})</td>";
 			echo "<td>{$row["payment_date"]}</td>";
 			echo "<td class='txtright'><b>{$payment_sum}</b></td>";
-			echo "<td><a class='button' onclick='if(confirm(\"{$delmessage}\", \"?OP_ID={$row["OP_ID"]}&payment_sum={$row["payment_sum"]}&cost_name=Отправка из {$row["City"]} ({$row["cost_name"]})\")) return false;' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
+//			echo "<td><a class='button' onclick='if(confirm(\"{$delmessage}\", \"?OP_ID={$row["OP_ID"]}&payment_sum={$row["payment_sum"]}&cost_name=Отправка из {$row["City"]} ({$row["cost_name"]})\")) return false;' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
+			echo "<td><a class='button add_send_btn' OP_ID='{$row["OP_ID"]}' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
 			echo "</tr>";
 		}
 	?>
@@ -326,15 +336,15 @@
 	</div>
 </div>
 
-<!-- Форма добавления/редактирования операции -->
 <style>
-	#add_operation .field{
+	#add_operation .field, #add_send .field{
 		display: inline-block;
 		margin-right: 20px;
 		margin-bottom: 20px;
 	}
 </style>
 
+<!-- Форма добавления/редактирования операции -->
 <div id='add_operation' style='display:none' title="ДОБАВИТЬ ОПЕРАЦИЮ">
 	<form method='post' action='<?=$location?>?add_operation=1'>
 		<fieldset>
@@ -414,6 +424,35 @@
 </div>
 <!-- Конец формы добавления/редактирования расхода/прихода -->
 
+<!-- Форма принятия выручки -->
+<div id='add_send' style='display:none' title="ПРИНЯТЬ ВЫРУЧКУ">
+	<form method='post' action='<?=$location?>?add_send=1'>
+		<fieldset>
+			<input type="hidden" id="OP_ID" name="OP_ID">
+			<div style="text-align: center;">
+				<label for="account">Счет:</label><br>
+					<div class='btnset'>
+					<?
+					$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) )
+					{
+						echo "<input required type='radio' name='account' id='acc_{$row["FA_ID"]}' value='{$row["FA_ID"]}'>";
+						echo "<label for='acc_{$row["FA_ID"]}'>{$row["name"]}</label>";
+					}
+					?>
+				</div>
+			</div>
+			<p style="color: red; text-align: center;"><b>Внимание!</b> Данную операцию отменить невозможно.</p>
+		</fieldset>
+		<div>
+			<hr>
+			<button style='float: right;'>Принять</button>
+		</div>
+	</form>
+</div>
+<!-- Конец форма принятия выручки -->
+
 <script>
 	$(document).ready(function() {
 		$('#add_operation form').submit(function() {
@@ -476,6 +515,22 @@
 			}
 
 			$('#add_operation').dialog({
+				width: 500,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
+			return false;
+		});
+
+		// Кнопка принятия выручки
+		$('.add_send_btn').click( function() {
+			$('#add_send #OP_ID').val($(this).attr('OP_ID'));
+			$('#add_send input[type="radio"]').prop('checked', false);
+			$('#add_send .btnset').buttonset("refresh");
+
+			$('#add_send').dialog({
 				width: 500,
 				modal: true,
 				show: 'blind',
