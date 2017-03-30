@@ -214,8 +214,8 @@
 			<tbody>
 			<?
 				$query = "SELECT SF.F_ID
+								,SF.date_sort
 								,SF.date
-								,SF.date_form
 								,SF.type
 								,SF.money
 								,SF.account
@@ -231,8 +231,8 @@
 								,SF.account_filter
 							FROM (
 								SELECT F.F_ID
-									,DATE_FORMAT(F.date, '%d.%m') date
-									,DATE_FORMAT(F.date, '%d.%m.%Y') date_form
+									,F.date date_sort
+									,DATE_FORMAT(F.date, '%d.%m.%Y') date
 									,IFNULL(FC.type, 0) type
 									,IF(FC.type = 2, 1, -1) * F.money money
 									,FA.name account
@@ -256,8 +256,8 @@
 								UNION ALL
 
 								SELECT F.F_ID
-									,DATE_FORMAT(F.date, '%d.%m') date
-									,DATE_FORMAT(F.date, '%d.%m.%Y') date_form
+									,F.date date_sort
+									,DATE_FORMAT(F.date, '%d.%m.%Y') date
 									,0 type
 									,F.money
 									,TFA.name account
@@ -285,7 +285,7 @@
 							#AND SF.FC_ID IN (1,4)
 							#AND SF.comment LIKE '%возврат%'
 							#AND SF.kontragent LIKE '%авто%'
-							ORDER BY SF.date DESC, SF.F_ID DESC";
+							ORDER BY SF.date_sort DESC, SF.F_ID DESC";
 
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				$cash_in = 0;
@@ -304,30 +304,12 @@
 					echo "<td><span class='nowrap'>{$row["kontragent"]}</span></td>";
 					echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
 					if( $row["is_edit"] ) {
-						echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["date_form"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a></td>";
+						echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["date"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a></td>";
 					}
 					else {
 						echo "<td></td>";
 					}
 					echo "</tr>";
-
-					// Показываем обратную операцию перевода денег
-//					if( $row["type"] == 0 ) {
-//						echo "<tr>";
-//						echo "<td>{$row["date"]}</td>";
-//						echo "<td style='text-align: center;'>{$type}</td>";
-//						echo "<td class='txtright' style='color: #16A085;'><b>".( abs($money) )."</b></td>";
-//						echo "<td><span>{$row["account"]}</span></td>";
-//						echo "<td><span>{$row["category"]}</span></td>";
-//						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
-//						if( $row["is_edit"] ) {
-//							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["date_form"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' comment='{$row["comment"]}' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a></td>";
-//						}
-//						else {
-//							echo "<td></td>";
-//						}
-//						echo "</tr>";
-//					}
 				}
 				$cash_in = number_format($cash_in, 0, '', ' ');
 			?>
