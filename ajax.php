@@ -210,15 +210,17 @@ case "livesearch":
 		$table .= "<td><a class='edit_steps nowrap shadow{$row["Attention"]}'>{$row["Steps"]}</a></td>";
 		$table .= "<td>";
 		switch ($row["IsExist"]) {
-			case 0:
+			case "0":
 				$table .= "<span class='bg-red'>";
 				break;
-			case 1:
+			case "1":
 				$table .= "{$row["clock"]}<span class='bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
 				break;
-			case 2:
+			case "2":
 				$table .= "<span class='bg-green'>";
 				break;
+			default:
+				$table .= "<span class='bg-gray'>";
 		}
 		$table .= "{$row["Material"]}</span></td>";
 		$table .= "<td>{$row["Comment"]}</td></tr>";

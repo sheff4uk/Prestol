@@ -16,7 +16,7 @@
 		$isexist = $_GET["isex"];
 	}
 	else {
-		$isexist = 0;
+		$isexist = "0";
 	}
 
 	if( isset($_GET["prod"]) ) {
@@ -90,6 +90,8 @@
 		<div>
 			<label for='isexist'>Наличие:&nbsp;</label>
 			<div class='btnset' id='isexist'>
+				<input type='radio' id='isex' name='isex' value='NULL' <?= ($isexist =="NULL" ? "checked" : "") ?>>
+					<label for='isex'>Неизвестно</label>
 				<input type='radio' id='isex0' name='isex' value='0' <?= ($isexist =="0" ? "checked" : "") ?>>
 					<label for='isex0'>Нет</label>
 				<input type='radio' id='isex1' name='isex' value='1' <?= ($isexist =="1" ? "checked" : "") ?>>
@@ -173,7 +175,7 @@
 									WHERE ODS.Visible = 1 AND ODS.Old != 1 AND ODS.ODB_ID IS NOT NULL
 									GROUP BY ODS.ODB_ID
 								) ODS_ST ON ODS_ST.ODB_ID = ODB.ODB_ID
-							) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID AND ODD_ODB.IsExist = {$isexist}".( isset( $_GET["ready"] ) ? " AND ODD_ODB.IsReady = {$_GET["ready"]}" : "" ).( isset( $_GET["WD_ID"] ) ? " AND ODD_ODB.WD_ID = {$_GET["WD_ID"]}" : "" )."
+							) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID AND ODD_ODB.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist ).( isset( $_GET["ready"] ) ? " AND ODD_ODB.IsReady = {$_GET["ready"]}" : "" ).( isset( $_GET["WD_ID"] ) ? " AND ODD_ODB.WD_ID = {$_GET["WD_ID"]}" : "" )."
 							LEFT JOIN OrdersData OD ON OD.OD_ID = ODD_ODB.OD_ID
 							WHERE MT.PT_ID = {$product} AND OD.ReadyDate IS NULL
 							GROUP BY MT.MT_ID
@@ -260,6 +262,7 @@
 									WHEN 0 THEN 'bg-red'
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
 									WHEN 2 THEN 'bg-green'
+									ELSE 'bg-gray'
 								END,
 								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\' title=\'Для отмены изменений нажмите клавишу ESC\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
@@ -286,7 +289,7 @@
 							  WHERE ODS.Visible = 1 AND ODS.Old != 1 AND ODS.ODD_ID IS NOT NULL
 							  GROUP BY ODS.ODD_ID
 						  ) ODS_ST ON ODS_ST.ODD_ID = ODD.ODD_ID
-						  WHERE ODD.IsExist = {$isexist} AND IFNULL(PM.PT_ID, 2) = {$product}
+						  WHERE ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )." AND IFNULL(PM.PT_ID, 2) = {$product}
 						  AND (ODD.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
 						  UNION ALL
 						  SELECT ODB.OD_ID
@@ -306,6 +309,7 @@
 									WHEN 0 THEN 'bg-red'
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
 									WHEN 2 THEN 'bg-green'
+									ELSE 'bg-gray'
 								END,
 								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\' title=\'Для отмены изменений нажмите клавишу ESC\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
@@ -329,7 +333,7 @@
 							  WHERE ODS.Visible = 1 AND ODS.Old != 1 AND ODS.ODB_ID IS NOT NULL
 							  GROUP BY ODS.ODB_ID
 						  ) ODS_ST ON ODS_ST.ODB_ID = ODB.ODB_ID
-						  WHERE ODB.IsExist = {$isexist} AND MT.PT_ID = {$product}
+						  WHERE ODB.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )." AND MT.PT_ID = {$product}
 						  AND (ODB.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
 						  ORDER BY PT_ID DESC, ItemID
 						  ) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
@@ -368,13 +372,13 @@
 		}
 
 		switch ($row["IsPainting"]) {
-			case 1:
+			case "1":
 				echo "<td class='notready' title='Не в работе'>{$row["Color"]}</td>";
 				break;
-			case 2:
+			case "2":
 				echo "<td class='inwork' title='В работе'>{$row["Color"]}</td>";
 				break;
-			case 3:
+			case "3":
 				echo "<td class='ready' title='Готово'>{$row["Color"]}</td>";
 				break;
 			default:
@@ -463,6 +467,8 @@
 	<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>
 	<p>
 		<div class='btnset radiostatus'>
+			<input type='radio' id='radio' name='IsExist' value='NULL'>
+				<label for='radio'>Неизвестно</label>
 			<input type='radio' id='radio0' name='IsExist' value='0'>
 				<label for='radio0'>Нет</label>
 			<input type='radio' id='radio1' name='IsExist' value='1'>

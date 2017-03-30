@@ -305,6 +305,12 @@ input[type="checkbox"].nightshift + label {
 	border-radius: 20%;
 }
 
+.bg-gray {
+	background-color: #ddd;
+//	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+	border-radius: 20%;
+}
+
 //.b-string {
 //    position: relative;
 //    width: 100px;

@@ -68,6 +68,8 @@
 		<div>
 			<label>Наличие:</label>
 			<div class='btnset radiostatus'>
+				<input type='radio' id='1radio' name='IsExist' value='NULL'>
+					<label for='1radio'>Неизвестно</label>
 				<input type='radio' id='1radio0' name='IsExist' value='0'>
 					<label for='1radio0'>Нет</label>
 				<input type='radio' id='1radio1' name='IsExist' value='1'>
@@ -199,6 +201,8 @@
 		<div>
 			<label>Наличие:</label>
 			<div class='btnset radiostatus'>
+				<input type='radio' id='2radio' name='IsExist' value='NULL'>
+					<label for='2radio'>Неизвестно</label>
 				<input type='radio' id='2radio0' name='IsExist' value='0'>
 					<label for='2radio0'>Нет</label>
 				<input type='radio' id='2radio1' name='IsExist' value='1'>
@@ -332,6 +336,8 @@
 			<div>
 				<label>Наличие:</label>
 				<div class='btnset radiostatus'>
+					<input type='radio' id='0radio' name='IsExist' value='NULL'>
+						<label for='0radio'>Неизвестно</label>
 					<input type='radio' id='0radio0' name='IsExist' value='0'>
 						<label for='0radio0'>Нет</label>
 					<input type='radio' id='0radio1' name='IsExist' value='1'>

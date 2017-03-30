@@ -67,9 +67,9 @@ function materialonoff(element)
 	{
 		$(element+' .radiostatus input[type="radio"]').prop('disabled', true);
 		// Очистка инпутов дат заказа пластика
-		$('#1radio0').prop('checked', true);
-		$('#2radio2').prop('checked', true);
-		$('#0radio0').prop('checked', true);
+		$('#1radio').prop('checked', true);
+		$('#2radio').prop('checked', true);
+		$('#0radio').prop('checked', true);
 		$(element+' .order_material').hide('fast');
 		$(element+' .order_material input').attr("required", false);
 		$(element+' .order_material input').val('');
@@ -126,7 +126,7 @@ function FormModelList(model, form) {
 		$('#addtable #forms').buttonset();
 	}
 }
-
+////////////////////////////////////////////////////////////////////////////////
 $(document).ready(function(){
 	$( '.checkstatus' ).button();
 	$( '.btnset' ).buttonset();
@@ -196,7 +196,7 @@ $(document).ready(function(){
 		$('#addchair textarea').val('');
 		$('#addchair input[name="Amount"]').val('');
 		$('#addchair input[name="Price"]').val('');
-		$('#1radio0').prop('checked', true);
+		$('#1radio').prop('checked', true);
 		$('#addchair .radiostatus input[type="radio"]').prop('disabled', true);
 		$('#addchair .radiostatus input[type="radio"]').button('refresh');
 		$('#addchair input[name="Amount"]').removeAttr('max');
@@ -312,7 +312,7 @@ $(document).ready(function(){
 		$('#addtable input[name="Price"]').val('');
 		$('#addtable input[name="Length"]').val(''); //было 1300
 		$('#addtable input[name="Width"]').val(''); //было 800
-		$('#2radio0').prop('checked', true);
+		$('#2radio').prop('checked', true);
 		$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
 		$('#addtable .radiostatus input[type="radio"]').button('refresh');
 		$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
@@ -465,7 +465,7 @@ $(document).ready(function(){
 		$('#addblank textarea, #addblank select, #addblank input[type="text"]').val('');
 		$('#addblank input[name="Amount"]').val('');
 		$('#addblank input[name="Price"]').val('');
-		$('#0radio0').prop('checked', true);
+		$('#0radio').prop('checked', true);
 		$('#addblank .radiostatus input[type="radio"]').prop('disabled', true);
 		$('#addblank .radiostatus input[type="radio"]').button('refresh');
 		$('#addblank input[name="Other"]').prop('disabled', false);
@@ -599,7 +599,7 @@ $(document).ready(function(){
 
 		$("#addblank").dialog(
 		{
-			width: 500,
+			width: 600,
 			modal: true,
 			show: 'blind',
 			hide: 'explode',

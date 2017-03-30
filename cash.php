@@ -177,7 +177,6 @@
 			echo "<td>{$row["City"]} ({$row["cost_name"]})</td>";
 			echo "<td>{$row["payment_date"]}</td>";
 			echo "<td class='txtright'><b>{$payment_sum}</b></td>";
-//			echo "<td><a class='button' onclick='if(confirm(\"{$delmessage}\", \"?OP_ID={$row["OP_ID"]}&payment_sum={$row["payment_sum"]}&cost_name=Отправка из {$row["City"]} ({$row["cost_name"]})\")) return false;' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
 			echo "<td><a class='button add_send_btn' OP_ID='{$row["OP_ID"]}' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
 			echo "</tr>";
 		}

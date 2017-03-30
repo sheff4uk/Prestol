@@ -116,6 +116,7 @@
 								WHEN 0 THEN 'bg-red'
 								WHEN 1 THEN 'bg-yellow'
 								WHEN 2 THEN 'bg-green'
+								ELSE 'bg-gray'
 							END,
 						'\'>', IFNULL(MT.Material, ''), '</span><br>') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') Material
 				  FROM OrdersData OD

@@ -538,15 +538,17 @@
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
-			case 0:
+			case "0":
 				echo "bg-red'>";
 				break;
-			case 1:
+			case "1":
 				echo "bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
 				break;
-			case 2:
+			case "2":
 				echo "bg-green'>";
 				break;
+			default:
+				echo "bg-gray'>";
 		}
 		echo "{$row["Material"]}</span>";
 		echo "<input type='text' class='materialtags_{$row["PT_ID"]}' style='display: none;' title='Для отмены изменений нажмите клавишу ESC'>";
@@ -631,15 +633,17 @@
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
-			case 0:
+			case "0":
 				echo "bg-red'>";
 				break;
-			case 1:
+			case "1":
 				echo "bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
 				break;
-			case 2:
+			case "2":
 				echo "bg-green'>";
 				break;
+			default:
+				echo "bg-gray'>";
 		}
 		echo "{$row["Material"]}</span>";
 		echo "<input type='text' class='materialtags_{$row["PT_ID"]}' style='display: none;' title='Для отмены изменений нажмите клавишу ESC'>";
