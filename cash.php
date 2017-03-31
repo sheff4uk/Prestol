@@ -194,6 +194,7 @@
 			<input readonly type="text" name="cash_to" class="date to" value="<?=$cash_to?>">
 			 ]
 		</form>
+		<p>Изменение: <b id="cash_change"></b></p>
 	</div>
 
 	<div style="display: flex;">
@@ -228,12 +229,13 @@
 								,SF.KA_ID
 								,SF.is_edit
 								,SF.account_filter
+								,SF.receipt
 							FROM (
 								SELECT F.F_ID
 									,F.date date_sort
 									,DATE_FORMAT(F.date, '%d.%m.%Y') date
 									,IFNULL(FC.type, 0) type
-									,IF(FC.type = 2, 1, -1) * F.money money
+									,IFNULL(FC.type, -1) * F.money money
 									,FA.name account
 									,IF(F.to_account IS NULL, FC.name, CONCAT(FA.name, ' => ', TFA.name)) category
 									,KA.Naimenovanie kontragent
@@ -245,6 +247,7 @@
 									,F.KA_ID
 									,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
 									,F.FA_ID account_filter
+									,0 receipt
 								FROM Finance F
 								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
@@ -270,6 +273,7 @@
 									,F.KA_ID
 									,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
 									,F.to_account account_filter
+									,1 receipt
 								FROM Finance F
 								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
@@ -287,35 +291,46 @@
 							ORDER BY SF.date_sort DESC, SF.F_ID DESC";
 
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				$cash_in = 0;
+				$cash_in = 0; // Сумма видимых операций
 				while( $row = mysqli_fetch_array($res) ) {
 					$cash_in = $cash_in + $row["money"];
 					$color = $row["money"] < 0 ? '#E74C3C' : '#16A085';
 					$money = number_format($row["money"], 0, '', ' ');
-					$type = ($row["type"] == 2 ? '<i class="fa fa-plus" style="color: #16A085;"></i>' : ($row["type"] == 1 ? '<i class="fa fa-minus" style="color: #E74C3C;"></i>' : '<i class="fa fa-exchange"></i>'));
+					$type = ($row["type"] == 1 ? '<i class="fa fa-plus" style="color: #16A085;"></i>' : ($row["type"] == -1 ? '<i class="fa fa-minus" style="color: #E74C3C;"></i>' : '<i class="fa fa-exchange"></i>'));
 
-					echo "<tr>";
-					echo "<td>{$row["date"]}</td>";
-					echo "<td style='text-align: center;'>{$type}</td>";
-					echo "<td class='txtright' style='color: {$color};'><b>{$money}</b></td>";
-					echo "<td><span>{$row["account"]}</span></td>";
-					echo "<td><span>{$row["category"]}</span></td>";
-					echo "<td><span class='nowrap'>{$row["kontragent"]}</span></td>";
-					echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
-					if( $row["is_edit"] ) {
-						echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["date"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a></td>";
+					if( $row["receipt"] == 0 or 1 ) {
+						echo "<tr>";
+						echo "<td>{$row["date"]}</td>";
+						echo "<td style='text-align: center;'>{$type}</td>";
+						echo "<td class='txtright' style='color: {$color};'><b>{$money}</b></td>";
+						echo "<td><span>{$row["account"]}</span></td>";
+						echo "<td><span>{$row["category"]}</span></td>";
+						echo "<td><span class='nowrap'>{$row["kontragent"]}</span></td>";
+						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
+						if( $row["is_edit"] ) {
+							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["date"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a></td>";
+						}
+						else {
+							echo "<td></td>";
+						}
+						echo "</tr>";
 					}
-					else {
-						echo "<td></td>";
-					}
-					echo "</tr>";
 				}
 				$cash_in = number_format($cash_in, 0, '', ' ');
+				$color = $cash_in < 0 ? '#E74C3C' : '#16A085';
+				$cash_change = "<span style='color: {$color};'>{$cash_in}</span>";
+				$cash_change = addslashes( $cash_change );
 			?>
 			</tbody>
 		</table>
 	</div>
 </div>
+
+<script>
+	$(document).ready(function() {
+		$('#cash_change').html('<?=$cash_change?>');
+	});
+</script>
 
 <style>
 	#add_operation .field, #add_send .field{
