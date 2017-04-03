@@ -120,18 +120,52 @@
 		border: 1px solid #bbb;
 		padding: 10px;
 		border-radius: 10px;
-		margin-top: 10px;
-		z-index: 2;
-		width: 800px;
-		margin: auto;
-		overflow: auto;
+		width: 680px;
 		white-space: nowrap;
+		display: inline-block;
+	}
+	#wr_account {
+		border: 1px solid #bbb;
+		padding: 10px;
+		border-radius: 10px;
+		width: 300px;
+		display: inline-block;
+		margin-right: 20px;
+	}
+	#add_operation_btn {
+		background: url(../img/bt_speed_dial_1x.png) no-repeat scroll center center transparent;
+		bottom: 100px;
+		cursor: pointer;
+		width: 56px;
+		height: 56px;
+		opacity: .4;
+		position: fixed;
+		right: 50px;
+		z-index: 9;
+		border-radius: 50%;
+		background-color: #16A085;
+		box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
+	}
+	#add_operation_btn:hover {
+		opacity: 1;
+	}
+	.account_label {
+		position: relative;
+	}
+	.account_label a {
+		position: absolute;
+		left: 100px;
+		top: 5px;
+		opacity: 0;
+	}
+	.account_label:hover a {
+		opacity: 1;
 	}
 </style>
 
 <?
 	// Узнаем общий остаток наличных
-	$query = "SELECT SUM(pay_in) - SUM(pay_out) ostatok FROM OstatkiShops WHERE CT_ID = 0";
+	$query = "SELECT SUM(end_balance) ostatok FROM `FinanceAccount`";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$ostatok = mysqli_result($res,0,'ostatok');
 	$format_ostatok = number_format($ostatok, 0, '', ' ');
@@ -142,47 +176,77 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$account = mysqli_result($res,0,'FA_ID');
 
-	echo "<a href='#' class='add_operation_btn' type='-1' cost_date='{$now_date}' account='{$account}' title='Добавить операцию'><i class='fa fa-pencil fa-lg'></i></a>";
+	echo "<a id='add_operation_btn' href='#' class='add_operation_btn' type='-1' cost_date='{$now_date}' account='{$account}' title='Добавить в учёт'></a>";
 ?>
 
 <div style="width: 1000px; margin: auto;">
-	<h2 style="text-align: center;">Касса: <?=$format_ostatok?></h2>
+	<div style="display: flex;">
+		<div id="wr_account">
+			<table class="main_table">
+				<tbody>
+					<?
+						$total = 0;
+						$query = "SELECT FA_ID, name, end_balance FROM FinanceAccount ORDER BY IFNULL(bank, 0), FA_ID";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							$total = $total + $row["end_balance"];
+							$color = $row["end_balance"] < 0 ? '#E74C3C' : '#16A085';
+							$money = number_format($row["end_balance"], 0, '', ' ');
 
-	<div id="wr_send">
-	<table style="width: 100%;">
-		<thead>
-			<tr>
-				<th colspan="4">Отправлено</th>
-			</tr>
-		</thead>
-		<tbody>
-	<?
-		$query = "SELECT OP.OP_ID
-						,DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
-						,ABS(OP.payment_sum) payment_sum
-						,OP.cost_name
-						,CT.City
-				FROM OrdersPayment OP
-				JOIN Cities CT ON CT.CT_ID = OP.CT_ID
-				WHERE send = 1 AND payment_sum < 0
-				ORDER BY OP.payment_date DESC";
+							echo "<tr>";
+							echo "<td class='account_label'>{$row["name"]}<a href='#'><i class='fa fa-pencil fa-lg'></i></a></td>";
+							echo "<td width='100' class='txtright' style='color: {$color};'><b>{$money}</b></td>";
+							echo "</tr>";
+						}
+						$color = $total < 0 ? '#E74C3C' : '#16A085';
+						$money = number_format($total, 0, '', ' ');
 
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						echo "<tr>";
+						echo "<td><h3>Итого:</h3></td>";
+						echo "<td width='100' class='txtright' style='color: {$color};'><h3>{$money}</h3></td>";
+						echo "</tr>";
+					?>
+				</tbody>
+			</table>
+		</div>
 
-		while( $row = mysqli_fetch_array($res) ) {
-			$payment_sum = number_format($row["payment_sum"], 0, '', ' ');
-			$delmessage = addslashes("Принять <b>{$payment_sum}р</b> из {$row["City"]} ({$row["cost_name"]})?<br><b>Внимание!</b> Данную операцию отменить невозможно.");
+		<div id="wr_send">
+		<table style="width: 100%;">
+			<thead>
+				<tr>
+					<th colspan="4">Отправлено</th>
+				</tr>
+			</thead>
+			<tbody>
+		<?
+			$query = "SELECT OP.OP_ID
+							,DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
+							,ABS(OP.payment_sum) payment_sum
+							,OP.cost_name
+							,CT.City
+					FROM OrdersPayment OP
+					JOIN Cities CT ON CT.CT_ID = OP.CT_ID
+					WHERE send = 1 AND payment_sum < 0
+					ORDER BY OP.payment_date DESC";
 
-			echo "<tr>";
-			echo "<td>{$row["City"]} ({$row["cost_name"]})</td>";
-			echo "<td>{$row["payment_date"]}</td>";
-			echo "<td class='txtright'><b>{$payment_sum}</b></td>";
-			echo "<td><a class='button add_send_btn' OP_ID='{$row["OP_ID"]}' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
-			echo "</tr>";
-		}
-	?>
-		</tbody>
-	</table>
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			while( $row = mysqli_fetch_array($res) ) {
+				$payment_sum = number_format($row["payment_sum"], 0, '', ' ');
+				$delmessage = addslashes("Принять <b>{$payment_sum}р</b> из {$row["City"]} ({$row["cost_name"]})?<br><b>Внимание!</b> Данную операцию отменить невозможно.");
+
+				echo "<tr>";
+				echo "<td>{$row["City"]} ({$row["cost_name"]})</td>";
+				echo "<td>{$row["payment_date"]}</td>";
+				echo "<td class='txtright'><b>{$payment_sum}</b></td>";
+				echo "<td><a class='button add_send_btn' OP_ID='{$row["OP_ID"]}' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
+				echo "</tr>";
+			}
+		?>
+			</tbody>
+		</table>
+		</div>
 	</div>
 
 	<div style="text-align: center; margin: 10px;">
