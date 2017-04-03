@@ -37,9 +37,9 @@
 		$cost_date = date( 'Y-m-d', strtotime($_POST["cost_date"]) );
 		$account = $_POST["account"];
 		$type = $_POST["type"];
-		$category = ( $_POST["category"] and ( $type == 1 or $type == 2) ) ? $_POST["category"] : "NULL";
+		$category = ( $_POST["category"] and ( $type == -1 or $type == 1) ) ? $_POST["category"] : "NULL";
 		$to_account = ( $_POST["to_account"] and $type == 0 ) ? $_POST["to_account"] : "NULL";
-		$KA_ID = ( $_POST["kontragent"] and $type == 2 ) ? $_POST["kontragent"] : "NULL";
+		$KA_ID = ( $_POST["kontragent"] and $type == 1 ) ? $_POST["kontragent"] : "NULL";
 		$coment = mysqli_real_escape_string( $mysqli, $_POST["comment"] );
 
 		if( $F_ID != '' ) { // Редактируем операцию
@@ -142,7 +142,7 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$account = mysqli_result($res,0,'FA_ID');
 
-	echo "<a href='#' class='add_operation_btn' type='1' cost_date='{$now_date}' account='{$account}' title='Добавить операцию'><i class='fa fa-pencil fa-lg'></i></a>";
+	echo "<a href='#' class='add_operation_btn' type='-1' cost_date='{$now_date}' account='{$account}' title='Добавить операцию'><i class='fa fa-pencil fa-lg'></i></a>";
 ?>
 
 <div style="width: 1000px; margin: auto;">
@@ -383,10 +383,10 @@
 			<div class="field">
 				<label for="type">Тип операции:</label>
 				<div class='btnset' id='type'>
-					<input type='radio' id='type1' name='type' value='-1'>
-						<label for='type1'><i class="fa fa-minus fa-lg" title="Расход"></i></label>
-					<input required type='radio' id='type2' name='type' value='1'>
-						<label for='type2'><i class="fa fa-plus fa-lg" title="Доход"></i></label>
+					<input type='radio' id='type-1' name='type' value='-1'>
+						<label for='type-1'><i class="fa fa-minus fa-lg" title="Расход"></i></label>
+					<input required type='radio' id='type1' name='type' value='1'>
+						<label for='type1'><i class="fa fa-plus fa-lg" title="Доход"></i></label>
 					<input type='radio' id='type0' name='type' value='0'>
 						<label for='type0'><i class="fa fa-exchange fa-lg" title="Перевод со счета"></i></label>
 				</div>
