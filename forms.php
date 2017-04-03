@@ -46,7 +46,8 @@
 		</div>
 		<div>
 			<label>Патина:</label>
-			<input type="text" name="patina" placeholder="Цвет патины">
+			<input type="text" name="patina" placeholder="Цвет патины" style="width: 100px;">
+			<span style="color: #ed362f;">Оставьте пустым, если патина не требуется!</span>
 		</div>
 		<div>
 			<label>Ткань:</label>
@@ -145,7 +146,8 @@
 		</div>
 		<div>
 			<label>Патина:</label>
-			<input type="text" name="patina" placeholder="Цвет патины">
+			<input type="text" name="patina" placeholder="Цвет патины" style="width: 100px;">
+			<span style="color: #ed362f;">Оставьте пустым, если патина не требуется!</span>
 		</div>
 		<div>
 			<label>Форма:</label>
@@ -299,7 +301,8 @@
 			</div>
 			<div>
 				<label>Патина:</label>
-				<input type="text" name="patina" placeholder="Цвет патины">
+				<input type="text" name="patina" placeholder="Цвет патины" style="width: 100px;">
+				<span style="color: #ed362f;">Оставьте пустым, если патина не требуется!</span>
 			</div>
 			<div>
 				<label>Ткань:</label>
