@@ -383,9 +383,9 @@
 			<div class="field">
 				<label for="type">Тип операции:</label>
 				<div class='btnset' id='type'>
-					<input type='radio' id='type1' name='type' value='1'>
+					<input type='radio' id='type1' name='type' value='-1'>
 						<label for='type1'><i class="fa fa-minus fa-lg" title="Расход"></i></label>
-					<input required type='radio' id='type2' name='type' value='2'>
+					<input required type='radio' id='type2' name='type' value='1'>
 						<label for='type2'><i class="fa fa-plus fa-lg" title="Доход"></i></label>
 					<input type='radio' id='type0' name='type' value='0'>
 						<label for='type0'><i class="fa fa-exchange fa-lg" title="Перевод со счета"></i></label>
@@ -407,7 +407,7 @@
 					?>
 				</select>
 			</div>
-			<div class="field">
+			<div>
 				<label for="comment">Комментарии:</label><br>
 				<textarea name="comment" id="comment" rows="3" style="width: 300px;"></textarea>
 			</div>
@@ -540,11 +540,11 @@
 		$('#type > input').change(function() {
 			type = $(this).val();
 			$.ajax({ url: "ajax.php?do=cash_category&type="+type, dataType: "script", async: false });
-			if( type == 2 ) {
-				$('#wr_kontragent').show();
+			if( type == 1 ) {
+				$('#wr_kontragent').show('fast');
 			}
 			else {
-				$('#wr_kontragent').hide();
+				$('#wr_kontragent').hide('fast');
 			}
 			return false;
 		});
