@@ -97,12 +97,10 @@
 						,NOW() date
 						,{$FA_ID} FA_ID
 						,3 FC_ID
-						,OP.cost_name comment
+						,CONCAT(CT.City, ' (', OP.cost_name, ')') comment
 						,OP.OP_ID
 					FROM OrdersPayment OP
-					LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-					LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+					LEFT JOIN Cities CT ON CT.CT_ID = OP.CT_ID
 					WHERE OP.OP_ID = {$OP_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
