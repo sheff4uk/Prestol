@@ -184,7 +184,7 @@
 				<tbody>
 					<?
 						$total = 0;
-						$query = "SELECT FA_ID, name, end_balance FROM FinanceAccount ORDER BY IFNULL(bank, 0), FA_ID";
+						$query = "SELECT FA_ID, name, start_balance, end_balance, USR_ID, bank FROM FinanceAccount ORDER BY IFNULL(bank, 0), FA_ID";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{
@@ -193,7 +193,7 @@
 							$money = number_format($row["end_balance"], 0, '', ' ');
 
 							echo "<tr>";
-							echo "<td class='account_label'>{$row["name"]}<a href='#'><i class='fa fa-pencil fa-lg'></i></a></td>";
+							echo "<td class='account_label'>{$row["name"]}<a href='#' class='add_account_btn' FA_ID='{$row["FA_ID"]}' bank='{$row["bank"]}' name='{$row["name"]}' start_balance='{$row["start_balance"]}' USR_ID='{$row["USR_ID"]}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a></td>";
 							echo "<td width='100' class='txtright' style='color: {$color};'><b>{$money}</b></td>";
 							echo "</tr>";
 						}
@@ -400,8 +400,13 @@
 		margin-right: 20px;
 		margin-bottom: 20px;
 	}
+	#add_account .field{
+		display: inline-block;
+		margin-right: 20px;
+		margin-bottom: 20px;
+	}
 </style>
-
+<!--/////////////////////////////////////////////////////////////////-->
 <!-- Форма добавления/редактирования операции -->
 <div id='add_operation' style='display:none' title="ДОБАВИТЬ ОПЕРАЦИЮ">
 	<form method='post' action='<?=$location?>?add_operation=1'>
@@ -409,7 +414,7 @@
 			<input type="hidden" name="F_ID" id="F_ID">
 			<div class="field">
 				<label for="sum">Сумма:</label><br>
-				<input required type="number" name="sum" min="0" id="sum" style="width: 100px; text-align: right;">
+				<input required type="number" name="sum" min="0" id="sum" autocomplete="off" style="width: 100px; text-align: right;">
 			</div>
 			<div class="field">
 				<label for="cost_date">Дата:</label><br>
@@ -480,8 +485,7 @@
 		</div>
 	</form>
 </div>
-<!-- Конец формы добавления/редактирования расхода/прихода -->
-
+<!--/////////////////////////////////////////////////////////////////-->
 <!-- Форма принятия выручки -->
 <div id='add_send' style='display:none' title="ПРИНЯТЬ ВЫРУЧКУ">
 	<form method='post' action='<?=$location?>?add_send=1'>
@@ -509,8 +513,51 @@
 		</div>
 	</form>
 </div>
-<!-- Конец форма принятия выручки -->
-
+<!--/////////////////////////////////////////////////////////////////-->
+<!-- Форма добавления/редактирования счета -->
+<div id='add_account' style='display:none' title="ИЗМЕНИТЬ СЧЕТ">
+	<form method='post' action='<?=$location?>?add_account=1'>
+		<fieldset>
+			<input type="hidden" id="FA_ID" name="FA_ID">
+			<div class="field">
+				<label for="bank">Тип счета:</label><br>
+				<div class="btnset">
+					<input required type="radio" name="bank" id="bank0" value="">
+						<label for="bank0">Наличные</label>
+					<input required type="radio" name="bank" id="bank1" value="1">
+						<label for="bank1">Банковский счет</label>
+				</div>
+			</div>
+			<div class="field">
+				<label for="name">Название:</label><br>
+				<input required type="text" name="name" id="name" autocomplete="off" style="width: 200px;">
+			</div>
+			<div class="field">
+				<label for="start_balance">Начальный баланс:</label><br>
+				<input type="number" name="start_balance" autocomplete="off" id="start_balance" style="width: 100px; text-align: right;">
+			</div>
+			<div class="field">
+				<label for="USR_ID">Пользователь:</label><br>
+				<select name="USR_ID" id="USR_ID" style="width: 150px;">
+					<option value="">-=Выберите пользователя=-</option>
+					<?
+						$query = "SELECT USR_ID, Name FROM Users";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
+						}
+					?>
+				</select>
+			</div>
+		</fieldset>
+		<div>
+			<hr>
+			<button style='float: right;'>Сохранить</button>
+		</div>
+	</form>
+</div>
+<!--/////////////////////////////////////////////////////////////////-->
 <script>
 	$(document).ready(function() {
 		$('#add_operation form').submit(function() {
@@ -521,6 +568,8 @@
 		});
 
 		$('#kontragent').select2({ placeholder: 'Выберите контрагента', language: 'ru' });
+
+		$('#USR_ID').select2({ placeholder: 'Выберите пользователя', language: 'ru' });
 
 		// Костыль для Select2 чтобы работал поиск
 		$.ui.dialog.prototype._allowInteraction = function (e) {
@@ -590,6 +639,45 @@
 
 			$('#add_send').dialog({
 				width: 500,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
+			return false;
+		});
+
+		// Кнопка добавления/редактирования счета
+		$('.add_account_btn').click( function() {
+			$('#add_account #FA_ID').val('');
+			$('#add_account input[name="bank"]').prop('checked', false);
+			$('#add_account .btnset').buttonset("refresh");
+			$('#add_account input').val('');
+			$('#add_account #USR_ID').val('').trigger('change');
+
+			var FA_ID = $(this).attr('FA_ID');
+
+			if( FA_ID > 0 ) {
+				var bank = $(this).attr('bank');
+				var name = $(this).attr('name');
+				var start_balance = $(this).attr('start_balance');
+				var USR_ID = $(this).attr('USR_ID');
+
+				if( bank == '1' ) {
+					$('#add_account #bank1').prop('checked', true);
+				}
+				else {
+					$('#add_account #bank0').prop('checked', true);
+				}
+					$('#add_account .btnset').buttonset("refresh");
+
+				$('#add_account #name').val(name);
+				$('#add_account #start_balance').val(start_balance);
+				$('#add_account #USR_ID').val(USR_ID).trigger('change');
+			}
+
+			$('#add_account').dialog({
+				width: 400,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
