@@ -29,7 +29,7 @@ case "steps":
 				  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 				  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 				  WHERE ODD.ODD_ID = $odd_id";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		$pt = mysqli_result($res,0,'PT_ID');
 		$model = mysqli_result($res,0,'Model');
 		$size = mysqli_result($res,0,'Size');
@@ -43,7 +43,7 @@ case "steps":
 				  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 				  WHERE ODS.ODD_ID = $odd_id
 				  ORDER BY ODS.Old DESC, ST.Sort";
-		$result = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		$result = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 		$text = "<input type=\'hidden\' name=\'ODD_ID\' value=\'$odd_id\'>";
 	}
@@ -53,7 +53,7 @@ case "steps":
 				  FROM OrdersDataBlank ODB
 				  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 				  WHERE ODB.ODB_ID = $odb_id";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		$model = mysqli_result($res,0,'Name');
 		$amount = mysqli_result($res,0,'Amount');
 		$product = "<img src=\'/img/product_0.png\'>x{$amount}&nbsp;{$model}";
@@ -63,7 +63,7 @@ case "steps":
 				  FROM OrdersDataSteps ODS
 				  WHERE ODS.ODB_ID = $odb_id
 				  ORDER BY ODS.Old DESC";
-		$result = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		$result = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 		$text = "<input type=\'hidden\' name=\'ODB_ID\' value=\'$odb_id\'>";
 	}
@@ -109,7 +109,7 @@ case "steps":
 					  GROUP BY WD.WD_ID
 					  ORDER BY CNT DESC";
 		}
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		while( $subrow = mysqli_fetch_array($res) )
 		{
 			$selected = ( $row["WD_ID"] == $subrow["WD_ID"] ) ? "selected" : "";
@@ -178,7 +178,7 @@ case "livesearch":
 	$query .= " GROUP BY ODD.ODD_ID";
 	$query .= " ORDER BY progress DESC";
 	
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	if( mysqli_num_rows($res) > 0) {
 		$hidden = "<input type='hidden' name='free'>";
 		$table = "<table><thead><tr>";
@@ -258,11 +258,11 @@ case "ispainting":
 
 	// Обновляем статус лакировки
 	$query = "UPDATE OrdersData SET IsPainting = {$val}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 	// Получаем статус лакировки и отгрузку из базы
 	$query = "SELECT IsPainting, IFNULL(SHP_ID, 0) SHP_ID, IFNULL(SH_ID, 0) SH_ID FROM OrdersData WHERE OD_ID = {$id}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$val = mysqli_result($res,0,'IsPainting');
 	$SHP_ID = mysqli_result($res,0,'SHP_ID');
 	$SH_ID = mysqli_result($res,0,'SH_ID');
@@ -302,7 +302,7 @@ case "ispainting":
 						JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1 AND ODS.Old = 0
 					) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 					WHERE OD.SHP_ID = {$shpid}";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		$painting = mysqli_result($res,0,'IsPainting');
 		$ready = mysqli_result($res,0,'IsReady');
 		$is_orders_ready = ( $painting and $ready ) ? 1 : 0;
@@ -330,11 +330,11 @@ case "confirmed":
 
 	// Обновляем статус принятия заказа
 	$query = "UPDATE OrdersData SET confirmed = {$val}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 	// Получаем статус принятия заказа из базы
 	$query = "SELECT confirmed FROM OrdersData WHERE OD_ID = {$id}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$val = mysqli_result($res,0,'confirmed');
 
 	if( $val == 1) {
@@ -369,7 +369,7 @@ case "read_message":
 	else {
 		$query = "UPDATE OrdersMessage SET read_user = NULL, read_time = NULL WHERE OM_ID = {$id}";
 	}
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 	// Получаем статус статус сообщения
 	$query = "SELECT IFNULL(RUSR.Name, '') read_user
@@ -378,7 +378,7 @@ case "read_message":
 				FROM OrdersMessage OM
 				LEFT JOIN Users RUSR ON RUSR.USR_ID = OM.read_user
 				WHERE OM_ID = {$id}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$read_user = mysqli_result($res,0,'read_user');
 	$read_date = mysqli_result($res,0,'read_date');
 	$read_time = mysqli_result($res,0,'read_time');
@@ -422,29 +422,29 @@ case "materials":
 
 	if( $val != $oldval ) {
 		$query = "SELECT MT_ID FROM Materials WHERE PT_ID = {$ptid} AND Material = '{$val}'";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		// Если в списке материалов уже есть такое название
 		if( mysqli_num_rows($res) ) {
 			$mtid = mysqli_result($res,0,'MT_ID');
 			$query = "SELECT MT_ID, Count FROM Materials WHERE PT_ID = {$ptid} AND Material = '{$oldval}'";
-			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			$oldmtid = mysqli_result($res,0,'MT_ID');
 			$oldcount = mysqli_result($res,0,'Count');
 
 			// Меняем в заказах старый id материала на новый
 			$query = "UPDATE OrdersDataDetail SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
-			mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 			$query = "UPDATE OrdersDataBlank SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
-			mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 			// Удаляем старый материал из списка
 			$query = "DELETE FROM Materials WHERE MT_ID = {$oldmtid}";
-			mysqli_query( $mysqli, $query ) or die("noty({timeout: 13000, text: 'Invalid query1: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query1: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 			// Прибавляем старый счетчик к новому
 			$query = "UPDATE Materials SET Count = Count + {$oldcount} WHERE Material = '{$val}' AND PT_ID = {$ptid}";
-			mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 			// Меняем на экране старый id материала на новый
 			echo "$('.mt{$oldmtid}').addClass('mt{$mtid}');";
@@ -453,16 +453,16 @@ case "materials":
 		}
 		else {
 			$query = "UPDATE Materials SET Material = '{$val}' WHERE Material = '{$oldval}' AND PT_ID = {$ptid}";
-			mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		}
 		echo "noty({timeout: 3000, text: 'Название материала изменено на <b>{$val}</b>', type: 'success'});";
 	}
 	$query = "SELECT removed FROM Materials WHERE Material = '{$val}' AND PT_ID = {$ptid}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$oldremoved = mysqli_result($res,0,'removed');
 	if( $oldremoved != $removed ) {
 		$query = "UPDATE Materials SET removed = {$removed} WHERE Material = '{$val}' AND PT_ID = {$ptid}";
-		mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		if( $removed ) {
 			echo "noty({timeout: 3000, text: 'Материал помечен как выведенный.', type: 'success'});";
 		}
@@ -479,7 +479,7 @@ case "shipment":
 
 		$html = "";
 		$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID}";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		while( $row = mysqli_fetch_array($res) ) {
 			$html .= "<label for='shop{$row["SH_ID"]}'>{$row["Shop"]}</label><input type='checkbox' id='shop{$row["SH_ID"]}' class='button_shops'>";
 		}
@@ -487,7 +487,7 @@ case "shipment":
 
 		// Снимаем ограничение в 1024 на GROUP_CONCAT
 		$query = "SET @@group_concat_max_len = 10000;";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		mysqli_query( $mysqli, $query );
 
 		$query = "SELECT OD.OD_ID
 						,OD.Code
@@ -540,7 +540,7 @@ case "shipment":
 		}
 		$query .= " GROUP BY OD.OD_ID ORDER BY OD.OD_ID";
 
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
 		$html .= "<table class='main_table' id='to_shipment'><thead><tr><th width='70'>Код</th><th width='10%'>Салон</th><th width='30%'>Заказ</th><th width='20%'>Цвет</th><th width='130'>Этапы</th></tr></thead><tbody>";
 		while( $row = mysqli_fetch_array($res) ) {
@@ -631,7 +631,7 @@ case "shipment":
 		// Если на экране отгрузки - включаем задействованные салоны
 		if( $_GET["shpid"] ) {
 			$query = "SELECT SH_ID FROM OrdersData WHERE SHP_ID = {$_GET["shpid"]} GROUP BY SH_ID";
-			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "$('#add_shipment_form #shop".$row["SH_ID"]."').prop('checked', true).change();";
 			}
@@ -649,7 +649,7 @@ case "add_payment":
 
 	// Узнаем фамилию заказчика и дату продажи
 	$query = "SELECT ClientName, DATE_FORMAT(StartDate, '%d.%m.%Y') StartDate FROM OrdersData WHERE OD_ID = {$OD_ID}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$ClientName = mysqli_result($res,0,'ClientName');
 	$StartDate = mysqli_result($res,0,'StartDate');
 
@@ -678,7 +678,7 @@ case "add_payment":
 				FROM OrdersPayment
 				WHERE OD_ID = {$OD_ID} AND IFNULL(payment_sum, 0) != 0
 				ORDER BY OP_ID";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$payment_count = 0; // Счетчик кол-ва платежей
 	$factory_payment = "<i class='fa fa-money' aria-hidden='true' title='Оплата на производстве'></i>";
 
@@ -688,7 +688,7 @@ case "add_payment":
 
 			$factory_payment_select = "<select style='width: 50px;' class='account' name='FA_ID[]'><option value=''>Салон</option>";
 			$query = "SELECT FA_ID, name, IF(FA_ID = {$row["FA_ID"]}, 'selected', '') selected FROM FinanceAccount";
-			$subres = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+			$subres = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			while( $subrow = mysqli_fetch_array($subres) ) {
 				$factory_payment_select .= "<option {$subrow["selected"]} value='{$subrow["FA_ID"]}'>{$subrow["name"]}</option>";
 			}
@@ -734,7 +734,7 @@ case "add_payment":
 	if( in_array('order_add_confirm', $Rights) ) {
 		$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'><option value=''>Салон</option>";
 		$query = "SELECT FA_ID, name, IF(FA_ID = 1, 'selected', '') selected FROM FinanceAccount";
-		$subres = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+		$subres = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		while( $subrow = mysqli_fetch_array($subres) ) {
 			$html .= "<option {$subrow["selected"]} value='{$subrow["FA_ID"]}'>{$subrow["name"]}</option>";
 		}
@@ -767,7 +767,7 @@ case "update_price":
 
 	// Узнаем скидку заказа
 	$query = "SELECT discount FROM OrdersData WHERE OD_ID = {$OD_ID}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$discount = mysqli_result($res,0,'discount');
 
 	$js = '';
@@ -812,7 +812,7 @@ case "update_price":
 			  WHERE ODB.OD_ID = {$OD_ID}
 			  GROUP BY ODB.ODB_ID
 			  ORDER BY PT_ID DESC, itemID";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	while( $row = mysqli_fetch_array($res) ) {
 		$html .= "<tr>";
 		$html .= "<input type='hidden' name='PT_ID[]' value='{$row["PT_ID"]}'>";
@@ -842,12 +842,12 @@ case "update_shop":
 
 	// Узнаем название старого салона
 	$query = "SELECT SH.Shop FROM Shops SH JOIN OrdersData OD ON OD.SH_ID = SH.SH_ID AND OD.OD_ID = {$OD_ID}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$old_shop = mysqli_result($res,0,'Shop') ? mysqli_result($res,0,'Shop') : 'Свободные';
 
 	// Меняем салон в заказе
 	$query = "UPDATE OrdersData SET SH_ID = {$SH_ID}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
-	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'alert'});");
+	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 	// Узнаем название нового салона
 	$query = "SELECT IFNULL(SH.Shop, 'Свободные') Shop
@@ -858,7 +858,7 @@ case "update_shop":
 				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 				LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 				WHERE OD.OD_ID = {$OD_ID}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$new_shop = mysqli_result($res,0,'Shop');
 	$CTColor = mysqli_result($res,0,'CTColor');
 	$ShopCity = mysqli_result($res,0,'ShopCity');
@@ -885,14 +885,14 @@ case "update_sell_date":
 
 	// Узнаем старую дату продажи
 	$query = "SELECT DATE_FORMAT(StartDate, '%d.%m.%Y') StartDate FROM OrdersData WHERE OD_ID = {$OD_ID}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$old_StartDate = mysqli_result($res,0,'StartDate');
 
 	// Меняем дату продажи
 	$query = "UPDATE OrdersData SET StartDate = {$StartDate}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		echo "$('td#{$OD_ID} .sell_date').val('{$old_StartDate}');";
-		die("noty({timeout: 10000, text: '".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'alert'});");
+		die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	}
 
 	echo "noty({timeout: 3000, text: 'Дата продажи изменена с <b>{$old_StartDate}</b> на <b>{$_GET["StartDate"]}</b>', type: 'success'});";
@@ -906,14 +906,14 @@ case "update_sell_comment":
 
 	// Узнаем старое примечание
 	$query = "SELECT sell_comment FROM OrdersData WHERE OD_ID = {$OD_ID}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$old_sell_comment = mysqli_result($res,0,'sell_comment');
 
 	// Меняем примечание
 	$query = "UPDATE OrdersData SET sell_comment = '{$sell_comment}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		echo "$('td#{$OD_ID} .sell_comment').val('{$old_sell_comment}');";
-		die("noty({timeout: 10000, text: '".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'alert'});");
+		die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	}
 
 	$old_sell_comment = htmlspecialchars($old_sell_comment, ENT_QUOTES);
@@ -956,7 +956,7 @@ case "order_cut":
 			  WHERE ODB.OD_ID = {$OD_ID}
 			  GROUP BY ODB.ODB_ID
 			  ORDER BY PT_ID DESC, itemID";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	while( $row = mysqli_fetch_array($res) ) {
 		$html .= "<div>";
 		$html .= "<div>{$row["Zakaz"]}</div>";
@@ -986,7 +986,7 @@ case "footage":
 	else {
 		$query = "UPDATE OrdersDataBlank SET MT_amount = {$val} WHERE ODB_ID = {$odbid}";
 	}
-	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'alert'});");
+	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 	echo "noty({timeout: 3000, text: 'Метраж обновлен на: <b>\"{$val}\"</b>', type: 'success'});";
 
@@ -1010,7 +1010,7 @@ case "material_list":
 					FROM OrdersDataBlank
 					WHERE ODB_ID IN ($odbids)
 				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$length = mysqli_result($res,0,'length') ? mysqli_result($res,0,'length') : 0;
 
 	$query = "SELECT RPAD(MT.Material, {$length}, ' ') Material
@@ -1027,7 +1027,7 @@ case "material_list":
 					WHERE ODB_ID IN ($odbids)
 				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
 				ORDER BY MT.Material";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	while( $row = mysqli_fetch_array($res) ) {
 		$materials_name .= $row["Material"]."\\t".$row["MT_amount"]."\\t".$row["order_date"]."\\r\\n";
 	}
@@ -1047,7 +1047,7 @@ case "cash_category":
 
 		$html .= "<optgroup label='Нал'>";
 		$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
 			$html .= "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
@@ -1056,7 +1056,7 @@ case "cash_category":
 
 		$html .= "<optgroup label='Безнал'>";
 		$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
 			$html .= "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
@@ -1074,7 +1074,7 @@ case "cash_category":
 		$html .= "<option value=''></option>";
 
 		$query = "SELECT FC_ID, name FROM FinanceCategory WHERE type = {$type}";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
 			$html .= "<option value='{$row["FC_ID"]}'>{$row["name"]}</option>";

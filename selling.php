@@ -28,7 +28,7 @@
 
 	// Узнаем к какому банку привязан терминал в регионе (если есть)
 	$query = "SELECT FA_ID FROM Cities WHERE CT_ID = {$CT_ID}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 3000, text: 'Invalid query: ".addslashes(htmlspecialchars(mysqli_error( $mysqli )))."', type: 'error'});");
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$FA_ID = mysqli_result($res,0,'FA_ID');
 
 	// Формируем выпадающее меню салонов в таблицу
@@ -66,13 +66,13 @@
 							,CT_ID = ".($_POST["FA_ID_add"] ? 'NULL' : $CT_ID)."
 							,FA_ID = ".($terminal ? $FA_ID : $FA_ID_add);
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+				$_SESSION["alert"] = mysqli_error( $mysqli );
 			}
 			else {
 				// Записываем дату продажи заказа если ее не было
 				$query = "UPDATE OrdersData SET StartDate = '{$payment_date}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
 				if( !mysqli_query( $mysqli, $query ) ) {
-					$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+					$_SESSION["alert"] = mysqli_error( $mysqli );
 				}
 			}
 		}
@@ -92,7 +92,7 @@
 							,FA_ID = ".($terminal ? $FA_ID : $FA_ID_edit)."
 						WHERE OP_ID = {$value}";
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+				$_SESSION["alert"] = mysqli_error( $mysqli );
 			}
 		}
 
@@ -107,7 +107,7 @@
 		// Обновление скидки заказа
 		$query = "UPDATE OrdersData SET discount = {$discount}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 		if( !mysqli_query( $mysqli, $query ) ) {
-			$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+			$_SESSION["alert"] = mysqli_error( $mysqli );
 		}
 
 		foreach ($_POST["PT_ID"] as $key => $value) {
@@ -119,7 +119,7 @@
 				$query = "UPDATE OrdersDataDetail SET Price = {$price}, author = {$_SESSION['id']} WHERE ODD_ID = {$_POST["itemID"][$key]}";
 			}
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+				$_SESSION["alert"] = mysqli_error( $mysqli );
 			}
 		}
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
@@ -139,7 +139,7 @@
 		if( $OP_ID != '' ) { // Редактируем расход
 			$query = "UPDATE OrdersPayment SET cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send} WHERE OP_ID = {$OP_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+				$_SESSION["alert"] = mysqli_error( $mysqli );
 			}
 		}
 		else { // Добавляем расход
@@ -147,7 +147,7 @@
 				$CT_ID = $_POST["CT_ID"];
 				$query = "INSERT INTO OrdersPayment SET CT_ID = {$CT_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}";
 				if( !mysqli_query( $mysqli, $query ) ) {
-					$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+					$_SESSION["alert"] = mysqli_error( $mysqli );
 				}
 			}
 		}

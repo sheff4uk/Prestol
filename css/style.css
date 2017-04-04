@@ -19,7 +19,8 @@ body {
 	padding-top: 60px;
 }
 a {
-	transition: .3s;	
+	transition: .3s;
+	outline: none;
 }
 body, td {
 	margin: 0 20px;

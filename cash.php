@@ -53,7 +53,7 @@
 							,comment = '{$coment}'
 						WHERE F_ID = {$F_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+				$_SESSION["alert"] = mysqli_error( $mysqli );
 			}
 		}
 		else { // Добавляем операцию
@@ -68,7 +68,7 @@
 								,KA_ID = {$KA_ID}
 								,comment = '{$coment}'";
 				if( !mysqli_query( $mysqli, $query ) ) {
-					$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+					$_SESSION["alert"] = mysqli_error( $mysqli );
 				}
 			}
 		}
@@ -87,7 +87,7 @@
 				  SET send = 2
 				  WHERE OP_ID = {$OP_ID}";
 		if( !mysqli_query( $mysqli, $query ) ) {
-			$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+			$_SESSION["alert"] = mysqli_error( $mysqli );
 		}
 		else {
 			$query = "INSERT INTO Finance (money, date, FA_ID, FC_ID, comment, OP_ID)
@@ -103,13 +103,48 @@
 					LEFT JOIN Cities CT ON CT.CT_ID = OP.CT_ID
 					WHERE OP.OP_ID = {$OP_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+				$_SESSION["alert"] = mysqli_error( $mysqli );
 			}
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
+///////////////////////////////////////////////////////////////////////////////////
+// Добавление/редактирование счета
+	if( isset($_GET["add_account"]) )
+	{
+		$FA_ID = $_POST["FA_ID"];
+		$bank = ($_POST["bank"] == '1') ? '1' : 'NULL';
+		$name = mysqli_real_escape_string( $mysqli, $_POST["name"] );
+		$start_balance = $_POST["start_balance"] ? $_POST["start_balance"] : '0';
+		$USR_ID = $_POST["USR_ID"] ? $_POST["USR_ID"] : 'NULL';
+
+		if( $FA_ID != '' ) { //Редактируем счет
+			$query = "UPDATE FinanceAccount
+						SET  bank = {$bank}
+							,name = '{$name}'
+							,start_balance = {$start_balance}
+							,USR_ID = {$USR_ID}
+						WHERE FA_ID = {$FA_ID}";
+			if( !mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["alert"] = mysqli_error( $mysqli );
+			}
+		}
+		else { // Создаем счет
+			$query = "INSERT INTO FinanceAccount
+						SET  bank = {$bank}
+							,name = '{$name}'
+							,start_balance = {$start_balance}
+							,USR_ID = {$USR_ID}";
+			if( !mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["alert"] = mysqli_error( $mysqli );
+			}
+		}
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		die;
+	}
+
 ///////////////////////////////////////////////////////////////////////////////////
 ?>
 
@@ -162,12 +197,6 @@
 </style>
 
 <?
-	// Узнаем общий остаток наличных
-	$query = "SELECT SUM(end_balance) ostatok FROM `FinanceAccount`";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$ostatok = mysqli_result($res,0,'ostatok');
-	$format_ostatok = number_format($ostatok, 0, '', ' ');
-
 	$now_date = date('d.m.Y');
 	//Узнает дефолтный счет для пользователя
 	$query = "SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION['id']} LIMIT 1";
@@ -180,6 +209,7 @@
 <div style="width: 1000px; margin: auto;">
 	<div style="display: flex;">
 		<div id="wr_account">
+			<a href="#" class="add_account_btn" style="margin: 10px; display: block; text-align: center;"><b><i class="fa fa-plus"></i> Добавить счет</b></a>
 			<table class="main_table">
 				<tbody>
 					<?
@@ -652,7 +682,8 @@
 			$('#add_account #FA_ID').val('');
 			$('#add_account input[name="bank"]').prop('checked', false);
 			$('#add_account .btnset').buttonset("refresh");
-			$('#add_account input').val('');
+			$('#add_account #name').val('');
+			$('#add_account #start_balance').val('');
 			$('#add_account #USR_ID').val('').trigger('change');
 
 			var FA_ID = $(this).attr('FA_ID');
@@ -663,6 +694,7 @@
 				var start_balance = $(this).attr('start_balance');
 				var USR_ID = $(this).attr('USR_ID');
 
+				$('#add_account #FA_ID').val(FA_ID);
 				if( bank == '1' ) {
 					$('#add_account #bank1').prop('checked', true);
 				}
@@ -670,7 +702,6 @@
 					$('#add_account #bank0').prop('checked', true);
 				}
 					$('#add_account .btnset').buttonset("refresh");
-
 				$('#add_account #name').val(name);
 				$('#add_account #start_balance').val(start_balance);
 				$('#add_account #USR_ID').val(USR_ID).trigger('change');

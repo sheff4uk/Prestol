@@ -73,7 +73,7 @@
 					 ,author = {$_SESSION['id']}
 				  WHERE OD_ID = {$id}";
 		if( !mysqli_query( $mysqli, $query ) ) {
-			$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+			$_SESSION["alert"] = mysqli_error( $mysqli );
 		}
 		
 		//header( "Location: ".$location );
@@ -324,7 +324,7 @@
 						,author = {$_SESSION['id']}
 						,destination = ".( in_array('order_add_confirm', $Rights) ? "0" : "1" );
 		if( !mysqli_query( $mysqli, $query ) ) {
-			$_SESSION["alert"] = addslashes(htmlspecialchars(mysqli_error( $mysqli )));
+			$_SESSION["alert"] = mysqli_error( $mysqli );
 		}
 
 		//exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');

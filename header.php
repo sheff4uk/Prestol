@@ -52,7 +52,7 @@
 	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=24'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=25'>
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
@@ -168,7 +168,8 @@
 
 <?
 	if( $_SESSION["alert"] != '' ) {
-		echo "<script> $(document).ready(function() {noty({timeout: 10000, text: '{$_SESSION["alert"]}', type: 'alert'});});</script>";
+		$_SESSION["alert"] = str_replace("\n", "", addslashes(htmlspecialchars($_SESSION["alert"])));
+		echo "<script>$(document).ready(function() {noty({timeout: 10000, text: '{$_SESSION["alert"]}', type: 'alert'});});</script>";
 		$_SESSION["alert"] = '';
 	}
 
