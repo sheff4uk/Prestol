@@ -64,7 +64,8 @@
 							,payment_sum = {$payment_sum}
 							,terminal_payer = {$terminal_payer}
 							,CT_ID = ".($_POST["FA_ID_add"] ? 'NULL' : $CT_ID)."
-							,FA_ID = ".($terminal ? $FA_ID : $FA_ID_add);
+							,FA_ID = ".($terminal ? $FA_ID : $FA_ID_add)."
+							,author = {$_SESSION['id']}";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"] = mysqli_error( $mysqli );
 			}
@@ -145,7 +146,7 @@
 		else { // Добавляем расход
 			if( $cost ) {
 				$CT_ID = $_POST["CT_ID"];
-				$query = "INSERT INTO OrdersPayment SET CT_ID = {$CT_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}";
+				$query = "INSERT INTO OrdersPayment SET CT_ID = {$CT_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']}";
 				if( !mysqli_query( $mysqli, $query ) ) {
 					$_SESSION["alert"] = mysqli_error( $mysqli );
 				}

@@ -22,8 +22,8 @@
 		}
 		// Добавление
 		else {
-			$query = "INSERT INTO PayLog(ManDate, WD_ID, Pay, Comment, FA_ID)
-					  VALUES ({$ManDate}, {$Worker}, {$Sign}{$Pay}, '{$Comment}', {$account})";
+			$query = "INSERT INTO PayLog(ManDate, WD_ID, Pay, Comment, FA_ID, author)
+					  VALUES ({$ManDate}, {$Worker}, {$Sign}{$Pay}, '{$Comment}', {$account}, {$_SESSION['id']})";
 		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 

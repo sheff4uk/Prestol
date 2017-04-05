@@ -66,7 +66,8 @@
 								,to_account = {$to_account}
 								,FC_ID = {$category}
 								,KA_ID = {$KA_ID}
-								,comment = '{$coment}'";
+								,comment = '{$coment}'
+								,author = {$_SESSION['id']}";
 				if( !mysqli_query( $mysqli, $query ) ) {
 					$_SESSION["alert"] = mysqli_error( $mysqli );
 				}
@@ -90,7 +91,7 @@
 			$_SESSION["alert"] = mysqli_error( $mysqli );
 		}
 		else {
-			$query = "INSERT INTO Finance (money, date, FA_ID, FC_ID, comment, OP_ID)
+			$query = "INSERT INTO Finance (money, date, FA_ID, FC_ID, comment, OP_ID, author)
 
 					SELECT ABS(OP.payment_sum) money
 						#,OP.payment_date date
@@ -99,6 +100,7 @@
 						,3 FC_ID
 						,CONCAT(CT.City, ' (', OP.cost_name, ')') comment
 						,OP.OP_ID
+						,{$_SESSION['id']} author
 					FROM OrdersPayment OP
 					LEFT JOIN Cities CT ON CT.CT_ID = OP.CT_ID
 					WHERE OP.OP_ID = {$OP_ID}";
@@ -298,8 +300,9 @@
 					<th width="100">Сумма</th>
 					<th width="125">Счет</th>
 					<th width="125">Категория</th>
-					<th width="200">Контрагент</th>
-					<th width="300">Комментарии</th>
+					<th width="100">Автор</th>
+					<th width="150">Контрагент</th>
+					<th width="250">Комментарии</th>
 					<th width="50"></th>
 				</tr>
 			</thead>
@@ -322,6 +325,7 @@
 								,SF.is_edit
 								,SF.account_filter
 								,SF.receipt
+								,SF.author
 							FROM (
 								SELECT F.F_ID
 									,F.date date_sort
@@ -340,11 +344,13 @@
 									,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
 									,F.FA_ID account_filter
 									,0 receipt
+									,USR.Name author
 								FROM Finance F
 								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 								LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
 								LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
+								LEFT JOIN Users USR ON USR.USR_ID = F.author
 								WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= STR_TO_DATE('{$cash_to}', '%d.%m.%Y')
 
 								UNION ALL
@@ -366,10 +372,12 @@
 									,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
 									,F.to_account account_filter
 									,1 receipt
+									,USR.Name author
 								FROM Finance F
 								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 								LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
+								LEFT JOIN Users USR ON USR.USR_ID = F.author
 								WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= STR_TO_DATE('{$cash_to}', '%d.%m.%Y') AND F.to_account IS NOT NULL
 							) SF
 							WHERE 1
@@ -397,6 +405,7 @@
 						echo "<td class='txtright' style='color: {$color};'><b>{$money}</b></td>";
 						echo "<td><span>{$row["account"]}</span></td>";
 						echo "<td><span>{$row["category"]}</span></td>";
+						echo "<td><span class='nowrap'>{$row["author"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["kontragent"]}</span></td>";
 						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
 						if( $row["is_edit"] ) {
