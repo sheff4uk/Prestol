@@ -87,7 +87,15 @@
 		$query = "UPDATE OrdersData SET ReadyDate = '{$date}', IsPainting = 3, author = {$_SESSION['id']} WHERE OD_ID={$id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		//header( "Location: /" ); // Перезагружаем экран
+		// Если это розничный заказ, то предлагаем перейти в реализацию
+		$query = "SELECT SH.retail, SH.CT_ID FROM OrdersData OD LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD_ID = {$id}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$retail = mysqli_result($res,0,'retail');
+		if( $retail == "1" ) {
+			$CT_ID = mysqli_result($res,0,'CT_ID');
+			$_SESSION['selling_link'] = "/selling.php?CT_ID={$CT_ID}#ord{$id}";
+		}
+
 		exit ('<meta http-equiv="refresh" content="0; url=/">');
 		die;
 	}
@@ -188,6 +196,15 @@
 		// Перенаправление на исходный экран
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
 		die;
+	}
+
+	if( $_SESSION['selling_link'] ) {
+		echo "<script>";
+		echo "$(document).ready(function() {";
+		echo "noty({text: 'Заказ успешно отгружен. Проверить <a href=\"{$_SESSION['selling_link']}\" target=\"_blank\">реализацию</a>?', type: 'success'});";
+		echo "});";
+		echo "</script>";
+		$_SESSION['selling_link'] = "";
 	}
 ?>
 
