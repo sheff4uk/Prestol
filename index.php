@@ -198,6 +198,7 @@
 		die;
 	}
 
+	// Если заказ был отгружен вручную, то в сессии хранится ссылка на заказ в реализации
 	if( $_SESSION['selling_link'] ) {
 		echo "<script>";
 		echo "$(document).ready(function() {";
