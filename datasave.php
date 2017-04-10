@@ -27,7 +27,7 @@ if( $_GET["oddid"] )
 	$Length = mysqli_result($res,0,'Length');
 
 	// Если изменения затрагивают этапы то создаем новые этапы, а старые помечаем
-	if( $Model != $_POST["Model"] or $Mechanism != $_POST["Mechanism"] or $Length != $_POST["Length"] ) {
+	if( $Model != ($_POST["Model"] == "0" ? "" : $_POST["Model"]) or $Mechanism != $_POST["Mechanism"] or $Length != $_POST["Length"] ) {
 		// Удаляем видимые этапы без работника
 		$query = "DELETE FROM OrdersDataSteps WHERE ODD_ID = {$_GET["oddid"]} AND WD_ID IS NULL AND Visible = 1";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -40,14 +40,29 @@ if( $_GET["oddid"] )
 		$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 		$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
 		$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
-		$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
-				SELECT {$_GET["oddid"]}
-					  ,ST.ST_ID
-					  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
-				FROM StepsTariffs ST
-				JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
-				LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
-				LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To";
+		if( $Model != "NULL" ) {
+			$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
+					SELECT {$_GET["oddid"]}
+						  ,ST.ST_ID
+						  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
+					FROM StepsTariffs ST
+					JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
+					LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
+					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
+					# Заглушка для обивки
+					WHERE ST.ST_ID != 4";
+		}
+		else {
+			$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
+					SELECT {$_GET["oddid"]}
+						  ,ST.ST_ID
+						  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
+					FROM StepsTariffs ST
+					LEFT JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
+					LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
+					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
+					WHERE ST.Default = 1";
+		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 
@@ -160,7 +175,6 @@ if( $_GET["oddid"] )
 		$_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
 	}
 
-	//header( "Location: ".$_GET["location"]."#prod".$_GET["oddid"] ); // Перезагружаем экран
 	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#prod'.$_GET["oddid"].'">');
 	die;
 }

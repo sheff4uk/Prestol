@@ -402,7 +402,7 @@
 		$query = "SELECT ODD.ODD_ID
 						,ODD.Amount
 						,ODD.Price
-						,ODD.PM_ID
+						,IFNULL(ODD.PM_ID, 0) PM_ID
 						,ODD.PF_ID
 						,ODD.PME_ID
 						,ODD.Length

@@ -483,7 +483,7 @@
 					,CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')) Size
 					,PF.Form
 					,PME.Mechanism
-					,ODD.PM_ID
+					,IFNULL(ODD.PM_ID, 0) PM_ID
 					,ODD.Length
 					,ODD.Width
 					,ODD.PieceAmount

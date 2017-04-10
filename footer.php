@@ -20,5 +20,12 @@
 	text-align: center;
 	line-height: 25px;
 ">&copy; ООО "Престол", 2016-<?=( date("Y") )?></div>
+
+<script>
+	$(document).ready(function(){
+		$('.select2_filter .select2-selection li').attr('title', '');
+	});
+</script>
+
 </body>
 </html>

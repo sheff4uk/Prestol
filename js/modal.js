@@ -23,7 +23,8 @@ $(document).ready(function() {
 		$(div)
 			.css('z-index', '11')
 			.css('position', 'absolute');
-		$('.wr_main_table_body').css('height', 'calc(100% - 50px)');
+//		$('.wr_main_table_body').css('height', 'calc(100% - 50px)');
+		$('.wr_main_table_body').css('margin-right', '0');
 		$('.wr_main_table_head').css('width', 'calc(100% - 15px)');
 //		$('.wr_main_table_body .print_row + label').css('display', 'block');
 		overlay.fadeIn(400);
@@ -52,7 +53,8 @@ $(document).ready(function() {
 				$('#print_products').css('display', 'none');
 				$('#print_labelsbox').css('display', 'none');
 				modal.css('z-index', '').css('position', '');
-				$('.wr_main_table_body').css('height', '');
+//				$('.wr_main_table_body').css('height', '');
+				$('.wr_main_table_body').css('margin-right', '');
 				$('.wr_main_table_head').css('width', '');
 				$('.wr_main_table_body .print_row + label').css('display', 'none');
 				$('.print_col').button('destroy');

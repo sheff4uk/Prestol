@@ -132,7 +132,7 @@
 			<label>Модель:</label>
 			<select name="Model" style="width: 300px;">
 			<?
-				echo "<option value=''>-=Выберите модель=-</option>";
+				echo "<option value='0'>-=Столешница=-</option>";
 				$query = "SELECT * FROM ProductModels WHERE PT_ID = 2 ORDER BY Model";
 				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($result) )

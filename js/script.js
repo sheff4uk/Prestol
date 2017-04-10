@@ -138,6 +138,10 @@ $(document).ready(function(){
 
 
 	$( document ).tooltip({ track: true	});
+
+	// Убираем title select2 в фильтрах таблиц
+	$('.select2_filter select').select2().on("select2:select", function() { $('.select2-selection li').attr('title', ''); });
+	$('.select2_filter select').select2().on("select2:unselect", function() { $('.select2-selection li').attr('title', ''); });
 	
 	$( ".accordion" ).accordion({
 		collapsible: true,
@@ -191,7 +195,8 @@ $(document).ready(function(){
 		var odid = $(this).attr("odid");
 		
 		// Очистка диалога
-		$('#addchair input, #addchair select').prop('disabled', false);
+		$('#addchair input').prop('disabled', false);
+		$('#addchair select[name="Model"]').val('').trigger('change');
 		$('#addchair input[type="text"], #addchair select').val('');
 		$('#addchair textarea').val('');
 		$('#addchair input[name="Amount"]').val('');
@@ -306,7 +311,8 @@ $(document).ready(function(){
 
 		// Очистка диалога
 		$('#addtable input, #addtable select').prop('disabled', false);
-		$('#addtable input[type="text"], #addtable select').val('');
+		$('#addtable input[type="text"]').val('');
+		$('#addtable select[name="Model"]').val('0').trigger('change');
 		$('#addtable textarea').val('');
 		$('#addtable input[name="Amount"]').val('');
 		$('#addtable input[name="Price"]').val('');
@@ -398,17 +404,14 @@ $(document).ready(function(){
 
 		$('#addtable input[name="Form"]').change( function() {
 			form = $(this).val();
-			//console.log(form);
 		});
 
 		// Список форм столешниц в зависимости от модели
 		$('#addtable select[name="Model"]').change( function() {
-			//console.log(form);
 			if( $(this).val() == "" ) {
 				FormModelList(0, form);
 			}
 			else {
-
 				FormModelList($(this).val(), form);
 			}
 
