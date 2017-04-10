@@ -210,6 +210,7 @@
 ?>
 
 	<div id="overlay"></div>
+	<div id="filter_overlay" style="z-index: 10; position: fixed; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; display: none;"></div>
 	<? include "forms.php"; ?>
 
 	<div style="position: absolute; top: 75px; width: 300px; left: calc(50% - 150px); font-size: 16px; text-align: center;">
@@ -448,7 +449,7 @@
 	if( !isset($_GET["shpid"]) ) {
 	?>
 	<table class="main_table">
-		<form method='get' action='filter.php'>
+		<form id="main_filter_form" method='get' action='filter.php'>
 		<thead>
 		<tr>
 			<th width="53"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
@@ -458,9 +459,20 @@
 			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags <?=($_SESSION["f_SH"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_SH"] ?>'></th>
 			<th width="5%"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>' class="<?=($_SESSION["f_ON"] != "") ? "filtered" : ""?>"></th>
 			<th width="25%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class="<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>"></th>
-			<th width="15%" id="MT_filter"><div><select name="MT_ID[]" multiple style="width: 100%; display: none;"></select></div></th>
+			<th width="15%" id="MT_filter" class="select2_filter"><input type="text" disabled style="width: 100%;" class="<?=( $_SESSION["f_M"] != "" ? "filtered" : "" )?>"><div id="material-select" style=""><select name="MT_ID[]" multiple style="width: 100%;"></select></div></th>
 			<th width="15%" style="font-size: 0;">
 				<style>
+					#material-select {
+						display: none;
+						position: absolute;
+						width: 300px;
+						height: 300px;
+						background: #ddd;
+						overflow: auto;
+						border: solid 1px #bbb;
+						z-index: 11;
+					}
+
 					.IsPainting {
 						width: 100%;
 						font-family: FontAwesome;
@@ -986,7 +998,7 @@
 		$query = "SELECT ODD.ODD_ID
 						,ODD.Amount
 						,ODD.Price
-						,ODD.PM_ID
+						,IFNULL(ODD.PM_ID, 0) PM_ID
 						,ODD.PF_ID
 						,ODD.PME_ID
 						,ODD.Length
@@ -1047,6 +1059,7 @@
 <?
 	// Генерируем Select2 для фильтра материалов
 	$MT_filter = '';
+	$MT_string = '';
 	$query = "SELECT MT.MT_ID, CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Material
 				FROM Materials MT
 				LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
@@ -1063,8 +1076,10 @@
 	while( $row = mysqli_fetch_array($res) ) {
 		$selected = in_array($row["MT_ID"], $_SESSION["f_M"]) ? "selected" : "";
 		$MT_filter .= "<option {$selected} value='{$row["MT_ID"]}'>{$row["Material"]}</option>";
+		$MT_string .= ($selected) ? $row["Material"].", " : "";
 	}
 	$MT_filter = addslashes($MT_filter);
+	$MT_string = addslashes($MT_string);
 
 ?>
 
@@ -1150,16 +1165,31 @@
 //		};
 
 		// Фильтр по материалам (инициализация)
-		$('#MT_filter > div > select').html('<?=$MT_filter?>');
+		$('#MT_filter select').html('<?=$MT_filter?>');
+		$('#MT_filter input').val('<?=$MT_string?>');
 		$('#MT_filter select').select2({
-			placeholder: "Выберите интересующие материалы",
+			placeholder: "Материалы",
 			allowClear: true,
 			closeOnSelect: false,
 			language: "ru"
-		}).on("select2:select", function() { $('.select2-selection li').attr('title', ''); });
-		$('.select2-selection li').attr('title', '');
-		// Добавляем класс filtered если отфильтровано по материалам
-		<?=( $_SESSION["f_M"] != "" ? "$('.select2-selection ul').addClass('filtered');" : "" )?>
+		});
+
+		$( "#material-select" ).position({
+			my: "left top",
+			at: "left bottom",
+			of: "#MT_filter"
+		});
+
+		$('#MT_filter').click(function() {
+			$('#material-select').show();
+			$('#filter_overlay').show();
+		});
+
+		$('#filter_overlay').click(function() {
+			$(this).hide();
+			$('#material-select').hide();
+			$('#main_filter_form').submit();
+		});
 
 		// Проверяем можно ли отгружать
 		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?> ,<?=(($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0?>);
