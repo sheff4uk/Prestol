@@ -465,7 +465,8 @@ $(document).ready(function(){
 		var odid = $(this).attr("odid");
 
 		// Очистка диалога
-		$('#addblank textarea, #addblank select, #addblank input[type="text"]').val('');
+		$('#addblank textarea, #addblank input[type="text"]').val('');
+		$('#addblank select').val('').trigger('change');
 		$('#addblank input[name="Amount"]').val('');
 		$('#addblank input[name="Price"]').val('');
 		$('#0radio').prop('checked', true);
