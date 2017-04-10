@@ -295,10 +295,15 @@ case "schet":
 	$_POST["pokupatel_inn"] = $_POST["platelshik_inn"];
 	$_POST["pokupatel_kpp"] = $_POST["platelshik_kpp"];
 
+	$itog = 0;
 	foreach ($_POST["tovar_tcena"] as $key => $value) {
 		$_POST["tovar_kol"][$key] = $_POST["tovar_kolvo"][$key];
 		$_POST["tovar_cena"][$key] = $_POST["tovar_tcena"][$key];
+		$_POST["tovar_sum"][$key] = $_POST["tovar_tcena"][$key] * $_POST["tovar_kolvo"][$key];
+		$itog = $itog + $_POST["tovar_sum"][$key];
 	}
+	$_POST["itog1"] = $itog;
+	$_POST["itog_vsego"] = $itog;
 
 	// Сохраняем дату счета
 	$query = "UPDATE PrintForms SET schet_date = '{$_POST["date_schet"]}'
