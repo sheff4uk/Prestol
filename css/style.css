@@ -446,8 +446,11 @@ input.amount {
 	transition: .3s;
 }
 .main_table td:hover, .main_table th:hover {
-    overflow: visible;
-    position: relative;
+	overflow: visible;
+//	position: relative;
+}
+.main_table td:hover {
+	position: relative;
 }
 .main_table td > span {
 	transition: .3s;
