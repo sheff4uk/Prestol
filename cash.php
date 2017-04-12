@@ -322,7 +322,7 @@
 		.filter_block label {
 			cursor: pointer;
 			display: inline-block;
-			width: 100%;
+			width: calc(100% - 22px);
 		}
 
 		.th_filter .th_name {
