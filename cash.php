@@ -291,23 +291,150 @@
 		<p>Изменение: <b id="cash_change"></b></p>
 	</div>
 
+	<style>
+		.finance_head {
+			text-align: left;
+		}
+		.finance_head .th_filter {
+			cursor: pointer;
+		}
+		.finance_head th i {
+			float: right;
+			line-height: 1.1em;
+			margin-right: 10px;
+		}
+
+		.filter_block {
+			display: none;
+			position: absolute;
+			width: 300px;
+			height: 300px;
+			color: #333;
+			background: #fff;
+			overflow: auto;
+			border: solid 1px #bbb;
+			z-index: 3;
+			cursor: default;
+			padding: 5px;
+			box-shadow: 5px 5px 8px #666;
+		}
+
+		.filter_block label {
+			cursor: pointer;
+			display: inline-block;
+			width: 100%;
+		}
+
+		.th_filter .th_name {
+			white-space: nowrap;
+			max-width: calc(100% - 30px);
+			display: inline-block;
+			overflow: hidden;
+		}
+
+		.th_name strong {
+			color: #16A085;
+		}
+	</style>
+
+	<script>
+		$(document).ready(function() {
+			$('.th_filter').click(function() {
+				$('#filter_overlay').show();
+				$(this).find('.filter_block').show('fast');
+				$(this).find('input[type=text]').show();
+				$(this).find('input[type=text]').focus();
+			});
+
+			$('#filter_overlay').click(function() {
+				$('#filter_overlay').hide();
+				$('.filter_block').hide('fast');
+				$('.th_filter input[type=text]').hide();
+				$('#filter_form').submit();
+			});
+
+			// Выбрать все чекбоксы в поиске
+			$(function() {
+				$('.select_all').change(function(){
+					ch = $(this).prop('checked');
+					$(this).parents('.filter_block').find('.chbox').prop('checked', ch);
+					//$(this).prop('checked', ch);
+					return false;
+				});
+
+				$('.filter_block .chbox').change(function(){
+					var checked_status = true;
+					var select_all = $(this).parents('.filter_block').find('.select_all');
+					$(this).parents('.filter_block').find('.chbox').each(function(){
+						if( !$(this).prop('checked') )
+						{
+							checked_status = $(this).prop('checked');
+						}
+					});
+					$(select_all).prop('checked', checked_status);
+					return false;
+				});
+
+				// Если в фильтре нет ни одного счета, то включаем все счета в форме
+				if( "<?=$_SESSION["cash_account"]?>" == "" ) {
+					$('#account-filter .select_all').prop("checked", true);
+					$('#account-filter .select_all').change();
+				}
+				else {
+					var text = "";
+					$('#account-filter .chbox').each(function(){
+						if( $(this).prop('checked') ) {
+							text = text + $(this).parent('div').find('label').html() + ", ";
+						}
+					});
+					$('#account_label').html('<strong>' + text + '</strong>');
+				}
+			});
+
+		});
+	</script>
+
+	<!-- Слой для выхода из режима фильтрации -->
+	<div id="filter_overlay" style="z-index: 2; position: fixed; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; display: none;"></div>
+
+	<!-- Форма фильтрации упераций -->
+	<form id="filter_form" method="get" action="filter.php"><input type="hidden" name="location" value="<?=$location?>"><input type="hidden" name="do" value="cash"></form>
+
 	<div style="display: flex;">
 		<table style="width: 100%;" class="main_table">
-			<thead>
+			<thead class="finance_head">
 				<tr>
 					<th width="50">Дата</th>
-					<th width="50">Тип</th>
-					<th width="100">Сумма</th>
-					<th width="125">Счет</th>
-					<th width="125">Категория</th>
-					<th width="100">Автор</th>
-					<th width="150">Контрагент</th>
-					<th width="250">Комментарии</th>
-					<th width="50"></th>
+					<th width="60" class="th_filter">Тип<i class="fa fa-filter fa-lg"></i></th>
+					<th width="90" class="th_filter">Сумма<i class="fa fa-filter fa-lg"></i></th>
+
+					<th width="120" class="th_filter"><div class="th_name" id="account_label">Все счета</div><i class="fa fa-filter fa-lg"></i>
+						<div id="account-filter" class="filter_block">
+							<?
+							echo "<div class='nowrap'><input id='account_select_all' class='select_all' type='checkbox' name='all_accounts' value='1' form='filter_form'><label for='account_select_all'>Все счета</label></div>";
+							$query = "SELECT FA_ID, name FROM FinanceAccount ORDER BY IFNULL(bank, 0), FA_ID";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								$checked = in_array($row["FA_ID"], $_SESSION["cash_account"]) ? "checked" : "";
+								echo "<div class='nowrap'><input id='account_{$row["FA_ID"]}' class='chbox' {$checked} type='checkbox' name='FA_ID[]' value='{$row["FA_ID"]}' form='filter_form'><label for='account_{$row["FA_ID"]}' style='font-weight: normal;'>{$row["name"]}</label></div>";
+							}
+							?>
+						</div>
+					</th>
+
+					<th width="130" class="th_filter"><input type="text" style="display: none; position: absolute; width: 90px; z-index: 3;"><div class="th_name">Все категории</div><i class="fa fa-filter fa-lg"></i></th>
+					<th width="100" class="th_filter">Автор<i class="fa fa-filter fa-lg"></i></th>
+					<th width="150" class="th_filter">Контрагент<i class="fa fa-filter fa-lg"></i></th>
+					<th width="270" class="th_filter">Комментарии<i class="fa fa-filter fa-lg"></i></th>
+					<th width="30"></th>
 				</tr>
 			</thead>
 			<tbody>
 			<?
+				// Переменные фильтрации из сессии
+				$FA_IDs = $_SESSION["cash_account"] != "" ? implode(",", $_SESSION["cash_account"]) : "";
+
 				$query = "SELECT SF.F_ID
 								,SF.date_sort
 								,SF.date
@@ -384,7 +511,7 @@
 							#AND SF.type = 1
 							#AND SF.sum >= 200
 							#AND SF.sum <= 300
-							#AND SF.account_filter IN (1,2)
+							".($FA_IDs != "" ? "AND SF.account_filter IN ({$FA_IDs})" : "")."
 							#AND SF.FC_ID IN (1,4)
 							#AND SF.comment LIKE '%возврат%'
 							#AND SF.kontragent LIKE '%авто%'
@@ -398,7 +525,7 @@
 					$money = number_format($row["money"], 0, '', ' ');
 					$type = ($row["type"] == 1 ? '<i class="fa fa-plus" style="color: #16A085;"></i>' : ($row["type"] == -1 ? '<i class="fa fa-minus" style="color: #E74C3C;"></i>' : '<i class="fa fa-exchange"></i>'));
 
-					if( $row["receipt"] == 0 or 1 ) {
+					if( $row["receipt"] == 0 or $FA_IDs != "" ) {
 						echo "<tr>";
 						echo "<td>{$row["date"]}</td>";
 						echo "<td style='text-align: center;'>{$type}</td>";
