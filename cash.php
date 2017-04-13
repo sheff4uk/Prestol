@@ -281,7 +281,7 @@
 		</div>
 	</div>
 
-	<div style="text-align: center; margin: 10px;">
+	<div style="text-align: center; margin: 10px; position: relative;">
 		<p><b>Период (включительно):</b></p>
 		<form method="post" style="font-weight: bold;">
 			[
@@ -291,6 +291,7 @@
 			 ]
 		</form>
 		<p>Изменение: <b id="cash_change"></b></p>
+		<button style="display: none; position: absolute; left: -10px; bottom: 0;" id="reset_filter">Сбросить фильтры</button>
 	</div>
 
 	<style>
@@ -355,7 +356,7 @@
 				$('#filter_form').submit();
 			});
 
-			// Выбрать все чекбоксы в поиске
+			/////////////////////////////////////////////////////
 			$(function() {
 				$('.select_all').change(function(){
 					ch = $(this).prop('checked');
@@ -382,6 +383,14 @@
 					$('#filter_overlay').click();
 				});
 
+				$('#clear_sum').click(function(){
+					$('#sum_filter input').val('');
+					$('#filter_overlay').click();
+				});
+
+				// Если будет 1, значит задействован фильтр
+				var filtered = 0;
+
 				// Включение чекбоксов в фильтре по счетам. Обновление названия колонки счета.
 				if( "<?=$_SESSION["cash_account"]?>" == "" ) {
 					$('#account_filter .select_all').prop("checked", true);
@@ -395,22 +404,45 @@
 						}
 					});
 					$('#account_label').html('<strong>' + text + '</strong>');
+					filtered = 1;
 				}
 
 				// Обновление названия колонки типа.
 				var cash_type = "<?=$_SESSION["cash_type"]?>";
-				switch( cash_type ) {
-					case "-1":
-						$('#type_label').html('<strong><i class="fa fa-minus fa-lg"></i></strong>');
-					break;
-					case "1":
-						$('#type_label').html('<strong><i class="fa fa-plus fa-lg"></i></strong>');
-					break;
-					case "0":
-						$('#type_label').html('<strong><i class="fa fa-exchange fa-lg"></i></strong>');
-					break;
+				if( cash_type != "" ) {
+					switch( cash_type ) {
+						case "-1":
+							$('#type_label').html('<strong><i class="fa fa-minus fa-lg"></i></strong>');
+						break;
+						case "1":
+							$('#type_label').html('<strong><i class="fa fa-plus fa-lg"></i></strong>');
+						break;
+						case "0":
+							$('#type_label').html('<strong><i class="fa fa-exchange fa-lg"></i></strong>');
+						break;
+					}
+				filtered = 1;
 				}
+
+				// Заполнение данных о диапазоне сумм из сессии
+				if( "<?=$_SESSION["cash_sum_from"]?>" || "<?=$_SESSION["cash_sum_to"]?>" ) {
+					var from = "0";
+					var to = "&infin;";
+					if( "<?=$_SESSION["cash_sum_from"]?>" ) {
+						$('#sum_filter input[name=cash_sum_from]').val('<?=$_SESSION["cash_sum_from"]?>');
+						from = "<?=$_SESSION["cash_sum_from"]?>";
+					}
+					if( "<?=$_SESSION["cash_sum_to"]?>" ) {
+						$('#sum_filter input[name=cash_sum_to]').val('<?=$_SESSION["cash_sum_to"]?>');
+						to = "<?=$_SESSION["cash_sum_to"]?>";
+					}
+					$('#sum_label').html('<strong>' + from + ' - ' + to + '</strong>');
+				}
+
+				// Если отфильтрован - показываем кнопку "Сбросить фильтры"
+				if( filtered ) $('#reset_filter').show();
 			});
+			///////////////////////////////////////////////////////////////////
 		});
 	</script>
 
@@ -442,7 +474,15 @@
 						</div>
 					</th>
 
-					<th width="90" class="th_filter">Сумма<i class="fa fa-filter fa-lg"></i></th>
+					<th width="90" class="th_filter">
+						<div class="th_name" id="sum_label">Сумма</div>
+						<i class="fa fa-filter fa-lg"></i>
+						<div id="sum_filter" class="filter_block" style="width: 200px;">
+							<div style="text-align: center; margin-bottom: 5px;"><button id="clear_sum">Любая сумма</button></div>
+							От: <input type="number" min="0" name="cash_sum_from" style="width: 60px; text-align: right;" form="filter_form" autocomplete="off">
+							До: <input type="number" min="0" name="cash_sum_to" style="width: 60px; text-align: right;" form="filter_form" autocomplete="off">
+						</div>
+					</th>
 
 					<th width="120" class="th_filter">
 						<div class="th_name" id="account_label">Все счета</div>
@@ -549,6 +589,8 @@
 							) SF
 							WHERE 1
 							".($_SESSION["cash_type"] != "" ? "AND SF.type = {$_SESSION["cash_type"]}" : "")."
+							".($_SESSION["cash_sum_from"] != "" ? "AND SF.sum >= {$_SESSION["cash_sum_from"]}" : "")."
+							".($_SESSION["cash_sum_to"] != "" ? "AND SF.sum <= {$_SESSION["cash_sum_to"]}" : "")."
 							#AND SF.sum >= 200
 							#AND SF.sum <= 300
 							".($FA_IDs != "" ? "AND SF.account_filter IN ({$FA_IDs})" : "")."

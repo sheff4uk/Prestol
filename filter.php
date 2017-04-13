@@ -14,6 +14,8 @@ switch( $_GET["do"] )
 			$_SESSION["cash_account"] = $_GET["FA_ID"];
 		}
 		$_SESSION["cash_type"] = $_GET["cash_type"];	// Тип
+		$_SESSION["cash_sum_from"] = $_GET["cash_sum_from"];	// Сумма от
+		$_SESSION["cash_sum_to"] = $_GET["cash_sum_to"];		// Сумма до
 	break;
 	
 	// Фильтр главной таблицы
