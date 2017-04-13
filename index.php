@@ -1174,20 +1174,14 @@
 			language: "ru"
 		});
 
-		$( "#material-select" ).position({
-			my: "left top",
-			at: "left bottom",
-			of: "#MT_filter"
-		});
-
 		$('#MT_filter').click(function() {
-			$('#material-select').show();
+			$('#material-select').show('fast');
 			$('#filter_overlay').show();
 		});
 
 		$('#filter_overlay').click(function() {
 			$(this).hide();
-			$('#material-select').hide();
+			$('#material-select').hide('fast');
 			$('#main_filter_form').submit();
 		});
 
