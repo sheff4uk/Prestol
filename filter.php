@@ -7,13 +7,13 @@ switch( $_GET["do"] )
 {
 	// Фильтр таблици денежных операций
 	case "cash":
-		if( $_GET["all_accounts"] ) {				// Счета
+		if( $_GET["all_accounts"] ) {					// Счета
 			$_SESSION["cash_account"] = "";
 		}
 		else {
 			$_SESSION["cash_account"] = $_GET["FA_ID"];
 		}
-
+		$_SESSION["cash_type"] = $_GET["cash_type"];	// Тип
 	break;
 	
 	// Фильтр главной таблицы

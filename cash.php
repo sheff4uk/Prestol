@@ -158,6 +158,8 @@
 		width: 680px;
 		white-space: nowrap;
 		display: inline-block;
+		height: 300px;
+		overflow: auto;
 	}
 	#wr_account {
 		border: 1px solid #bbb;
@@ -307,8 +309,6 @@
 		.filter_block {
 			display: none;
 			position: absolute;
-			width: 300px;
-			height: 300px;
 			color: #333;
 			background: #fff;
 			overflow: auto;
@@ -322,7 +322,8 @@
 		.filter_block label {
 			cursor: pointer;
 			display: inline-block;
-			width: calc(100% - 22px);
+			width: 100%;
+			text-align: left;
 		}
 
 		.th_filter .th_name {
@@ -333,7 +334,8 @@
 		}
 
 		.th_name strong {
-			color: #16A085;
+			//color: #16A085;
+			color: #fff;
 		}
 	</style>
 
@@ -358,7 +360,7 @@
 				$('.select_all').change(function(){
 					ch = $(this).prop('checked');
 					$(this).parents('.filter_block').find('.chbox').prop('checked', ch);
-					//$(this).prop('checked', ch);
+					$(this).parents('.filter_block').find('.btnset').buttonset("refresh");
 					return false;
 				});
 
@@ -372,25 +374,43 @@
 						}
 					});
 					$(select_all).prop('checked', checked_status);
+					$(this).parents('.filter_block').find('.btnset').buttonset("refresh");
 					return false;
 				});
 
-				// Если в фильтре нет ни одного счета, то включаем все счета в форме
+				$('#type_filter input').change(function(){
+					$('#filter_overlay').click();
+				});
+
+				// Включение чекбоксов в фильтре по счетам. Обновление названия колонки счета.
 				if( "<?=$_SESSION["cash_account"]?>" == "" ) {
-					$('#account-filter .select_all').prop("checked", true);
-					$('#account-filter .select_all').change();
+					$('#account_filter .select_all').prop("checked", true);
+					$('#account_filter .select_all').change();
 				}
 				else {
 					var text = "";
-					$('#account-filter .chbox').each(function(){
+					$('#account_filter .chbox').each(function(){
 						if( $(this).prop('checked') ) {
-							text = text + $(this).parent('div').find('label').html() + ", ";
+							text = text + $('label[for=' + $(this).attr("id") + ']').html() + ", ";
 						}
 					});
 					$('#account_label').html('<strong>' + text + '</strong>');
 				}
-			});
 
+				// Обновление названия колонки типа.
+				var cash_type = "<?=$_SESSION["cash_type"]?>";
+				switch( cash_type ) {
+					case "-1":
+						$('#type_label').html('<strong><i class="fa fa-minus fa-lg"></i></strong>');
+					break;
+					case "1":
+						$('#type_label').html('<strong><i class="fa fa-plus fa-lg"></i></strong>');
+					break;
+					case "0":
+						$('#type_label').html('<strong><i class="fa fa-exchange fa-lg"></i></strong>');
+					break;
+				}
+			});
 		});
 	</script>
 
@@ -398,28 +418,48 @@
 	<div id="filter_overlay" style="z-index: 2; position: fixed; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; display: none;"></div>
 
 	<!-- Форма фильтрации упераций -->
-	<form id="filter_form" method="get" action="filter.php"><input type="hidden" name="location" value="<?=$location?>"><input type="hidden" name="do" value="cash"></form>
+	<form id="filter_form" method="get" action="filter.php"><input type="hidden" name="location" value="<?=$location?>#operations"><input type="hidden" name="do" value="cash"></form>
 
-	<div style="display: flex;">
+	<div style="display: flex;" id="operations">
 		<table style="width: 100%;" class="main_table">
 			<thead class="finance_head">
 				<tr>
 					<th width="50">Дата</th>
-					<th width="60" class="th_filter">Тип<i class="fa fa-filter fa-lg"></i></th>
+					<th width="60" class="th_filter">
+						<div class="th_name" id="type_label">Тип</div>
+						<i class="fa fa-filter fa-lg"></i>
+						<div id="type_filter" class="filter_block" style="width: 140px;">
+							<div class="btnset">
+								<input type="radio" id="ftype" name="cash_type" value="" form="filter_form" <?=( $_SESSION["cash_type"] == "" ? "checked" : "" )?>>
+									<label for="ftype">Все типы</label>
+								<input type="radio" id="ftype-1" name="cash_type" value="-1" form="filter_form" <?=( $_SESSION["cash_type"] == "-1" ? "checked" : "" )?>>
+									<label for="ftype-1"><i class="fa fa-minus fa-lg"></i>Расход</label>
+								<input required type="radio" id="ftype1" name="cash_type" value="1" form="filter_form" <?=( $_SESSION["cash_type"] == "1" ? "checked" : "" )?>>
+									<label for="ftype1"><i class="fa fa-plus fa-lg"></i>Доход</label>
+								<input type="radio" id="ftype0" name="cash_type" value="0" form="filter_form" <?=( $_SESSION["cash_type"] == "0" ? "checked" : "" )?>>
+									<label for="ftype0"><i class="fa fa-exchange fa-lg"></i>Перевод</label>
+							</div>
+						</div>
+					</th>
+
 					<th width="90" class="th_filter">Сумма<i class="fa fa-filter fa-lg"></i></th>
 
-					<th width="120" class="th_filter"><div class="th_name" id="account_label">Все счета</div><i class="fa fa-filter fa-lg"></i>
-						<div id="account-filter" class="filter_block">
-							<?
-							echo "<div class='nowrap'><input id='account_select_all' class='select_all' type='checkbox' name='all_accounts' value='1' form='filter_form'><label for='account_select_all'>Все счета</label></div>";
-							$query = "SELECT FA_ID, name FROM FinanceAccount ORDER BY IFNULL(bank, 0), FA_ID";
-							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-							while( $row = mysqli_fetch_array($res) )
-							{
-								$checked = in_array($row["FA_ID"], $_SESSION["cash_account"]) ? "checked" : "";
-								echo "<div class='nowrap'><input id='account_{$row["FA_ID"]}' class='chbox' {$checked} type='checkbox' name='FA_ID[]' value='{$row["FA_ID"]}' form='filter_form'><label for='account_{$row["FA_ID"]}' style='font-weight: normal;'>{$row["name"]}</label></div>";
-							}
-							?>
+					<th width="120" class="th_filter">
+						<div class="th_name" id="account_label">Все счета</div>
+						<i class="fa fa-filter fa-lg"></i>
+						<div id="account_filter" class="filter_block" style="width: 300px; height: 300px;">
+							<div class='btnset'>
+								<?
+								echo "<input id='account_select_all' class='select_all' type='checkbox' name='all_accounts' value='1' form='filter_form'><label for='account_select_all'>Все счета</label>";
+								$query = "SELECT FA_ID, name FROM FinanceAccount ORDER BY IFNULL(bank, 0), FA_ID";
+								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+								while( $row = mysqli_fetch_array($res) )
+								{
+									$checked = in_array($row["FA_ID"], $_SESSION["cash_account"]) ? "checked" : "";
+									echo "<input id='account_{$row["FA_ID"]}' class='chbox' {$checked} type='checkbox' name='FA_ID[]' value='{$row["FA_ID"]}' form='filter_form'><label for='account_{$row["FA_ID"]}' style='font-weight: normal;'>{$row["name"]}</label>";
+								}
+								?>
+							</div>
 						</div>
 					</th>
 
@@ -508,7 +548,7 @@
 								WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= STR_TO_DATE('{$cash_to}', '%d.%m.%Y') AND F.to_account IS NOT NULL
 							) SF
 							WHERE 1
-							#AND SF.type = 1
+							".($_SESSION["cash_type"] != "" ? "AND SF.type = {$_SESSION["cash_type"]}" : "")."
 							#AND SF.sum >= 200
 							#AND SF.sum <= 300
 							".($FA_IDs != "" ? "AND SF.account_filter IN ({$FA_IDs})" : "")."
