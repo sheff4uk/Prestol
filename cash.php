@@ -447,7 +447,7 @@
 					<th width="120" class="th_filter">
 						<div class="th_name" id="account_label">Все счета</div>
 						<i class="fa fa-filter fa-lg"></i>
-						<div id="account_filter" class="filter_block" style="width: 300px; height: 300px;">
+						<div id="account_filter" class="filter_block" style="width: 200px;">
 							<div class='btnset'>
 								<?
 								echo "<input id='account_select_all' class='select_all' type='checkbox' name='all_accounts' value='1' form='filter_form'><label for='account_select_all'>Все счета</label>";
