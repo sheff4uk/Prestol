@@ -228,7 +228,7 @@
 
 							echo "<tr>";
 							echo "<td class='account_label'>{$row["name"]}<a href='#' class='add_account_btn' FA_ID='{$row["FA_ID"]}' bank='{$row["bank"]}' name='{$row["name"]}' start_balance='{$row["start_balance"]}' USR_ID='{$row["USR_ID"]}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a></td>";
-							echo "<td width='100' class='txtright' style='color: {$color};'><b>{$money}</b></td>";
+							echo "<td width='120' class='txtright' style='color: {$color};'><b>{$money}</b></td>";
 							echo "</tr>";
 						}
 						$color = $total < 0 ? '#E74C3C' : '#16A085';
@@ -236,7 +236,7 @@
 
 						echo "<tr>";
 						echo "<td><h3>Итого:</h3></td>";
-						echo "<td width='100' class='txtright' style='color: {$color};'><h3>{$money}</h3></td>";
+						echo "<td width='120' class='txtright' style='color: {$color};'><h3>{$money}</h3></td>";
 						echo "</tr>";
 					?>
 				</tbody>
@@ -379,10 +379,34 @@
 					return false;
 				});
 
+				// Поиск в категориях при вводе текста
+				$('#category_search').on("input", function() {
+					//$('#category_filter').hide();
+					var search_text = $(this).val();
+					if( search_text ) {
+						$(this).parents('.th_filter').find('label').hide();
+						$(this).parents('.th_filter').find('input[type=checkbox]').prop('checked', false);
+					}
+					else {
+						$(this).parents('.th_filter').find('label').show();
+						$(this).parents('.th_filter').find('input[type=checkbox]').prop('checked', true);
+					}
+					$(this).parents('.th_filter').find('.category_label').each(function() {
+						if( $(this).html().toUpperCase().indexOf(search_text.toUpperCase()) + 1 ) {
+							$(this).show();
+							$('#'+$(this).attr('for')).prop('checked', true);
+						}
+					});
+					$('#category_filter .btnset').buttonset("refresh");
+					return false;
+				});
+
+				// Сабмит фильтра при выборе типа операции
 				$('#type_filter input').change(function(){
 					$('#filter_overlay').click();
 				});
 
+				// Очистка диапазона сумм в фильтре
 				$('#clear_sum').click(function(){
 					$('#sum_filter input').val('');
 					$('#filter_overlay').click();
@@ -403,7 +427,7 @@
 							text = text + $('label[for=' + $(this).attr("id") + ']').html() + ", ";
 						}
 					});
-					$('#account_label').html('<strong>' + text + '</strong>');
+					$('#account_label').html('<strong>' + text.substr(0, text.length - 2) + '</strong>');
 					filtered = 1;
 				}
 
@@ -437,6 +461,22 @@
 						to = "<?=$_SESSION["cash_sum_to"]?>";
 					}
 					$('#sum_label').html('<strong>' + from + ' - ' + to + '</strong>');
+				}
+
+				// Включение чекбоксов в фильтре по категориям. Обновление названия колонки категории.
+				if( "<?=$_SESSION["cash_category"]?>" == "" ) {
+					$('#category_filter .select_all').prop("checked", true);
+					$('#category_filter .select_all').change();
+				}
+				else {
+					var text = "";
+					$('#category_filter .chbox').each(function(){
+						if( $(this).prop('checked') ) {
+							text = text + $('label[for=' + $(this).attr("id") + ']').html() + ", ";
+						}
+					});
+					$('#category_label').html('<strong>' + text.substr(0, text.length - 2) + '</strong>');
+					filtered = 1;
 				}
 
 				// Если отфильтрован - показываем кнопку "Сбросить фильтры"
@@ -503,7 +543,26 @@
 						</div>
 					</th>
 
-					<th width="130" class="th_filter"><input type="text" style="display: none; position: absolute; width: 90px; z-index: 3;"><div class="th_name">Все категории</div><i class="fa fa-filter fa-lg"></i></th>
+					<th width="130" class="th_filter">
+						<input id="category_search" type="text" style="display: none; position: absolute; width: 90px; z-index: 3;">
+						<div class="th_name" id="category_label">Все категории</div>
+						<i class="fa fa-filter fa-lg"></i>
+						<div id="category_filter" class="filter_block" style="width: 200px; height: 300px;">
+							<div class='btnset'>
+								<?
+								echo "<input id='category_select_all' class='select_all' type='checkbox' name='all_categories' value='1' form='filter_form'><label for='category_select_all'>Все категории</label>";
+								$query = "SELECT FC_ID, name FROM FinanceCategory ORDER BY FC_ID";
+								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+								while( $row = mysqli_fetch_array($res) )
+								{
+									$checked = in_array($row["FC_ID"], $_SESSION["cash_category"]) ? "checked" : "";
+									echo "<input id='category_{$row["FC_ID"]}' class='chbox' {$checked} type='checkbox' name='FC_ID[]' value='{$row["FC_ID"]}' form='filter_form'><label class='category_label' for='category_{$row["FC_ID"]}' style='font-weight: normal;'>{$row["name"]}</label>";
+								}
+								?>
+							</div>
+						</div>
+
+					</th>
 					<th width="100" class="th_filter">Автор<i class="fa fa-filter fa-lg"></i></th>
 					<th width="150" class="th_filter">Контрагент<i class="fa fa-filter fa-lg"></i></th>
 					<th width="270" class="th_filter">Комментарии<i class="fa fa-filter fa-lg"></i></th>
@@ -514,6 +573,7 @@
 			<?
 				// Переменные фильтрации из сессии
 				$FA_IDs = $_SESSION["cash_account"] != "" ? implode(",", $_SESSION["cash_account"]) : "";
+				$FC_IDs = $_SESSION["cash_category"] != "" ? implode(",", $_SESSION["cash_category"]) : "";
 
 				$query = "SELECT SF.F_ID
 								,SF.date_sort
@@ -591,10 +651,8 @@
 							".($_SESSION["cash_type"] != "" ? "AND SF.type = {$_SESSION["cash_type"]}" : "")."
 							".($_SESSION["cash_sum_from"] != "" ? "AND SF.sum >= {$_SESSION["cash_sum_from"]}" : "")."
 							".($_SESSION["cash_sum_to"] != "" ? "AND SF.sum <= {$_SESSION["cash_sum_to"]}" : "")."
-							#AND SF.sum >= 200
-							#AND SF.sum <= 300
 							".($FA_IDs != "" ? "AND SF.account_filter IN ({$FA_IDs})" : "")."
-							#AND SF.FC_ID IN (1,4)
+							".($FC_IDs != "" ? "AND SF.FC_ID IN ({$FC_IDs})" : "")."
 							#AND SF.comment LIKE '%возврат%'
 							#AND SF.kontragent LIKE '%авто%'
 							ORDER BY SF.date_sort DESC, SF.F_ID DESC";

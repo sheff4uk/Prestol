@@ -7,15 +7,21 @@ switch( $_GET["do"] )
 {
 	// Фильтр таблици денежных операций
 	case "cash":
-		if( $_GET["all_accounts"] ) {					// Счета
+		if( $_GET["all_accounts"] ) {							// Счета
 			$_SESSION["cash_account"] = "";
 		}
 		else {
 			$_SESSION["cash_account"] = $_GET["FA_ID"];
 		}
-		$_SESSION["cash_type"] = $_GET["cash_type"];	// Тип
+		$_SESSION["cash_type"] = $_GET["cash_type"];			// Тип
 		$_SESSION["cash_sum_from"] = $_GET["cash_sum_from"];	// Сумма от
 		$_SESSION["cash_sum_to"] = $_GET["cash_sum_to"];		// Сумма до
+		if( $_GET["all_categories"] ) {							// Категории
+			$_SESSION["cash_category"] = "";
+		}
+		else {
+			$_SESSION["cash_category"] = $_GET["FC_ID"];
+		}
 	break;
 	
 	// Фильтр главной таблицы
