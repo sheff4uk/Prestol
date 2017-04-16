@@ -148,6 +148,22 @@
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////
+	// Сброс фильтра
+	if( isset($_GET["reset_filter"]) ) {
+		$_SESSION["cash_type"] = "";
+		$_SESSION["cash_sum_from"] = "";
+		$_SESSION["cash_sum_to"] = "";
+		$_SESSION["cash_account"] = "";
+		$_SESSION["cash_category"] = "";
+		$_SESSION["cash_author"] = "";
+		$_SESSION["cash_kontragent"] = "";
+		$_SESSION["cash_comment"] = "";
+
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#operations">');
+		die;
+	}
+
+///////////////////////////////////////////////////////////////////////////////////
 ?>
 
 <style>
@@ -291,7 +307,7 @@
 			 ]
 		</form>
 		<p>Изменение: <b id="cash_change"></b></p>
-		<button style="display: none; position: absolute; left: -10px; bottom: 0;" id="reset_filter">Сбросить фильтры</button>
+		<a href="?reset_filter=1" style="display: none; position: absolute; right: -10px; bottom: 0;" id="reset_filter">Сбросить фильтры</a>
 	</div>
 
 	<style>
@@ -379,9 +395,8 @@
 					return false;
 				});
 
-				// Поиск в категориях при вводе текста
-				$('#category_search').on("input", function() {
-					//$('#category_filter').hide();
+				// Поиск в категориях/контрагентах при вводе текста
+				$('#category_search, #kontragent_search').on("input", function() {
 					var search_text = $(this).val();
 					if( search_text ) {
 						$(this).parents('.th_filter').find('label').hide();
@@ -391,13 +406,13 @@
 						$(this).parents('.th_filter').find('label').show();
 						$(this).parents('.th_filter').find('input[type=checkbox]').prop('checked', true);
 					}
-					$(this).parents('.th_filter').find('.category_label').each(function() {
+					$(this).parents('.th_filter').find('.chbox_label').each(function() {
 						if( $(this).html().toUpperCase().indexOf(search_text.toUpperCase()) + 1 ) {
 							$(this).show();
 							$('#'+$(this).attr('for')).prop('checked', true);
 						}
 					});
-					$('#category_filter .btnset').buttonset("refresh");
+					$('.btnset').buttonset("refresh");
 					return false;
 				});
 
@@ -415,34 +430,18 @@
 				// Если будет 1, значит задействован фильтр
 				var filtered = 0;
 
-				// Включение чекбоксов в фильтре по счетам. Обновление названия колонки счета.
-				if( "<?=$_SESSION["cash_account"]?>" == "" ) {
-					$('#account_filter .select_all').prop("checked", true);
-					$('#account_filter .select_all').change();
-				}
-				else {
-					var text = "";
-					$('#account_filter .chbox').each(function(){
-						if( $(this).prop('checked') ) {
-							text = text + $('label[for=' + $(this).attr("id") + ']').html() + ", ";
-						}
-					});
-					$('#account_label').html('<strong>' + text.substr(0, text.length - 2) + '</strong>');
-					filtered = 1;
-				}
-
 				// Обновление названия колонки типа.
 				var cash_type = "<?=$_SESSION["cash_type"]?>";
 				if( cash_type != "" ) {
 					switch( cash_type ) {
 						case "-1":
-							$('#type_label').html('<strong><i class="fa fa-minus fa-lg"></i></strong>');
+							$('#type_label').html('<strong title="Расход"><i class="fa fa-minus fa-lg"></i></strong>');
 						break;
 						case "1":
-							$('#type_label').html('<strong><i class="fa fa-plus fa-lg"></i></strong>');
+							$('#type_label').html('<strong title="Доход"><i class="fa fa-plus fa-lg"></i></strong>');
 						break;
 						case "0":
-							$('#type_label').html('<strong><i class="fa fa-exchange fa-lg"></i></strong>');
+							$('#type_label').html('<strong title="Перевод"><i class="fa fa-exchange fa-lg"></i></strong>');
 						break;
 					}
 				filtered = 1;
@@ -460,7 +459,25 @@
 						$('#sum_filter input[name=cash_sum_to]').val('<?=$_SESSION["cash_sum_to"]?>');
 						to = "<?=$_SESSION["cash_sum_to"]?>";
 					}
-					$('#sum_label').html('<strong>' + from + ' - ' + to + '</strong>');
+					$('#sum_label').html('<strong title="' + from + ' - ' + to + '">[' + from + ' - ' + to + ']</strong>');
+					filtered = 1;
+				}
+
+				// Включение чекбоксов в фильтре по счетам. Обновление названия колонки счета.
+				if( "<?=$_SESSION["cash_account"]?>" == "" ) {
+					$('#account_filter .select_all').prop("checked", true);
+					$('#account_filter .select_all').change();
+				}
+				else {
+					var text = "";
+					$('#account_filter .chbox').each(function(){
+						if( $(this).prop('checked') ) {
+							text = text + $('label[for=' + $(this).attr("id") + '] span').html() + ", ";
+						}
+					});
+					text = escapeHtml(text.substr(0, text.length - 2));
+					$('#account_label').html('<strong title="' + text + '">[' + text + ']</strong>');
+					filtered = 1;
 				}
 
 				// Включение чекбоксов в фильтре по категориям. Обновление названия колонки категории.
@@ -472,15 +489,56 @@
 					var text = "";
 					$('#category_filter .chbox').each(function(){
 						if( $(this).prop('checked') ) {
-							text = text + $('label[for=' + $(this).attr("id") + ']').html() + ", ";
+							text = text + $('label[for=' + $(this).attr("id") + '] span').html() + ", ";
 						}
 					});
-					$('#category_label').html('<strong>' + text.substr(0, text.length - 2) + '</strong>');
+					text = escapeHtml(text.substr(0, text.length - 2));
+					$('#category_label').html('<strong title="' + text + '">[' + text + ']</strong>');
+					filtered = 1;
+				}
+
+				// Включение чекбоксов в фильтре по авторам. Обновление названия колонки автора.
+				if( "<?=$_SESSION["cash_author"]?>" == "" ) {
+					$('#author_filter .select_all').prop("checked", true);
+					$('#author_filter .select_all').change();
+				}
+				else {
+					var text = "";
+					$('#author_filter .chbox').each(function(){
+						if( $(this).prop('checked') ) {
+							text = text + $('label[for=' + $(this).attr("id") + '] span').html() + ", ";
+						}
+					});
+					text = escapeHtml(text.substr(0, text.length - 2));
+					$('#author_label').html('<strong title="' + text + '">[' + text + ']</strong>');
+					filtered = 1;
+				}
+
+				// Включение чекбоксов в фильтре по контрагентам. Обновление названия колонки контрагент.
+				if( "<?=$_SESSION["cash_kontragent"]?>" == "" ) {
+					$('#kontragent_filter .select_all').prop("checked", true);
+					$('#kontragent_filter .select_all').change();
+				}
+				else {
+					var text = "";
+					$('#kontragent_filter .chbox').each(function(){
+						if( $(this).prop('checked') ) {
+							text = text + $('label[for=' + $(this).attr("id") + '] span').html() + ", ";
+						}
+					});
+					text = escapeHtml(text.substr(0, text.length - 2));
+					$('#kontragent_label').html('<strong title="' + text + '">[' + text + ']</strong>');
+					filtered = 1;
+				}
+
+				//Обновление названия колонки комментариев.
+				if( "<?=$_SESSION["cash_comment"]?>" ) {
+					$('#comment_label').html('<strong title="<?=$_SESSION["cash_comment"]?>">[<?=$_SESSION["cash_comment"]?>]</strong>');
 					filtered = 1;
 				}
 
 				// Если отфильтрован - показываем кнопку "Сбросить фильтры"
-				if( filtered ) $('#reset_filter').show();
+				if( filtered ) $('#reset_filter').show().button();
 			});
 			///////////////////////////////////////////////////////////////////
 		});
@@ -556,16 +614,56 @@
 								while( $row = mysqli_fetch_array($res) )
 								{
 									$checked = in_array($row["FC_ID"], $_SESSION["cash_category"]) ? "checked" : "";
-									echo "<input id='category_{$row["FC_ID"]}' class='chbox' {$checked} type='checkbox' name='FC_ID[]' value='{$row["FC_ID"]}' form='filter_form'><label class='category_label' for='category_{$row["FC_ID"]}' style='font-weight: normal;'>{$row["name"]}</label>";
+									echo "<input id='category_{$row["FC_ID"]}' class='chbox' {$checked} type='checkbox' name='FC_ID[]' value='{$row["FC_ID"]}' form='filter_form'><label class='chbox_label' for='category_{$row["FC_ID"]}' style='font-weight: normal;'>{$row["name"]}</label>";
 								}
 								?>
 							</div>
 						</div>
-
 					</th>
-					<th width="100" class="th_filter">Автор<i class="fa fa-filter fa-lg"></i></th>
-					<th width="150" class="th_filter">Контрагент<i class="fa fa-filter fa-lg"></i></th>
-					<th width="270" class="th_filter">Комментарии<i class="fa fa-filter fa-lg"></i></th>
+
+					<th width="100" class="th_filter">
+						<div class="th_name" id="author_label">Все авторы</div>
+						<i class="fa fa-filter fa-lg"></i>
+						<div id="author_filter" class="filter_block" style="width: 200px;">
+							<div class='btnset'>
+								<?
+								echo "<input id='author_select_all' class='select_all' type='checkbox' name='all_authors' value='1' form='filter_form'><label for='author_select_all'>Все авторы</label>";
+								$query = "SELECT USR_ID, Name FROM Users ORDER BY Name";
+								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+								while( $row = mysqli_fetch_array($res) )
+								{
+									$checked = in_array($row["USR_ID"], $_SESSION["cash_author"]) ? "checked" : "";
+									echo "<input id='author_{$row["USR_ID"]}' class='chbox' {$checked} type='checkbox' name='USR_ID[]' value='{$row["USR_ID"]}' form='filter_form'><label class='chbox_label' for='author_{$row["USR_ID"]}' style='font-weight: normal;'>{$row["Name"]}</label>";
+								}
+								?>
+							</div>
+						</div>
+					</th>
+
+					<th width="150" class="th_filter">
+						<input id="kontragent_search" type="text" style="display: none; position: absolute; width: 110px; z-index: 3;">
+						<div class="th_name" id="kontragent_label">Все контрагенты</div>
+						<i class="fa fa-filter fa-lg"></i>
+						<div id="kontragent_filter" class="filter_block" style="width: 300px; height: 300px;">
+							<div class='btnset'>
+								<?
+								echo "<input id='kontragent_select_all' class='select_all' type='checkbox' name='all_kontragent' value='1' form='filter_form'><label for='kontragent_select_all'>Все контрагенты</label>";
+								$query = "SELECT KA_ID, Naimenovanie FROM Kontragenty ORDER BY Naimenovanie";
+								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+								while( $row = mysqli_fetch_array($res) )
+								{
+									$checked = in_array($row["KA_ID"], $_SESSION["cash_kontragent"]) ? "checked" : "";
+									echo "<input id='kontragent_{$row["KA_ID"]}' class='chbox' {$checked} type='checkbox' name='KA_ID[]' value='{$row["KA_ID"]}' form='filter_form'><label class='chbox_label' for='kontragent_{$row["KA_ID"]}' style='font-weight: normal;'>{$row["Naimenovanie"]}</label>";
+								}
+								?>
+							</div>
+						</div>
+					</th>
+					<th width="270" class="th_filter">
+						<input id="comment_search" type="text" name="cash_comment" form="filter_form" style="display: none; position: absolute; width: 230px; z-index: 3;">
+						<div class="th_name" id="comment_label">Комментарии</div>
+						<i class="fa fa-filter fa-lg"></i>
+					</th>
 					<th width="30"></th>
 				</tr>
 			</thead>
@@ -574,6 +672,8 @@
 				// Переменные фильтрации из сессии
 				$FA_IDs = $_SESSION["cash_account"] != "" ? implode(",", $_SESSION["cash_account"]) : "";
 				$FC_IDs = $_SESSION["cash_category"] != "" ? implode(",", $_SESSION["cash_category"]) : "";
+				$USR_IDs = $_SESSION["cash_author"] != "" ? implode(",", $_SESSION["cash_author"]) : "";
+				$KA_IDs = $_SESSION["cash_kontragent"] != "" ? implode(",", $_SESSION["cash_kontragent"]) : "";
 
 				$query = "SELECT SF.F_ID
 								,SF.date_sort
@@ -593,6 +693,7 @@
 								,SF.account_filter
 								,SF.receipt
 								,SF.author
+								,SF.USR_ID
 							FROM (
 								SELECT F.F_ID
 									,F.date date_sort
@@ -612,6 +713,7 @@
 									,F.FA_ID account_filter
 									,0 receipt
 									,USR.Name author
+									,USR.USR_ID
 								FROM Finance F
 								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
@@ -640,6 +742,7 @@
 									,F.to_account account_filter
 									,1 receipt
 									,USR.Name author
+									,USR.USR_ID
 								FROM Finance F
 								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
@@ -653,8 +756,10 @@
 							".($_SESSION["cash_sum_to"] != "" ? "AND SF.sum <= {$_SESSION["cash_sum_to"]}" : "")."
 							".($FA_IDs != "" ? "AND SF.account_filter IN ({$FA_IDs})" : "")."
 							".($FC_IDs != "" ? "AND SF.FC_ID IN ({$FC_IDs})" : "")."
+							".($USR_IDs != "" ? "AND SF.USR_ID IN ({$USR_IDs})" : "")."
+							".($KA_IDs != "" ? "AND SF.KA_ID IN ({$KA_IDs})" : "")."
+							".($_SESSION["cash_comment"] ? "AND SF.comment LIKE '%{$_SESSION["cash_comment"]}%'" : "")."
 							#AND SF.comment LIKE '%возврат%'
-							#AND SF.kontragent LIKE '%авто%'
 							ORDER BY SF.date_sort DESC, SF.F_ID DESC";
 
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
