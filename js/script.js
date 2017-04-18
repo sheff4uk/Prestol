@@ -24,21 +24,25 @@ function makeform(id, other, location, plid)
 
 	// Активация чекбокса готовности если выбран работник
 	$('.selectwr').change(function(){
-		var val = $(this).find('option:selected').val();
+		var val = $(this).val();
 		var id = $(this).attr('id');
+		var tbody = $(this).parents('tbody');
+		var stage = $(this).parents('tr').find('.stage').text();
 		
-		if( id == 7 ) { // Работник каркаса дублируется на сборку
-			$('select[name="WD_ID8"]').val(val);
+		if( stage == 'Каркас' ) { // Работник каркаса дублируется на сборку
+			var tr_sborka = $(this).parents('tbody').find('tr:contains("Сборка")');
+			$(tr_sborka).find('select').val(val);
+
 			if( val == '' )
 			{
-				$('#IsReady8').prop('disabled', true);
-				$('#IsReady8').prop('checked', false);
-				$('#IsReady8').button('refresh');
+				$(tr_sborka).find('.isready').prop('disabled', true);
+				$(tr_sborka).find('.isready').prop('checked', false);
+				$(tr_sborka).find('.isready').button('refresh');
 			}
 			else
 			{
-				$('#IsReady8').prop('disabled', false);			
-				$('#IsReady8').button('refresh');
+				$(tr_sborka).find('.isready').prop('disabled', false);
+				$(tr_sborka).find('.isready').button('refresh');
 			}
 		}
 		
@@ -50,7 +54,7 @@ function makeform(id, other, location, plid)
 		}
 		else
 		{
-			$('#IsReady'+id).prop('disabled', false);			
+			$('#IsReady'+id).prop('disabled', false);
 			$('#IsReady'+id).button('refresh');
 		}
 		return false;

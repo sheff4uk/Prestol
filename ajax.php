@@ -125,7 +125,7 @@ case "steps":
 			$text .= "<td><input disabled type=\'checkbox\' {$row["Visible"]}></td></tr>";
 		}
 		else {
-			$text .= "<tr><td><b>{$row["Step"]}</b></td>";
+			$text .= "<tr><td class=\'stage\'><b>{$row["Step"]}</b></td>";
 			$text .= "<td><select name=\'WD_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\'>{$selectworker}</select></td>";
 			$text .= "<td><input type=\'number\' min=\'0\' name=\'Tariff{$row["ST_ID"]}\' class=\'tariff\' value=\'{$row["Tariff"]}\'></td>";
 			$text .= "<td><input type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}><label for=\'IsReady{$row["ST_ID"]}\'></label></td>";
