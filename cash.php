@@ -218,7 +218,7 @@
 
 <?
 	$now_date = date('d.m.Y');
-	//Узнает дефолтный счет для пользователя
+	//Узнаем дефолтный счет для пользователя
 	$query = "SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION['id']} LIMIT 1";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$account = mysqli_result($res,0,'FA_ID');
@@ -251,7 +251,7 @@
 						$money = number_format($total, 0, '', ' ');
 
 						echo "<tr>";
-						echo "<td><h3>Итого:</h3></td>";
+						echo "<td><h3>Капитал:</h3></td>";
 						echo "<td width='120' class='txtright' style='color: {$color};'><h3>{$money}</h3></td>";
 						echo "</tr>";
 					?>
