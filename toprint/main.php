@@ -144,8 +144,9 @@
 							   ,CONCAT('<b>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
 							   ,ODD.Patina
 							   ,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
-							   		IF(PM.PT_ID = 1 AND IFNULL(MT.Material, '') != '',
-										CASE ODD.IsExist
+							   		IF(IFNULL(MT.Material, '') != '',
+										CASE IFNULL(ODD.IsExist, -1)
+											WHEN -1 THEN ' <b>(неизвестно)</b>'
 											WHEN 0 THEN ' <b>(нет)</b>'
 											WHEN 1 THEN ' <b>(заказано)</b>'
 											WHEN 2 THEN ' <b>(есть)</b>'
@@ -171,7 +172,8 @@
 							  ,ODB.Patina
 							  ,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
 							  		IF(IFNULL(MT.Material, '') != '',
-										CASE ODB.IsExist
+										CASE IFNULL(ODB.IsExist, -1)
+											WHEN -1 THEN ' <b>(неизвестно)</b>'
 											WHEN 0 THEN ' <b>(нет)</b>'
 											WHEN 1 THEN ' <b>(заказано)</b>'
 											WHEN 2 THEN ' <b>(есть)</b>'
