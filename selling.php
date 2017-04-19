@@ -250,7 +250,7 @@
 	<select name="CT_ID" onchange="this.form.submit()">
 		<option value="">-=Выберите город=-</option>
 		<?
-		$query = "SELECT CT.CT_ID, CT.City, CT.Color
+		$query = "SELECT CT.CT_ID, CONCAT(CT.City, ' (', GROUP_CONCAT(SH.Shop), ')') City, CT.Color
 					FROM Cities CT
 					JOIN Shops SH ON SH.CT_ID = CT.CT_ID AND SH.retail = 1
 					".(in_array('selling_city', $Rights) ? 'WHERE CT.CT_ID = '.$USR_City : '')."
