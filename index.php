@@ -1099,7 +1099,7 @@
 					$query = "SELECT CT.CT_ID, CONCAT(CT.City, ' (', GROUP_CONCAT(SH.Shop), IF(LENGTH(GROUP_CONCAT(SH.Shop)) > 48, '...', ''), ')') City, CT.Color
 								FROM Cities CT
 								JOIN Shops SH ON SH.CT_ID = CT.CT_ID
-								".(isset($_GET["shpid"]) ? ' WHERE CT_ID = '.$CT_ID : '')."
+								".(isset($_GET["shpid"]) ? ' WHERE CT.CT_ID = '.$CT_ID : '')."
 								GROUP BY CT.CT_ID
 								ORDER BY CT.City";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
