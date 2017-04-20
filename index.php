@@ -1092,9 +1092,16 @@
 				<select name="CT_ID" required>
 					<?=$_GET["shpid"] ? '' : '<option value="">-=Выберите город=-</option>'?>
 					<?
-					$query = "SELECT CT_ID, City, Color
-								FROM Cities".(isset($_GET["shpid"]) ? ' WHERE CT_ID = '.$CT_ID : '')."
-								ORDER BY Cities.City";
+					// Ограничиваем вывод списка салонов в дропдауне
+					$query = "SET @@group_concat_max_len = 50;";
+					mysqli_query( $mysqli, $query );
+
+					$query = "SELECT CT.CT_ID, CONCAT(CT.City, ' (', GROUP_CONCAT(SH.Shop), IF(LENGTH(GROUP_CONCAT(SH.Shop)) > 48, '...', ''), ')') City, CT.Color
+								FROM Cities CT
+								JOIN Shops SH ON SH.CT_ID = CT.CT_ID
+								".(isset($_GET["shpid"]) ? ' WHERE CT_ID = '.$CT_ID : '')."
+								GROUP BY CT.CT_ID
+								ORDER BY CT.City";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) )
 					{
@@ -1372,7 +1379,7 @@
 			$('#add_shipment_form').dialog({
 				position: { my: "center top", at: "center top", of: window },
 				draggable: false,
-				width: 800,
+				width: 1000,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
