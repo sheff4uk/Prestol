@@ -9,7 +9,7 @@
 
 	if (isset($_POST['login']) and isset($_POST['password'])) {
 		$login = $_POST['login']; if ($login == '') { unset($login);} //заносим введенный пользователем логин в переменную $login, если он пустой, то уничтожаем переменную
-		$passwd=$_POST['password']; if ($passwd =='') { unset($passwd);} //заносим введенный пользователем пароль в переменную $passwd, если он пустой, то уничтожаем переменную
+		$passwd = $_POST['password']; if ($passwd =='') { unset($passwd);} //заносим введенный пользователем пароль в переменную $passwd, если он пустой, то уничтожаем переменную
 		if (empty($login) or empty($passwd)) //если пользователь не ввел логин или пароль, то выдаем ошибку и останавливаем скрипт
 		{
 			exit ("Вы ввели не всю информацию, вернитесь назад и заполните все поля!");
@@ -19,9 +19,25 @@
 		$login = htmlspecialchars($login);
 		$passwd = stripslashes($passwd);
 		$passwd = htmlspecialchars($passwd);
+
 		//удаляем лишние пробелы
 		$login = trim($login);
 		$passwd = trim($passwd);
+
+		// минипроверка на подбор паролей
+		$ip=getenv("HTTP_X_FORWARDED_FOR");
+		if (empty($ip) || $ip=='unknown') {//извлекаем ip
+			$ip=getenv("REMOTE_ADDR");
+		}
+		mysqli_query ($mysqli, "DELETE FROM LoginErrors WHERE UNIX_TIMESTAMP() - UNIX_TIMESTAMP(date) > 900");//удаляем ip-адреса ошибавшихся при входе пользователей через 15 минут.
+		$result = mysqli_query($mysqli, "SELECT col FROM LoginErrors WHERE ip='{$ip}'");// извлекаем из базы количество неудачных попыток входа за последние 15 минут у пользователя с данным ip
+		$myrow = mysqli_fetch_array($result);
+
+		if ($myrow['col'] > 2) {
+			//если ошибок больше двух, т.е три, то выдаем сообщение.
+			exit("Вы набрали логин или пароль неверно 3 раза. Подождите 15 минут до следующей попытки.");
+		}
+
 		$passwd = md5($passwd);//шифруем пароль
 		$passwd = strrev($passwd);// для надежности добавим реверс
 		$passwd = $passwd."9di63";
@@ -50,6 +66,45 @@
 			}
 			else {
 				//если пароли не сошлись
+				//Делаем запись о том, что данный ip не смог войти.
+				$select = mysqli_query ($mysqli, "SELECT ip FROM LoginErrors WHERE ip='{$ip}'");
+				$tmp = mysqli_fetch_row ($select);
+				if ($ip == $tmp[0]) {//проверяем, есть ли пользователь в таблице "LoginErrors"
+					$result52 = mysqli_query($mysqli, "SELECT col FROM LoginErrors WHERE ip='{$ip}'");
+					$myrow52 = mysqli_fetch_array($result52);
+					$col = $myrow52[0] + 1;//прибавляем еще одну попытку неудачного входа
+					mysqli_query ($mysqli, "UPDATE LoginErrors SET col = {$col}, date = NOW() WHERE ip = '{$ip}'");
+
+					//если ошибок 3, то отправляем письмо
+					if ($col == 3) {
+						$from = "admin@fabrikaprestol.ru";
+						$subject = "[КИС Престол] 3 неудачных попытки входа";//тема сообщения
+						$message = "Здравствуйте! Было зарегистрировано 3 неудачных попытки входа в учетную запись {$myrow['Login']} с ip адреса: {$ip}";//содержание сообщения
+
+						// Отправляем письмо на указанный ящик пользователя через PHPMailer
+						require "PHPMailer/PHPMailerAutoload.php";
+						$mail = new PHPMailer(true);
+						$mail->isSMTP();
+						$mail->SMTPAuth = true;
+						$mail->SMTPSecure = "ssl";
+						$mail->Host = "smtp.yandex.ru";
+						$mail->Port = "465";
+						$mail->Username = "admin@fabrikaprestol.ru";
+						$mail->Password = "GmvN6*D%";
+						$mail->CharSet = "UTF-8";
+						$mail->ContentType = 'text/plain';
+						$mail->addAddress($myrow['Email']);
+						$mail->addReplyTo($from);
+						$mail->setFrom($from);
+						$mail->Subject = $subject;
+						$mail->Body = $message;
+						$mail->send(); //отправляем сообщение
+					}
+				}
+				else {
+					mysqli_query ($mysqli, "INSERT INTO LoginErrors (ip, date, col) VALUES ('{$ip}', NOW(), '1')");
+					//если за последние 15 минут ошибок не было, то вставляем новую запись в таблицу "LoginErrors"
+				}
 				exit ("Извините, введённый Вами пароль неверный. <a href='/'>Главная страница</a>");
 			}
 		}
