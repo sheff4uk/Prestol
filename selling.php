@@ -407,13 +407,13 @@ else {
 						$query = "SELECT SUM(ODD_ODB.Price) Price
 									FROM OrdersData OD
 									JOIN (
-										SELECT ODD.OD_ID
-											,ODD.Price * ODD.Amount Price
+										SELECT ODD.OD_ID ,ODD.Price * ODD.Amount Price
 										FROM OrdersDataDetail ODD
+										WHERE ODD.Del = 0
 										UNION ALL
-										SELECT ODB.OD_ID
-											,ODB.Price * ODB.Amount Price
+										SELECT ODB.OD_ID ,ODB.Price * ODB.Amount Price
 										FROM OrdersDataBlank ODB
+										WHERE ODB.Del = 0
 									) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 									WHERE OD.Del = 0 AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -790,6 +790,7 @@ else {
 							LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 							LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 							LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+							WHERE ODD.Del = 0
 							GROUP BY ODD.ODD_ID
 							UNION ALL
 							SELECT ODB.OD_ID
@@ -806,6 +807,7 @@ else {
 							LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 							LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 							LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+							WHERE ODB.Del = 0
 							GROUP BY ODB.ODB_ID
 							ORDER BY PT_ID DESC, itemID
 							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID

@@ -52,7 +52,7 @@
 	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=29'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=30'>
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
@@ -230,7 +230,7 @@
 		</div>
 <?
 	// Узнаем кол-во непроверенных свободных
-	$query = "SELECT COUNT(1) CNT FROM `OrdersDataDetail` WHERE OD_ID IS NULL AND is_check = 0";
+	$query = "SELECT COUNT(1) CNT FROM `OrdersDataDetail` WHERE OD_ID IS NULL AND is_check = 0 AND Del = 0";
 	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$ischeckcount = " (".mysqli_result($result,0,'CNT').")";
 
@@ -249,7 +249,7 @@
 			$menu["Материалы"] = "materials.php";
 		}
 		if( in_array('screen_free', $Rights) ) {
-			$menu["Свободные".$ischeckcount] = "/orderdetail.php?free=1";
+			$menu["Корзина".$ischeckcount] = "/orderdetail.php?free=1";
 		}
 		if( in_array('screen_blanks', $Rights) ) {
 			$menu["Заготовки"] = "blankstock.php";

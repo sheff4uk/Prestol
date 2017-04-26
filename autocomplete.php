@@ -106,7 +106,8 @@ case "price":
 					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = {$_GET["retail"]}
 					WHERE ODD.Price IS NOT NULL AND ODD.PM_ID = {$_GET["PM_ID"]} AND ODD.PME_ID {$mechanism}
-					#AND DATEDIFF(NOW(),OD.AddDate) <= 60
+					AND DATEDIFF(NOW(),OD.AddDate) <= 90
+					AND ODD.Del = 0
 					GROUP BY ODD.Price, ODD.Length, ODD.Width, ODD.PieceAmount, ODD.PieceSize, ODD.PME_ID
 					ORDER BY MAX(ODD.ODD_ID) DESC
 					LIMIT 8";

@@ -900,3 +900,12 @@ td.tscell > i {
 	background: white;
 	box-shadow: 0 0 3px 3px white;
 }
+
+.del { /*Удаленные позиции*/
+	opacity: .5;
+}
+.del td:last-child:before {
+	content: "Удалено";
+	color: red;
+	font-weight: bold;
+}

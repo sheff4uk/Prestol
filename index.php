@@ -157,6 +157,12 @@
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
+			// Записываем в журнал событие разделения заказа
+			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$OD_ID}, field_name = 'Разделение заказа (уменьшенный)', old_value = '', new_value = '', author = {$_SESSION['id']}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, field_name = 'Разделение заказа (вычтенный)', old_value = '', new_value = '', author = {$_SESSION['id']}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
 			// Цикл по содержимому заказа (используются данные из формы)
 			foreach ($_POST["itemID"] as $key => $value) {
 				$left = $_POST["prod_amount_left"][$key];
@@ -176,8 +182,8 @@
 						$query = "UPDATE OrdersDataBlank SET Amount = {$left}, author = NULL WHERE ODB_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						// Вставляем в новый заказ переносимые изделия
-						$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, MT_ID, Amount, Comment, IsExist, order_date, arrival_date, Price, sister_ID, creator)
-						SELECT {$newOD_ID}, BL_ID, Other, MT_ID, {$right}, Comment, IsExist, order_date, arrival_date, Price, {$value}, {$_SESSION['id']} FROM OrdersDataBlank WHERE ODB_ID = {$value}";
+						$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, MT_ID, Amount, Comment, IsExist, order_date, arrival_date, Price, sister_ID, creator, patina)
+						SELECT {$newOD_ID}, BL_ID, Other, MT_ID, {$right}, Comment, IsExist, order_date, arrival_date, Price, {$value}, {$_SESSION['id']}, patina FROM OrdersDataBlank WHERE ODB_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					}
 					else {
@@ -185,8 +191,8 @@
 						$query = "UPDATE OrdersDataDetail SET Amount = {$left}, author = NULL WHERE ODD_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						// Вставляем в новый заказ переносимые изделия
-						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Color, Comment, is_check, order_date, arrival_date, Price, sister_ID, creator)
-						SELECT {$newOD_ID}, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, {$right}, Color, Comment, is_check, order_date, arrival_date, Price, {$value}, {$_SESSION['id']} FROM OrdersDataDetail WHERE ODD_ID = {$value}";
+						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Color, Comment, is_check, order_date, arrival_date, Price, sister_ID, creator, patina)
+						SELECT {$newOD_ID}, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, {$right}, Color, Comment, is_check, order_date, arrival_date, Price, {$value}, {$_SESSION['id']}, patina FROM OrdersDataDetail WHERE ODD_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					}
 				}
@@ -261,7 +267,7 @@
 						LEFT JOIN (
 							SELECT PM.PT_ID, PM.space * ODD.Amount space
 							FROM OrdersData OD
-							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
+							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 							JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 							WHERE OD.SHP_ID = {$_GET["shpid"]}
 						) PMS ON PMS.PT_ID = PT.PT_ID
@@ -786,6 +792,7 @@
 						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+						WHERE ODD.Del = 0
 						GROUP BY ODD.ODD_ID
 						UNION ALL
 						SELECT ODB.OD_ID
@@ -816,6 +823,7 @@
 						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+						WHERE ODB.Del = 0
 						GROUP BY ODB.ODB_ID
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
@@ -1016,7 +1024,7 @@
 				  FROM OrdersDataDetail ODD
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 				  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-				  WHERE ODD.OD_ID = {$row["OD_ID"]}
+				  WHERE ODD.OD_ID = {$row["OD_ID"]} AND ODD.Del = 0
 				  GROUP BY ODD.ODD_ID";
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $sub_row = mysqli_fetch_array($result) )
@@ -1041,7 +1049,7 @@
 				  FROM OrdersDataBlank ODB
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1
 				  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-				  WHERE ODB.OD_ID = {$row["OD_ID"]}
+				  WHERE ODB.OD_ID = {$row["OD_ID"]} AND ODB.Del = 0
 				  GROUP BY ODB.ODB_ID";
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $sub_row = mysqli_fetch_array($result) )
@@ -1066,10 +1074,12 @@
 				JOIN (
 					SELECT ODD.OD_ID, ODD.MT_ID, ODD.IsExist
 					FROM OrdersDataDetail ODD
+					WHERE ODD.OD_ID IN ({$orders_IDs}) AND ODD.Del = 0
 					UNION
 					SELECT ODB.OD_ID, ODB.MT_ID, ODB.IsExist
 					FROM OrdersDataBlank ODB
-					) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID AND ODD_ODB.OD_ID IN ({$orders_IDs})
+					WHERE ODB.OD_ID IN ({$orders_IDs}) AND ODB.Del = 0
+					) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
 				GROUP BY MT.MT_ID
 				ORDER BY MT.Material";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

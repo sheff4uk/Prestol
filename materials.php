@@ -166,6 +166,7 @@
 									WHERE ODS.Visible = 1 AND ODS.Old != 1 AND ODS.ODD_ID IS NOT NULL
 									GROUP BY ODS.ODD_ID
 								) ODS_ST ON ODS_ST.ODD_ID = ODD.ODD_ID
+								WHERE ODD.Del = 0
 								UNION
 								SELECT ODB.OD_ID, ODB.MT_ID, ODB.IsExist, IFNULL(ODS_ST.WD_ID, 0) WD_ID, IF(ODS_ST.IsReady = 1, 1, IF(ODS_ST.IsReady = 0 AND ODS_ST.WD_ID IS NOT NULL, 0, NULL)) IsReady
 								FROM OrdersDataBlank ODB
@@ -175,6 +176,7 @@
 									WHERE ODS.Visible = 1 AND ODS.Old != 1 AND ODS.ODB_ID IS NOT NULL
 									GROUP BY ODS.ODB_ID
 								) ODS_ST ON ODS_ST.ODB_ID = ODB.ODB_ID
+								WHERE ODB.Del = 0
 							) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID AND ODD_ODB.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist ).( isset( $_GET["ready"] ) ? " AND ODD_ODB.IsReady = {$_GET["ready"]}" : "" ).( isset( $_GET["WD_ID"] ) ? " AND ODD_ODB.WD_ID = {$_GET["WD_ID"]}" : "" )."
 							LEFT JOIN OrdersData OD ON OD.OD_ID = ODD_ODB.OD_ID
 							WHERE MT.PT_ID = {$product} AND OD.ReadyDate IS NULL
@@ -291,6 +293,7 @@
 						  ) ODS_ST ON ODS_ST.ODD_ID = ODD.ODD_ID
 						  WHERE ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )." AND IFNULL(PM.PT_ID, 2) = {$product}
 						  AND (ODD.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
+						  AND ODD.Del = 0
 						  UNION ALL
 						  SELECT ODB.OD_ID
 								,ODB.ODB_ID ItemID
@@ -335,6 +338,7 @@
 						  ) ODS_ST ON ODS_ST.ODB_ID = ODB.ODB_ID
 						  WHERE ODB.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )." AND MT.PT_ID = {$product}
 						  AND (ODB.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
+						  AND ODB.Del = 0
 						  ORDER BY PT_ID DESC, ItemID
 						  ) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODD_ODB.WD_ID
@@ -421,6 +425,7 @@
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 				  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 				  WHERE ODD.OD_ID ".( $row["OD_ID"] == "" ? "IS NULL" : "= {$row["OD_ID"]}" )."
+				  AND ODD.Del = 0
 				  GROUP BY ODD.ODD_ID";
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $sub_row = mysqli_fetch_array($result) )
@@ -448,6 +453,7 @@
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1
 				  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 				  WHERE ODB.OD_ID ".( $row["OD_ID"] == "" ? "IS NULL" : "= {$row["OD_ID"]}" )."
+				  AND ODB.Del = 0
 				  GROUP BY ODB.ODB_ID";
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $sub_row = mysqli_fetch_array($result) )

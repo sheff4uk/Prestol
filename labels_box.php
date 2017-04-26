@@ -228,6 +228,7 @@ $(document).ready(function() {
 					LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 					LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 					LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+					WHERE ODD.Del = 0
 					UNION ALL
 					SELECT ODB.OD_ID
 						  ,ODB.ODB_ID ItemID
@@ -242,6 +243,7 @@ $(document).ready(function() {
 					FROM OrdersDataBlank ODB
 					LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 					LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+					WHERE ODB.Del = 0
 					) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  WHERE OD.OD_ID IN ({$id_list})
 			  AND ODD_ODB.PT_ID IN({$product_types})

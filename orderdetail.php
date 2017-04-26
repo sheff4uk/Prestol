@@ -107,8 +107,8 @@
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 						// Добавляем указанное количество изделий в заказ
-						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Price, Comment, order_date, arrival_date, creator)
-								SELECT {$id}, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, {$v}, Price, Comment, order_date, arrival_date, {$_SESSION['id']} FROM OrdersDataDetail WHERE ODD_ID = {$prodid}";
+						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Price, Comment, order_date, arrival_date, creator, patina)
+								SELECT {$id}, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, {$v}, Price, Comment, order_date, arrival_date, {$_SESSION['id']}, patina FROM OrdersDataDetail WHERE ODD_ID = {$prodid}";
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$odd_id = mysqli_insert_id( $mysqli );
 
@@ -280,14 +280,15 @@
         $ispainting = mysqli_result($res,0,'IsPainting');
 
         if( $inprogress == 0 ) { // Если не приступили, то удаляем. Иначе - переносим в свободные.
-            $query = "DELETE FROM OrdersDataSteps WHERE ODD_ID={$odd_id}";
-            mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//            $query = "DELETE FROM OrdersDataSteps WHERE ODD_ID={$odd_id}";
+//            mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-            $query = "DELETE FROM OrdersDataDetail WHERE ODD_ID={$odd_id}";
+//            $query = "DELETE FROM OrdersDataDetail WHERE ODD_ID={$odd_id}";
+			$query = "UPDATE OrdersDataDetail SET Del = 1, author = {$_SESSION['id']} WHERE ODD_ID={$odd_id}";
             mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
         }
         else {
-            $query = "UPDATE OrdersDataDetail SET OD_ID = NULL, is_check = 0 WHERE ODD_ID={$odd_id}";
+            $query = "UPDATE OrdersDataDetail SET OD_ID = NULL, is_check = 0, author = {$_SESSION['id']} WHERE ODD_ID={$odd_id}";
             mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
             
             $_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
@@ -302,10 +303,11 @@
 	if( isset($_GET["delblank"]) ) {
 		$odb_id = (int)$_GET["delblank"];
 
-		$query = "DELETE FROM OrdersDataSteps WHERE ODB_ID={$odb_id}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//		$query = "DELETE FROM OrdersDataSteps WHERE ODB_ID={$odb_id}";
+//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		$query = "DELETE FROM OrdersDataBlank WHERE ODB_ID={$odb_id}";
+		//$query = "DELETE FROM OrdersDataBlank WHERE ODB_ID={$odb_id}";
+		$query = "UPDATE OrdersDataBlank SET Del = 1, author = {$_SESSION['id']} WHERE ODB_ID={$odb_id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		//header( "Location: ".$location ); // Перезагружаем экран
@@ -507,6 +509,7 @@
 					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
 					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
 					,ODD.patina
+					,ODD.Del
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -531,12 +534,12 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
-		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row {$row["is_check"]}' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
+		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')." {$row["is_check"]}' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
 		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
 		echo "<td><span>{$row["Model"]}<br>".($row["Size"] != "" ? "{$row["Size"]}<br>" : "").($row["Form"] != "" ? "{$row["Form"]}<br>" : "").($row["Mechanism"] != "" ? "{$row["Mechanism"]}<br>" : "")."</span></td>";
 		echo "<td>{$row["patina"]}</td>";
-		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
-		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "");
+		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
 			case "0":
 				echo "bg-red'>";
@@ -559,11 +562,11 @@
 //		echo "<td class='txtright'>{$format_price}</td>";
 		echo "<td>";
 		
-		if( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) {
+		if( (in_array('order_add_confirm', $Rights) or $confirmed == 0) and $row["Del"] == 0 ) {
 			echo "<a href='#' id='{$row["ODD_ID"]}' free='{$free}' class='button edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></a>";
 
 			// Не показываем кнопку "Удалить" только в свободных если прогресс не 0
-			if( !($id == "NULL" && $row["inprogress"] != 0) )
+			if( !($id == "NULL" and $row["inprogress"] != 0) )
 			{
 				$delmessage = "Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?";
 				?>
@@ -605,6 +608,7 @@
 					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
 					,IFNULL(MT.PT_ID, 0) MPT_ID
 					,ODB.patina
+					,ODB.Del
 			  FROM OrdersDataBlank ODB
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
 			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
@@ -626,12 +630,12 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
-		echo "<tr id='blank{$row["ODB_ID"]}' class='ord_log_row' lnk='*ODB_ID{$row["ODB_ID"]}*'>";
+		echo "<tr id='blank{$row["ODB_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODB_ID{$row["ODB_ID"]}*'>";
 		echo "<td>{$row["Amount"]}</td>";
 		echo "<td>{$row["Name"]}</td>";
 		echo "<td>{$row["patina"]}</td>";
-		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
-		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "");
+		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
 			case "0":
 				echo "bg-red'>";
@@ -653,7 +657,7 @@
 		echo "<td>{$row["Comment"]}</td>";
 //		echo "<td class='txtright'>{$format_price}</td>";
 		echo "<td>";
-		if( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) {
+		if( (in_array('order_add_confirm', $Rights) or $confirmed == 0) and $row["Del"] == 0 ) {
 			echo "<a href='#' id='{$row["ODB_ID"]}' class='button edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
 			if( $row["inprogress"] == 0 ) {
 				$name = addslashes($row["Name"]);
@@ -722,10 +726,15 @@ if( $id != "NULL" ) {
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "<tr class='ord_log_row' lnk='*{$row["table_key"]}{$row["table_value"]}*'>";
-				echo "<td><b>{$row["field_name"]}</b></td>";
-				echo "<td style='text-align: right;'><i style='background: #ddd; padding: 2px;'>{$row["old_value"]}</i></td>";
-				echo "<td><i class='fa fa-arrow-right'></i></td>";
-				echo "<td style='text-align: left;'><i style='background: #fd9; padding: 2px;'>{$row["new_value"]}</i></td>";
+				if( $row["old_value"] != "" or $row["new_value"] != "" ) {
+					echo "<td><b>{$row["field_name"]}</b></td>";
+					echo "<td style='text-align: right;'><i style='background: #ddd; padding: 2px;'>{$row["old_value"]}</i></td>";
+					echo "<td><i class='fa fa-arrow-right'></i></td>";
+					echo "<td style='text-align: left;'><i style='background: #fd9; padding: 2px;'>{$row["new_value"]}</i></td>";
+				}
+				else {
+					echo "<td colspan='4'><b>{$row["field_name"]}</b></td>";
+				}
 				echo "<td class='nowrap'>{$row["Date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
 				echo "</tr>";
 			}

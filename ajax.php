@@ -167,7 +167,7 @@ case "livesearch":
 			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID";
-	$query .= " WHERE ODD.OD_ID IS NULL AND IFNULL(PM.PT_ID, 2) = {$pt}";
+	$query .= " WHERE ODD.OD_ID IS NULL AND ODD.Del = 0 AND IFNULL(PM.PT_ID, 2) = {$pt}";
 //	$query .= ( $pt == 1 ) ? " AND PM.PT_ID = {$pt}" : "";
 //	$query .= ($_GET["model"] and $_GET["model"] <> "undefined") ? " AND (ODD.PM_ID = {$_GET["model"]} OR ODD.PM_ID IS NULL)" : "";
 //	$query .= ($_GET["form"] and $_GET["form"] <> "undefined") ? " AND ODD.PF_ID = {$_GET["form"]}" : "";
@@ -531,6 +531,7 @@ case "shipment":
 						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+						WHERE ODD.Del = 0
 						GROUP BY ODD.ODD_ID
 						UNION ALL
 						SELECT ODB.OD_ID
@@ -554,6 +555,7 @@ case "shipment":
 						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+						WHERE ODB.Del = 0
 						GROUP BY ODB.ODB_ID
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
@@ -843,7 +845,7 @@ case "update_price":
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			  WHERE ODD.OD_ID = {$OD_ID}
+			  WHERE ODD.OD_ID = {$OD_ID} AND ODD.Del = 0
 			  GROUP BY ODD.ODD_ID
 			  UNION ALL
 			  SELECT ODB.OD_ID
@@ -858,7 +860,7 @@ case "update_price":
 
 			  FROM OrdersDataBlank ODB
 			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-			  WHERE ODB.OD_ID = {$OD_ID}
+			  WHERE ODB.OD_ID = {$OD_ID} AND ODB.Del = 0
 			  GROUP BY ODB.ODB_ID
 			  ORDER BY PT_ID DESC, itemID";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
@@ -990,7 +992,7 @@ case "order_cut":
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			  WHERE ODD.OD_ID = {$OD_ID}
+			  WHERE ODD.OD_ID = {$OD_ID} AND ODD.Del = 0
 			  GROUP BY ODD.ODD_ID
 			  UNION ALL
 			  SELECT ODB.OD_ID
@@ -1002,7 +1004,7 @@ case "order_cut":
 
 			  FROM OrdersDataBlank ODB
 			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-			  WHERE ODB.OD_ID = {$OD_ID}
+			  WHERE ODB.OD_ID = {$OD_ID} AND ODB.Del = 0
 			  GROUP BY ODB.ODB_ID
 			  ORDER BY PT_ID DESC, itemID";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");

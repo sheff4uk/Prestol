@@ -163,6 +163,7 @@
 						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+						WHERE ODD.Del = 0
 						GROUP BY ODD.ODD_ID
 						UNION ALL
 						SELECT ODB.OD_ID
@@ -187,6 +188,7 @@
 						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+						WHERE ODB.Del = 0
 						GROUP BY ODB.ODB_ID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  WHERE OD.OD_ID IN ({$id_list})
@@ -200,11 +202,13 @@
 				FROM OrdersData OD
 				LEFT JOIN (
 					SELECT ODD.OD_ID, IFNULL(PM.PT_ID, 2) PT_ID
-					FROM `OrdersDataDetail` ODD
+					FROM OrdersDataDetail ODD
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+					WHERE ODD.Del = 0
 					UNION ALL
 					SELECT ODB.OD_ID, 0 PT_ID
-					FROM `OrdersDataBlank` ODB
+					FROM OrdersDataBlank ODB
+					WHERE ODB.Del = 0
 				) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 				WHERE OD.OD_ID IN ({$id_list})
 				AND ODD_ODB.PT_ID IN({$product_types})

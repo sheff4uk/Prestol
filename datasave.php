@@ -98,8 +98,8 @@ if( $_GET["oddid"] )
 
 	// Если материалы не совпадают
 	if( $OldMaterial != $Material ) {
-		$query = "UPDATE Materials SET Count = Count - 1 WHERE Material = '{$OldMaterial}' AND PT_ID = {$_POST["Type"]}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//		$query = "UPDATE Materials SET Count = Count - 1 WHERE Material = '{$OldMaterial}' AND PT_ID = {$_POST["Type"]}";
+//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		if( $Material != '' ) { // Сохраняем в таблицу материалов полученный материал и узнаем его ID
 			$query = "INSERT INTO Materials
@@ -107,10 +107,9 @@ if( $_GET["oddid"] )
 							PT_ID = {$_POST["Type"]},
 							Material = '{$Material}',
 							SH_ID = {$Shipper},
-							Count = 1
+							Count = 0
 						ON DUPLICATE KEY UPDATE
-							Count = Count + 1,
-							SH_ID = {$Shipper}";
+							Count = Count + 1";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$mt_id = mysqli_insert_id( $mysqli );
 		}
@@ -213,8 +212,8 @@ if( $_GET["odbid"] )
 
 	// Если материалы не совпадают
 	if( $OldMaterial != $Material or $OldMPT_ID != $MPT_ID ) {
-		$query = "UPDATE Materials SET Count = Count - 1 WHERE Material = '{$OldMaterial}' AND PT_ID = {$OldMPT_ID}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//		$query = "UPDATE Materials SET Count = Count - 1 WHERE Material = '{$OldMaterial}' AND PT_ID = {$OldMPT_ID}";
+//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		if( $Material != '' ) { // Сохраняем в таблицу материалов полученный материал и узнаем его ID
 			$query = "INSERT INTO Materials
@@ -222,10 +221,9 @@ if( $_GET["odbid"] )
 							PT_ID = {$MPT_ID},
 							Material = '{$Material}',
 							SH_ID = {$Shipper},
-							Count = 1
+							Count = 0
 						ON DUPLICATE KEY UPDATE
-							Count = Count + 1,
-							SH_ID = {$Shipper}";
+							Count = Count + 1";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$mt_id = mysqli_insert_id( $mysqli );
 		}
