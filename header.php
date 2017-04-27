@@ -32,7 +32,7 @@
 					<tr>
 						<th width='60'>Код</th>
 						<th>Сообщение</th>
-						<th>Автор</th>
+						<th width='100'>Автор</th>
 					</tr>
 				</thead>
 				<tbody>
