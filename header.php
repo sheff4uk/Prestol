@@ -41,7 +41,7 @@
 		while( $row = mysqli_fetch_array($res) )
 		{
 			$workflow_table .= "
-				<tr style='".($row["priority"] ? "font-weight: bold;" : "")." ".($row["is_read"] == 0 ? "opacity: .3;" : "")."'>
+				<tr onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' style='".($row["priority"] ? "font-weight: bold;" : "")." ".($row["is_read"] == 0 ? "opacity: .3;" : "")."'>
 					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'>{$row["Code"]}</a></td>
 					<td>{$row["Message"]}</td>
 					<td>{$row["Name"]}</td>
