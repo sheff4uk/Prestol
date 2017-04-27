@@ -813,9 +813,9 @@ if( $id != "NULL" ) {
 			<div>
 				<label for="priority">Приоритет:</label><br>
 				<div id='priority' class='btnset'>
-					<input type='radio' id='reg_msg' name='priority' value='0' <?=( $confirmed == 0 ? "checked" : "" )?>>
+					<input type='radio' id='reg_msg' name='priority' value='0' checked>
 						<label for='reg_msg'>Обычное</label>
-					<input type='radio' id='imp_msg' name='priority' value='1' <?=( $confirmed == 1 ? "checked" : "" )?>>
+					<input type='radio' id='imp_msg' name='priority' value='1'>
 						<label for='imp_msg'>Срочное</label>
 				</div>
 			</div>
