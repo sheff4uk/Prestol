@@ -167,7 +167,7 @@
 								FROM OrdersDataDetail ODD
 								LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
-								WHER ODD.Del = 0
+								WHERE ODD.Del = 0
 								GROUP BY PB.BL_ID
 							) SODD ON SODD.BL_ID = BL.BL_ID
 							LEFT JOIN (
