@@ -889,15 +889,16 @@
 				}
 			}
 
-			$query .= " GROUP BY OD.OD_ID HAVING PRfilter AND MTfilter";
+			$query .= " GROUP BY OD.OD_ID HAVING PRfilter";
 
 			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
+				$query .= " AND MTfilter";
 				if( $_SESSION["f_Z"] != "" ) {
 					$query .= " AND Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
 				}
 			}
 
-			if( $_SESSION["f_X"] == "1" or $_GET["X"] == "1" ) {
+			if( ($_SESSION["f_X"] == "1" and !isset($_GET["shpid"])) or $_GET["X"] == "1" ) {
 				$X_ord = '0';
 				foreach( $_SESSION as $k => $v)
 				{
