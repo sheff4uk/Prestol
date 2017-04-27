@@ -8,12 +8,19 @@
 	include "checkrights.php";
 
 	if( in_array('order_add', $Rights) ) {
-		$query = "SELECT OM.OD_ID, OD.Code, OM.Message, OM.priority
+		$query = "SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 1 is_read
 					FROM OrdersMessage OM
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 					WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NULL AND OD.Del = 0 AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops}))
-					ORDER BY OM.OM_ID DESC";
+					#ORDER BY OM.OM_ID DESC
+				  UNION ALL
+				  SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 0 is_read
+					FROM OrdersMessage OM
+					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
+					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+					WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NOT NULL AND OD.Del = 0 AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops})) AND DATEDIFF(NOW(), OM.read_time) <= 7
+				  ORDER BY is_read DESC, OM_ID DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		$workflow_color = "green";
@@ -31,16 +38,18 @@
 		while( $row = mysqli_fetch_array($res) )
 		{
 			$workflow_table .= "
-				<tr".($row["priority"] ? " style='font-weight: bold;'" : "").">
+				<tr style='".($row["priority"] ? "font-weight: bold;" : "")." ".($row["is_read"] == 0 ? "opacity: .3;" : "")."'>
 					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'>{$row["Code"]}</a></td>
 					<td>{$row["Message"]}</td>
 				</tr>
 			";
-			if( $row["priority"] == 0 and $workflow_color != 'red' ) {
-				$workflow_color = "yellow";
-			}
-			else {
-				$workflow_color = "red";
+			if( $row["is_read"] ) {
+				if( $row["priority"] == 0 and $workflow_color != 'red' ) {
+					$workflow_color = "yellow";
+				}
+				else {
+					$workflow_color = "red";
+				}
 			}
 		}
 		$workflow_table .= "</tbody></table>";
