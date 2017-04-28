@@ -65,7 +65,7 @@
 				<input type='hidden' name='BS_ID'>
 				<div>
 					<label>Работник:</label>
-					<select name='Worker'>
+					<select name="Worker" id="worker">
 						<option value="">-=Выберите работника=-</option>
 						<?
 						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE WD.Type = 1 ORDER BY WD.Name";
@@ -79,7 +79,7 @@
 				</div>
 				<div>
 					<label>Заготовка:</label>
-					<select required name='Blank'>
+					<select required name="Blank" id="blank">
 						<option value="">-=Выберите заготовку=-</option>
 						<optgroup label="Стулья">
 							<?
@@ -266,6 +266,14 @@
 
 <script>
 	$(document).ready(function() {
+		$('#worker').select2({ placeholder: 'Выберите работника', language: 'ru' });
+		$('#blank').select2({ placeholder: 'Выберите заготовку', language: 'ru' });
+
+		// Костыль для Select2 чтобы работал поиск
+		$.ui.dialog.prototype._allowInteraction = function (e) {
+			return true;
+		};
+
 		// Форма добавления заготовок
 		$('.edit_blank').click(function() {
 			var id = $(this).attr('id');
@@ -277,6 +285,8 @@
 
 			// Очистка диалога
 			$('#addblank input, #addblank select, #addblank textarea').val('');
+			$('#addblank #worker').val('').trigger('change');
+			$('#addblank #blank').val('').trigger('change');
 
 			// Заполнение
 			if( typeof id !== "undefined" )

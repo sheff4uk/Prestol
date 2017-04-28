@@ -45,7 +45,7 @@ else {
 	&nbsp;&nbsp;
 	<label for="payer">Плательщик:</label>
 	<select name="payer" id="payer" onchange="this.form.submit()">
-		<option></option>
+		<option value="0">-=Все контрагенты=-</option>
 <?
 	$query = "SELECT KA_ID, Naimenovanie FROM Kontragenty ORDER BY count DESC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -56,6 +56,12 @@ else {
 	</select>
 </form>
 <br>
+
+<script>
+	$(document).ready(function() {
+		$('#payer').select2({ placeholder: 'Выберите контрагента', language: 'ru' });
+	});
+</script>
 
 <table>
 	<thead>

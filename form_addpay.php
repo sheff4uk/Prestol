@@ -52,7 +52,7 @@
 			<input type='hidden' name='plid'>
 			<div>
 				<label>Работник:</label>
-				<select required name='Worker'>
+				<select required name="Worker" id="worker">
 					<option value="">-=Выберите работника=-</option>
 					<?
 					$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD ORDER BY WD.Name";
@@ -112,6 +112,13 @@
 
 <script>
 	$(document).ready(function() {
+		$('#worker').select2({ placeholder: 'Выберите работника', language: 'ru' });
+
+		// Костыль для Select2 чтобы работал поиск
+		$.ui.dialog.prototype._allowInteraction = function (e) {
+			return true;
+		};
+
 		// Форма добавления платежа
 		$('.edit_pay').click(function() {
 			var id = $(this).attr('id');
@@ -122,6 +129,7 @@
 
 			// Очистка диалога
 			$( '#addpay input[type="number"], #addpay select, #addpay textarea' ).val('');
+			$('#addpay #worker').val('').trigger('change');
 			$( '#bank' ).prop('checked', false);
 			$( '#bank' ).button("refresh");
 
