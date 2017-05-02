@@ -79,7 +79,7 @@
 				</div>
 				<div>
 					<label>Заготовка:</label>
-					<select required name="Blank" id="blank">
+					<select required name="Blank" id="blank" style="width: 200px;">
 						<option value="">-=Выберите заготовку=-</option>
 						<optgroup label="Стулья">
 							<?

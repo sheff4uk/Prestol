@@ -52,7 +52,7 @@
 			<input type='hidden' name='plid'>
 			<div>
 				<label>Работник:</label>
-				<select required name="Worker" id="worker">
+				<select required name="Worker" id="worker" style="width: 200px;">
 					<option value="">-=Выберите работника=-</option>
 					<?
 					$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD ORDER BY WD.Name";
