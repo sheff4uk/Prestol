@@ -65,7 +65,7 @@
 				<input type='hidden' name='BS_ID'>
 				<div>
 					<label>Работник:</label>
-					<select name="Worker" id="worker">
+					<select name="Worker" id="worker" style="width: 200px;">
 						<option value="">-=Выберите работника=-</option>
 						<?
 						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE WD.Type = 1 ORDER BY WD.Name";
