@@ -282,10 +282,10 @@
 							<li><a href="#incoming">Входящие</a></li>
 							<li><a href="#outcoming">Отправленные</a></li>
 						</ul>
-						<div id="incoming">
+						<div id="incoming" style="height: calc(100% - 35px); overflow: auto;">
 							<?=$workflow_table?>
 						</div>
-						<div id="outcoming">
+						<div id="outcoming" style="height: calc(100% - 35px); overflow: auto;">
 							<?=$workflow_table_outcoming?>
 						</div>
 					</div>
