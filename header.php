@@ -57,6 +57,47 @@
 			}
 		}
 		$workflow_table .= "</tbody></table>";
+
+		$query = "SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 1 is_read, USR.Name
+					FROM OrdersMessage OM
+					LEFT JOIN Users USR ON USR.USR_ID = OM.read_user
+					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
+					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+					WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NULL AND OD.Del = 0 AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops}))
+					#ORDER BY OM.OM_ID DESC
+				  UNION ALL
+				  SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 0 is_read, USR.Name
+					FROM OrdersMessage OM
+					LEFT JOIN Users USR ON USR.USR_ID = OM.read_user
+					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
+					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+					WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NOT NULL AND OD.Del = 0 AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops})) AND DATEDIFF(NOW(), OM.read_time) <= 7
+				  ORDER BY is_read DESC, OM_ID DESC";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		$workflow_table_outcoming = "
+			<table class='main_table'>
+				<thead>
+					<tr>
+						<th width='60'>Код</th>
+						<th>Сообщение</th>
+						<th width='100'>Прочитано</th>
+					</tr>
+				</thead>
+				<tbody>
+		";
+
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$workflow_table_outcoming .= "
+				<tr onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' style='".($row["priority"] ? "font-weight: bold;" : "")." ".($row["is_read"] == 0 ? "opacity: .3;" : "")."'>
+					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'>{$row["Code"]}</a></td>
+					<td>{$row["Message"]}</td>
+					<td>{$row["Name"]}</td>
+				</tr>
+			";
+		}
+		$workflow_table_outcoming .= "</tbody></table>";
 	}
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -235,12 +276,31 @@
 			if( in_array('order_add', $Rights) ) {
 			?>
 			<div id="navbar_workflow" style="background: <?=$workflow_color?>; box-shadow: 0 0 3px 3px <?=$workflow_color?>;">
-				<div><?=$workflow_table?></div>
+				<div>
+					<div id="tabs_workflow" style="height: 100%; background: #fff;">
+						<ul>
+							<li><a href="#incoming">Входящие</a></li>
+							<li><a href="#outcoming">Отправленные</a></li>
+						</ul>
+						<div id="incoming">
+							<?=$workflow_table?>
+						</div>
+						<div id="outcoming">
+							<?=$workflow_table_outcoming?>
+						</div>
+					</div>
+				</div>
 			</div>
 			<?
 			}
 			?>
 		</div>
+
+		<script>
+			$(document).ready(function() {
+				$( "#tabs_workflow" ).tabs();
+			});
+		</script>
 <?
 	// Узнаем кол-во непроверенных свободных
 	$query = "SELECT COUNT(1) CNT FROM `OrdersDataDetail` WHERE OD_ID IS NULL AND is_check = 0 AND Del = 0";
