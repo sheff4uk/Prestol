@@ -678,6 +678,13 @@ else {
 		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100vh - 430px)'); $('#MT_header').css('margin-top','210px'); $('#section1').html('ПРИХОД наличных: {$format_cache_sum}'); $('#section2').html('РАСХОД наличных: {$format_sum_cost}'); $('#section3').html('ОТПРАВКА наличных: {$format_sum_send}'); }); </script>";
 	}
 	?>
+	<!--Форма для диалога печати-->
+	<form id="print_selling"></form>
+
+	<!--Кнопка печати-->
+	<div id="print_btn" title="Распечатать таблицу">
+		<a id="toprint" style="display: block;"></a>
+	</div>
 
 	<br>
 	<table class="main_table" id="MT_header">
@@ -685,8 +692,8 @@ else {
 		<thead>
 			<tr>
 				<th width="55">Дата отгрузки</th>
-				<th width="51">№ упаковки</th>
-				<th width="5%">№ квитанции</th>
+				<th width="51">Код</th>
+				<th width="5%">Квитанция</th>
 				<th width="5%">Заказчик</th>
 				<th width="25%">Наименование</th>
 				<th width="15%">Материал</th>
@@ -828,7 +835,10 @@ else {
 			$otkaz_cell = ($row["type"] == 1) ? "<b>Замена</b><br>{$row["comment"]}" : (($row["type"] == 2) ? "<b>Отказ</b><br>{$row["comment"]}" : "");
 			echo "
 				<tr id='ord{$row["OD_ID"]}'>
-					<td><span>{$row["ReadyDate"]}</span></td>
+					<td>
+						<input type='hidden' name='OD_ID[]' form='print_selling' value='{$row["OD_ID"]}'>
+						<span>{$row["ReadyDate"]}</span>
+					</td>
 					<td>{$row["Code"]}</td>
 					<td><span>{$row["OrderNumber"]}</span></td>
 					<td><span>{$row["ClientName"]}</span></td>
@@ -974,6 +984,13 @@ else {
 
 <script>
 	$(document).ready(function() {
+		// Данные для печати
+		print_data = $('#print_selling').serialize();
+		$("#toprint").attr('href', '/toprint/print_selling.php?' + print_data);
+
+		// Открытие диалога печати
+		$("#toprint").printPage();
+
 		$( "#accordion" ).accordion({
 			active: false,
 			collapsible: true,
