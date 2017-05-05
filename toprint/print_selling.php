@@ -57,8 +57,7 @@
 	foreach ($_GET["OD_ID"] as $key => $value) {
 		$id_list .= ','.$value;
 	}
-	//echo $id_list;
-	//$id_list = 3220;
+	echo $id_list;
 
 ?>
 	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
