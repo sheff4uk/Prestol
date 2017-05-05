@@ -57,7 +57,6 @@
 	foreach ($_GET["OD_ID"] as $key => $value) {
 		$id_list .= ','.$value;
 	}
-	echo $id_list;
 
 ?>
 	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
@@ -135,14 +134,10 @@
 						GROUP BY ODB.ODB_ID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  WHERE OD.OD_ID IN ({$id_list})
-			  GROUP BY ODD_ODB.itemID
+			  GROUP BY OD.OD_ID
 			  #ORDER BY is_free, OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID
 			  ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-	// Снимаем ограничение в 1024 на GROUP_CONCAT
-	$query = "SET @@group_concat_max_len = 10000;";
-	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	// Получаем количество изделий в заказе для группировки ячеек
 	$query = "SELECT IFNULL(COUNT(1), 1) Cnt, OD.OD_ID, IF(OD.SH_ID IS NULL, 1, 0) is_free
@@ -185,7 +180,7 @@
 		}
 
 		if($span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["ReadyDate"]}</td>";
-		if($span) echo "<td width='40' style='{$border}' rowspan='{$cnt}' class='nowrap'><b>{$row["Code"]}</b><br>{$cnt}<br>({$row["OD_ID"]}-{$subrow["OD_ID"]})</td>";
+		if($span) echo "<td width='40' style='{$border}' rowspan='{$cnt}' class='nowrap'><b>{$row["Code"]}</b></td>";
 		if($span) echo "<td width='5%' style='{$border}' rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
 		if($span) echo "<td width='9%' style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}</td>";
 		echo "<td width='20%' style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";
