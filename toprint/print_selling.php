@@ -58,7 +58,7 @@
 		$id_list .= ','.$value;
 	}
 	//echo $id_list;
-	$id_list = 3220;
+	//$id_list = 3220;
 
 ?>
 	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
@@ -140,6 +140,10 @@
 			  #ORDER BY is_free, OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID
 			  ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+	// Снимаем ограничение в 1024 на GROUP_CONCAT
+	$query = "SET @@group_concat_max_len = 10000;";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	// Получаем количество изделий в заказе для группировки ячеек
 	$query = "SELECT IFNULL(COUNT(1), 1) Cnt, OD.OD_ID, IF(OD.SH_ID IS NULL, 1, 0) is_free
