@@ -193,7 +193,7 @@
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  WHERE OD.OD_ID IN ({$id_list})
 			  AND ODD_ODB.PT_ID IN({$product_types})
-			  GROUP BY ODD_ODB.itemID
+			  #GROUP BY ODD_ODB.itemID
 			  ORDER BY is_free, OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
