@@ -148,6 +148,45 @@
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////
+// Добавление/редактирование категории
+	if( isset($_GET["add_category"]) )
+	{
+		$name = mysqli_real_escape_string( $mysqli, $_POST["name_add"] );
+		$name = trim($name);
+		$type = $_POST["type_add"];
+
+		// Создаем категорию
+		if( $name != '' and $type != '' ) {
+			$query = "INSERT INTO FinanceCategory
+						SET  name = '{$name}'
+							,type = {$type}";
+			if( !mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["alert"] = mysqli_error( $mysqli );
+			}
+		}
+		else {
+			if( $name != '' or $type != '' ) $_SESSION["alert"] = 'Для добавления новой категории заполнены не все поля!';
+		}
+
+		foreach ($_POST["FC_ID"] as $key => $value) {
+			$name = mysqli_real_escape_string( $mysqli, $_POST["name"][$key] );
+			$name = trim($name);
+			$type = $_POST["type_edit"][$key];
+
+			$query = "UPDATE FinanceCategory
+						SET  name = '{$name}'
+							,type = {$type}
+						WHERE FC_ID = {$value}";
+			if( !mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["alert"] = mysqli_error( $mysqli );
+			}
+		}
+
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		die;
+	}
+
+///////////////////////////////////////////////////////////////////////////////////
 	// Сброс фильтра
 	if( isset($_GET["reset_filter"]) ) {
 		$_SESSION["cash_type"] = "";
@@ -257,6 +296,7 @@
 					?>
 				</tbody>
 			</table>
+			<a href="#" class="add_category_btn" style="margin: 10px; display: block; text-align: center;"><b><i class="fa fa-plus"></i> Добавить категорию</b></a>
 		</div>
 
 		<div id="wr_send">
@@ -547,7 +587,7 @@
 	<!-- Слой для выхода из режима фильтрации -->
 	<div id="filter_overlay" style="z-index: 2; position: fixed; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; display: none;"></div>
 
-	<!-- Форма фильтрации упераций -->
+	<!-- Форма фильтрации операций -->
 	<form id="filter_form" method="get" action="filter.php"><input type="hidden" name="location" value="<?=$location?>#operations"><input type="hidden" name="do" value="cash"></form>
 
 	<div style="display: flex;" id="operations">
@@ -628,7 +668,7 @@
 							<div class='btnset'>
 								<?
 								echo "<input id='author_select_all' class='select_all' type='checkbox' name='all_authors' value='1' form='filter_form'><label for='author_select_all'>Все авторы</label>";
-								$query = "SELECT USR_ID, Name FROM Users ORDER BY Name";
+								$query = "SELECT USR_ID, Name FROM Users WHERE Activation = 1 ORDER BY Name";
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 								while( $row = mysqli_fetch_array($res) )
 								{
@@ -952,7 +992,7 @@
 				<select name="USR_ID" id="USR_ID" style="width: 150px;">
 					<option value="">-=Выберите пользователя=-</option>
 					<?
-						$query = "SELECT USR_ID, Name FROM Users";
+						$query = "SELECT USR_ID, Name FROM Users WHERE Activation = 1 ORDER BY Name";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{
@@ -961,6 +1001,58 @@
 					?>
 				</select>
 			</div>
+		</fieldset>
+		<div>
+			<hr>
+			<button style='float: right;'>Сохранить</button>
+		</div>
+	</form>
+</div>
+<!--/////////////////////////////////////////////////////////////////-->
+<!-- Форма добавления/редактирования категории -->
+<div id='add_category' style='display:none;' title="ИЗМЕНИТЬ КАТЕГОРИЮ">
+	<form method='post' action='<?=$location?>?add_category=1'>
+		<fieldset>
+			<table>
+				<thead>
+					<tr>
+						<th>Название категории</th>
+						<th>Тип</th>
+					</tr>
+				</thead>
+				<tbody>
+					<?
+					echo "<tr style='background: #6f6;'>";
+					echo "<td><input type='text' name='name_add' autocomplete='off' style='width: 250px;'></td>";
+					echo "<td><div class='btnset'>";
+						echo "<input type='radio' id='ctype' name='type_add' value='1'>";
+						echo "<label for='ctype'><i class='fa fa-plus fa-lg' title='Доходная'></i></label>";
+						echo "<input type='radio' id='ctype-' name='type_add' value='-1'>";
+						echo "<label for='ctype-'><i class='fa fa-minus fa-lg' title='Расходная'></i></label>";
+					echo "</div></td>";
+					echo "</tr>";
+
+					$query = "SELECT FC_ID, name, type FROM FinanceCategory ORDER BY type DESC";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) )
+					{
+						echo "<tr>";
+						echo "<td>";
+							echo "<input type='hidden' name='FC_ID[]' value='{$row["FC_ID"]}'>";
+							echo "<input type='hidden' name='type_edit[]' class='type_edit' value='{$row["type"]}'>";
+							echo "<input type='text' name='name[]' value='{$row["name"]}' autocomplete='off' style='width: 250px;'>";
+						echo "</td>";
+						echo "<td><div class='btnset type_set'>";
+							echo "<input ".($row["type"]==1 ? "checked" : "")." type='radio' id='ctype{$row["FC_ID"]}' name='type{$row["FC_ID"]}' value='1'>";
+							echo "<label for='ctype{$row["FC_ID"]}'><i class='fa fa-plus fa-lg' title='Доходная'></i></label>";
+							echo "<input ".($row["type"]==-1 ? "checked" : "")." type='radio' id='ctype-{$row["FC_ID"]}' name='type{$row["FC_ID"]}' value='-1'>";
+							echo "<label for='ctype-{$row["FC_ID"]}'><i class='fa fa-minus fa-lg' title='Расходная'></i></label>";
+						echo "</div></td>";
+						echo "</tr>";
+					}
+					?>
+				</tbody>
+			</table>
 		</fieldset>
 		<div>
 			<hr>
@@ -1089,6 +1181,23 @@
 			}
 
 			$('#add_account').dialog({
+				width: 400,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
+			return false;
+		});
+
+		// Кнопка добавления/редактирования категории
+		$('.add_category_btn').click( function() {
+			$('.type_set input').change( function(){
+				var val = $(this).val();
+				$(this).parents('tr').find('.type_edit').val(val);
+			});
+
+			$('#add_category').dialog({
 				width: 400,
 				modal: true,
 				show: 'blind',

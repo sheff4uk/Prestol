@@ -706,7 +706,7 @@ case "add_payment":
 
 	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 	$html .= "<table><thead><tr>";
-	$html .= "<th style='width: 56px;'>{$CT_ID}</th>";
+	$html .= "<th style='width: 56px;'></th>";
 	$html .= "<th>Дата</th>";
 	$html .= "<th>Сумма</th>";
 	if( $FA_ID ) {
