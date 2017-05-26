@@ -6,7 +6,8 @@
 	// Проверяем, пусты ли переменные логина и id пользователя
 	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {
 		if( !strpos($_SERVER["REQUEST_URI"], 'login.php') and !strpos($_SERVER["REQUEST_URI"], 'reg.php') and !strpos($_SERVER["REQUEST_URI"], 'save_user.php') and !strpos($_SERVER["REQUEST_URI"], 'mailconfirm.php') and !strpos($_SERVER["REQUEST_URI"], 'activation.php') ) {
-			$location = $_SERVER['REQUEST_URI'];
+			//$location = $_SERVER['REQUEST_URI'];
+			$location = $_SERVER['SCRIPT_NAME'];
 			if( $_GET["ajax"] == 1 ) {
 				//echo "alert('Вы не авторизованы!');";
 				echo "noty({timeout: 3000, text: 'Вы не авторизованы! Пожалуйста, перезагрузите страницу.', type: 'error'});";
