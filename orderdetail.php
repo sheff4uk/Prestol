@@ -368,6 +368,8 @@
 					,OD.Comment
 					,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
 					,OD.confirmed
+					,SH.retail
+					,SH.CT_ID
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -384,6 +386,8 @@
 	$Comment = mysqli_result($res,0,'Comment');
 	$CTColor = mysqli_result($res,0,'CTColor');
 	$confirmed = mysqli_result($res,0,'confirmed');
+	$retail = mysqli_result($res,0,'retail');
+	$CT_ID = mysqli_result($res,0,'CT_ID');
 ?>
 		<tbody>
 		<tr class='ord_log_row' lnk='*OD_ID<?=$id?>*'>
@@ -427,6 +431,12 @@
 			<td>
 				<?=(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) ? "<button>Сохранить</button><br><br>" : "")?>
 				<a class="button" href="clone_order.php?id=<?=$id?>&author=<?=$_SESSION['id']?>&confirmed=<?=(in_array('order_add_confirm', $Rights) ? 1 : 0)?>">Клонировать</a>
+				<?
+				// Если розничный заказ - показываем кнопку перехода в реализацию
+				if( $retail == "1" ) {
+					echo "<p><a href='/selling.php?CT_ID={$CT_ID}#ord{$id}' class='button'>Перейти в<br>реализацию</a></p>";
+				}
+				?>
 			</td>
 		</tr>
 		</tbody>
