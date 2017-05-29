@@ -700,7 +700,7 @@
 						</div>
 					</th>
 					<th width="270" class="th_filter">
-						<input id="comment_search" type="text" name="cash_comment" form="filter_form" style="display: none; position: absolute; width: 230px; z-index: 3;">
+						<input id="comment_search" type="text" name="cash_comment" form="filter_form" style="display: none; position: absolute; width: 230px; z-index: 3;" value="<?=$_SESSION["cash_comment"]?>">
 						<div class="th_name" id="comment_label">Комментарии</div>
 						<i class="fa fa-filter fa-lg"></i>
 					</th>
