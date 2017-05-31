@@ -503,7 +503,7 @@ case "shipment":
 						,OD.SH_ID
 						,SH.Shop
 						,OD.confirmed
-						,OD.Comment
+						,REPLACE(OD.Comment, '\r\n', '<br>') Comment
 				  FROM OrdersData OD
 				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
 				  JOIN (
@@ -582,7 +582,6 @@ case "shipment":
 		$html .= "<th width='20%'>Примечание</th>";
 		$html .= "</tr></thead><tbody>";
 		while( $row = mysqli_fetch_array($res) ) {
-			$Comment = mysqli_real_escape_string( $mysqli,$row["Comment"] );
 			$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
 			$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox hide' value='{$row["OD_ID"]}'>";
 			$html .= "<label for='ord_sh{$row["OD_ID"]}'".($row["checked"] == 'checked' ? "style='color: red;'" : "").">{$row["Code"]}</label></td>";
@@ -616,7 +615,7 @@ case "shipment":
 					$title = 'Не принят в работу';
 				}
 			$html .= "<td class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
-			$html .= "<td>{$Comment}</td>";
+			$html .= "<td>{$row["Comment"]}</td>";
 			$html .= "</tr>";
 		}
 		$html .= "</tbody></table>";
