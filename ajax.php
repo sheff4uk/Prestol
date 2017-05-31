@@ -615,7 +615,7 @@ case "shipment":
 					$title = 'Не принят в работу';
 				}
 			$html .= "<td class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
-			$html .= "<td>{$row["Coment"]}</td>";
+			$html .= "<td>{$row["Comment"]}</td>";
 			$html .= "</tr>";
 		}
 		$html .= "</tbody></table>";
