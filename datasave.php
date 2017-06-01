@@ -156,8 +156,8 @@ if( $_GET["oddid"] )
 	if( $amount > $_POST["Amount"] and $inprogress == 1)
 	{
 		// Перемещение на склад лишних изделий
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Comment, Price, is_check, order_date, arrival_date, sister_ID, creator)
-				  SELECT NULL, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, ".($amount - $_POST["Amount"]).", Comment, {$Price}, 0, order_date, arrival_date, {$_GET["oddid"]}, {$_SESSION['id']} FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Comment, Price, is_check, order_date, arrival_date, sister_ID, creator, patina)
+				  SELECT NULL, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, ".($amount - $_POST["Amount"]).", Comment, {$Price}, 0, order_date, arrival_date, {$_GET["oddid"]}, {$_SESSION['id']}, patina FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 // Добавлено в триггер AddStepsAfterInsert
@@ -286,7 +286,7 @@ if( isset($_POST["ODD_ID"]) )
 			$isready = $_POST["IsReady".$sid] ? $_POST["IsReady".$sid] : 0;
 			$visible = $_POST["Visible".$sid] ? $_POST["Visible".$sid] : 0;
 			$query = "UPDATE OrdersDataSteps
-					  SET WD_ID = {$worker}, Tariff = {$tariff}, IsReady = {$isready}, Visible = {$visible}
+					  SET WD_ID = {$worker}, Tariff = {$tariff}, IsReady = {$isready}, Visible = {$visible}, author = {$_SESSION['id']}
 					  WHERE ODD_ID = {$_POST["ODD_ID"]} AND ST_ID = $sid";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
@@ -323,7 +323,7 @@ if( isset($_POST["ODB_ID"]) )
 			$isready = $_POST["IsReady".$sid] ? $_POST["IsReady".$sid] : 0;
 			$visible = $_POST["Visible".$sid] ? $_POST["Visible".$sid] : 0;
 			$query = "UPDATE OrdersDataSteps
-					  SET WD_ID = {$worker}, Tariff = {$tariff}, IsReady = {$isready}, Visible = {$visible}
+					  SET WD_ID = {$worker}, Tariff = {$tariff}, IsReady = {$isready}, Visible = {$visible}, author = {$_SESSION['id']}
 					  WHERE ODB_ID = {$_POST["ODB_ID"]}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}

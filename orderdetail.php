@@ -107,8 +107,8 @@
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 						// Добавляем указанное количество изделий в заказ
-						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Price, Comment, order_date, arrival_date, creator, patina)
-								SELECT {$id}, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, {$v}, Price, Comment, order_date, arrival_date, {$_SESSION['id']}, patina FROM OrdersDataDetail WHERE ODD_ID = {$prodid}";
+						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Price, Comment, order_date, arrival_date, sister_ID, creator, patina)
+								SELECT {$id}, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, {$v}, Price, Comment, order_date, arrival_date, {$prodid}, {$_SESSION['id']}, patina FROM OrdersDataDetail WHERE ODD_ID = {$prodid}";
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$odd_id = mysqli_insert_id( $mysqli );
 
