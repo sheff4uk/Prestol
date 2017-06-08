@@ -48,6 +48,7 @@
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+						WHERE ODD.Del = 0
 						UNION ALL
 						SELECT ODB.OD_ID
 							  ,ODB.ODB_ID ItemID
@@ -57,6 +58,7 @@
 							  ,CONCAT(IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), '')) Zakaz
 						FROM OrdersDataBlank ODB
 						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+						WHERE ODB.Del = 0
 						) ODD_ODB
 				  WHERE ODD_ODB.OD_ID IN ({$id_list})
 				  AND ODD_ODB.PT_ID IN({$product_types})
