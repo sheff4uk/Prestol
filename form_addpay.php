@@ -140,7 +140,7 @@
 			$('#addpay input[name="ManDate"]').val(date);
 
 			if( typeof worker !== "undefined" ) {
-				$('#addpay select[name="Worker"]').val(worker);
+				$('#addpay select[name="Worker"]').val(worker).trigger('change');
 			}
 
 			if( typeof id !== "undefined" ) // Редактирование платежа
