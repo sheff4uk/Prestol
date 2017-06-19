@@ -51,6 +51,7 @@
 							,FC_ID = {$category}
 							,KA_ID = {$KA_ID}
 							,comment = '{$coment}'
+							,author = {$_SESSION['id']}
 						WHERE F_ID = {$F_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"] = mysqli_error( $mysqli );
