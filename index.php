@@ -1,6 +1,11 @@
 <?
 	include "config.php";
-	$title = 'Престол главная';
+	if( isset($_GET["shpid"]) ) {
+		$title = 'Отгрузка';
+	}
+	else {
+		$title = 'Престол главная';
+	}
 	include "header.php";
 
 	$datediff = 60; // Максимальный период отображения данных
@@ -755,7 +760,7 @@
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,BIT_AND(ODD_ODB.IsReady) IsReady
 					,IFNULL(OD.SHP_ID, 0) SHP_ID
-					,IF(OS.ostatok IS NOT NULL, 1, 0) is_lock
+					,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
 					,OD.confirmed
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -916,15 +921,20 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
+		$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
+		$confirmed = $row["confirmed"];		// Заказ принят в работу
+		// Запрет на редактирование
+		$disabled = !(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) and $is_lock == 0 and in_array('order_add', $Rights) );
+
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'>{$row["Code"]}</span></td>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
 		echo "<td><span>{$row["StartDate"]}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td class='".( ( in_array('order_add', $Rights) and !( $row["is_lock"] or ( $row["confirmed"] and !in_array('order_add_confirm', $Rights) ) ) ) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
+		echo "<td class='".( (!$disabled and $row["SHP_ID"] == 0) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
 		echo "<td><span>{$row["OrderNumber"]}</span></td>";
-		if( $row["is_lock"] or ( $row["confirmed"] and !in_array('order_add_confirm', $Rights) ) ) {
+		if( $disabled ) {
 			echo "<td><span class='nowrap'>{$row["Zakaz_lock"]}</span></td>";
 		}
 		else {
@@ -946,8 +956,8 @@
 					$title = "Готово";
 					break;
 			}
-		echo " class='".(in_array('order_add_confirm', $Rights) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}'>{$row["Color"]}</td>";
-		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
+		echo " class='".(!$disabled ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}'>{$row["Color"]}</td>";
+		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".($disabled ? "step_disabled" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		// Если заказ принят
 		if( $row["confirmed"] == 1 ) {
@@ -966,11 +976,15 @@
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td>";
 
-		if( $row["is_lock"] ) {
-			echo "<i class='fa fa-lock fa-lg' aria-hidden='true' title='Отчетный период закрыт. Заказ нельзя отредактировать.'></i> ";
+		// Если заказ заблокирован, то показываем глаз. Иначе - карандаш.
+		if( $disabled ) {
+			echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
 		}
-		else if( in_array('order_add', $Rights) ) {
+		else {
 			echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+		}
+		// Если есть права на редактирование заказа и заказ не закрыт, то показываем кнопку разделения заказа
+		if( in_array('order_add', $Rights) and !$is_lock ) {
 			echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
 		}
 
@@ -986,7 +1000,7 @@
 				}
 			}
 			else {
-				echo "<a href='/?shpid={$row["SHP_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a>";
+				echo "<a href='/?shpid={$row["SHP_ID"]}#ord{$row["OD_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a>";
 			}
 			if( !$row["IsReady"] || $row["IsPainting"] != 3 ) {
 				$is_orders_ready = 0;

@@ -162,23 +162,29 @@ $(document).ready(function(){
 //	});
 	$('.edit_steps').click( function()
 	{
-		if( $(this).parents('.td_step').hasClass('step_confirmed') ) {
-			var location = $(this).attr("location");
-			var id = $(this).attr("id");
-			var odbid = $(this).attr("odbid");
-			plid = $(this).attr("plid");
-			if( typeof plid === "undefined" ) {
-				plid = '';
-			}
-			if( typeof odbid !== "undefined" ) {
-				makeform(odbid, 1, location, plid);
-			}
-			else {
-				makeform(id, 0, location, plid);
-			}
+		if( $(this).parents('.td_step').hasClass('step_disabled') ) {
+			noty({timeout: 10000, text: 'Заказ закрыт в реализации. Изменение этапов невозможно.', type: 'alert'});
+			return false;
 		}
 		else {
-			noty({timeout: 10000, text: 'Заказ не принят в работу. Вы не можете назначать этапы.', type: 'alert'});
+			if( $(this).parents('.td_step').hasClass('step_confirmed') ) {
+				var location = $(this).attr("location");
+				var id = $(this).attr("id");
+				var odbid = $(this).attr("odbid");
+				plid = $(this).attr("plid");
+				if( typeof plid === "undefined" ) {
+					plid = '';
+				}
+				if( typeof odbid !== "undefined" ) {
+					makeform(odbid, 1, location, plid);
+				}
+				else {
+					makeform(id, 0, location, plid);
+				}
+			}
+			else {
+				noty({timeout: 10000, text: 'Заказ не принят в работу. Вы не можете назначать этапы.', type: 'alert'});
+			}
 		}
 		return false;
 	});
@@ -204,6 +210,7 @@ $(document).ready(function(){
 		$('#addchair input[type="text"], #addchair select').val('');
 		$('#addchair textarea').val('');
 		$('#addchair input[name="Amount"]').val('');
+		$('#addchair input[name="Amount"]').prop('readonly', false);
 		$('#addchair input[name="Price"]').val('');
 		$('#1radio').prop('checked', true);
 		$('#addchair .radiostatus input[type="radio"]').prop('disabled', true);
@@ -247,6 +254,7 @@ $(document).ready(function(){
 			if( odd[id]['inprogress'] == 1 )
 			{
 				$('#addchair img[id="Amount"]').show();
+				$('#addchair input[name="Amount"]').prop('readonly', true);
 				$('#addchair img[id="Model"]').show();
 				$('#addchair input[name="Amount"]').attr('max', odd[id]['amount']);
 			}
@@ -319,6 +327,7 @@ $(document).ready(function(){
 		$('#addtable select[name="Model"]').val('0').trigger('change');
 		$('#addtable textarea').val('');
 		$('#addtable input[name="Amount"]').val('');
+		$('#addtable input[name="Amount"]').prop('readonly', false);
 		$('#addtable input[name="Price"]').val('');
 		$('#addtable input[name="Length"]').val(''); //было 1300
 		$('#addtable input[name="Width"]').val(''); //было 800
@@ -384,6 +393,7 @@ $(document).ready(function(){
 			if( odd[id]['inprogress'] == 1 )
 			{
 				$('#addtable img[id="Amount"]').show();
+				$('#addtable input[name="Amount"]').prop('readonly', true);
 				$('#addtable img[id="Model"]').show();
 				$('#addtable img[id="Mechanism"]').show();
 				$('#addtable img[id="Length"]').show();
@@ -472,6 +482,7 @@ $(document).ready(function(){
 		$('#addblank textarea, #addblank input[type="text"]').val('');
 		$('#addblank select').val('').trigger('change');
 		$('#addblank input[name="Amount"]').val('');
+		$('#addblank input[name="Amount"]').prop('readonly', false);
 		$('#addblank input[name="Price"]').val('');
 		$('#0radio').prop('checked', true);
 		$('#addblank .radiostatus input[type="radio"]').prop('disabled', true);
@@ -489,6 +500,8 @@ $(document).ready(function(){
 		$('#addblank .order_material input').val('');
 		$('#addblank .order_material input.from').datepicker( "option", "maxDate", null );
 		$('#addblank .order_material input.to').datepicker( "option", "minDate", null );
+		// Прячем картинки-треугольники
+		$('#addblank img[id="Amount"]').hide();
 
 		// Заполнение
 		if( id > 0 )
@@ -531,6 +544,14 @@ $(document).ready(function(){
 				$('#addblank .order_material input').attr("required", true);
 				$('#addblank .order_material input.from').val( odb[id]['order_date'] );
 				$('#addblank .order_material input.to' ).val( odb[id]['arrival_date'] );
+			}
+
+			// Если изделие в работе, то выводятся предупреждения
+			if( odb[id]['inprogress'] == 1 )
+			{
+				$('#addblank img[id="Amount"]').show();
+				$('#addblank input[name="Amount"]').prop('readonly', true);
+				$('#addblank input[name="Amount"]').attr('max', odb[id]['amount']);
 			}
 
 			materialonoff('#addblank');

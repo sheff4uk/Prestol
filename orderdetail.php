@@ -1,22 +1,15 @@
 <?
-//	session_start();
 	include "config.php";
-	if( $id != "NULL" )
-	{
-		$title = 'Детали заказа';
-	}
-	else
-	{
-		$title = 'Свободные изделия';
-	}
 	include "header.php";
 
 	if( isset($_GET["id"]) and (int)$_GET["id"] > 0 )
 	{
+		$title = 'Детали заказа';
 		// Проверка прав на доступ к экрану
 		// Проверка города
 		$query = "SELECT OD.OD_ID
-						,IF(OS.ostatok IS NOT NULL, 1, 0) is_lock
+						,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
+						,OD.confirmed
 					FROM OrdersData OD
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
@@ -24,8 +17,11 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$OD_ID = mysqli_result($res,0,'OD_ID');
 		$is_lock = mysqli_result($res,0,'is_lock');
+		$confirmed = mysqli_result($res,0,'confirmed');
+		// Запрет на редактирование
+		$disabled = !(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) and $is_lock == 0 );
 
-		if( !in_array('order_add', $Rights) or !($OD_ID > 0) or $is_lock == 1 ) {
+		if( !in_array('order_add', $Rights) or !($OD_ID > 0) ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 			die('Недостаточно прав для совершения операции');
 		}
@@ -35,18 +31,20 @@
 	}
 	else
 	{
-		// Проверка прав на доступ к экрану
-		if( !in_array('screen_free', $Rights) ) {
-			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-			die('Недостаточно прав для совершения операции');
-		}
-		$id = "NULL";
-		$location = "orderdetail.php?free=1";
-		$free = 1;
+		exit ('<meta http-equiv="refresh" content="0; url=/">');
+		die;
+//		// Проверка прав на доступ к экрану
+//		if( !in_array('screen_free', $Rights) ) {
+//			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+//			die('Недостаточно прав для совершения операции');
+//		}
+//		$id = "NULL";
+//		$location = "orderdetail.php?free=1";
+//		$free = 1;
 	}
 
 	// Обновление основной информации о заказе
-	if( isset($_GET["order_update"]) )
+	if( isset($_GET["order_update"]) and !$disabled )
 	{
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
@@ -82,7 +80,7 @@
 	}
 
 	// Добавление в базу нового изделия. Заполнение этапов.
-	if ( isset($_GET["add"]) and $_GET["add"] == 1 )
+	if ( isset($_GET["add"]) and $_GET["add"] == 1 and !$disabled )
 	{
 		// Добавление в заказ свободных изделий
 		if( isset($_POST["free"]) and $_POST["free"] == 1 ) {
@@ -208,7 +206,7 @@
 	}
 
 	// Добавление к заказу заготовки или прочего
-	if ( isset($_GET["addblank"]) and $_GET["addblank"] == 1 ) {
+	if ( isset($_GET["addblank"]) and $_GET["addblank"] == 1 and !$disabled ) {
 		$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 		$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
 		$Other = trim($_POST["Other"]);
@@ -265,52 +263,43 @@
 		unset($_SESSION["odb_id"]); // Очищаем сессию
 	}
 
-	// Удаление изделия (перемещение в свободные)
-	if( isset($_GET["del"]) )
+	// Удаление изделия
+	if( isset($_GET["del"]) and !$disabled )
 	{
 		$odd_id = (int)$_GET["del"];
 
-        $query = "SELECT IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress, IFNULL(OD.IsPainting, 0) IsPainting
-                  FROM OrdersDataDetail ODD
-				  LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
-                  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
-                  WHERE ODD.ODD_ID = {$odd_id}";
-        $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-        $inprogress = mysqli_result($res,0,'inprogress');
-        $ispainting = mysqli_result($res,0,'IsPainting');
+		$query = "SELECT IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
+				  FROM OrdersDataDetail ODD
+				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
+				  WHERE ODD.ODD_ID = {$odd_id}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$inprogress = mysqli_result($res,0,'inprogress');
 
-        if( $inprogress == 0 ) { // Если не приступили, то удаляем. Иначе - переносим в свободные.
-//            $query = "DELETE FROM OrdersDataSteps WHERE ODD_ID={$odd_id}";
-//            mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-//            $query = "DELETE FROM OrdersDataDetail WHERE ODD_ID={$odd_id}";
+		if( $inprogress == 0 ) { // Если не приступили, то удаляем.
 			$query = "UPDATE OrdersDataDetail SET Del = 1, author = {$_SESSION['id']} WHERE ODD_ID={$odd_id}";
-            mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-        }
-        else {
-            $query = "UPDATE OrdersDataDetail SET OD_ID = NULL, is_check = 0, author = {$_SESSION['id']} WHERE ODD_ID={$odd_id}";
-            mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-            
-            $_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
-        }
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
 
-		//header( "Location: ".$location ); // Перезагружаем экран
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
 
-	// Удаление заготовки из заказа
-	if( isset($_GET["delblank"]) ) {
+	// Удаление заготовки
+	if( isset($_GET["delblank"]) and !$disabled ) {
 		$odb_id = (int)$_GET["delblank"];
 
-//		$query = "DELETE FROM OrdersDataSteps WHERE ODB_ID={$odb_id}";
-//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$query = "SELECT IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
+				  FROM OrdersDataBlank ODB
+				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODB.ODB_ID AND ODS.Visible = 1
+				  WHERE ODB.ODB_ID = {$odb_id}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$inprogress = mysqli_result($res,0,'inprogress');
 
-		//$query = "DELETE FROM OrdersDataBlank WHERE ODB_ID={$odb_id}";
-		$query = "UPDATE OrdersDataBlank SET Del = 1, author = {$_SESSION['id']} WHERE ODB_ID={$odb_id}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( $inprogress == 0 ) { // Если не приступили, то удаляем.
+			$query = "UPDATE OrdersDataBlank SET Del = 1, author = {$_SESSION['id']} WHERE ODB_ID={$odb_id}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
 
-		//header( "Location: ".$location ); // Перезагружаем экран
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
@@ -367,9 +356,9 @@
 					,OD.IsPainting
 					,OD.Comment
 					,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
-					,OD.confirmed
 					,SH.retail
 					,SH.CT_ID
+					,IFNULL(OD.SHP_ID, 0) SHP_ID
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -385,30 +374,42 @@
 	$IsPainting = mysqli_result($res,0,'IsPainting');
 	$Comment = mysqli_result($res,0,'Comment');
 	$CTColor = mysqli_result($res,0,'CTColor');
-	$confirmed = mysqli_result($res,0,'confirmed');
 	$retail = mysqli_result($res,0,'retail');
 	$CT_ID = mysqli_result($res,0,'CT_ID');
+	$SHP_ID = mysqli_result($res,0,'SHP_ID');
 ?>
 		<tbody>
 		<tr class='ord_log_row' lnk='*OD_ID<?=$id?>*'>
 			<td class="nowrap"><?=$Code?></td>
-			<td><input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>'></td>
-			<td><input type='text' name='StartDate' class='date from' value='<?=$StartDate?>' date='<?=$StartDate?>'></td>
-			<td><input type='text' name='EndDate' class='date to' value='<?=$EndDate?>'></td>
+			<td><input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>' <?=($disabled ? "disabled" : "")?>></td>
+			<td><input type='text' name='StartDate' class='date from' value='<?=$StartDate?>' date='<?=$StartDate?>' <?=($disabled ? "disabled" : "")?>></td>
+			<td><input type='text' name='EndDate' class='date to' value='<?=$EndDate?>' <?=($disabled ? "disabled" : "")?>></td>
 			<td>
 				<div style='box-shadow: 0px 0px 5px 5px <?=$CTColor?>;'>
-				<select required name='Shop'>
+				<select required name='Shop' <?=($disabled ? "disabled" : "")?>>
 					<option value="">-=Выберите салон=-</option>
 					<option value="0" selected style="background: #999;">Свободные</option>
 					<?
-					$query = "SELECT Shops.SH_ID
-									,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
-									,IF(Shops.SH_ID = {$Shop}, 'selected', '') AS selected
-									,Cities.Color
-								FROM Shops
-								JOIN Cities ON Cities.CT_ID = Shops.CT_ID
-								WHERE Cities.CT_ID IN ({$USR_cities}) OR Shops.SH_ID IN ({$USR_shops})
-								ORDER BY Cities.City, Shops.Shop";
+					if( $SHP_ID ) {
+						$query = "SELECT Shops.SH_ID
+										,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
+										,IF(Shops.SH_ID = {$Shop}, 'selected', '') AS selected
+										,Cities.Color
+									FROM Shops
+									JOIN Cities ON Cities.CT_ID = Shops.CT_ID
+									WHERE Cities.CT_ID IN (SELECT CT_ID FROM Shipment WHERE SHP_ID = {$SHP_ID})
+									ORDER BY Cities.City, Shops.Shop";
+					}
+					else {
+						$query = "SELECT Shops.SH_ID
+										,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
+										,IF(Shops.SH_ID = {$Shop}, 'selected', '') AS selected
+										,Cities.Color
+									FROM Shops
+									JOIN Cities ON Cities.CT_ID = Shops.CT_ID
+									WHERE Cities.CT_ID IN ({$USR_cities}) OR Shops.SH_ID IN ({$USR_shops})
+									ORDER BY Cities.City, Shops.Shop";
+					}
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) )
 					{
@@ -418,23 +419,27 @@
 				</select>
 				</div>
 			</td>
-			<td><input type='text' name='OrderNumber' style='width: 90px;' value='<?=$OrderNumber?>'></td>
-			<td><input required type='text' class='colortags' name='Color' style='width: 160px;' value='<?=$Color?>' autocomplete='off'></td>
+			<td><input type='text' name='OrderNumber' style='width: 90px;' value='<?=$OrderNumber?>' <?=($disabled ? "disabled" : "")?>></td>
+			<td><input required type='text' class='colortags' name='Color' style='width: 160px;' value='<?=$Color?>' autocomplete='off' <?=($disabled ? "disabled" : "")?>></td>
 			<td>
 				<div id="IsPainting" class="btnset nowrap">
-					<input type="radio" id="IsP1" name="IsPainting" <?=($IsPainting == 1 ? "checked" : "")?> value="1"><label for="IsP1" title="Не в работе"><i class="fa fa-star-o fa-lg"></i></label>
-					<input type="radio" id="IsP2" name="IsPainting" <?=($IsPainting == 2 ? "checked" : "")?> value="2"><label for="IsP2" title="В работе"><i class="fa fa-star-half-o fa-lg"></i></label>
-					<input type="radio" id="IsP3" name="IsPainting" <?=($IsPainting == 3 ? "checked" : "")?> value="3"><label for="IsP3" title="Готово"><i class="fa fa-star fa-lg"></i></label>
+					<input type="radio" id="IsP1" name="IsPainting" <?=($IsPainting == 1 ? "checked" : "")?> value="1" <?=($disabled ? "disabled" : "")?>><label for="IsP1" title="Не в работе"><i class="fa fa-star-o fa-lg"></i></label>
+					<input type="radio" id="IsP2" name="IsPainting" <?=($IsPainting == 2 ? "checked" : "")?> value="2" <?=($disabled ? "disabled" : "")?>><label for="IsP2" title="В работе"><i class="fa fa-star-half-o fa-lg"></i></label>
+					<input type="radio" id="IsP3" name="IsPainting" <?=($IsPainting == 3 ? "checked" : "")?> value="3" <?=($disabled ? "disabled" : "")?>><label for="IsP3" title="Готово"><i class="fa fa-star fa-lg"></i></label>
 				</div>
 			</td>
-			<td><textarea name='Comment' rows='6' cols='15'><?=$Comment?></textarea></td>
+			<td><textarea name='Comment' rows='6' cols='15' <?=($disabled ? "disabled" : "")?>><?=$Comment?></textarea></td>
 			<td>
-				<?=(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) ? "<button>Сохранить</button><br><br>" : "")?>
+				<button <?=$disabled ? "disabled" : ""?>>Сохранить</button><br><br>
 				<a class="button" href="clone_order.php?id=<?=$id?>&author=<?=$_SESSION['id']?>&confirmed=<?=(in_array('order_add_confirm', $Rights) ? 1 : 0)?>">Клонировать</a>
 				<?
 				// Если розничный заказ - показываем кнопку перехода в реализацию
-				if( $retail == "1" ) {
+				if( $retail == "1" and $is_lock == 0 ) {
 					echo "<p><a href='/selling.php?CT_ID={$CT_ID}#ord{$id}' class='button'>Перейти в<br>реализацию</a></p>";
+				}
+				// Если заказ в отгрузке - показываем кнопку перехода в отгрузку
+				if( $SHP_ID ) {
+					echo "<p><a href='/?shpid={$SHP_ID}#ord{$id}' class='button'>Перейти в<br>отгрузку</a></p>";
 				}
 				?>
 			</td>
@@ -452,7 +457,10 @@
 	</script>
 <?
 		if( $confirmed == 1 ) {
-			echo "<div style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em;'>Заказ принят в работу</div>";
+			echo "<div style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em;'>Заказ принят в работу.</div>";
+		}
+		if( $is_lock == 1 ) {
+			echo "<div style='position: absolute; top: 77px; left: 340px; font-weight: bold; color: green; font-size: 1.2em;'>Месяц в реализации закрыт (изменения ограничены).</div>";
 		}
 	}
 	else {
@@ -461,15 +469,9 @@
 ?>
 <div class="halfblock">
 	<p>
-		<button class='edit_product1'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
-		<button class='edit_product2'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
-		<?
-		if( $id != "NULL" ) {
-			?>
-			<button class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки/прочее</button>
-			<?
-		}
-		?>
+		<button <?=($disabled ? 'disabled' : '')?> class='edit_product1'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
+		<button <?=($disabled ? 'disabled' : '')?> class='edit_product2'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
+		<button <?=($disabled ? 'disabled' : '')?> class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки/прочее</button>
 	</p>
 
 	<!-- Таблица изделий -->
@@ -548,7 +550,7 @@
 		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
 		echo "<td><span>{$row["Model"]}<br>".($row["Size"] != "" ? "{$row["Size"]}<br>" : "").($row["Form"] != "" ? "{$row["Form"]}<br>" : "").($row["Mechanism"] != "" ? "{$row["Mechanism"]}<br>" : "")."</span></td>";
 		echo "<td>{$row["patina"]}</td>";
-		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".($disabled ? "step_disabled" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps" : "")." nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
 			case "0":
@@ -572,20 +574,11 @@
 //		echo "<td class='txtright'>{$format_price}</td>";
 		echo "<td>";
 		
-		if( (in_array('order_add_confirm', $Rights) or $confirmed == 0) and $row["Del"] == 0 ) {
-			echo "<a href='#' id='{$row["ODD_ID"]}' free='{$free}' class='button edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></a>";
+		if( $row["Del"] == 0 ) {
+			echo "<button ".($disabled ? 'disabled' : '')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></button>";
 
-			// Не показываем кнопку "Удалить" только в свободных если прогресс не 0
-			if( !($id == "NULL" and $row["inprogress"] != 0) )
-			{
-				$delmessage = "Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?";
-				?>
-				<a class='button' onclick='if(confirm("<?=addslashes($delmessage)?>", "?id=<?=$id?>&del=<?=$row["ODD_ID"]?>")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>
-				<?
-			}
-		}
-		if( in_array('order_add_confirm', $Rights) ) {
-			echo "<img hidden='true' src='/img/attention.png' class='attention' title='Требуется проверка данных после переноса изделий в \"Свободные\".'>";
+			$delmessage = addslashes("Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?");
+			echo "<button ".(($disabled or $row["inprogress"] != 0) ? 'disabled' : '')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button>";
 		}
 		echo "</td></tr>";
 
@@ -644,7 +637,7 @@
 		echo "<td>{$row["Amount"]}</td>";
 		echo "<td>{$row["Name"]}</td>";
 		echo "<td>{$row["patina"]}</td>";
-		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".($disabled ? "step_disabled" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
 			case "0":
@@ -667,13 +660,13 @@
 		echo "<td>{$row["Comment"]}</td>";
 //		echo "<td class='txtright'>{$format_price}</td>";
 		echo "<td>";
-		if( (in_array('order_add_confirm', $Rights) or $confirmed == 0) and $row["Del"] == 0 ) {
-			echo "<a href='#' id='{$row["ODB_ID"]}' class='button edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
-			if( $row["inprogress"] == 0 ) {
-				$name = addslashes($row["Name"]);
-				$delmessage = "Удалить {$name} ({$row["Amount"]} шт.)?";
-				echo "<a class='button' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
-			}
+
+		if( $row["Del"] == 0 ) {
+			echo "<button ".($disabled ? 'disabled' : '')." id='{$row["ODB_ID"]}' class='edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+
+			$name = addslashes($row["Name"]);
+			$delmessage = addslashes("Удалить {$name} ({$row["Amount"]} шт.)?");
+			echo "<button ".(($disabled or $row["inprogress"] != 0) ? 'disabled' : '')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button>";
 		}
 		echo "</td></tr>";
 
@@ -683,18 +676,6 @@
 		</tbody>
 	</table>
 	<!-- Конец таблицы заготовок -->
-
-	<p>
-		<button class='edit_product1'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
-		<button class='edit_product2'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
-		<?
-		if( $id != "NULL" ) {
-			?>
-			<button class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки/прочее</button>
-			<?
-		}
-		?>
-	</p>
 </div>
 
 <?

@@ -34,11 +34,10 @@
 	// Формируем выпадающее меню салонов в таблицу
 	$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1 ORDER BY Shop";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$select_shops = "<select class='select_shops'>";
+	$select_shops = "";
 	while( $row = mysqli_fetch_array($res) ) {
 		$select_shops .= "<option value='{$row["SH_ID"]}'>{$row["Shop"]}</option>";
 	}
-	$select_shops .= "</select>";
 
 	$datediff = 60; // Максимальный период отображения данных
 //	$datediff = $_SESSION['id'] == 1 ? 600 : 60;
@@ -161,15 +160,11 @@
 	if( isset($_GET["add_locking_date"]) ) {
 		$locking_date = date( 'Y-m-d', strtotime($_POST["locking_date"]) );
 		if( $_POST["locking_date"] != '' ) {
-//			$query = "INSERT INTO OstatkiShops
-//				SET CT_ID = {$_GET["CT_ID"]}, year = {$_GET["year"]}, month = {$_GET["month"]}, ostatok = {$_POST["ostatok"]}, locking_date = '{$locking_date}'
-//				ON DUPLICATE KEY UPDATE ostatok = {$_POST["ostatok"]}, locking_date = '{$locking_date}'";
 			$query = "INSERT INTO OstatkiShops
 				SET CT_ID = {$_GET["CT_ID"]}, year = {$_GET["year"]}, month = {$_GET["month"]}, locking_date = '{$locking_date}'
 				ON DUPLICATE KEY UPDATE locking_date = '{$locking_date}'";
 		}
 		else {
-//			$query = "UPDATE OstatkiShops SET ostatok = NULL, locking_date = NULL WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month = {$_GET["month"]}";
 			$query = "UPDATE OstatkiShops SET locking_date = NULL WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month = {$_GET["month"]}";
 		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -275,10 +270,6 @@
 	if( $CT_ID ) {
 ?>
 <h3 style="display: inline-block; margin: 10px 20px;">Остаток наличных: <?=$format_ostatok?></h3>
-<!--
-<a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='+' CT_ID='<?=$CT_ID?>' title='Внести приход'><i class='fa fa-plus-square fa-2x' style='color: green;'></i></a>
-<a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='-' CT_ID='<?=$CT_ID?>' title='Внести расход'><i class='fa fa-minus-square fa-2x' style='color: red;'></i></a>
--->
 <a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='+' CT_ID='<?=$CT_ID?>' title='Внести приход'><i class='fa fa-plus fa-lg' style='color: white; background: green; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>
 <a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='-' CT_ID='<?=$CT_ID?>' title='Внести расход'><i class='fa fa-minus fa-lg' style='color: white; background: red; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>
 <a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='' CT_ID='<?=$CT_ID?>' title='Внести отправку денег'><i class='fa fa-exchange fa-lg' style="color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;"></i></a>
@@ -771,7 +762,8 @@ else {
 						,ROUND(IFNULL(OD.discount, 0) / SUM(ODD_ODB.Price) * 100) percent
 						,IFNULL(OP.payment_sum, 0) payment_sum
 						,OP.terminal_payer
-						,IF(OS.locking_date IS NOT NULL, 1, 0) is_lock
+						,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
+						,OD.confirmed
 						,IFNULL(OT.type, 0) type
 						,IFNULL(OT.comment, '') comment
 						,IFNULL(OT.old_SH_ID, OD.SH_ID) old_SH_ID
@@ -827,6 +819,11 @@ else {
 					ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
+			$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
+			$confirmed = $row["confirmed"];		// Заказ принят в работу
+			// Запрет на редактирование
+			$disabled = !(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) and $is_lock == 0 and in_array('order_add', $Rights) );
+
 			$format_price = number_format($row["Price"], 0, '', ' ');
 			$format_payment = number_format($row["payment_sum"], 0, '', ' ');
 			$format_discount = number_format($row['discount'], 0, '', ' ');
@@ -846,7 +843,7 @@ else {
 					<td><span class='nowrap material'>{$row["Material"]}</span></td>
 					<td>{$row["Color"]}</td>
 					<td class='material'>{$row["Amount"]}</td>
-					<td id='{$row["OD_ID"]}'><span>{$select_shops}</span></td>
+					<td id='{$row["OD_ID"]}'><span><select ".($is_lock ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
 					<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
 					<td id='{$row["OD_ID"]}'><input type='text' class='date sell_date' value='{$row["StartDate"]}'></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
@@ -856,23 +853,24 @@ else {
 					<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>
 					<td><span style='color: #911;'>{$otkaz_cell}</span></td>
 					<td>";
-			if( $row["is_lock"] ) {
-				echo "<i class='fa fa-lock fa-lg' aria-hidden='true' title='Отчетный период закрыт. Заказ нельзя отредактировать.'></i> ";
+
+			// Если заказ заблокирован, то показываем глаз. Иначе - карандаш.
+			if( $disabled ) {
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
 			}
 			else {
-				if( in_array('order_add', $Rights) ) {
-					echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
-				}
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+			}
+			// Если есть права на редактирование заказа и заказ не закрыт, то показываем кнопку разделения заказа и отказа
+			if( in_array('order_add', $Rights) and !$is_lock ) {
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' location='{$location}' payment='{$row["payment_sum"]}' type='{$row["type"]}' comment='{$row["comment"]}' old_SH_ID='{$row["old_SH_ID"]}' old_StartDate='{$row["old_StartDate"]}' old_sum='{$row["Price"]}' title='Пометить как отказ'><i class='fa fa-hand-paper-o fa-lg' aria-hidden='true'></i></a>";
 			}
-			echo "
-					</td>
-				</tr>
-				<script>
-					$('#ord{$row["OD_ID"]} select').val('{$row["SH_ID"]}');
-				</script>
-			";
+
+			echo "</td></tr>";
+			echo "<script>";
+			echo "$('#ord{$row["OD_ID"]} select').val('{$row["SH_ID"]}');";
+			echo "</script>";
 		}
 		?>
 		</tbody>

@@ -240,7 +240,7 @@
 					,GROUP_CONCAT(ODD_ODB.ODB_ID SEPARATOR ',') ODB_ID
 					,WD.Name
 					,IF(ODD_ODB.IsReady = 1, 'ready', 'inwork') ready_status
-					,IF(OS.ostatok IS NOT NULL, 1, 0) is_lock
+					,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
 					,OD.confirmed
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -368,7 +368,8 @@
 		echo "<td class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td><span class='{$row["ready_status"]}'>{$row["Name"]}</td>";
 
-		if( $row["is_lock"] or ( $row["confirmed"] and !in_array('order_add_confirm', $Rights) ) ) {
+		//if( $row["is_lock"] or ( $row["confirmed"] and !in_array('order_add_confirm', $Rights) ) ) {
+		if( $row["is_lock"] ) {
 			echo "<td><span class='nowrap'>{$row["Zakaz_lock"]}</span></td>";
 		}
 		else {
