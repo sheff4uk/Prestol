@@ -513,6 +513,22 @@ td.tscell > i {
 .painting {
 	cursor: pointer;
 }
+.painting_cell {
+	position: relative;
+	border-radius: 8px;
+	z-index: 1;
+}
+.painting_workers {
+	position: absolute;
+	top: 0;
+	right: 0;
+	white-space: nowrap;
+	font-size: .8em;
+	color: #fff;
+	text-shadow: 0px 0px 2px #000;
+	font-weight: bold;
+	z-index: -1;
+}
 
 #login {
 	-webkit-border-radius: 5px;

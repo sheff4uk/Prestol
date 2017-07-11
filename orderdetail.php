@@ -66,7 +66,7 @@
 				     ,SH_ID = $Shop
 				     ,OrderNumber = '{$OrderNumber}'
 				     ,Color = '{$Color}'
-				     ,IsPainting = ".( isset($_POST["IsPainting"]) ? $_POST["IsPainting"] : "IsPainting" )."
+				     #,IsPainting = ".( isset($_POST["IsPainting"]) ? $_POST["IsPainting"] : "IsPainting" )."
 				     ,Comment = '{$Comment}'
 					 ,author = {$_SESSION['id']}
 				  WHERE OD_ID = {$id}";
@@ -330,7 +330,7 @@
 		echo "<p><a href='{$_SESSION["location"]}#ord{$_GET["id"]}' class='button'><< Вернуться</a></p>";
 ?>
 	<form method='post' id='order_form' action='<?=$location?>&order_update=1'>
-	<table>
+	<table class="">
 		<thead>
 		<tr class='nowrap'>
 			<th>Код</th>
@@ -340,7 +340,6 @@
 			<th>Салон</th>
 			<th>№ квитанции</th>
 			<th>Цвет</th>
-			<th>Лакировка</th>
 			<th>Примечание</th>
 			<th>Действие</th>
 		</tr>
@@ -354,12 +353,14 @@
 					,OD.OrderNumber
 					,OD.Color
 					,OD.IsPainting
+					,WD.Name
 					,OD.Comment
 					,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
 					,SH.retail
 					,SH.CT_ID
 					,IFNULL(OD.SHP_ID, 0) SHP_ID
 			  FROM OrdersData OD
+			  LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 			  WHERE OD_ID = {$id}";
@@ -372,6 +373,7 @@
 	$OrderNumber = mysqli_result($res,0,'OrderNumber');
 	$Color = mysqli_result($res,0,'Color');
 	$IsPainting = mysqli_result($res,0,'IsPainting');
+	$Name = mysqli_result($res,0,'Name');
 	$Comment = mysqli_result($res,0,'Comment');
 	$CTColor = mysqli_result($res,0,'CTColor');
 	$retail = mysqli_result($res,0,'retail');
@@ -379,7 +381,7 @@
 	$SHP_ID = mysqli_result($res,0,'SHP_ID');
 ?>
 		<tbody>
-		<tr class='ord_log_row' lnk='*OD_ID<?=$id?>*'>
+		<tr class='ord_log_row' lnk='*OD_ID<?=$id?>*' id='ord<?=$id?>'>
 			<td class="nowrap"><?=$Code?></td>
 			<td><input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>' <?=($disabled ? "disabled" : "")?>></td>
 			<td><input type='text' name='StartDate' class='date from' value='<?=$StartDate?>' date='<?=$StartDate?>' <?=($disabled ? "disabled" : "")?>></td>
@@ -420,14 +422,26 @@
 				</div>
 			</td>
 			<td><input type='text' name='OrderNumber' style='width: 90px;' value='<?=$OrderNumber?>' <?=($disabled ? "disabled" : "")?>></td>
-			<td><input required type='text' class='colortags' name='Color' style='width: 160px;' value='<?=$Color?>' autocomplete='off' <?=($disabled ? "disabled" : "")?>></td>
-			<td>
-				<div id="IsPainting" class="btnset nowrap">
-					<input type="radio" id="IsP1" name="IsPainting" <?=($IsPainting == 1 ? "checked" : "")?> value="1" <?=($disabled ? "disabled" : "")?>><label for="IsP1" title="Не в работе"><i class="fa fa-star-o fa-lg"></i></label>
-					<input type="radio" id="IsP2" name="IsPainting" <?=($IsPainting == 2 ? "checked" : "")?> value="2" <?=($disabled ? "disabled" : "")?>><label for="IsP2" title="В работе"><i class="fa fa-star-half-o fa-lg"></i></label>
-					<input type="radio" id="IsP3" name="IsPainting" <?=($IsPainting == 3 ? "checked" : "")?> value="3" <?=($disabled ? "disabled" : "")?>><label for="IsP3" title="Готово"><i class="fa fa-star fa-lg"></i></label>
-				</div>
-			</td>
+
+			<?
+			echo "<td val='{$IsPainting}'";
+				switch ($IsPainting) {
+					case 1:
+						$class = "notready";
+						$title = "Не в работе";
+						break;
+					case 2:
+						$class = "inwork";
+						$title = "В работе";
+						break;
+					case 3:
+						$class = "ready";
+						$title = "Готово";
+						break;
+				}
+			echo " class='painting_cell ".((!$disabled and false) ? "painting" : "")." {$class}' title='{$title}'><div class='painting_workers'>{$Name}</div><input required type='text' class='colortags' name='Color' style='width: 160px;' value='{$Color}' autocomplete='off' ".($disabled ? "disabled" : "")."></td>";
+			?>
+
 			<td><textarea name='Comment' rows='6' cols='15' <?=($disabled ? "disabled" : "")?>><?=$Comment?></textarea></td>
 			<td>
 				<button <?=$disabled ? "disabled" : ""?>>Сохранить</button><br><br>

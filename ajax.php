@@ -89,6 +89,7 @@ case "steps":
 						FROM OrdersDataSteps ODS
 						JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
 						WHERE ODS.WD_ID IS NOT NULL AND IFNULL(ODS.ST_ID, 0) = {$row["ST_ID"]}
+						ORDER BY ODS.ODD_ID DESC
 						LIMIT 100
 					  ) ODS ON ODS.WD_ID = WD.WD_ID
 					  WHERE WD.Type = 1
@@ -103,6 +104,7 @@ case "steps":
 						FROM OrdersDataSteps ODS
 						JOIN OrdersDataBlank ODB ON ODB.ODB_ID = ODS.ODB_ID
 						WHERE ODS.WD_ID IS NOT NULL
+						ORDER BY ODS.ODB_ID DESC
 						LIMIT 100
 					  ) ODS ON ODS.WD_ID = WD.WD_ID
 					  WHERE WD.Type = 1
@@ -257,7 +259,7 @@ case "ispainting":
 	$filter = $_GET["filter"];
 
 	// Обновляем статус лакировки
-	$query = "UPDATE OrdersData SET IsPainting = {$val}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+	$query = "UPDATE OrdersData SET IsPainting = {$val}, WD_ID = NULL, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 	// Получаем статус лакировки и отгрузку из базы
@@ -286,6 +288,7 @@ case "ispainting":
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').addClass('{$class}');";
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('title', '{$status}');";
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('val', '{$val}');";
+	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] .painting_workers').text('');";
 
 	// Если из отгрузки
 	if( $shpid > 0 ) {
@@ -318,7 +321,72 @@ case "ispainting":
 			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('');";
 		}
 	}
-	echo "noty({timeout: 3000, text: 'Статус лакировки изменен на <b>{$status}</b>', type: 'success'});";
+	if( $val == 3 ) {
+		// Формирование дропдауна со списком лакировщиков. Сортировка по релевантности.
+		$painting_workers = "<select id='painting_workers' size='10'>";
+		$painting_workers .= "<option selected value='0'>-=Выберите работника=-</option>";
+		$query = "SELECT WD.WD_ID, WD.Name, SUM(1) CNT
+				  FROM WorkersData WD
+				  LEFT JOIN (
+					SELECT OD.WD_ID
+					FROM OrdersData OD
+					WHERE OD.WD_ID IS NOT NULL
+					ORDER BY OD.OD_ID DESC
+					LIMIT 100
+				  ) SOD ON SOD.WD_ID = WD.WD_ID
+				  WHERE WD.Type = 2
+				  GROUP BY WD.WD_ID
+				  ORDER BY CNT DESC";
+
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$painting_workers .= "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+		}
+		$painting_workers .= "</select>";
+		// Конец дропдауна со списком лакировщиков
+		$painting_workers = addslashes($painting_workers);
+
+		echo "
+			noty({
+				modal: true,
+				timeout: false,
+				text: 'Статус лакировки изменен на <b>{$status}</b>. Выберите исполнителя:<br>{$painting_workers}',
+				buttons: [
+					{addClass: 'btn btn-primary', text: 'Ok', onClick: function (\$noty) {
+						\$noty.close();
+						//alert($('#painting_workers').val());
+						var wd_id = \$('#painting_workers').val();
+						\$.ajax({ url: 'ajax.php?do=painting_workers&wd_id='+wd_id+'&od_id={$id}', dataType: 'script', async: false });
+					}
+					}
+				],
+				type: 'success'
+			});
+		";
+	}
+	else {
+		echo "noty({timeout: 3000, text: 'Статус лакировки изменен на <b>{$status}</b>', type: 'success'});";
+	}
+	break;
+
+// Сохранение в базу лакировщика
+case "painting_workers":
+
+	$wd_id = $_GET["wd_id"];
+	$id = $_GET["od_id"];
+
+	if( $wd_id > 0 ) {
+		// Узнаем имя лакировщика
+		$query = "SELECT Name FROM WorkersData WHERE WD_ID = {$wd_id}";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+		$Name = mysqli_result($res,0,'Name');
+
+		$query = "UPDATE OrdersData SET WD_ID = {$wd_id}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+		echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] .painting_workers').text('{$Name}');";
+	}
+
 	break;
 
 // Смена статуса принятия заказа

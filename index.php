@@ -157,8 +157,8 @@
 
 		if( $left_sum != 0 and $right_sum != 0 ) {
 			// Создание копии заказа
-			$query = "INSERT INTO OrdersData(SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del, creator, confirmed)
-			SELECT SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, Comment, Progress, IsReady, Del, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			$query = "INSERT INTO OrdersData(SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, WD_ID, Comment, Progress, IsReady, Del, creator, confirmed)
+			SELECT SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, WD_ID, Comment, Progress, IsReady, Del, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
@@ -753,6 +753,7 @@
 					,GROUP_CONCAT(ODD_ODB.Zakaz_lock SEPARATOR '') Zakaz_lock
 					,OD.Color
 					,OD.IsPainting
+					,WD.Name
 					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
 					,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 					,BIT_OR(IFNULL(ODD_ODB.PRfilter, 1)) PRfilter
@@ -763,6 +764,7 @@
 					,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
 					,OD.confirmed
 			  FROM OrdersData OD
+			  LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 			  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
@@ -956,7 +958,7 @@
 					$title = "Готово";
 					break;
 			}
-		echo " class='".(!$disabled ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}'>{$row["Color"]}</td>";
+		echo " class='painting_cell ".(!$disabled ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]} shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
 		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".($disabled ? "step_disabled" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		// Если заказ принят
@@ -1351,16 +1353,6 @@
 
 			$('#print_btn').click( function() { changelink(); });
 			$('#print_title').change( function() { changelink(); });
-		});
-
-		// Смена статуса лакировки аяксом
-		$('.painting').click(function() {
-			var id = $(this).parents('tr').attr('id');
-			id = id.replace('ord', '');
-			var val = $(this).attr('val');
-			var isready = $(this).attr('isready');
-			var archive = $(this).attr('archive');
-			$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val+"&isready="+isready+"&archive="+archive+"&shpid=<?=$_GET["shpid"]?>&filter=<?=(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)?>", dataType: "script", async: false });
 		});
 
 		// Смена статуса принятия аяксом
