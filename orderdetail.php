@@ -571,7 +571,7 @@
 				echo "bg-red'>";
 				break;
 			case "1":
-				echo "bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
+				echo "bg-yellow' title='Заказано: {$row["order_date"]} Ожидается: {$row["arrival_date"]}'>";
 				break;
 			case "2":
 				echo "bg-green'>";
@@ -658,7 +658,7 @@
 				echo "bg-red'>";
 				break;
 			case "1":
-				echo "bg-yellow' title='Заказано: {$row["order_date"]}&emsp;Ожидается: {$row["arrival_date"]}'>";
+				echo "bg-yellow' title='Заказано: {$row["order_date"]} Ожидается: {$row["arrival_date"]}'>";
 				break;
 			case "2":
 				echo "bg-green'>";

@@ -451,6 +451,7 @@ input.amount {
 }
 .main_table td:hover {
 	position: relative;
+	z-index: 2;
 }
 .main_table td > span {
 	transition: .3s;

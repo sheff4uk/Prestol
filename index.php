@@ -782,7 +782,7 @@
 							   ,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), ".( $MT_IDs != "" ? "IF(ODD.MT_ID IN ({$MT_IDs}), ' ss', ''), " : "" )."IF(MT.removed=1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
 								CASE ODD.IsExist
 									WHEN 0 THEN 'bg-red'
-									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
+									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
@@ -816,7 +816,7 @@
 							   ,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), ".( $MT_IDs != "" ? "IF(ODB.MT_ID IN ({$MT_IDs}), ' ss', ''), " : "" )."IF(MT.removed=1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
 								CASE ODB.IsExist
 									WHEN 0 THEN 'bg-red'
-									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), '&emsp;Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
+									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
