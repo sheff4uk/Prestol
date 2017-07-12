@@ -355,7 +355,6 @@ case "ispainting":
 				buttons: [
 					{addClass: 'btn btn-primary', text: 'Ok', onClick: function (\$noty) {
 						\$noty.close();
-						//alert($('#painting_workers').val());
 						var wd_id = \$('#painting_workers').val();
 						\$.ajax({ url: 'ajax.php?do=painting_workers&wd_id='+wd_id+'&od_id={$id}', dataType: 'script', async: false });
 					}
@@ -385,6 +384,7 @@ case "painting_workers":
 		$query = "UPDATE OrdersData SET WD_ID = {$wd_id}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] .painting_workers').text('{$Name}');";
+		echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('title', 'Готово ({$Name})');";
 	}
 
 	break;

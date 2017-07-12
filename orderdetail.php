@@ -437,6 +437,7 @@
 					case 3:
 						$class = "ready";
 						$title = "Готово";
+						if($Name) $title .= " ({$Name})";
 						break;
 				}
 			echo " class='painting_cell ".((!$disabled and false) ? "painting" : "")." {$class}' title='{$title}'><div class='painting_workers'>{$Name}</div><input required type='text' class='colortags' name='Color' style='width: 160px;' value='{$Color}' autocomplete='off' ".($disabled ? "disabled" : "")."></td>";
