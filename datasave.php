@@ -50,7 +50,7 @@ if( $_GET["oddid"] )
 					LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
 					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
 					# Заглушка для обивки
-					WHERE ST.ST_ID != 4";
+					#WHERE ST.ST_ID != 4";
 		}
 		else {
 			$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)

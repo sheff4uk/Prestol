@@ -21,7 +21,7 @@
 			<label>Kол-во:</label>
 			<input required type='number' min='1' value='1' style='width: 50px;' name='Amount' autocomplete="off">
 			&nbsp;&nbsp;&nbsp;
-			<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Уменьшение кол-ва невозможно.'>
+			<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Изменение кол-ва невозможно.'>
 		</div>
 		<div style='display: none;'>
 			<label>Цена за шт:</label>
@@ -122,7 +122,7 @@
 			<label>Kол-во:</label>
 			<input required type='number' min='1' value='1' style='width: 50px;' name='Amount' autocomplete="off">
 			&nbsp;&nbsp;&nbsp;
-			<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Уменьшение кол-ва невозможно.'>
+			<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Изменение кол-ва невозможно.'>
 		</div>
 		<div style='display: none;'>
 			<label>Цена за шт:</label>
@@ -255,7 +255,7 @@
 				<label>Kол-во:</label>
 				<input required type='number' min='1' value='1' style='width: 50px;' name='Amount' autocomplete="off">
 				&nbsp;&nbsp;&nbsp;
-				<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Уменьшение кол-ва невозможно.'>
+				<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Изменение кол-ва невозможно.'>
 			</div>
 			<div style='display: none;'>
 				<label>Цена за шт:</label>
