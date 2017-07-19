@@ -5,7 +5,9 @@
 
 	$datediff = 60; // Максимальный период отображения данных
 
-	$query = "SELECT ODD_ODB.ItemID
+	$query = "SELECT OD.OD_ID
+					,OD.Code
+					,ODD_ODB.ItemID
 					,ODD_ODB.PT_ID
 					,ODD_ODB.Zakaz
 					,ODD_ODB.Amount
@@ -40,7 +42,7 @@
 
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
-		$Products[] = array( "id"=>$row["ItemID"], "label"=>$row["Label"], "value"=>$row["Zakaz"], "PT"=>$row["PT_ID"], "Amount"=>$row["Amount"], "Price"=>$row["Price"] );
+		$Products[] = array( "id"=>$row["ItemID"], "label"=>$row["Label"], "value"=>$row["Zakaz"], "PT"=>$row["PT_ID"], "Amount"=>$row["Amount"], "Price"=>$row["Price"], "odid"=>$row["OD_ID"], "code"=>$row["Code"] );
 	}
 	echo json_encode($Products);
 ?>

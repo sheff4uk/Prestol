@@ -33,7 +33,8 @@
 		if(isset($_GET["Others"])) $product_types .= ",0";
 
 		// Сохраняем в базу выборку товаров
-		$query = "SELECT ODD_ODB.ItemID
+		$query = "SELECT ODD_ODB.OD_ID
+						,ODD_ODB.ItemID
 						,ODD_ODB.PT_ID
 						,ODD_ODB.Amount
 						,ODD_ODB.Price
@@ -67,8 +68,8 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$Counter = 1;
 		while( $row = mysqli_fetch_array($res) ) {
-			$query = "INSERT INTO PrintFormsProducts(PF_ID, sort, ItemID, PT_ID, Amount, Price, Zakaz, tovar_ed)
-					  VALUES ({$id}, {$Counter}, {$row["ItemID"]}, {$row["PT_ID"]}, {$row["Amount"]}, {$row["Price"]}, '{$row["Zakaz"]}', 'шт')";
+			$query = "INSERT INTO PrintFormsProducts(OD_ID, PF_ID, sort, ItemID, PT_ID, Amount, Price, Zakaz, tovar_ed)
+					  VALUES ({$row["OD_ID"]}, {$id}, {$Counter}, {$row["ItemID"]}, {$row["PT_ID"]}, {$row["Amount"]}, {$row["Price"]}, '{$row["Zakaz"]}', 'шт')";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$Counter++;
 		}
@@ -484,9 +485,10 @@
 </style>
 <table width="100%" border="0" cellspacing="4" class="forms" id="tab1">
         <tbody><tr>
-          <th colspan="7" align="left"><strong>Информация о перевозимом грузе:</strong></th>
+          <th colspan="8" align="left"><strong>Информация о перевозимом грузе:</strong></th>
           </tr>
         <tr>
+          <th width="50">Код</th>
           <th width="40%">Наименование</th>
           <th>Ед. измерения</th>
           <th>код по ОКЕИ</th>
@@ -517,7 +519,7 @@
 		<tr>
 			<td colspan="7">
 				<i class="fa fa-plus-square fa-2x" style="color: green;" onclick="addRow('шт');"></i>
-				<span onclick="addRow();"><font><font> Добавить строку</font></font></span>
+				<span onclick="addRow('шт');"><font><font> Добавить строку</font></font></span>
 			</td>
 		</tr>
 	</tbody>
@@ -571,7 +573,7 @@ function proverka(input) {
 
 var d = document;
 
-function addRow(ed, okei, massa, name, amount, price, item, pt)
+function addRow(ed, okei, massa, name, amount, price, item, pt, code, odid)
 {
 
     // Находим нужную таблицу
@@ -583,6 +585,7 @@ function addRow(ed, okei, massa, name, amount, price, item, pt)
 
     // Создаем ячейки в вышесозданной строке
     // и добавляем тх
+    var td0 = d.createElement("TD");
     var td1 = d.createElement("TD");
     var td2 = d.createElement("TD");
     var td3 = d.createElement("TD");
@@ -591,6 +594,7 @@ function addRow(ed, okei, massa, name, amount, price, item, pt)
     var td6 = d.createElement("TD");
     var td7 = d.createElement("TD");
 
+    row.appendChild(td0);
     row.appendChild(td1);
     row.appendChild(td2);
     row.appendChild(td3);
@@ -623,6 +627,13 @@ function addRow(ed, okei, massa, name, amount, price, item, pt)
 	if( typeof pt === "undefined" ) {
 		pt = '';
 	}
+	if( typeof code === "undefined" ) {
+		code = '';
+	}
+	if( typeof odid === "undefined" ) {
+		odid = '';
+	}
+    td0.innerHTML = '<b id="code">'+code+'</b><input type="hidden" name="odid[]" id="odid" value="'+odid+'">';
     td1.innerHTML = '<input required type="text" autocomplete="off" value="'+name+'" name="tovar_name[]" id="tovar_name" class="f2" placeholder="Введите код заказа для поиска товара" />';
     td2.innerHTML = '<input required type="text" autocomplete="off" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />';
     td3.innerHTML = '<input type="text" autocomplete="off" value="'+okei+'" name="tovar_okei[]" id="tovar_okei" class="f1" />';
@@ -635,6 +646,8 @@ function addRow(ed, okei, massa, name, amount, price, item, pt)
 		source: "search_prod.php",
 		minLength: 2,
 		select: function( event, ui ) {
+			$(this).parents('tr').find('#code').text(ui.item.code);
+			$(this).parents('tr').find('#odid').val(ui.item.odid);
 			$(this).parents('tr').find('#item').val(ui.item.id);
 			$(this).parents('tr').find('#pt').val(ui.item.PT);
 			$(this).parents('tr').find('#tovar_tcena').val(ui.item.Price);
@@ -644,6 +657,8 @@ function addRow(ed, okei, massa, name, amount, price, item, pt)
 
 	$( ".f2" ).on("keyup", function() {
 		if( $(this).val().length < 2 ) {
+			$(this).parents('tr').find('#code').text('');
+			$(this).parents('tr').find('#odid').val('');
 			$(this).parents('tr').find('#item').val('');
 			$(this).parents('tr').find('#pt').val('');
 			$(this).parents('tr').find('#tovar_tcena').val('');
@@ -754,8 +769,9 @@ $(document).ready(function() {
 	?>
 <?
 	// Заполняем список товаров на экране
-	$query = "SELECT ItemID, PT_ID, Amount, Price, Zakaz, tovar_ed, tovar_okei, tovar_massa
-			  FROM PrintFormsProducts
+	$query = "SELECT OD.Code, PFP.OD_ID, PFP.ItemID, PFP.PT_ID, PFP.Amount, PFP.Price, PFP.Zakaz, PFP.tovar_ed, PFP.tovar_okei, PFP.tovar_massa
+			  FROM PrintFormsProducts PFP
+			  LEFT JOIN OrdersData OD ON OD.OD_ID = PFP.OD_ID
 			  WHERE PF_ID = {$id}
 			  ORDER BY sort";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -764,7 +780,7 @@ $(document).ready(function() {
 		$tovar_ed = addslashes(htmlspecialchars($row["tovar_ed"]));
 		$tovar_okei = addslashes(htmlspecialchars($row["tovar_okei"]));
 		$tovar_massa = addslashes(htmlspecialchars($row["tovar_massa"]));
-		echo "addRow('{$tovar_ed}', '{$tovar_okei}', '{$tovar_massa}', '{$Zakaz}', '{$row["Amount"]}', '{$row["Price"]}', '{$row["ItemID"]}', '{$row["PT_ID"]}');";
+		echo "addRow('{$tovar_ed}', '{$tovar_okei}', '{$tovar_massa}', '{$Zakaz}', '{$row["Amount"]}', '{$row["Price"]}', '{$row["ItemID"]}', '{$row["PT_ID"]}', '{$row["Code"]}', '{$row["OD_ID"]}');";
 	}
 ?>
 	$( "#platelshik_name" ).autocomplete({
