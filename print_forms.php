@@ -488,7 +488,7 @@
           <th colspan="8" align="left"><strong>Информация о перевозимом грузе:</strong></th>
           </tr>
         <tr>
-          <th width="50">Код</th>
+          <th width="59">Код</th>
           <th width="40%">Наименование</th>
           <th>Ед. измерения</th>
           <th>код по ОКЕИ</th>

@@ -683,7 +683,7 @@ else {
 		<thead>
 			<tr>
 				<th width="55">Дата отгрузки</th>
-				<th width="51">Код</th>
+				<th width="59">Код</th>
 				<th width="5%">Квитанция</th>
 				<th width="5%">Заказчик</th>
 				<th width="25%">Наименование</th>
@@ -723,7 +723,7 @@ else {
 		<thead>
 			<tr>
 				<th width="55"></th>
-				<th width="51"></th>
+				<th width="59"></th>
 				<th width="5%"></th>
 				<th width="5%"></th>
 				<th width="25%"></th>
