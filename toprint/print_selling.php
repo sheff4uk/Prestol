@@ -66,7 +66,7 @@
 			<tr class="thead">
 				<?
 					echo "<td width='4%'>Дата отгрузки</td>";
-					echo "<td width='40'>Код</td>";
+					echo "<td width='50'>Код</td>";
 					echo "<td width='5%'>Квитанция</td>";
 					echo "<td width='9%'>Заказчик</td>";
 					echo "<td width='20%'>Заказ</td>";
@@ -180,7 +180,7 @@
 		}
 
 		if($span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["ReadyDate"]}</td>";
-		if($span) echo "<td width='40' style='{$border}' rowspan='{$cnt}' class='nowrap'><b>{$row["Code"]}</b></td>";
+		if($span) echo "<td width='50' style='{$border}' rowspan='{$cnt}' class='nowrap'><b>{$row["Code"]}</b></td>";
 		if($span) echo "<td width='5%' style='{$border}' rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
 		if($span) echo "<td width='9%' style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}</td>";
 		echo "<td width='20%' style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";
