@@ -1074,7 +1074,7 @@ else {
 				var percent = 0;
 				$('.prod_price').each(function(){
 					var prod_price = $(this).find('input').val();
-					var prod_amount = $(this).parents('tr').find('.prod_amount b').html();
+					var prod_amount = $(this).parents('tr').find('.prod_amount').html();
 					var prod_sum = prod_price * prod_amount;
 					prod_total = prod_total + prod_sum;
 					prod_sum = prod_sum.format();
@@ -1092,7 +1092,7 @@ else {
 				var percent = 0;
 				$('.prod_price').each(function(){
 					var prod_price = $(this).find('input').val();
-					var prod_amount = $(this).parents('tr').find('.prod_amount b').html();
+					var prod_amount = $(this).parents('tr').find('.prod_amount').html();
 					var prod_sum = prod_price * prod_amount;
 					discount = discount + prod_sum;
 				});
