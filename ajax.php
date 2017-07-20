@@ -35,7 +35,7 @@ case "steps":
 		$size = mysqli_result($res,0,'Size');
 		$form = mysqli_result($res,0,'Form');
 		$amount = mysqli_result($res,0,'Amount');
-		$product = "<img src=\'/img/product_{$pt}.png\'>x{$amount}&nbsp;{$model}&nbsp;{$size}&nbsp;{$form}";
+		$product = "<h3><b style=\'font-size: 2em; margin-right: 20px;\'>{$amount}</b>{$model}&nbsp;{$size}&nbsp;{$form}</h3>";
 
 		// Получение информации об этапах производства
 		$query = "SELECT ST.ST_ID, ST.Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible, ODS.Old
@@ -56,7 +56,7 @@ case "steps":
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		$model = mysqli_result($res,0,'Name');
 		$amount = mysqli_result($res,0,'Amount');
-		$product = "<img src=\'/img/product_0.png\'>x{$amount}&nbsp;{$model}";
+		$product = "<h3><b style=\'font-size: 2em; margin-right: 20px;\'>{$amount}</b>{$model}<h3>";
 
 		// Получение информации об этапах производства
 		$query = "SELECT 0 ST_ID, '-' Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible, ODS.Old
@@ -68,7 +68,7 @@ case "steps":
 		$text = "<input type=\'hidden\' name=\'ODB_ID\' value=\'$odb_id\'>";
 	}
 
-	$text .= "<h3>$product</h3>";
+	$text .= $product;
 	$text .= "<table><thead>";
 	$text .= "<tr><th>Этап</th>";
 	$text .= "<th>Работник</th>";
@@ -578,7 +578,7 @@ case "shipment":
 					  SELECT ODD.OD_ID
 							,IFNULL(PM.PT_ID, 2) PT_ID
 							,ODD.ODD_ID itemID
-							,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), ''), '</a></b><br>') Zakaz
+							,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), ''), '</a></b><br>') Zakaz
 
 							,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
 								CASE ODD.IsExist
@@ -605,7 +605,7 @@ case "shipment":
 						SELECT ODB.OD_ID
 							  ,0 PT_ID
 							  ,ODB.ODB_ID itemID
-							  ,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), ''), '</a></b><br>') Zakaz
+							  ,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODB.Amount, '</b> ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), ''), '</a></b><br>') Zakaz
 
 							  ,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
 								CASE ODB.IsExist
@@ -938,7 +938,7 @@ case "update_price":
 		$html .= "<input type='hidden' name='itemID[]' value='{$row["itemID"]}'>";
 		$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 		$html .= "<td class='prod_price'><input type='number' id='prod_price{$row["itemID"]}' min='1' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;'></td>";
-		$html .= "<td class='prod_amount' style='text-align: center;'>{$row["Amount"]}</td>";
+		$html .= "<td class='prod_amount' style='text-align: center;'><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
 		$html .= "<td class='prod_sum' style='text-align: right;'></td>";
 		$html .= "</tr>";
 		if( $row["PT_ID"] > 0 ) {

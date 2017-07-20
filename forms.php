@@ -19,7 +19,7 @@
 		<input type='hidden' value='1' name='Type'>
 		<div>
 			<label>Kол-во:</label>
-			<input required type='number' min='1' value='1' style='width: 50px;' name='Amount' autocomplete="off">
+			<input required type='number' min='1' value='1' style='width: 70px; font-size: 2em;' name='Amount' autocomplete="off">
 			&nbsp;&nbsp;&nbsp;
 			<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Изменение кол-ва невозможно.'>
 		</div>
@@ -120,7 +120,7 @@
 		<input type='hidden' value='2' name='Type'>
 		<div>
 			<label>Kол-во:</label>
-			<input required type='number' min='1' value='1' style='width: 50px;' name='Amount' autocomplete="off">
+			<input required type='number' min='1' value='1' style='width: 70px; font-size: 2em;' name='Amount' autocomplete="off">
 			&nbsp;&nbsp;&nbsp;
 			<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Изменение кол-ва невозможно.'>
 		</div>
@@ -253,7 +253,7 @@
 		<fieldset>
 			<div>
 				<label>Kол-во:</label>
-				<input required type='number' min='1' value='1' style='width: 50px;' name='Amount' autocomplete="off">
+				<input required type='number' min='1' value='1' style='width: 70px; font-size: 2em;' name='Amount' autocomplete="off">
 				&nbsp;&nbsp;&nbsp;
 				<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Изменение кол-ва невозможно.'>
 			</div>

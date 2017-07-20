@@ -842,7 +842,7 @@ else {
 					<td><span class='nowrap'>{$row["Zakaz"]}</span></td>
 					<td><span class='nowrap material'>{$row["Material"]}</span></td>
 					<td>{$row["Color"]}</td>
-					<td class='material'>{$row["Amount"]}</td>
+					<td class='material'><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>
 					<td id='{$row["OD_ID"]}'><span><select ".($is_lock ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
 					<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
 					<td id='{$row["OD_ID"]}'><input type='text' class='date sell_date' value='{$row["StartDate"]}'></td>

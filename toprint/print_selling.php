@@ -186,7 +186,7 @@
 		echo "<td width='20%' style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";
 		echo "<td width='15%' style='{$border}'>{$row["Material"]}</td>";
 		if($span) echo "<td width='10%' style='{$border}' rowspan='{$cnt}'>{$row["Color"]}</td>";
-		echo "<td width='30' style='{$border} font-size: 16px; text-align: right;'>{$row["Amount"]}</td>";
+		echo "<td width='30' style='{$border} font-size: 16px; text-align: right;'><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
 		if($span) echo "<td width='7%' style='{$border}' rowspan='{$cnt}'>{$row["Shop"]}</td>";
 		if($span) echo "<td width='10%' style='{$border}' rowspan='{$cnt}'>{$row["Comment"]}</td>";
 		if($span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["StartDate"]}</td>";
