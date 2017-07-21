@@ -228,7 +228,7 @@
 		Найдено <b id="counter"></b> результатов.
 	</div>
 
-	<? if($archive == 1) { ?>
+	<? if($archive == "2") { ?>
 	<div style="position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: #ed362f;">
 		Внимание! В списке отгруженных заказов отображаются первые 500 записей. Чтобы найти интересующие заказы воспользуйтесь фильтром.
 	</div>
@@ -299,11 +299,20 @@
 	?>
 		<p>
 			<form method="get">
+<!--
 				<select name="archive" onchange="this.form.submit()">
 					<option value="0" <?=($archive == 0) ? "selected" : ""?>>В работе</option>
 					<option value="1" <?=($archive == 1) ? "selected" : ""?>>Отгруженные</option>
-<!--					<option value="2" <?=($archive == 2) ? "selected" : ""?>>Все</option>-->
 				</select>
+-->
+				<div class='btnset'>
+					<input type='radio' id='archive0' name='archive' value='0' <?= ($archive == "0" ? "checked" : "") ?> onchange="this.form.submit()">
+						<label for='archive0'>В работе</label>
+					<input type='radio' id='archive1' name='archive' value='1' <?= ($archive == "1" ? "checked" : "") ?> onchange="this.form.submit()">
+						<label for='archive1'>Свободные</label>
+					<input type='radio' id='archive2' name='archive' value='2' <?= ($archive == "2" ? "checked" : "") ?> onchange="this.form.submit()">
+						<label for='archive2'>Отгруженные</label>
+				</div>
 			</form>
 		</p>
 	<?
@@ -607,7 +616,7 @@
 			<th width="53"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
 			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
 			<th width="5%"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
-			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br><?=($archive == 1 ? "отгрузки" : "сдачи")?></label></th>
+			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br><?=($archive == 2 ? "отгрузки" : "сдачи")?></label></th>
 			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
 			<th width="5%"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>
 			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
@@ -839,16 +848,15 @@
 			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
 			  switch ($archive) {
 				case 0:
-					$query .= " AND OD.ReadyDate IS NULL";
+					$query .= " AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL";
 					break;
 				case 1:
-//					$query .= " AND OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}";
+					$query .= " AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";
+					break;
+				case 2:
 					$query .= " AND OD.ReadyDate IS NOT NULL";
 					$limit = " LIMIT 500";
 					break;
-//				case 2:
-//					$query .= " AND ((OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}) OR (OD.ReadyDate IS NULL))";
-//					break;
 			  }
 			  if( $_SESSION["f_CD"] != "" ) {
 				  $query .= " AND OD.Code LIKE '%{$_SESSION["f_CD"]}%'";

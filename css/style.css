@@ -616,7 +616,7 @@ td.tscell > i {
 }
 
 #print_tbl {
-	height: calc(100vh - 175px);
+	height: calc(100vh - 180px);
 }
 
 .wr_main_table_body {

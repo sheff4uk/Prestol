@@ -106,7 +106,7 @@
 	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=33'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=34'>
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
@@ -245,17 +245,17 @@
 		$_SESSION["alert"] = '';
 	}
 
-	//$archive = ($_GET["archive"] >= 1) ? $_GET["archive"] : 0;
-	$archive = isset($_GET["archive"]) ? $_GET["archive"] : 0;
+	//Получаем статус заказов (В работе, Свободные, Отгруженные)
+	$archive = ($_GET["archive"] == 1 or $_GET["archive"] == 2) ? $_GET["archive"] : 0;
 	switch ($archive) {
 		case 0:
 			$BG = "#fff";
 			break;
 		case 1:
-			$BG = "#bf8";
+			$BG = "#ffb";
 			break;
 		case 2:
-			$BG = "#ffb";
+			$BG = "#bf8";
 			break;
 	}
 ?>
