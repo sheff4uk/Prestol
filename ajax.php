@@ -772,7 +772,8 @@ case "add_payment":
 	$ClientName = mysqli_result($res,0,'ClientName');
 	$StartDate = mysqli_result($res,0,'StartDate');
 
-	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
+	$html = "<p style='color: #911;'>В случае, когда нужно совершить возврат денег по заказу. Он так же записывается в эту таблицу со знаком минус.</p>";
+	$html .= "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 	$html .= "<table><thead><tr>";
 	$html .= "<th style='width: 56px;'></th>";
 	$html .= "<th>Дата</th>";

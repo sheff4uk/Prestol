@@ -329,7 +329,9 @@ else {
 
 		// Проверяем доступен ли месяц из GET в списке отчетных периодов
 		if( ($year != '' or $month != '') and !in_array("{$year}-{$month}", $OTCHET_MONTHS) ) {
-			die('<h3>'.$MONTHS["{$month}"].'-'.$year.' отсутствует в списке доступных отчетов.<h3>');
+			//die('<h3>'.$MONTHS["{$month}"].'-'.$year.' отсутствует в списке доступных отчетов.<h3>');
+			exit ('<meta http-equiv="refresh" content="0; url=selling.php?CT_ID='.$CT_ID.'">');
+			die;
 		}
 		?>
 	</div>
