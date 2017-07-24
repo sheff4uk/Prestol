@@ -72,6 +72,7 @@ else {
 			<th>Накладная</th>
 			<th>Счет</th>
 			<th>Автор</th>
+			<th>Отгрузка</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -83,6 +84,7 @@ $query = "SELECT PF_ID
 				,nakladnaya_date
 				,schet_date
 				,USR.Name
+				,PF.SHP_ID
 			FROM PrintForms PF
 			LEFT JOIN Cities CT ON CT.CT_ID = PF.CT_ID
 			LEFT JOIN Users USR ON USR.USR_ID = PF.USR_ID
@@ -100,6 +102,11 @@ while( $row = mysqli_fetch_array($res) ) {
 	echo "<td><a href='open_print_form.php?type=nakladnaya&PF_ID={$row["PF_ID"]}&number={$number}' target='_blank'>{$row["nakladnaya_date"]}</a></td>";
 	echo "<td><a href='open_print_form.php?type=schet&PF_ID={$row["PF_ID"]}&number={$number}' target='_blank'>{$row["schet_date"]}</a></td>";
 	echo "<td>{$row["Name"]}</td>";
+	echo "<td style='text-align: center;'>";
+	if( $row["SHP_ID"] ) {
+		echo "<a href='/?shpid={$row["SHP_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a>";
+	}
+	echo "</td>";
 	echo "</tr>";
 }
 ?>

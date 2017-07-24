@@ -605,6 +605,7 @@
 	<form id='printtable'>
 	<div class="wr_main_table_head"> <!-- Обертка шапки -->
 	<table class="main_table">
+		<input type="hidden" name="shpid" value="<?=$_GET["shpid"]?>">
 		<input type="text" id="print_title" name="print_title" placeholder="Введите заголовок таблицы">
 		<div id="print_products">
 			<input type="checkbox" value="1" checked name="Tables" id="Tables" class="print_products"><label for="Tables">Печатать столы</label>
