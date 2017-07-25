@@ -754,7 +754,7 @@ td.tscell > i {
 	//border-radius: 10px;
 	position: relative;
 }
-#order_log_table, #order_message {
+#order_log_table, #order_message, #attachments {
 	height: calc(100% - 60px);
 	position: absolute;
 	overflow-y: scroll;

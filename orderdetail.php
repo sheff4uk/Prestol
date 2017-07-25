@@ -290,7 +290,7 @@
 
 		$query = "SELECT IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 				  FROM OrdersDataBlank ODB
-				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODB.ODB_ID AND ODS.Visible = 1
+				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1
 				  WHERE ODB.ODB_ID = {$odb_id}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$inprogress = mysqli_result($res,0,'inprogress');
@@ -301,6 +301,29 @@
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		die;
+	}
+
+	// Удаление файла
+	if( isset($_GET["delfile"]) and !$disabled ) {
+		$oa_id = (int)$_GET["delfile"];
+
+		// Узнаем имя файла
+		$query = "SELECT filename
+				  FROM OrdersAttachments
+				  WHERE OA_ID = {$oa_id}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$filename = mysqli_result($res,0,'filename');
+
+		// удаляем файл с диска
+		$dir = $_SERVER['DOCUMENT_ROOT']."/uploads/";
+		unlink($dir.$filename);
+
+		// Удаляем запись в таблице
+		$query = "DELETE FROM OrdersAttachments WHERE OA_ID = {$oa_id}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'&tabs=2">');
 		die;
 	}
 
@@ -694,6 +717,16 @@
 </div>
 
 <?
+// Узнаем количество вложенных файлов
+$query = "SELECT COUNT(1) cnt FROM OrdersAttachments WHERE OD_ID = {$id}";
+$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+if( mysqli_result($result,0,'cnt') ) {
+	$attacments = " (".mysqli_result($result,0,'cnt').")";
+}
+else {
+	$attacments = "";
+}
+
 if( $id != "NULL" ) {
 ?>
 &nbsp;
@@ -703,6 +736,7 @@ if( $id != "NULL" ) {
 		<ul>
 			<li><a href="#order_message">Сообщения</a></li>
 			<li><a href="#order_log_table">Журнал изменений в заказе</a></li>
+			<li><a href="#attachments">Файлы<?=$attacments?></a></li>
 		</ul>
 		<div id="order_log_table">
 			<table style="width: 100%;">
@@ -749,8 +783,8 @@ if( $id != "NULL" ) {
 			</table>
 		</div>
 		<div id="order_message">
-			<p style='color: #911;'>Занимательный факт:</p>
-			<p>Если нажать на красный конверт слева от сообщения, то конверт станет зеленым - это означает, что сообщение прочитано. Оно так же исчезнет из уведомлений в верхнем-левом углу и там остануться только самые актуальные сообщения.</p>
+<!--			<p style='color: #911;'>Занимательный факт:</p>-->
+			<p style='color: #911;'>Если нажать на красный конверт слева от сообщения, то конверт станет зеленым - это означает, что сообщение прочитано. Оно так же исчезнет из уведомлений в верхнем-левом углу и там остануться только самые актуальные сообщения.</p>
 			<table style="width: 100%;">
 				<thead>
 					<tr>
@@ -801,6 +835,43 @@ if( $id != "NULL" ) {
 				echo "</tr>";
 			}
 		?>
+				</tbody>
+			</table>
+		</div>
+		<div id="attachments">
+			<form action=upload.php method=post enctype=multipart/form-data>
+				<input type="hidden" name="odid" value="<?=$id?>">
+				<input type=file name=uploadfile>
+				<input type="text" name="comment" placeholder="Комментарий">
+				<input type=submit value=Загрузить>
+			</form>
+			<br>
+			<table style="width: 100%;">
+				<thead>
+					<tr>
+					<th width="">Файл</th>
+					<th width="">Комментарий</th>
+					<th width=""></th>
+					</tr>
+				</thead>
+				<tbody>
+				<?
+				$query = "SELECT OA.filename, OA.comment, OA.OA_ID
+							FROM OrdersAttachments OA
+							WHERE OA.OD_ID = {$id}
+							ORDER BY OA.OA_ID DESC";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($res) ) {
+					echo "<tr>";
+					echo "<td><a href='/uploads/{$row["filename"]}' target='_blank' class='button'>{$row["filename"]}</a></td>";
+					echo "<td>{$row["comment"]}</td>";
+
+					$delmessage = addslashes("Удалить файл <b>{$row["filename"]}</b> ?");
+					echo "<td><button onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delfile={$row["OA_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button></td>";
+
+					echo "</tr>";
+				}
+				?>
 				</tbody>
 			</table>
 		</div>
@@ -864,6 +935,13 @@ if( $id != "NULL" ) {
 		});
 
 		$( "#wr_order_change_log" ).tabs();
+
+		<?
+		// Переключаемся на вкладку
+		if( isset($_GET["tabs"]) ) {
+			echo "$( '#wr_order_change_log' ).tabs( 'option', 'active', {$_GET["tabs"]} );";
+		}
+		?>
 
 		<?
 		if( !in_array('order_add_confirm', $Rights) ) {

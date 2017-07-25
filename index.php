@@ -590,7 +590,6 @@
 			$('#shipping_filter .btnset input[type="checkbox"]').change(function() {
 				$('#shipping_filter button').show('fast');
 			});
-//			alert();
 		});
 	</script>
 	<!-- //Фильтр для отгрузки -->
