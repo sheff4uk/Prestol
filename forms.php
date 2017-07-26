@@ -261,6 +261,7 @@
 				<label>Цена за шт:</label>
 				<input type='number' min='0' style='width: 100px;' name='Price' autocomplete="off">
 			</div>
+			<h3 style="color: #911;">Внимание! Каркасы стульев и другие заготовки нужно выбирать из списка ниже, а не писать вручную.</h3>
 			<div>
 				<label>Заготовка:</label>
 				<select required name="Blanks" style="width: 300px;">
