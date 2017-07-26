@@ -845,7 +845,7 @@ if( $id != "NULL" ) {
 				<input type="text" name="comment" placeholder="Комментарий">
 				<input type=submit value=Загрузить>
 			</form>
-			<br>
+			<p style="color: #911;">Файлы хранятся 1 год с момента загрузки.</p>
 			<table style="width: 100%;">
 				<thead>
 					<tr>
