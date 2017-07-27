@@ -140,8 +140,9 @@
 			<tr>
 				<th>Заготовка</th>
 <!--				<th title="Количество заготовок с учетом текущей потребности на основании заказов.">Запас</th>-->
-				<th title="Фактическое наличие неокрашенных заготовок на производстве.">Наличие</th>
-				<th>В заказах<br>до покраски</th>
+				<th title="Фактическое наличие неокрашенных заготовок на производстве.">Наличие<i class="fa fa-question-circle" aria-hidden="true"></i></th>
+				<th>В покраске</th>
+				<th title="Кол-во заготовок, необходимое для выполнения текущих заказов.">Требуется<i class="fa fa-question-circle" aria-hidden="true"></i></th>
 			</tr>
 			</thead>
 			<tbody>
@@ -149,9 +150,15 @@
 				// Количество остатков заготовок
 				$query = "SELECT BL.PT_ID
 								,BL.Name
+
 								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.Amount, 0) - IFNULL(SBLL.Amount, 0) - IFNULL(SODB.Amount, 0)) Amount
-								,IFNULL(SODD.Amount, 0) - IFNULL(SODD.Painting, 0) + IFNULL(SODB.Amount, 0) - IFNULL(SODB.Painting, 0) BeforePainting
+
 								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SBLL.Amount, 0)) AmountBeforePainting
+
+								,IF(PB.BL_ID IS NOT NULL, (IFNULL(SODD.InPainting, 0) + IFNULL(SODB.InPainting, 0)), '') AmountInPainting
+
+								,IF(PB.BL_ID IS NOT NULL, IFNULL(SODD.Amount, 0) - IFNULL(SODD.Painting, 0) + IFNULL(SODB.Amount, 0) - IFNULL(SODB.Painting, 0), '') BeforePainting
+
 								,IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
 							FROM BlankList BL
 							LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
@@ -164,6 +171,7 @@
 								SELECT PB.BL_ID
 										,SUM(ODD.Amount * PB.Amount) Amount
 										,SUM(IF(OD.IsPainting = 1, 0, ODD.Amount) * PB.Amount) Painting
+										,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount) InPainting
 								FROM OrdersDataDetail ODD
 								LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
@@ -174,6 +182,7 @@
 								SELECT ODB.BL_ID
 										,SUM(ODB.Amount) Amount
 										,SUM(IF(OD.IsPainting = 1, 0, ODB.Amount)) Painting
+										,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0)) InPainting
 								FROM OrdersDataBlank ODB
 								LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
 								WHERE ODB.BL_ID IS NOT NULL
@@ -196,6 +205,7 @@
 					echo "<td class='{$row["Bold"]}'><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'> {$row["Name"]}</td>";
 //					echo "<td class='txtright'><span class='{$color}'>{$row["Amount"]}</span></td>";
 					echo "<td class='txtright'><span class='{$colorP}'><b>{$row["AmountBeforePainting"]}</b></span></td>";
+					echo "<td class='txtright'><span>{$row["AmountInPainting"]}</span></td>";
 					echo "<td class='txtright'><span>{$row["BeforePainting"]}</span></td>";
 					echo "</tr>";
 				}
