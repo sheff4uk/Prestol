@@ -301,8 +301,8 @@
 			// Заполнение
 			if( typeof id !== "undefined" )
 			{
-				$('#addblank select[name="Worker"]').val(worker);
-				$('#addblank select[name="Blank"]').val(blank);
+				$('#addblank select[name="Worker"]').val(worker).trigger('change');
+				$('#addblank select[name="Blank"]').val(blank).trigger('change');
 				$('#addblank input[name="Amount"]').val(amount);
 				$('#addblank input[name="Tariff"]').val(tariff);
 				$('#addblank textarea[name="Comment"]').val(comment);
