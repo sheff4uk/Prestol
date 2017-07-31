@@ -1035,16 +1035,16 @@ if( $id != "NULL" ) {
 			source: "autocomplete.php?do=clienttags"
 		});
 
-		// В форме редактирования заказа если выбираем Свободные - дата продажи пустая
-		$('#order_form select[name="Shop"]').on("change", function() {
-			var StartDate = $('#order_form input[name="StartDate"]').attr('date');
-			if( $(this).val() === '0' ) {
-				$('#order_form input[name="StartDate"]').val('');
-			}
-			else {
-				$('#order_form input[name="StartDate"]').val(StartDate);
-			}
-		});
+//		// В форме редактирования заказа если выбираем Свободные - дата продажи пустая
+//		$('#order_form select[name="Shop"]').on("change", function() {
+//			var StartDate = $('#order_form input[name="StartDate"]').attr('date');
+//			if( $(this).val() === '0' ) {
+//				$('#order_form input[name="StartDate"]').val('');
+//			}
+//			else {
+//				$('#order_form input[name="StartDate"]').val(StartDate);
+//			}
+//		});
 
 		$('#order_form input[name="StartDate"]').on("change", function() {
 			$(this).attr('date', $(this).val());
