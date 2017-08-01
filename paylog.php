@@ -24,7 +24,7 @@
 ?>
 	<p>
 		<button class='edit_pay' sign='' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Начислить</button>
-		<button class='edit_pay' sign='-' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Выдать</button>
+		<button class='edit_pay' sign='-' account <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Выдать</button>
 	</p>
 
 	<? include "form_addpay.php"; ?>
@@ -430,13 +430,13 @@
 				echo "<tr class='{$row["Archive"]}' id='pl{$row["PL_ID"]}'>";
 				echo "<td>{$row["ManDate"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'><span><a href='?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>";
-				if ($row["Sign"] == '-') {
+				if ( $row["FA_ID"] ) {
 					$bank = $row["bank"] ? ' <i title="Безнал" class="fa fa-credit-card" aria-hidden="true"></i>' : '';
 					echo "<td></td>";
-					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}{$bank}</td>";
+					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'><b>{$format_pay}{$bank}</b></td>";
 				}
 				else {
-					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'>{$format_pay}</td>";
+					echo "<td style='color: ".($row["Sign"] == "-" ? "#E74C3C;" : "#16A085")."' class='pay txtright nowrap' val='{$row["Sign"]}{$row["Pay"]}'><b>{$row["Sign"]}{$format_pay}</b></td>";
 					echo "<td></td>";
 				}
 				echo "<td class='comment nowrap' style='z-index: 2;'><span>";
@@ -461,7 +461,7 @@
 				echo "{$row["Comment"]}</span></td>";
 				echo "<td".( (strpos($row["Link"],"ODS") === 0 and $confirmed) ? " class='td_step step_confirmed'" : "" ).">";
 				if ($row["Link"] == '') {
-					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' account='{$row["FA_ID"]}' class='edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
+					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' ".($row["FA_ID"] ? "account='{$row["FA_ID"]}'" : "")." class='edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
 				}
 				if( strpos($row["Link"],"ODS") === 0 ) { // Если запись из этапов производства - редактируем
 					if( $step == '0' ) {

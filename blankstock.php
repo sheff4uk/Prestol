@@ -10,7 +10,7 @@
 		die('Недостаточно прав для совершения операции');
 	}
 
-	$datediff = 150; // Максимальный период отображения данных
+	$datediff = 180; // Максимальный период отображения данных
 
 	$location = $_SERVER['REQUEST_URI'];
 
@@ -65,7 +65,7 @@
 				<input type='hidden' name='BS_ID'>
 				<div>
 					<label>Работник:</label>
-					<select name="Worker" id="worker" style="width: 200px;">
+					<select required name="Worker" id="worker" style="width: 200px;">
 						<option value="">-=Выберите работника=-</option>
 						<?
 						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE WD.Type = 1 ORDER BY WD.Name";
@@ -252,7 +252,7 @@
 							LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
 							GROUP BY BL.BL_ID
 						) BLL ON BLL.BL_ID = BL.BL_ID
-						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0
+						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0 AND BS.WD_ID IS NOT NULL
 						ORDER BY BS.Date DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )

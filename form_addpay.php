@@ -9,7 +9,7 @@
 		$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
 		$Pay = $_POST["Pay"] <> "" ? $_POST["Pay"] : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
-		$Sign = $_POST["sign"];
+		$Sign = $_POST["account"] ? "-" : "";
 		$location = $_POST["location"];
 		$plid = $_POST["plid"];
 		$account = $_POST["account"] ? $_POST["account"] : "NULL";
@@ -124,6 +124,7 @@
 			var id = $(this).attr('id');
 			var location = $(this).attr('location');
 			var sign = $(this).attr('sign');
+			var account = $(this).attr('account');
 			var worker = $(this).attr('worker');
 			var date = $(this).attr('date');
 
@@ -147,7 +148,6 @@
 			{
 				var pay = $(this).parents('tr').find('.pay').attr('val');
 				var comment = $(this).parents('tr').find('.comment > span').html();
-				var account = $(this).attr('account');
 				$('#addpay input[name="Pay"]').val(pay);
 				$('#addpay textarea[name="Comment"]').val(comment);
 				$('#addpay input[name="PL_ID"]').val(id);
@@ -169,15 +169,17 @@
 				closeText: 'Закрыть'
 			});
 
-			if (sign == '-') {
+			if (account !== undefined) {
 				$('#addpay').dialog('option', 'title', 'Выдать');
 				$('#wr_account').show();
 				$('#account').prop('required',true);
+				$('#addpay input[name="Pay"]').attr('min', 0);
 			}
 			else {
 				$('#addpay').dialog('option', 'title', 'Начислить');
 				$('#wr_account').hide();
 				$('#account').prop('required',false);
+				$('#addpay input[name="Pay"]').removeAttr('min');
 			}
 			return false;
 		});
