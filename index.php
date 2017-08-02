@@ -406,8 +406,9 @@
 					<input type='text' name='OrderNumber' autocomplete='off'>
 				</div>
 				<div>
+					<p style='color: #911;'>ВНИМАНИЕ! Патина указывается у каждого изделия персонально в специальной графе "патина".</p>
 					<label>Цвет:</label>
-					<input required type='text' class='colortags' name='Color' size='38' autocomplete='off'>
+					<input required type='text' class='colortags' name='Color' size='38' autocomplete='off' placeholder='ЗДЕСЬ ПАТИНУ УКАЗЫВАТЬ НЕ НУЖНО'>
 				</div>
 				<div>
 					<label>Примечание:</label>
