@@ -374,7 +374,7 @@
 				</div>
 				<div>
 					<label>Дата продажи:</label>
-					<input type='text' name='StartDate' class='date from' size='12' value='<?= date("d.m.Y") ?>' date='<?= date("d.m.Y") ?>' autocomplete='off'>
+					<input type='text' name='StartDate' class='date from' size='12' value='<?//=date("d.m.Y") ?>' date='<?//=date("d.m.Y") ?>' autocomplete='off'>
 				</div>
 				<div>
 					<label>Дата сдачи:</label>
@@ -1452,20 +1452,20 @@
 			});
 		});
 
-		// В форме добавления заказа если выбираем Свободные - дата продажи пустая
-		$('#order_form select[name="Shop"]').on("change", function() {
-			var StartDate = $('#order_form input[name="StartDate"]').attr('date');
-			if( $(this).val() === '0' ) {
-				$('#order_form input[name="StartDate"]').val('');
-			}
-			else {
-				$('#order_form input[name="StartDate"]').val(StartDate);
-			}
-		});
+//		// В форме добавления заказа если выбираем Свободные - дата продажи пустая
+//		$('#order_form select[name="Shop"]').on("change", function() {
+//			var StartDate = $('#order_form input[name="StartDate"]').attr('date');
+//			if( $(this).val() === '0' ) {
+//				$('#order_form input[name="StartDate"]').val('');
+//			}
+//			else {
+//				$('#order_form input[name="StartDate"]').val(StartDate);
+//			}
+//		});
 
-		$('#order_form input[name="StartDate"]').on("change", function() {
-			$(this).attr('date', $(this).val());
-		});
+//		$('#order_form input[name="StartDate"]').on("change", function() {
+//			$(this).attr('date', $(this).val());
+//		});
 
 		odd = <?= json_encode($ODD) ?>;
 		odb = <?= json_encode($ODB) ?>;
