@@ -1207,5 +1207,41 @@ case "cash_category":
 	}
 
 	break;
+
+// Формирование выпадающего списка заготовок при выборе работника в форме добавления заготовок
+case "blank_dropdown":
+	$wd_id = $_GET["wd_id"];
+
+	// Список частых заготовок
+	$html = "";
+	$query = "SELECT BL.BL_ID, BL.Name, COUNT(1) cnt
+				FROM BlankList BL
+				JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND BS.WD_ID = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 60
+				GROUP BY BL.BL_ID
+				ORDER BY cnt DESC";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) )
+	{
+		$html .= "<option value='{$row["BL_ID"]}'>{$row["Name"]}</option>";
+	}
+	$html = addslashes($html);
+	echo "window.top.window.$('#addblank #blank #frequent').html('{$html}');";
+
+	// Список остальных заготовок
+	$html = "";
+	$query = "SELECT BL.BL_ID, BL.Name
+				FROM BlankList BL
+				LEFT JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND BS.WD_ID = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 60
+				WHERE BS.BL_ID IS NULL
+				ORDER BY BL.PT_ID, BL.Name";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) )
+	{
+		$html .= "<option value='{$row["BL_ID"]}'>{$row["Name"]}</option>";
+	}
+	$html = addslashes($html);
+	echo "window.top.window.$('#addblank #blank #other').html('{$html}');";
+
+	break;
 }
 ?>

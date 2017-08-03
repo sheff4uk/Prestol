@@ -10,7 +10,7 @@
 		die('Недостаточно прав для совершения операции');
 	}
 
-	$datediff = 180; // Максимальный период отображения данных
+	$datediff = 60; // Максимальный период отображения данных
 
 	$location = $_SERVER['REQUEST_URI'];
 
@@ -61,55 +61,51 @@
 	<!-- Форма добавления заготовки -->
 	<div id='addblank' title='Заготовки' class="addproduct" style='display:none'>
 		<form method="post">
-			<fieldset>
+			<fieldset style="font-size: 1.2em;">
 				<input type='hidden' name='BS_ID'>
 				<div>
 					<label>Работник:</label>
 					<select required name="Worker" id="worker" style="width: 200px;">
 						<option value="">-=Выберите работника=-</option>
-						<?
-						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE WD.Type = 1 ORDER BY WD.Name";
-						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						while( $row = mysqli_fetch_array($res) )
-						{
-							echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
-						}
-						?>
+						<optgroup label="Частые">
+							<?
+							$query = "SELECT WD.WD_ID, WD.Name, COUNT(1) cnt
+										FROM WorkersData WD
+										JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 60
+										GROUP BY BS.WD_ID
+										ORDER BY cnt DESC";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+							}
+							?>
+						</optgroup>
+						<optgroup label="Остальные">
+							<?
+							$query = "SELECT WD.WD_ID, WD.Name
+										FROM WorkersData WD
+										LEFT JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 60
+										WHERE WD.Type = 1 AND BS.WD_ID IS NULL
+										ORDER BY WD.Name;";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+							}
+							?>
+						</optgroup>
 					</select>
 				</div>
 				<div>
 					<label>Заготовка:</label>
 					<select required name="Blank" id="blank" style="width: 200px;">
 						<option value="">-=Выберите заготовку=-</option>
-						<optgroup label="Стулья">
-							<?
-							$query = "SELECT BL.BL_ID, BL.Name, IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
-									  FROM BlankList BL
-									  LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
-									  WHERE BL.PT_ID = 1
-									  GROUP BY BL.BL_ID
-									  ORDER BY BL.Name";
-							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-							while( $row = mysqli_fetch_array($res) )
-							{
-								echo "<option value='{$row["BL_ID"]}' class='{$row["Bold"]}'>{$row["Name"]}</option>";
-							}
-							?>
+						<optgroup label="Частые" id="frequent">
+							<!--Формируется аяксом при выборе работника (blank_dropdown)-->
 						</optgroup>
-						<optgroup label="Столы">
-							<?
-							$query = "SELECT BL.BL_ID, BL.Name, IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
-									  FROM BlankList BL
-									  LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
-									  WHERE BL.PT_ID = 2
-									  GROUP BY BL.BL_ID
-									  ORDER BY BL.Name";
-							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-							while( $row = mysqli_fetch_array($res) )
-							{
-								echo "<option value='{$row["BL_ID"]}' class='{$row["Bold"]}'>{$row["Name"]}</option>";
-							}
-							?>
+						<optgroup label="Остальные" id="other">
+							<!--Формируется аяксом при выборе работника (blank_dropdown)-->
 						</optgroup>
 					</select>
 				</div>
@@ -123,7 +119,8 @@
 				</div>
 				<div>
 					<label>Примечание:</label>
-					<textarea name='Comment' rows='4' cols='25'></textarea>
+					<input type='text' name='Comment'>
+<!--					<textarea name='Comment' rows='4' cols='25'></textarea>-->
 				</div>
 			</fieldset>
 			<div>
@@ -226,7 +223,7 @@
 				<th>Кол-во</th>
 				<th>Тариф</th>
 				<th>Примечание</th>
-				<th>Действие</th>
+<!--				<th>Действие</th>-->
 			</tr>
 			</thead>
 			<tbody>
@@ -262,10 +259,10 @@
 				echo "<td>{$row["Time"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>";
 				echo "<td class='blank {$row["Bold"]}' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>";
-				echo "<td class='amount txtright'>{$row["Amount"]}</td>";
+				echo "<td class='amount txtright'><b style='font-size: 1.2em;'>{$row["Amount"]}</b></td>";
 				echo "<td class='tariff txtright'>{$row["Tariff"]}</td>";
 				echo "<td class='comment'><pre>{$row["Comment"]}</pre></td>";
-				echo "<td><a href='#' id='{$row["BS_ID"]}' class='button edit_blank' location='{$location}' title='Редактировать заготовки'><i class='fa fa-pencil fa-lg'></i></a></td>";
+//				echo "<td><a href='#' id='{$row["BS_ID"]}' class='button edit_blank' location='{$location}' title='Редактировать заготовки'><i class='fa fa-pencil fa-lg'></i></a></td>";
 				echo "</tr>";
 			}
 	?>
@@ -276,13 +273,26 @@
 
 <script>
 	$(document).ready(function() {
-		$('#worker').select2({ placeholder: 'Выберите работника', language: 'ru' });
-		$('#blank').select2({ placeholder: 'Выберите заготовку', language: 'ru' });
+//		$('#worker').select2({ placeholder: 'Выберите работника', language: 'ru' });
+//		$('#blank').select2({ placeholder: 'Выберите заготовку', language: 'ru' });
+//
+//		// Костыль для Select2 чтобы работал поиск
+//		$.ui.dialog.prototype._allowInteraction = function (e) {
+//			return true;
+//		};
 
-		// Костыль для Select2 чтобы работал поиск
-		$.ui.dialog.prototype._allowInteraction = function (e) {
-			return true;
-		};
+		// Выбор заготовок доступен после выбора работника
+		$('#addblank #worker').change( function() {
+			val = $(this).val();
+			if( val != '' ) {
+				$('#addblank #blank').prop('disabled', false);
+				$.ajax({ url: "ajax.php?do=blank_dropdown&wd_id="+val, dataType: "script", async: false });
+			}
+			else {
+				$('#addblank #blank').prop('disabled', true);
+				$('#addblank #blank').val('').change();
+			}
+		});
 
 		// Форма добавления заготовок
 		$('.edit_blank').click(function() {
