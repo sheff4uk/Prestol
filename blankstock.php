@@ -231,6 +231,8 @@
 	<?
 			$query = "SELECT BS.BS_ID
 							,DATE_FORMAT(DATE(BS.Date), '%d.%m.%Y') Date
+							,DAY(BS.Date) day
+							,MONTH(BS.Date) month
 							,TIME(BS.Date) Time
 							,WD.Name Worker
 							,BL.Name Blank
@@ -255,7 +257,7 @@
 			while( $row = mysqli_fetch_array($res) )
 			{
 				echo "<tr>";
-				echo "<td>{$row["Date"]}</td>";
+				echo "<td><b>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></td>";
 				echo "<td>{$row["Time"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>";
 				echo "<td class='blank {$row["Bold"]}' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>";
