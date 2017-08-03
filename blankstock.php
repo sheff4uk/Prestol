@@ -71,7 +71,7 @@
 							<?
 							$query = "SELECT WD.WD_ID, WD.Name, COUNT(1) cnt
 										FROM WorkersData WD
-										JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 60
+										JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 90
 										GROUP BY BS.WD_ID
 										ORDER BY cnt DESC";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -85,7 +85,7 @@
 							<?
 							$query = "SELECT WD.WD_ID, WD.Name
 										FROM WorkersData WD
-										LEFT JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 60
+										LEFT JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 90
 										WHERE WD.Type = 1 AND BS.WD_ID IS NULL
 										ORDER BY WD.Name;";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -99,14 +99,8 @@
 				</div>
 				<div>
 					<label>Заготовка:</label>
-					<select required name="Blank" id="blank" style="width: 200px;">
-						<option value="">-=Выберите заготовку=-</option>
-						<optgroup label="Частые" id="frequent">
-							<!--Формируется аяксом при выборе работника (blank_dropdown)-->
-						</optgroup>
-						<optgroup label="Остальные" id="other">
-							<!--Формируется аяксом при выборе работника (blank_dropdown)-->
-						</optgroup>
+					<select required name="Blank" id="blank" style="width: 200px;" size="4">
+						<!--Формируется аяксом при выборе работника (blank_dropdown)-->
 					</select>
 				</div>
 				<div>
@@ -212,7 +206,7 @@
 	</div>
 
 	<div class="log-blank halfblock">
-		<h1>Журнал заготовок</h1>
+		<h1>Журнал сдачи заготовок</h1>
 		<table>
 			<thead>
 			<tr>
@@ -293,6 +287,7 @@
 			else {
 				$('#addblank #blank').prop('disabled', true);
 				$('#addblank #blank').val('').change();
+				$.ajax({ url: "ajax.php?do=blank_dropdown&wd_id=0", dataType: "script", async: false });
 			}
 		});
 
