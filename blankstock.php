@@ -99,7 +99,7 @@
 				</div>
 				<div>
 					<label>Заготовка:</label>
-					<select required name="Blank" id="blank" style="width: 200px;" size="4">
+					<select required name="Blank" id="blank" style="width: 200px;">
 						<!--Формируется аяксом при выборе работника (blank_dropdown)-->
 					</select>
 				</div>

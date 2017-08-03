@@ -1211,6 +1211,7 @@ case "cash_category":
 // Формирование выпадающего списка заготовок при выборе работника в форме добавления заготовок
 case "blank_dropdown":
 	$wd_id = $_GET["wd_id"];
+	$min_size = 4;
 	$html = "";
 
 	if( $wd_id != 0 ) {
@@ -1222,9 +1223,11 @@ case "blank_dropdown":
 					GROUP BY BL.BL_ID
 					ORDER BY cnt DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$size = 1;
 		while( $row = mysqli_fetch_array($res) )
 		{
 			$html .= "<option value='{$row["BL_ID"]}'>{$row["Name"]}</option>";
+			$size++;
 		}
 		$html .= "</optgroup>";
 
@@ -1241,6 +1244,11 @@ case "blank_dropdown":
 			$html .= "<option value='{$row["BL_ID"]}'>{$row["Name"]}</option>";
 		}
 		$html .= "</optgroup>";
+		$size = ($size < $min_size) ? $min_size : $size;
+		echo "window.top.window.$('#addblank #blank').attr('size', {$size});";
+	}
+	else {
+		echo "window.top.window.$('#addblank #blank').attr('size', {$min_size});";
 	}
 
 	$html = addslashes($html);
