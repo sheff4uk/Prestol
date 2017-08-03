@@ -103,17 +103,17 @@
 						<!--Формируется аяксом при выборе работника (blank_dropdown)-->
 					</select>
 				</div>
-				<div>
+				<div style="width: 170px; display: inline-block;">
 					<label>Кол-во:</label>
 					<input required type='number' name='Amount' class='amount'>
 				</div>
-				<div>
-					<label>Тариф:</label>
+				<div style="width: 130px; display: inline-block;">
+					Тариф:
 					<input type='number' name='Tariff' min='0' step='5' class='tariff'>
 				</div>
 				<div>
 					<label>Примечание:</label>
-					<input type='text' name='Comment'>
+					<input type='text' name='Comment' style="width: 200px;">
 <!--					<textarea name='Comment' rows='4' cols='25'></textarea>-->
 				</div>
 			</fieldset>
