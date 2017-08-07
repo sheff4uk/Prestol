@@ -1222,7 +1222,7 @@ case "blank_dropdown":
 					JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND BS.WD_ID = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 90
 					GROUP BY BL.BL_ID
 					ORDER BY BL.PT_ID, BL.Name";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		$size = 1;
 		while( $row = mysqli_fetch_array($res) )
 		{
@@ -1238,7 +1238,7 @@ case "blank_dropdown":
 					LEFT JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND BS.WD_ID = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 90
 					WHERE BS.BL_ID IS NULL
 					ORDER BY BL.PT_ID, BL.Name";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
 			$html .= "<option value='{$row["BL_ID"]}'>{$row["Name"]}</option>";
@@ -1253,6 +1253,156 @@ case "blank_dropdown":
 
 	$html = addslashes($html);
 	echo "window.top.window.$('#addblank #blank').html('{$html}');";
+
+	break;
+
+// Формирование списка задействованых заготовок при выборе заготовки в форме добавления заготовок
+case "subblank_dropdown":
+	$bl_id = $_GET["bl_id"];
+	$wd_id = $_GET["wd_id"];
+	$html = "<legend style='text-align: left;'>Задействованы:</legend>";
+	$count = 0;
+
+	if( $bl_id != 0 ) {
+		// Список частых заготовок
+		$query = "SELECT BLL.BLL_ID, BL.Name, BLL.Amount
+					FROM BlankLink BLL
+					JOIN BlankList BL ON BL.BL_ID = BLL.BLL_ID
+					WHERE BLL.BL_ID = {$bl_id}";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$html .= "<div style='text-align: left;'><b>{$row["Name"]}:</b></div>";
+			$html .= "<input type='hidden' name='amount[]' value='{$row["Amount"]}'>";
+			$html .= "<input type='hidden' name='bll_id[]' value='{$row["BLL_ID"]}'>";
+			$count++;
+
+			// Формируем выпадающий список со связанными заготовками
+			$query = "SELECT BC.WD_ID, (BC.count + BC.start_balance) count, WD.Name
+						FROM BlankCount BC
+						JOIN WorkersData WD ON WD.WD_ID = BC.WD_ID
+						WHERE BL_ID = {$row["BLL_ID"]}";
+			$subres = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+			$select = "<select required name='wd_id[]' style='width: 250px;'>";
+			$select .= "<option value=''>-=Выберите вариант из списка=-</option>";
+			while( $subrow = mysqli_fetch_array($subres) )
+			{
+				$selected = ($subrow["count"] > 0 and $subrow["WD_ID"] == $wd_id) ? "selected" : "";
+				$select .= "<option {$selected} value='{$subrow["WD_ID"]}'>({$subrow["count"]} шт.) {$subrow["Name"]}</option>";
+			}
+			$select .= "</select>";
+
+			$html .= $select;
+		}
+	}
+
+	if( $count ) {
+		$html = addslashes($html);
+		echo "window.top.window.$('#addblank #subblank').html('{$html}');";
+		echo "window.top.window.$('#addblank #subblank').prop('disabled', false);";
+		echo "window.top.window.$('#addblank #subblank').show('fast');";
+	}
+	else {
+		echo "window.top.window.$('#addblank #subblank').prop('disabled', true);";
+		echo "window.top.window.$('#addblank #subblank').hide('fast');";
+	}
+
+	break;
+
+// Обновление начального значения заготовок по рабочим
+case "start_balance_worker":
+	$wd_id = $_GET["wd_id"];
+	$bl_id = $_GET["bl_id"];
+	$val = $_GET["val"] ? $_GET["val"] : "0";
+
+	// Обновляем начальное значение заготовки у рабочего
+	$query = "UPDATE BlankCount SET start_balance = {$val}, last_date = NOW() WHERE BL_ID = {$bl_id} AND WD_ID = {$wd_id}";
+	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+
+	// Узнаем общее кол-во заготовки и начальное значение
+	$query = "SELECT SUM(BC.count + BC.start_balance) Amount, SUM(BC.start_balance) start_balance
+				FROM BlankCount BC
+				WHERE BC.BL_ID = {$bl_id}
+				GROUP BY BC.BL_ID";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+	$start_balance = mysqli_result($res,0,'start_balance');
+	$blank_amount = mysqli_result($res,0,'Amount');
+	$color = ( $blank_amount < 0 ) ? ' bg-red' : '';
+	$html = "<b class='{$color}'>{$blank_amount}</b>";
+	$html = addslashes($html);
+
+	// Узнаем общее кол-во заготовки у рабочего
+	$query = "SELECT (BC.count + BC.start_balance) Amount
+				FROM BlankCount BC
+				WHERE BC.BL_ID = {$bl_id} AND BC.WD_ID = {$wd_id}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+	$worker_amount = mysqli_result($res,0,'Amount');
+	$sub_color = ( $worker_amount < 0 ) ? ' bg-red' : '';
+	$sub_html = "<i class='{$sub_color}'>{$worker_amount}</i>";
+	$sub_html = addslashes($sub_html);
+
+	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .start_balance').hide('fast');";
+	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').hide('fast');";
+	echo "window.top.window.$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').hide('fast');";
+	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .start_balance').val('{$start_balance}');";
+	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').html('{$html}');";
+	echo "window.top.window.$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').html('{$sub_html}');";
+	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .start_balance').show('fast');";
+	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').show('fast');";
+	echo "window.top.window.$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').show('fast');";
+	echo "noty({timeout: 3000, text: 'Начальное значение обновлено на: <b>\"{$val}\"</b>', type: 'success'});";
+
+	break;
+
+// Обновление начального значения заготовок верхнего уровня
+case "start_balance_blank":
+	$bl_id = $_GET["bl_id"];
+	$val = $_GET["val"] ? $_GET["val"] : "0";
+
+	// Обновляем начальное значение заготовки верхнего уровня
+	$query = "UPDATE BlankList SET start_balance = {$val} WHERE BL_ID = {$bl_id}";
+	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+
+	// Узнаем кол-во заготовок верхнего уровня
+	$query = "SELECT IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) AmountBeforePainting
+				FROM BlankList BL
+				LEFT JOIN (
+					SELECT BS.BL_ID, SUM(BS.Amount) Amount
+					FROM BlankStock BS
+					GROUP BY BS.BL_ID
+				) SBS ON SBS.BL_ID = BL.BL_ID
+				LEFT JOIN (
+					SELECT PB.BL_ID
+							,SUM(ODD.Amount * PB.Amount) Amount
+							,SUM(IF(OD.IsPainting = 1, 0, ODD.Amount) * PB.Amount) Painting
+							,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount) InPainting
+					FROM OrdersDataDetail ODD
+					LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+					JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
+					WHERE ODD.Del = 0
+					GROUP BY PB.BL_ID
+				) SODD ON SODD.BL_ID = BL.BL_ID
+				LEFT JOIN (
+					SELECT ODB.BL_ID
+							,SUM(ODB.Amount) Amount
+							,SUM(IF(OD.IsPainting = 1, 0, ODB.Amount)) Painting
+							,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0)) InPainting
+					FROM OrdersDataBlank ODB
+					LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
+					WHERE ODB.BL_ID IS NOT NULL
+					GROUP BY ODB.BL_ID
+				) SODB ON SODB.BL_ID = BL.BL_ID
+				WHERE BL.BL_ID = {$bl_id}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+	$amount = mysqli_result($res,0,'AmountBeforePainting');
+	$color = ( $amount < 0 ) ? ' bg-red' : '';
+	$html = "<b class='{$color}'>{$amount}</b>";
+	$html = addslashes($html);
+
+	echo "window.top.window.$('#exist_blank #blank_{$bl_id} span').hide('fast');";
+	echo "window.top.window.$('#exist_blank #blank_{$bl_id} span').html('{$html}');";
+	echo "window.top.window.$('#exist_blank #blank_{$bl_id} span').show('fast');";
+	echo "noty({timeout: 3000, text: 'Начальное значение обновлено на: <b>\"{$val}\"</b>', type: 'success'});";
 
 	break;
 }

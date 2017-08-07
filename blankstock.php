@@ -14,7 +14,7 @@
 
 	$location = $_SERVER['REQUEST_URI'];
 
-	// Обновление/добавление заготовок
+	// Добавление заготовок
 	if( isset($_POST["Blank"]) )
 	{
 		$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
@@ -23,20 +23,20 @@
 		$Tariff = $_POST["Tariff"] <> "" ? $_POST["Tariff"] : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 
-		// Редактирование
-		if( $_POST["BS_ID"] <> "" ) {
-			$query = "UPDATE BlankStock
-					  SET WD_ID = {$Worker}, BL_ID = {$Blank}, Amount = {$Amount}, Tariff = {$Tariff}, Comment = '{$Comment}'
-					  WHERE BS_ID = '{$_POST["BS_ID"]}'";
-		}
-		// Добавление
-		else {
-			$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Tariff, Comment)
-					  VALUES ({$Worker}, {$Blank}, {$Amount}, {$Tariff}, '{$Comment}')";
-		}
+		// Добавление заготовок
+		$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Tariff, Comment)
+				  VALUES ({$Worker}, {$Blank}, {$Amount}, {$Tariff}, '{$Comment}')";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		
-		//header( "Location: ".$location );
+		$bs_id = mysqli_insert_id( $mysqli );
+
+		// Добавление связанных заготовок
+		foreach ($_POST["wd_id"] as $key => $value) {
+			$sub_amount = $_POST["amount"][$key] * $Amount * -1;
+			$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Comment, PBS_ID)
+					  VALUES ({$value}, {$_POST["bll_id"][$key]}, {$sub_amount}, '-=авто запись=-', {$bs_id})";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
@@ -111,6 +111,9 @@
 					Тариф:
 					<input type='number' name='Tariff' min='0' step='5' class='tariff'>
 				</div>
+				<fieldset disabled id="subblank" style="display: none; text-align: right;">
+					<!--Формируется аяксом при выборе заготовки (subblank_dropdown)-->
+				</fieldset>
 				<div>
 					<label>Примечание:</label>
 					<input type='text' name='Comment' style="width: 200px;">
@@ -130,29 +133,72 @@
 			<thead>
 			<tr>
 				<th>Заготовка</th>
-<!--				<th title="Количество заготовок с учетом текущей потребности на основании заказов.">Запас</th>-->
+				<th>Начальное<br>значение</th>
 				<th title="Фактическое наличие неокрашенных заготовок на производстве.">Наличие<i class="fa fa-question-circle" aria-hidden="true"></i></th>
 				<th>В покраске</th>
 				<th title="Кол-во заготовок, необходимое для выполнения текущих заказов.">Требуется<i class="fa fa-question-circle" aria-hidden="true"></i></th>
 			</tr>
 			</thead>
-			<tbody>
+			<tbody id="exist_blank">
 			<?
-				// Количество остатков заготовок
+				// Рекурсивная функция вывода дерева заготовок
+				function blank_tree( $pid, $level ) {
+					global $mysqli;
+
+					$query = "SELECT BLL.BLL_ID, BL.Name, IFNULL(SUM(BC.count + BC.start_balance), 0) Amount, IFNULL(SUM(BC.start_balance), 0) start_balance
+								FROM BlankLink BLL
+								JOIN BlankList BL ON BL.BL_ID = BLL.BLL_ID
+								LEFT JOIN BlankCount BC ON BC.BL_ID = BLL.BLL_ID
+								WHERE BLL.BL_ID = {$pid}
+								GROUP BY BLL.BLL_ID";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) ) {
+						$color = ( $row["Amount"] < 0 ) ? ' bg-red' : '';
+						$tabs = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
+						echo "<tr id='{$row["BLL_ID"]}' class='sub_blank'>";
+						echo "<td id><b>{$tabs}{$row["Name"]}</b></td>";
+						echo "<td class='txtright'><input type='number' disabled class='amount start_balance' value='{$row["start_balance"]}'></td>";
+						echo "<td class='txtright blank_amount'><span><b class='{$color}'>{$row["Amount"]}</b></span></td>";
+						echo "<td class='txtright'></td>";
+						echo "<td class='txtright'></td>";
+						echo "</tr>";
+
+						// Вывод запасов заготовок поименно
+						$query = "SELECT BC.BL_ID, WD.WD_ID, WD.Name, (BC.count + BC.start_balance) Amount, BC.start_balance
+									FROM BlankCount BC
+									JOIN WorkersData WD ON WD.WD_ID = BC.WD_ID
+									WHERE BC.BL_ID = {$row["BLL_ID"]}";
+						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $subrow = mysqli_fetch_array($subres) )
+						{
+							$subcolor = ( $subrow["Amount"] < 0 ) ? ' bg-red' : '';
+							echo "<tr id='blank_{$row["BLL_ID"]}_{$subrow["WD_ID"]}'>";
+							echo "<td style='color: #666;'><i>{$tabs}-{$subrow["Name"]}</i></td>";
+							echo "<td class='txtright'><input type='number' class='amount start_balance_worker' wd_id='{$subrow["WD_ID"]}' bl_id='{$subrow["BL_ID"]}' value='{$subrow["start_balance"]}'></td>";
+							echo "<td style='color: #666;' class='txtright blank_amount'><span><i class='{$subcolor}'>{$subrow["Amount"]}</i></span></td>";
+							echo "<td class='txtright'></td>";
+							echo "<td class='txtright'></td>";
+							echo "</tr>";
+						}
+						blank_tree( $row["BLL_ID"], $level+1 );
+					}
+				}
+
+				// Список заготовок верхнего уровня с остатками.
+				// ToDo: сделать триггеры для подсчета остатков, получаемых этим запросом.
 				$query = "SELECT BL.PT_ID
+								,BL.BL_ID
 								,BL.Name
+								,BL.start_balance
 
-								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.Amount, 0) - IFNULL(SBLL.Amount, 0) - IFNULL(SODB.Amount, 0)) Amount
+								,IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) AmountBeforePainting
 
-								,(IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SBLL.Amount, 0)) AmountBeforePainting
+								,IFNULL(SODD.InPainting, 0) + IFNULL(SODB.InPainting, 0) AmountInPainting
 
-								,IF(PB.BL_ID IS NOT NULL, (IFNULL(SODD.InPainting, 0) + IFNULL(SODB.InPainting, 0)), '') AmountInPainting
+								,IFNULL(SODD.Amount, 0) - IFNULL(SODD.Painting, 0) + IFNULL(SODB.Amount, 0) - IFNULL(SODB.Painting, 0) BeforePainting
 
-								,IF(PB.BL_ID IS NOT NULL, IFNULL(SODD.Amount, 0) - IFNULL(SODD.Painting, 0) + IFNULL(SODB.Amount, 0) - IFNULL(SODB.Painting, 0), '') BeforePainting
-
-								,IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
 							FROM BlankList BL
-							LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
+							JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID AND PB.BL_ID IS NOT NULL
 							LEFT JOIN (
 								SELECT BS.BL_ID, SUM(BS.Amount) Amount
 								FROM BlankStock BS
@@ -179,26 +225,22 @@
 								WHERE ODB.BL_ID IS NOT NULL
 								GROUP BY ODB.BL_ID
 							) SODB ON SODB.BL_ID = BL.BL_ID
-							LEFT JOIN (
-								SELECT BLL.BLL_ID, SUM(BS.Amount * BLL.Amount) Amount
-								FROM BlankLink BLL
-								LEFT JOIN BlankStock BS ON BS.BL_ID = BLL.BL_ID
-								GROUP BY BLL.BLL_ID
-							) SBLL ON SBLL.BLL_ID = BL.BL_ID
 							GROUP BY BL.BL_ID
-							ORDER BY BL.PT_ID ASC, BL.Name ASC";
+							ORDER BY BeforePainting DESC, BL.Name ASC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{
-					$color = ( $row["Amount"] < 0 ) ? ' bg-red' : '';
-					$colorP = ( $row["AmountBeforePainting"] < 0 ) ? ' bg-red' : '';
-					echo "<tr>";
-					echo "<td class='{$row["Bold"]}'><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'> {$row["Name"]}</td>";
-//					echo "<td class='txtright'><span class='{$color}'>{$row["Amount"]}</span></td>";
-					echo "<td class='txtright'><span class='{$colorP}'><b>{$row["AmountBeforePainting"]}</b></span></td>";
-					echo "<td class='txtright'><span>{$row["AmountInPainting"]}</span></td>";
-					echo "<td class='txtright'><span>{$row["BeforePainting"]}</span></td>";
+					$color = ( $row["AmountBeforePainting"] < 0 ) ? ' bg-red' : '';
+					echo "<tr class='top_blank'>";
+					echo "<td class='bold'>{$row["Name"]}</td>";
+					echo "<td class='txtright'><input type='number' value='{$row["start_balance"]}' bl_id='{$row["BL_ID"]}' class='amount start_balance_blank'></td>";
+					echo "<td class='txtright' id='blank_{$row["BL_ID"]}'><span><b class='{$color}'>{$row["AmountBeforePainting"]}</b></span></td>";
+					echo "<td class='txtright'><span><b>{$row["AmountInPainting"]}</b></span></td>";
+					echo "<td class='txtright'><span><b>{$row["BeforePainting"]}</b></span></td>";
 					echo "</tr>";
+
+					// Вывод дерева заготовок
+					blank_tree( $row["BL_ID"], 1 );
 				}
 			?>
 			</tbody>
@@ -246,16 +288,17 @@
 							GROUP BY BL.BL_ID
 						) BLL ON BLL.BL_ID = BL.BL_ID
 						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0 AND BS.WD_ID IS NOT NULL
-						ORDER BY BS.Date DESC";
+						ORDER BY BS.Date DESC, BS.BS_ID";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
+				$color = ($row["Amount"] < 0) ? "#E74C3C" : "#16A085";
 				echo "<tr>";
 				echo "<td><b>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></td>";
 				echo "<td>{$row["Time"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>";
 				echo "<td class='blank {$row["Bold"]}' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>";
-				echo "<td class='amount txtright'><b style='font-size: 1.2em;'>{$row["Amount"]}</b></td>";
+				echo "<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$row["Amount"]}</b></td>";
 				echo "<td class='tariff txtright'>{$row["Tariff"]}</td>";
 				echo "<td class='comment'><pre>{$row["Comment"]}</pre></td>";
 //				echo "<td><a href='#' id='{$row["BS_ID"]}' class='button edit_blank' location='{$location}' title='Редактировать заготовки'><i class='fa fa-pencil fa-lg'></i></a></td>";
@@ -277,6 +320,21 @@
 //			return true;
 //		};
 
+		// Редактирование аяксом начального значения заготовок по рабочим
+		$('.start_balance_worker').on('change', function() {
+			var val = $(this).val();
+			var wd_id = $(this).attr('wd_id');
+			var bl_id = $(this).attr('bl_id');
+			$.ajax({ url: "ajax.php?do=start_balance_worker&wd_id="+wd_id+"&bl_id="+bl_id+"&val="+val, dataType: "script", async: false });
+		});
+
+		// Редактирование аяксом начального значения заготовок верхнего уровня
+		$('.start_balance_blank').on('change', function() {
+			var val = $(this).val();
+			var bl_id = $(this).attr('bl_id');
+			$.ajax({ url: "ajax.php?do=start_balance_blank&bl_id="+bl_id+"&val="+val, dataType: "script", async: false });
+		});
+
 		// Выбор заготовок доступен после выбора работника
 		$('#addblank #worker').change( function() {
 			val = $(this).val();
@@ -289,6 +347,14 @@
 				$('#addblank #blank').val('').change();
 				$.ajax({ url: "ajax.php?do=blank_dropdown&wd_id=0", dataType: "script", async: false });
 			}
+		});
+
+		// При выборе заготовки выводится аяксом список задействованных заготовок
+		$('#addblank #blank').change( function() {
+			val = $(this).val();
+			wd_id = $('#addblank #worker').val();
+			if( val == '' ) { val = 0; }
+			$.ajax({ url: "ajax.php?do=subblank_dropdown&bl_id="+val+"&wd_id="+wd_id, dataType: "script", async: false });
 		});
 
 		// Форма добавления заготовок

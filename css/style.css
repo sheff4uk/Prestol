@@ -430,10 +430,11 @@ select {
 	background: #ffffff;
 }
 input.tariff {
-	width: 60px;
+	width: 70px;
 }
 input.amount {
-	width: 50px;
+	width: 60px;
+	text-align: right;
 }
 .main_table {
 	table-layout: fixed;
@@ -488,6 +489,11 @@ input.amount {
 }
 .log-blank .button, .log-pay .button {
 	z-index: 1;
+}
+
+.top_blank td {
+	border-top: 4px solid #bbb;
+	font-size: 1.2em;
 }
 
 @media (min-width: 1024px) {
