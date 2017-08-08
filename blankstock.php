@@ -133,7 +133,7 @@
 			<thead>
 			<tr>
 				<th>Заготовка</th>
-				<th>Начальное<br>значение</th>
+				<th>Корректировка</th>
 				<th title="Фактическое наличие неокрашенных заготовок на производстве.">Наличие<i class="fa fa-question-circle" aria-hidden="true"></i></th>
 				<th>В покраске</th>
 				<th title="Кол-во заготовок, необходимое для выполнения текущих заказов.">Требуется<i class="fa fa-question-circle" aria-hidden="true"></i></th>
