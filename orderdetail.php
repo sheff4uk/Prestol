@@ -758,6 +758,9 @@ if( $id != "NULL" ) {
 							,OCL.new_value
 							,USR.Name
 							,DATE_FORMAT(DATE(OCL.date_time), '%d.%m.%Y') Date
+							,DAY(OCL.date_time) day
+							,MONTH(OCL.date_time) month
+							,YEAR(OCL.date_time) year
 							,TIME(OCL.date_time) Time
 						FROM OrdersChangeLog OCL
 						JOIN Users USR ON USR.USR_ID = OCL.author
@@ -775,7 +778,7 @@ if( $id != "NULL" ) {
 				else {
 					echo "<td colspan='4'><b>{$row["field_name"]}</b></td>";
 				}
-				echo "<td class='nowrap'>{$row["Date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
+				echo "<td class='nowrap'><b>{$row["day"]}&nbsp;{$MONTHS_DATE[$row["month"]]}&nbsp;{$row["year"]}</b><br>{$row["Time"]}<br>{$row["Name"]}</td>";
 				echo "</tr>";
 			}
 		?>
