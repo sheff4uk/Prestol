@@ -21,7 +21,7 @@
 					JOIN Users USR ON USR.USR_ID = OM.author
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-					WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NOT NULL AND AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops})) AND DATEDIFF(NOW(), OM.read_time) <= 7
+					WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NOT NULL AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops})) AND DATEDIFF(NOW(), OM.read_time) <= 7
 				  ORDER BY is_read DESC, OM_ID DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
