@@ -245,7 +245,7 @@ $(document).ready(function() {
 					LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 					WHERE ODB.Del = 0
 					) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-			  WHERE OD.OD_ID IN ({$id_list})
+			  WHERE OD.Del = 0 AND OD.OD_ID IN ({$id_list})
 			  AND ODD_ODB.PT_ID IN({$product_types})
 			  GROUP BY ODD_ODB.itemID
 			  ORDER BY ODD_ODB.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";

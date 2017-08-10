@@ -766,7 +766,7 @@
 					,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 					,BIT_OR(IFNULL(ODD_ODB.PRfilter, 1)) PRfilter
 					,BIT_OR(IFNULL(ODD_ODB.MTfilter, 1)) MTfilter
-					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
+					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.Del = 0, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,BIT_AND(ODD_ODB.IsReady) IsReady
 					,IFNULL(OD.SHP_ID, 0) SHP_ID
 					,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
@@ -1060,6 +1060,7 @@
 						,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 						,ODD.patina
 				  FROM OrdersDataDetail ODD
+				  JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.Del = 0
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 				  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 				  WHERE ODD.OD_ID = {$row["OD_ID"]} AND ODD.Del = 0
@@ -1085,6 +1086,7 @@
 						,IFNULL(MT.PT_ID, 0) MPT_ID
 						,ODB.patina
 				  FROM OrdersDataBlank ODB
+				  JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID AND OD.Del = 0
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1
 				  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 				  WHERE ODB.OD_ID = {$row["OD_ID"]} AND ODB.Del = 0
@@ -1112,10 +1114,12 @@
 				JOIN (
 					SELECT ODD.OD_ID, ODD.MT_ID, ODD.IsExist
 					FROM OrdersDataDetail ODD
+					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.Del = 0
 					WHERE ODD.OD_ID IN ({$orders_IDs}) AND ODD.Del = 0
 					UNION
 					SELECT ODB.OD_ID, ODB.MT_ID, ODB.IsExist
 					FROM OrdersDataBlank ODB
+					JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID AND OD.Del = 0
 					WHERE ODB.OD_ID IN ({$orders_IDs}) AND ODB.Del = 0
 					) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
 				GROUP BY MT.MT_ID
