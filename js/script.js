@@ -163,7 +163,7 @@ $(document).ready(function(){
 	$('.edit_steps').click( function()
 	{
 		if( $(this).parents('.td_step').hasClass('step_disabled') ) {
-			noty({timeout: 10000, text: 'Заказ закрыт в реализации. Изменение этапов невозможно.', type: 'alert'});
+			noty({timeout: 10000, text: '<b>Заказ не редактируется. Изменение этапов невозможно.</b>', type: 'alert'});
 			return false;
 		}
 		else {

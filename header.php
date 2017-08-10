@@ -116,7 +116,7 @@
 	<script src="js/ui/jquery-ui.js"></script>
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
 	<script src="js/modal.js?v=7"></script>
-	<script src="js/script.js?v=21" type="text/javascript"></script>
+	<script src="js/script.js?v=22" type="text/javascript"></script>
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
 	<script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript"></script>
@@ -245,8 +245,8 @@
 		$_SESSION["alert"] = '';
 	}
 
-	//Получаем статус заказов (В работе, Свободные, Отгруженные)
-	$archive = ($_GET["archive"] == 1 or $_GET["archive"] == 2) ? $_GET["archive"] : 0;
+	//Получаем статус заказов (В работе, Свободные, Отгруженные, Удаленные)
+	$archive = $_GET["archive"] ? $_GET["archive"] : 0;
 	switch ($archive) {
 		case 0:
 			$BG = "#fff";
@@ -256,6 +256,9 @@
 			break;
 		case 2:
 			$BG = "#bf8";
+			break;
+		case 3:
+			$BG = "#CCC";
 			break;
 	}
 ?>

@@ -10,16 +10,18 @@
 		$query = "SELECT OD.OD_ID
 						,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
 						,OD.confirmed
+						,OD.Del
 					FROM OrdersData OD
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 					WHERE (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops})) AND OD_ID = {$_GET["id"]}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$OD_ID = mysqli_result($res,0,'OD_ID');
+		$Del = mysqli_result($res,0,'Del');
 		$is_lock = mysqli_result($res,0,'is_lock');
 		$confirmed = mysqli_result($res,0,'confirmed');
 		// Запрет на редактирование
-		$disabled = !(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) and $is_lock == 0 );
+		$disabled = !(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) and $is_lock == 0 and $Del == 0 );
 
 		if( !in_array('order_add', $Rights) or !($OD_ID > 0) ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
@@ -499,6 +501,9 @@
 		}
 		if( $is_lock == 1 ) {
 			echo "<div style='position: absolute; top: 77px; left: 340px; font-weight: bold; color: green; font-size: 1.2em;'>Месяц в реализации закрыт (изменения ограничены).</div>";
+		}
+		if( $Del == 1 ) {
+			echo "<div style='position: absolute; top: 140px; left: 150px; font-weight: bold; color: #911; font-size: 5em; opacity: .5; border: 5px solid;'>Заказ удалён</div>";
 		}
 	}
 	else {

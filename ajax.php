@@ -137,6 +137,7 @@ case "steps":
 	$text .= "</tbody></table>";
 	echo "window.top.window.$('#formsteps').html('{$text}');";
 	break;
+///////////////////////////////////////////////////////////////////
 
 // живой поиск в свободных изделиях
 case "livesearch":
@@ -246,6 +247,7 @@ case "livesearch":
 	echo "return false;";
 	echo "});";
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Смена статуса лакировки
 case "ispainting":
@@ -312,15 +314,22 @@ case "ispainting":
 
 		echo "check_shipping({$is_orders_ready}, 1, {$filter});";
 	}
-	elseif( $isready == 1 and $archive != 1 and $SHP_ID == 0 ) {
-		if( $val == 3 and in_array('order_ready', $Rights) ) {
-			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a  href=\"#\" class=\"\" ".( $SH_ID == 0 ? 'style=\"display: none;\"' : '')." onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
-//			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] span.action a').button();";
-		}
-		else {
-			echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('');";
+	else {
+		//if( $isready == 1 and $archive != 1 and $SHP_ID == 0 ) {
+		if( $archive != 1 ) {
+			if( $isready == 1 and $val == 3 ) {
+				if( in_array('order_ready', $Rights) ) {
+					echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' ".( $SH_ID == 0 ? 'style=\"display: none;\"' : '')." onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
+				}
+			}
+			else {
+				if( in_array('order_add', $Rights) ) {
+					echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' onclick=\'if(confirm(\"<b>Подтвердите удаление заказа!</b>\", \"?del={$id}\")) return false;\' title=\'Удалить\'><i class=\'fa fa-times fa-lg\'></i></a>');";
+				}
+			}
 		}
 	}
+
 	if( $val == 3 ) {
 		// Формирование дропдауна со списком лакировщиков. Сортировка по релевантности.
 		$painting_workers = "<select id='painting_workers' size='10'>";
@@ -368,6 +377,7 @@ case "ispainting":
 		echo "noty({timeout: 3000, text: 'Статус лакировки изменен на <b>{$status}</b>', type: 'success'});";
 	}
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Сохранение в базу лакировщика
 case "painting_workers":
@@ -388,6 +398,7 @@ case "painting_workers":
 	}
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Смена статуса принятия заказа
 case "confirmed":
@@ -422,6 +433,7 @@ case "confirmed":
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('val', '{$val}');";
 	echo "noty({timeout: 3000, text: 'Статус заказа изменен на <b>{$status}</b>', type: 'success'});";
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Смена статуса прочитанного собщения в заказе
 case "read_message":
@@ -465,6 +477,7 @@ case "read_message":
 
 	echo "noty({timeout: 3000, text: 'Сообщение отмечено как {$status}', type: 'success'});";
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Помечаем X в главной таблице
 case "Xlabel":
@@ -479,6 +492,7 @@ case "Xlabel":
 		unset($_SESSION["X_".$id]);
 	}
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Редактируем название материала
 case "materials":
@@ -540,6 +554,7 @@ case "materials":
 	}
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Форма отгрузки
 case "shipment":
@@ -760,6 +775,7 @@ case "shipment":
 		}
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Форма добавления платежа к заказу
 case "add_payment":
@@ -880,6 +896,7 @@ case "add_payment":
 	echo "window.top.window.$('#add_payment fieldset').html('{$html}');";
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Форма редактирования цены заказа
 case "update_price":
@@ -954,6 +971,7 @@ case "update_price":
 	echo $js;
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Редактирование салона
 case "update_shop":
@@ -997,6 +1015,7 @@ case "update_shop":
 	}
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Редактирование даты продажи
 case "update_sell_date":
@@ -1018,6 +1037,7 @@ case "update_sell_date":
 	echo "noty({timeout: 3000, text: 'Дата продажи изменена с <b>{$old_StartDate}</b> на <b>{$_GET["StartDate"]}</b>', type: 'success'});";
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Редактирование примечания к реализации
 case "update_sell_comment":
@@ -1041,6 +1061,7 @@ case "update_sell_comment":
 	echo "noty({timeout: 3000, text: 'Комментарий изменен с <b>{$old_sell_comment}</b> на <b>{$sell_comment}</b>', type: 'success'});";
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Разделение заказа
 case "order_cut":
@@ -1093,6 +1114,7 @@ case "order_cut":
 	echo "window.top.window.$('#order_cut fieldset').html('{$html}');";
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Обновление метража
 case "footage":
@@ -1111,6 +1133,7 @@ case "footage":
 	echo "noty({timeout: 3000, text: 'Метраж обновлен на: <b>\"{$val}\"</b>', type: 'success'});";
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Формирование списка материалов для заказа
 case "material_list":
@@ -1155,6 +1178,7 @@ case "material_list":
 	echo "window.top.window.$('#materials_name').html('{$materials_name}');";
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // При смене типа операции меняется категория (в финансах)
 case "cash_category":
@@ -1207,6 +1231,7 @@ case "cash_category":
 	}
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Формирование выпадающего списка заготовок при выборе работника в форме добавления заготовок
 case "blank_dropdown":
@@ -1255,6 +1280,7 @@ case "blank_dropdown":
 	echo "window.top.window.$('#addblank #blank').html('{$html}');";
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Формирование списка задействованых заготовок при выборе заготовки в форме добавления заготовок
 case "subblank_dropdown":
@@ -1308,6 +1334,7 @@ case "subblank_dropdown":
 	}
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Обновление начального значения заготовок по рабочим
 case "start_balance_worker":
@@ -1353,6 +1380,7 @@ case "start_balance_worker":
 	echo "noty({timeout: 3000, text: 'Начальное значение обновлено на: <b>\"{$val}\"</b>', type: 'success'});";
 
 	break;
+///////////////////////////////////////////////////////////////////
 
 // Обновление начального значения заготовок верхнего уровня
 case "start_balance_blank":

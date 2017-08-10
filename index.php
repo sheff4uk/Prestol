@@ -71,11 +71,9 @@
 		}
 		$id = (int)$_GET["del"];
 
-//		$query = "DELETE FROM OrdersData WHERE OD_ID={$id}";
-		$query = "UPDATE OrdersData SET Del = 1, author = {$_SESSION['id']} WHERE OD_ID={$id}";
+		$query = "UPDATE OrdersData SET Del = 1, DelDate = NOW(), author = {$_SESSION['id']} WHERE OD_ID={$id}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		//header( "Location: /" ); // Перезагружаем экран
 		exit ('<meta http-equiv="refresh" content="0; url=/">');
 		die;
 	}
@@ -228,11 +226,14 @@
 		Найдено <b id="counter"></b> результатов.
 	</div>
 
-	<? if($archive == "2") { ?>
-	<div style="position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: #ed362f;">
-		Внимание! В списке отгруженных заказов отображаются первые 500 записей. Чтобы найти интересующие заказы воспользуйтесь фильтром.
-	</div>
-	<? } ?>
+	<?
+	if($archive == "2") {
+		echo "<div style='position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: #ed362f;'>Внимание! В списке отгруженных заказов отображаются первые 500 записей. Чтобы найти интересующие заказы воспользуйтесь фильтром.</div>";
+	}
+	elseif($archive == "3") {
+		echo "<div style='position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: #ed362f;'>Внимание! В списке удаленных заказов отображаются первые 500 записей. Чтобы найти интересующие заказы воспользуйтесь фильтром.</div>";
+	}
+	?>
 
 	<?
 	if( isset($_GET["shpid"]) ) {
@@ -299,12 +300,6 @@
 	?>
 		<p>
 			<form method="get">
-<!--
-				<select name="archive" onchange="this.form.submit()">
-					<option value="0" <?=($archive == 0) ? "selected" : ""?>>В работе</option>
-					<option value="1" <?=($archive == 1) ? "selected" : ""?>>Отгруженные</option>
-				</select>
--->
 				<div class='btnset'>
 					<input type='radio' id='archive0' name='archive' value='0' <?= ($archive == "0" ? "checked" : "") ?> onchange="this.form.submit()">
 						<label for='archive0'>В работе</label>
@@ -312,6 +307,8 @@
 						<label for='archive1'>Свободные</label>
 					<input type='radio' id='archive2' name='archive' value='2' <?= ($archive == "2" ? "checked" : "") ?> onchange="this.form.submit()">
 						<label for='archive2'>Отгруженные</label>
+					<input type='radio' id='archive3' name='archive' value='3' <?= ($archive == "3" ? "checked" : "") ?> onchange="this.form.submit()">
+						<label for='archive3'>Удаленные</label>
 				</div>
 			</form>
 		</p>
@@ -617,7 +614,7 @@
 			<th width="53"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
 			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
 			<th width="5%"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
-			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br><?=($archive == 2 ? "отгрузки" : "сдачи")?></label></th>
+			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br><?=($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))?></label></th>
 			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
 			<th width="5%"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>
 			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
@@ -750,8 +747,9 @@
 					,OD.Code
 					,IFNULL(OD.ClientName, '') ClientName
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
-					,DATE_FORMAT(IFNULL(OD.ReadyDate, OD.EndDate), '%d.%m.%Y') EndDate
-					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
+					,DATE_FORMAT(IFNULL(OD.DelDate, IFNULL(OD.ReadyDate, OD.EndDate)), '%d.%m.%Y') EndDate
+					#,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
+					#,DATE_FORMAT(OD.DelDate, '%d.%m.%Y') DelDate
 					,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
 					,IFNULL(OD.SH_ID, 0) SH_ID
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
@@ -768,11 +766,12 @@
 					,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 					,BIT_OR(IFNULL(ODD_ODB.PRfilter, 1)) PRfilter
 					,BIT_OR(IFNULL(ODD_ODB.MTfilter, 1)) MTfilter
-					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
+					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,BIT_AND(ODD_ODB.IsReady) IsReady
 					,IFNULL(OD.SHP_ID, 0) SHP_ID
 					,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
 					,OD.confirmed
+					,OD.Del
 			  FROM OrdersData OD
 			  LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -844,18 +843,22 @@
 						GROUP BY ODB.ODB_ID
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-			  WHERE OD.Del = 0 AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops}))";
+			  WHERE (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops}))";
 
 			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
 			  switch ($archive) {
 				case 0:
-					$query .= " AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL";
+					$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL";
 					break;
 				case 1:
-					$query .= " AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";
+					$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";
 					break;
 				case 2:
-					$query .= " AND OD.ReadyDate IS NOT NULL";
+					$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NOT NULL";
+					$limit = " LIMIT 500";
+					break;
+				case 3:
+					$query .= " AND OD.Del = 1";
 					$limit = " LIMIT 500";
 					break;
 			  }
@@ -927,11 +930,15 @@
 			}
 
 			if($archive == "2") {
-				$query .= " ORDER BY OD.ReadyDate DESC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
+				$query .= " ORDER BY OD.ReadyDate DESC, ";
+			}
+			elseif($archive == "3") {
+				$query .= " ORDER BY OD.DelDate DESC, ";
 			}
 			else {
-				$query .= " ORDER BY OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
+				$query .= " ORDER BY OD.AddDate, ";
 			}
+			$query .= "SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
 			$query .= $limit;
 
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -940,7 +947,7 @@
 		$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
 		$confirmed = $row["confirmed"];		// Заказ принят в работу
 		// Запрет на редактирование
-		$disabled = !(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) and $is_lock == 0 and in_array('order_add', $Rights) );
+		$disabled = !(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) and $is_lock == 0 and in_array('order_add', $Rights) and $row["Del"] == 0 );
 
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
 		echo "<tr id='ord{$row["OD_ID"]}'>";
@@ -973,7 +980,7 @@
 					if($row["Name"]) $title .= " ({$row["Name"]})";
 					break;
 			}
-		echo " class='painting_cell ".(!$disabled ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]} shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
+		echo " class='painting_cell ".(!$disabled ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
 		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".($disabled ? "step_disabled" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		// Если заказ принят
@@ -985,7 +992,7 @@
 			$class = 'not_confirmed';
 			$title = 'Не принят в работу';
 		}
-		if( in_array('order_add_confirm', $Rights) ) {
+		if( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 ) {
 			$class = $class." edit_confirmed";
 		}
 		echo "<td val='{$row["confirmed"]}' class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
@@ -1001,35 +1008,34 @@
 			echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
 		}
 		// Если есть права на редактирование заказа и заказ не закрыт, то показываем кнопку разделения заказа
-		if( in_array('order_add', $Rights) and !$is_lock ) {
+		if( in_array('order_add', $Rights) and !$is_lock and $row["Del"] == 0) {
 			echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
 		}
 
 		$counter++;
 
 		echo "<action>";
-		if( $row["Child"] ) // Если заказ не пустой
-		{
-			if( $row["SHP_ID"] == 0 )
-			{
-				if( in_array('order_ready', $Rights) and !isset($_GET["shpid"]) and $row["Archive"] == 0 and $row["IsReady"] and $row["IsPainting"] == 3 ) {
-					echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+		if( $row["SHP_ID"] == 0 ) {
+			if( $row["Archive"] == 0 and $row["Del"] == 0 ) {
+				if( $row["IsReady"] and $row["IsPainting"] == 3 ) {
+					if( in_array('order_ready', $Rights) ) {
+						echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+					}
+				}
+				else {
+					if( in_array('order_add', $Rights) ) {
+						echo "<a href='#' class='' onclick='if(confirm(\"<b>Подтвердите удаление заказа!</b>\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+					}
 				}
 			}
-			else {
-				echo "<a href='/?shpid={$row["SHP_ID"]}#ord{$row["OD_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a>";
-			}
-			if( !$row["IsReady"] || $row["IsPainting"] != 3 ) {
-				$is_orders_ready = 0;
-			}
-			$orders_count++;
 		}
-		else
-		{
-			if( in_array('order_add', $Rights) ) {
-				echo "<a href='#' class='' onclick='if(confirm(\"Удалить?\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
-			}
+		else {
+			echo "<a href='/?shpid={$row["SHP_ID"]}#ord{$row["OD_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a>";
 		}
+		if( !$row["IsReady"] || $row["IsPainting"] != 3 ) {
+			$is_orders_ready = 0;
+		}
+		$orders_count++;
 		echo "</action>";
 
 		echo "</td></tr>";
