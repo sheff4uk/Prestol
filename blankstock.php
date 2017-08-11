@@ -191,7 +191,7 @@
 								,BL.Name
 								,BL.start_balance
 
-								,IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) AmountBeforePainting
+								,IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) AmountBeforePainting
 
 								,IFNULL(SODD.InPainting, 0) + IFNULL(SODB.InPainting, 0) AmountInPainting
 
@@ -206,22 +206,24 @@
 							) SBS ON SBS.BL_ID = BL.BL_ID
 							LEFT JOIN (
 								SELECT PB.BL_ID
-										,SUM(ODD.Amount * PB.Amount) Amount
-										,SUM(IF(OD.IsPainting = 1, 0, ODD.Amount) * PB.Amount) Painting
-										,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount) InPainting
+										,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1)) Amount
+										,SUM(IF(OD.IsPainting = 1, 0, ODD.Amount) * PB.Amount * IF(OD.Del, 0, 1)) Painting
+										,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) InPainting
+										,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * OD.Del) PaintingDeleted
 								FROM OrdersDataDetail ODD
-								JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.Del = 0
+								JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
 								WHERE ODD.Del = 0
 								GROUP BY PB.BL_ID
 							) SODD ON SODD.BL_ID = BL.BL_ID
 							LEFT JOIN (
 								SELECT ODB.BL_ID
-										,SUM(ODB.Amount) Amount
-										,SUM(IF(OD.IsPainting = 1, 0, ODB.Amount)) Painting
-										,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0)) InPainting
+										,SUM(ODB.Amount * IF(OD.Del, 0, 1)) Amount
+										,SUM(IF(OD.IsPainting = 1, 0, ODB.Amount) * IF(OD.Del, 0, 1)) Painting
+										,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0) * IF(OD.Del, 0, 1)) InPainting
+										,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * OD.Del) PaintingDeleted
 								FROM OrdersDataBlank ODB
-								JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID AND OD.Del = 0
+								JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
 								WHERE ODB.BL_ID IS NOT NULL
 								GROUP BY ODB.BL_ID
 							) SODB ON SODB.BL_ID = BL.BL_ID
