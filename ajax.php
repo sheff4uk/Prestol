@@ -1396,7 +1396,7 @@ case "start_balance_blank":
 	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 	// Узнаем кол-во заготовок верхнего уровня
-	$query = "SELECT IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) AmountBeforePainting
+	$query = "SELECT IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) AmountBeforePainting
 				FROM BlankList BL
 				LEFT JOIN (
 					SELECT BS.BL_ID, SUM(BS.Amount) Amount
@@ -1405,22 +1405,24 @@ case "start_balance_blank":
 				) SBS ON SBS.BL_ID = BL.BL_ID
 				LEFT JOIN (
 					SELECT PB.BL_ID
-							,SUM(ODD.Amount * PB.Amount) Amount
-							,SUM(IF(OD.IsPainting = 1, 0, ODD.Amount) * PB.Amount) Painting
-							,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount) InPainting
+							,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1)) Amount
+							,SUM(IF(OD.IsPainting = 1, 0, ODD.Amount) * PB.Amount * IF(OD.Del, 0, 1)) Painting
+							#,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount) InPainting
+							,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * OD.Del) PaintingDeleted
 					FROM OrdersDataDetail ODD
-					LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 					JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
 					WHERE ODD.Del = 0
 					GROUP BY PB.BL_ID
 				) SODD ON SODD.BL_ID = BL.BL_ID
 				LEFT JOIN (
 					SELECT ODB.BL_ID
-							,SUM(ODB.Amount) Amount
-							,SUM(IF(OD.IsPainting = 1, 0, ODB.Amount)) Painting
-							,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0)) InPainting
+							,SUM(ODB.Amount * IF(OD.Del, 0, 1)) Amount
+							,SUM(IF(OD.IsPainting = 1, 0, ODB.Amount) * IF(OD.Del, 0, 1)) Painting
+							#,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0)) InPainting
+							,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * OD.Del) PaintingDeleted
 					FROM OrdersDataBlank ODB
-					LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
+					JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
 					WHERE ODB.BL_ID IS NOT NULL
 					GROUP BY ODB.BL_ID
 				) SODB ON SODB.BL_ID = BL.BL_ID
