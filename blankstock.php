@@ -210,7 +210,7 @@
 										,SUM(IF(OD.IsPainting = 1, 0, ODD.Amount) * PB.Amount) Painting
 										,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount) InPainting
 								FROM OrdersDataDetail ODD
-								LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+								JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.Del = 0
 								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
 								WHERE ODD.Del = 0
 								GROUP BY PB.BL_ID
@@ -221,7 +221,7 @@
 										,SUM(IF(OD.IsPainting = 1, 0, ODB.Amount)) Painting
 										,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0)) InPainting
 								FROM OrdersDataBlank ODB
-								LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
+								JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID AND OD.Del = 0
 								WHERE ODB.BL_ID IS NOT NULL
 								GROUP BY ODB.BL_ID
 							) SODB ON SODB.BL_ID = BL.BL_ID

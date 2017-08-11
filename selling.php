@@ -1005,7 +1005,7 @@ else {
 		// Кнопка добавления платежа
 		$('.add_payment_btn').click( function() {
 			var OD_ID = $(this).attr('id');
-			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID+"&FA_ID=<?=$FA_ID?>", dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID+"&FA_ID=<?=$FA_ID?>&CT_ID=<?=$CT_ID?>", dataType: "script", async: false });
 
 			$('#add_payment').dialog({
 				width: 550,

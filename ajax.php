@@ -781,6 +781,7 @@ case "shipment":
 case "add_payment":
 	$OD_ID = $_GET["OD_ID"];
 	$FA_ID = $_GET["FA_ID"];
+	$CT_ID = $_GET["CT_ID"];
 
 	// Узнаем фамилию заказчика и дату продажи
 	$query = "SELECT ClientName, DATE_FORMAT(StartDate, '%d.%m.%Y') StartDate FROM OrdersData WHERE OD_ID = {$OD_ID}";
@@ -804,6 +805,7 @@ case "add_payment":
 	}
 	$html .= "</tr></thead><tbody>";
 
+	// Выводим список ранее внесенных платежей
 	$query = "SELECT OP_ID
 					,DATE_FORMAT(payment_date, '%d.%m.%Y') payment_date
 					,payment_sum
