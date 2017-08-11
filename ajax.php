@@ -1433,5 +1433,67 @@ case "start_balance_blank":
 	echo "noty({timeout: 3000, text: 'Начальное значение обновлено на: <b>\"{$val}\"</b>', type: 'success'});";
 
 	break;
+/////////////////////////////////////////////////////////////////////
+
+// Удаление заказа
+case "order_del":
+	$od_id = $_GET["od_id"];
+
+	// Проверяем права на удаление заказа
+	if( !in_array('order_add', $Rights) ) {
+		echo "noty({timeout: 3000, text: 'Недостаточно прав для совершения операции!', type: 'error'});";
+	}
+	else {
+		// Узнаем есть ли оплата по этому заказу
+		$query = "SELECT IFNULL((SELECT SUM(payment_sum) FROM OrdersPayment WHERE OD_ID = {$od_id}), 0) order_payments";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+		$order_payments = mysqli_result($res,0,'order_payments');
+
+		// Если оплата есть, то сообщаем об этом иначе удаляем заказ
+		if( $order_payments == 0 ) {
+			$query = "UPDATE OrdersData SET Del = 1, DelDate = NOW(), author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+			echo "window.top.window.$('.main_table #ord{$od_id}').hide('slow');";
+			echo "noty({timeout: 3000, text: 'Заказ удален!', type: 'success'});";
+		}
+		else {
+			// Узнаем город заказа
+			$query = "SELECT SH.CT_ID FROM OrdersData OD LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD_ID = {$od_id}";
+			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+			$CT_ID = mysqli_result($res,0,'CT_ID');
+			$selling_link = "/selling.php?CT_ID={$CT_ID}#ord{$od_id}";
+			echo "noty({text: 'По заказу внесена оплата <b>{$order_payments}р.</b> Проверьте <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b> и повторите попытку удаления.', type: 'alert'});";
+		}
+	}
+
+	break;
+/////////////////////////////////////////////////////////////////////
+
+// Отгрузка заказа
+case "order_shp":
+	$od_id = $_GET["od_id"];
+
+	// Проверяем права на отгрузку заказа
+	if( !in_array('order_ready', $Rights) ) {
+		echo "noty({timeout: 3000, text: 'Недостаточно прав для совершения операции!', type: 'error'});";
+	}
+	else {
+		$query = "UPDATE OrdersData SET ReadyDate = NOW(), author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
+		mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+		echo "window.top.window.$('.main_table #ord{$od_id}').hide('slow');";
+		echo "noty({timeout: 3000, text: 'Заказ успешно отгружен!', type: 'success'});";
+
+		// Если это розничный заказ, то предлагаем перейти в реализацию
+		$query = "SELECT SH.retail, SH.CT_ID FROM OrdersData OD LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD_ID = {$od_id}";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+		$retail = mysqli_result($res,0,'retail');
+		if( $retail == "1" ) {
+			$CT_ID = mysqli_result($res,0,'CT_ID');
+			$selling_link = "/selling.php?CT_ID={$CT_ID}#ord{$od_id}";
+			echo "noty({text: 'Проверить <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b>?', type: 'alert'});";
+		}
+	}
+
+	break;
 }
 ?>

@@ -196,27 +196,31 @@
 
 		// Диалог подтверждения действия
 		function confirm(text, href) {
+			var self = this;
+			self.dfd = $.Deferred();
 			var n = noty({
-				text        : text,
-				//dismissQueue: false,
+				text		: text,
+				dismissQueue: false,
 				modal		: true,
-				buttons     : [
+				buttons		: [
 					{addClass: 'btn btn-primary', text: 'Ok', onClick: function ($noty) {
 						$noty.close();
 						//noty({timeout: 3000, text: 'Вы нажали кнопку "Ok"', type: 'success'});
-						window.location.href = href;
+						if(href !== undefined) {window.location.href = href}
+						self.dfd.resolve(true);
 					}
 					},
 					{addClass: 'btn btn-danger', text: 'Отмена', onClick: function ($noty) {
 						$noty.close();
 						noty({timeout: 3000, text: 'Вы нажали кнопку "Отмена"', type: 'error'});
+						self.dfd.resolve(false);
 					}
 					}
 				],
 				closable: false,
 				timeout: false
 			});
-			return false;
+			return self.dfd.promise();
 		}
 
 		// Функция замены в строке спец символов

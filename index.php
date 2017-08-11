@@ -57,51 +57,50 @@
 		
 		// Перенаправление на экран деталей заказа
 		$id = mysqli_insert_id( $mysqli );
-//		header( "Location: orderdetail.php?id=".$id );
 		exit ('<meta http-equiv="refresh" content="0; url=/orderdetail.php?id='.$id.'">');
 		die;
 	}
 
-	// Удаление заказа
-	if( isset($_GET["del"]) )
-	{
-		if( !in_array('order_add', $Rights) ) {
-			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-			die('Недостаточно прав для совершения операции');
-		}
-		$id = (int)$_GET["del"];
-
-		$query = "UPDATE OrdersData SET Del = 1, DelDate = NOW(), author = {$_SESSION['id']} WHERE OD_ID={$id}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		exit ('<meta http-equiv="refresh" content="0; url=/">');
-		die;
-	}
-
-	// Подтверждение готовности заказа
-	if( isset($_GET["ready"]) )
-	{
-		if( !in_array('order_ready', $Rights) ) {
-			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-			die('Недостаточно прав для совершения операции');
-		}
-		$id = (int)$_GET["ready"];
-		$date = date("Y-m-d");
-		$query = "UPDATE OrdersData SET ReadyDate = '{$date}', IsPainting = 3, author = {$_SESSION['id']} WHERE OD_ID={$id}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		// Если это розничный заказ, то предлагаем перейти в реализацию
-		$query = "SELECT SH.retail, SH.CT_ID FROM OrdersData OD LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD_ID = {$id}";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$retail = mysqli_result($res,0,'retail');
-		if( $retail == "1" ) {
-			$CT_ID = mysqli_result($res,0,'CT_ID');
-			$_SESSION['selling_link'] = "/selling.php?CT_ID={$CT_ID}#ord{$id}";
-		}
-
-		exit ('<meta http-equiv="refresh" content="0; url=/">');
-		die;
-	}
+//	// Удаление заказа
+//	if( isset($_GET["del"]) )
+//	{
+//		if( !in_array('order_add', $Rights) ) {
+//			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+//			die('Недостаточно прав для совершения операции');
+//		}
+//		$id = (int)$_GET["del"];
+//
+//		$query = "UPDATE OrdersData SET Del = 1, DelDate = NOW(), author = {$_SESSION['id']} WHERE OD_ID={$id}";
+//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//
+//		exit ('<meta http-equiv="refresh" content="0; url=/">');
+//		die;
+//	}
+//
+//	// Подтверждение отгрузки заказа
+//	if( isset($_GET["ready"]) )
+//	{
+//		if( !in_array('order_ready', $Rights) ) {
+//			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+//			die('Недостаточно прав для совершения операции');
+//		}
+//		$id = (int)$_GET["ready"];
+//		$date = date("Y-m-d");
+//		$query = "UPDATE OrdersData SET ReadyDate = '{$date}', IsPainting = 3, author = {$_SESSION['id']} WHERE OD_ID={$id}";
+//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//
+//		// Если это розничный заказ, то предлагаем перейти в реализацию
+//		$query = "SELECT SH.retail, SH.CT_ID FROM OrdersData OD LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD_ID = {$id}";
+//		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//		$retail = mysqli_result($res,0,'retail');
+//		if( $retail == "1" ) {
+//			$CT_ID = mysqli_result($res,0,'CT_ID');
+//			$_SESSION['selling_link'] = "/selling.php?CT_ID={$CT_ID}#ord{$id}";
+//		}
+//
+//		exit ('<meta http-equiv="refresh" content="0; url=/">');
+//		die;
+//	}
 
 	// Добавление отгрузки
 	if( isset($_POST["CT_ID"]) ) {
@@ -207,15 +206,15 @@
 		die;
 	}
 
-	// Если заказ был отгружен вручную, то в сессии хранится ссылка на заказ в реализации
-	if( $_SESSION['selling_link'] ) {
-		echo "<script>";
-		echo "$(document).ready(function() {";
-		echo "noty({text: 'Заказ успешно отгружен. Проверить <a href=\"{$_SESSION['selling_link']}\" target=\"_blank\">реализацию</a>?', type: 'success'});";
-		echo "});";
-		echo "</script>";
-		$_SESSION['selling_link'] = "";
-	}
+//	// Если заказ был отгружен вручную, то в сессии хранится ссылка на заказ в реализации
+//	if( $_SESSION['selling_link'] ) {
+//		echo "<script>";
+//		echo "$(document).ready(function() {";
+//		echo "noty({text: 'Заказ успешно отгружен. Проверить <a href=\"{$_SESSION['selling_link']}\" target=\"_blank\">реализацию</a>?', type: 'success'});";
+//		echo "});";
+//		echo "</script>";
+//		$_SESSION['selling_link'] = "";
+//	}
 ?>
 
 	<div id="overlay"></div>
@@ -1019,12 +1018,14 @@
 			if( $row["Archive"] == 0 and $row["Del"] == 0 ) {
 				if( $row["IsReady"] and $row["IsPainting"] == 3 ) {
 					if( in_array('order_ready', $Rights) ) {
-						echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$row["OD_ID"]}\")) return false;' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+						//echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа.\", \"?ready={$row["OD_ID"]}\")) return false;' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+						echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='confirm(\"<b>Пожалуйста, подтвердите готовность заказа.</b>\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 					}
 				}
 				else {
-					if( in_array('order_add', $Rights) ) {
-						echo "<a href='#' class='' onclick='if(confirm(\"<b>Подтвердите удаление заказа!</b>\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+					if( !$disabled ) {
+						//echo "<a href='#' class='' onclick='if(confirm(\"<b>Подтвердите удаление заказа!</b>\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+						echo "<a href='#' class='' onclick='confirm(\"<b>Пожалуйста, подтвердите удаление заказа.</b>\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 					}
 				}
 			}
