@@ -319,12 +319,14 @@ case "ispainting":
 		if( $archive != 1 ) {
 			if( $isready == 1 and $val == 3 ) {
 				if( in_array('order_ready', $Rights) ) {
-					echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' ".( $SH_ID == 0 ? 'style=\"display: none;\"' : '')." onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
+					//echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' ".( $SH_ID == 0 ? 'style=\"display: none;\"' : '')." onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
+					echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' ".( $SH_ID == 0 ? "style=\'display: none;\'" : "")." onclick=\'confirm(\"<b>Пожалуйста, подтвердите готовность заказа.</b>\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$id}\", dataType: \"script\", async: false });});\' title=\'Отгрузить\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
 				}
 			}
 			else {
 				if( in_array('order_add', $Rights) ) {
-					echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' onclick=\'if(confirm(\"<b>Подтвердите удаление заказа!</b>\", \"?del={$id}\")) return false;\' title=\'Удалить\'><i class=\'fa fa-times fa-lg\'></i></a>');";
+					//echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' onclick=\'if(confirm(\"<b>Подтвердите удаление заказа!</b>\", \"?del={$id}\")) return false;\' title=\'Удалить\'><i class=\'fa fa-times fa-lg\'></i></a>');";
+					echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' onclick=\'confirm(\"<b>Пожалуйста, подтвердите удаление заказа.</b>\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$id}\", dataType: \"script\", async: false });});\' title=\'Удалить\'><i class=\'fa fa-times fa-lg\'></i></a>');";
 				}
 			}
 		}
