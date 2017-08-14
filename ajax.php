@@ -327,7 +327,13 @@ case "ispainting":
 //			else {
 				if( in_array('order_add', $Rights) ) {
 					//echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' onclick=\'if(confirm(\"<b>Подтвердите удаление заказа!</b>\", \"?del={$id}\")) return false;\' title=\'Удалить\'><i class=\'fa fa-times fa-lg\'></i></a>');";
-					$html .= "<a href='#' class='' onclick='confirm(\"Пожалуйста, подтвердите <b>удаление</b> заказа.\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$id}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+					if( in_array('order_add_confirm', $Rights) ) {
+						$message = "<b>Внимание!</b><br>Заказ отмеченный как покрашенный при удалении будет считаться <b>списанным</b> - это означает, что задействованные заготовки, тоже останутся <b>списанными</b>.<br>В остальных случаях заказ будет считаться <b>отмененным</b> и заготовки <b>вернутся</b> на склад.<br>К тому же этапы производства, отмеченные как <b>выполненные</b>, после удаления останутся таковыми <b>с сохранением денежного начисления работнику</b>.";
+					}
+					else {
+						$message = "Пожалуйста, подтвердите <b>удаление</b> заказа.";
+					}
+					$html .= "<a href='#' class='' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$id}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 				}
 //			}
 		}
