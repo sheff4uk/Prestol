@@ -54,6 +54,7 @@
 		$terminal = $_POST["terminal_add"];
 		$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer_add"] ).'\'' : 'NULL';
 		$FA_ID_add = $_POST["FA_ID_add"] ? $_POST["FA_ID_add"] : 'NULL';
+		$CT_ID_add = $_POST["CT_ID_add"] ? $_POST["CT_ID_add"] : 'NULL';
 
 		if( $payment_sum ) {
 			// Записываем новый платеж в таблицу платежей
@@ -62,12 +63,10 @@
 							,payment_date = '{$payment_date}'
 							,payment_sum = {$payment_sum}
 							,terminal_payer = {$terminal_payer}
-							,CT_ID = ".($_POST["FA_ID_add"] ? 'NULL' : $CT_ID)."
+							,CT_ID = {$CT_ID_add}
 							,FA_ID = ".($terminal ? $FA_ID : $FA_ID_add)."
 							,author = {$_SESSION['id']}";
-			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = mysqli_error( $mysqli );
-			}
+			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
 			else {
 				// Записываем дату продажи заказа если ее не было
 				$query = "UPDATE OrdersData SET StartDate = '{$payment_date}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
@@ -77,24 +76,24 @@
 			}
 		}
 
-		foreach ($_POST["OP_ID"] as $key => $value) {
-			$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date"][$key]) );
-			$payment_sum = ($_POST["payment_sum"][$key] != '') ? $_POST["payment_sum"][$key] : 'NULL';
-			$terminal_payer = ($_POST["terminal_payer"][$key] != '') ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer"][$key] ).'\'' : 'NULL';
-			$terminal = ($_POST["terminal_payer"][$key] != '') ? 1 : 0;
-			$FA_ID_edit = $_POST["FA_ID"][$key] ? $_POST["FA_ID"][$key] : 'NULL';
-
-			$query = "UPDATE OrdersPayment
-						 SET payment_date = '{$payment_date}'
-							,payment_sum = {$payment_sum}
-							,terminal_payer = {$terminal_payer}
-							".(in_array('order_add_confirm', $Rights) ? ",CT_ID = ".($_POST["FA_ID"][$key] ? 'NULL' : $CT_ID) : '')."
-							,FA_ID = ".($terminal ? $FA_ID : $FA_ID_edit)."
-						WHERE OP_ID = {$value}";
-			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = mysqli_error( $mysqli );
-			}
-		}
+//		foreach ($_POST["OP_ID"] as $key => $value) {
+//			$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date"][$key]) );
+//			$payment_sum = ($_POST["payment_sum"][$key] != '') ? $_POST["payment_sum"][$key] : 'NULL';
+//			$terminal_payer = ($_POST["terminal_payer"][$key] != '') ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer"][$key] ).'\'' : 'NULL';
+//			$terminal = ($_POST["terminal_payer"][$key] != '') ? 1 : 0;
+//			$FA_ID_edit = $_POST["FA_ID"][$key] ? $_POST["FA_ID"][$key] : 'NULL';
+//
+//			$query = "UPDATE OrdersPayment
+//						 SET payment_date = '{$payment_date}'
+//							,payment_sum = {$payment_sum}
+//							,terminal_payer = {$terminal_payer}
+//							".(in_array('order_add_confirm', $Rights) ? ",CT_ID = ".($_POST["FA_ID"][$key] ? 'NULL' : $CT_ID) : '')."
+//							,FA_ID = ".($terminal ? $FA_ID : $FA_ID_edit)."
+//						WHERE OP_ID = {$value}";
+//			if( !mysqli_query( $mysqli, $query ) ) {
+//				$_SESSION["alert"] = mysqli_error( $mysqli );
+//			}
+//		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
 		die;
@@ -106,9 +105,7 @@
 		$discount = $_POST["discount"] ? $_POST["discount"] : "NULL";
 		// Обновление скидки заказа
 		$query = "UPDATE OrdersData SET discount = {$discount}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
-		if( !mysqli_query( $mysqli, $query ) ) {
-			$_SESSION["alert"] = mysqli_error( $mysqli );
-		}
+		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
 
 		foreach ($_POST["PT_ID"] as $key => $value) {
 			$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
@@ -118,9 +115,7 @@
 			else {
 				$query = "UPDATE OrdersDataDetail SET Price = {$price}, author = {$_SESSION['id']} WHERE ODD_ID = {$_POST["itemID"][$key]}";
 			}
-			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = mysqli_error( $mysqli );
-			}
+			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
 		}
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
 		die;
@@ -138,17 +133,13 @@
 
 		if( $OP_ID != '' ) { // Редактируем расход
 			$query = "UPDATE OrdersPayment SET cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send} WHERE OP_ID = {$OP_ID}";
-			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = mysqli_error( $mysqli );
-			}
+			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
 		}
 		else { // Добавляем расход
 			if( $cost ) {
 				$CT_ID = $_POST["CT_ID"];
 				$query = "INSERT INTO OrdersPayment SET CT_ID = {$CT_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']}";
-				if( !mysqli_query( $mysqli, $query ) ) {
-					$_SESSION["alert"] = mysqli_error( $mysqli );
-				}
+				if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
 			}
 		}
 
@@ -167,42 +158,59 @@
 		else {
 			$query = "UPDATE OstatkiShops SET locking_date = NULL WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month = {$_GET["month"]}";
 		}
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
 
-	// Отказ
+	// Отказ/замена
 	if( isset($_GET["order_otkaz"]) ) {
 		$OD_ID = $_POST["OD_ID"];
-		$old_SH_ID = $_POST["old_SH_ID"];
-		$old_StartDate = ($_POST["old_StartDate"] != '') ? '\''.$_POST["old_StartDate"].'\'' : 'NULL';
 		$old_sum = $_POST["old_sum"];
 		$type = $_POST["type"];
-		$comment = ($_POST["comment"] != '') ? '\''.mysqli_real_escape_string( $mysqli, $_POST["comment"] ).'\'' : 'NULL';
 
-		if( $type > 0 ) {
-			$query = "INSERT INTO Otkazi
-				SET OD_ID = {$OD_ID}, type = {$type}, comment = {$comment}, old_SH_ID = {$old_SH_ID}, old_StartDate = {$old_StartDate}, old_sum = {$old_sum}
-				ON DUPLICATE KEY UPDATE type = {$type}, comment = {$comment}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		// Получаем из базы доп. сведения по заказу
+		$query = "SELECT OD.SH_ID, OD.StartDate FROM OrdersData OD WHERE OD.OD_ID = {$OD_ID}";
+		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$old_SH_ID = mysqli_result($subres,0,'SH_ID');
+		$old_StartDate = mysqli_result($subres,0,'StartDate');
 
-			$query = "UPDATE OrdersData SET StartDate = NULL, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-			$_SESSION["alert"] = "Заказ перемещен в \"Свободные\"";
+		if( $old_StartDate ) {
+			if( $old_sum ) {
+				$query = "INSERT INTO Otkazi
+					SET OD_ID = {$OD_ID}, CT_ID = {$CT_ID}, type = {$type}, old_SH_ID = {$old_SH_ID}, old_StartDate = '{$old_StartDate}', old_sum = {$old_sum}
+					ON DUPLICATE KEY UPDATE type = {$type}, old_SH_ID = {$old_SH_ID}, old_sum = {$old_sum}";
+				if( mysqli_query( $mysqli, $query ) ) {
+					$query = "UPDATE OrdersData SET StartDate = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена', ' Отказ')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
+					if( mysqli_query( $mysqli, $query ) ) {
+						$_SESSION["alert"] = "Заказ перемещен в \"Свободные\"";
+					}
+					else { $_SESSION["alert"] = mysqli_error( $mysqli ); }
+				}
+				else { $_SESSION["alert"] = mysqli_error( $mysqli ); }
+			}
+			else {
+				$_SESSION["alert"] = "Сумма заказа не установлена! Введите стоимость и повторите попытку.";
+			}
 		}
 		else {
-			$query = "DELETE FROM Otkazi WHERE OD_ID = {$OD_ID}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-			$query = "UPDATE OrdersData SET StartDate = {$old_StartDate}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
-			//mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			mysqli_query( $mysqli, $query );
+			$_SESSION["alert"] = "Заказ не продан! Установите дату продажи и повторите попытку.";
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
+		die;
+	}
+
+	// Отмена отказа/замены
+	if( isset($_GET["del_otkaz"]) ) {
+		$OD_ID = $_GET["del_otkaz"];
+		$old_StartDate = $_GET["old_StartDate"];
+
+		$query = "DELETE FROM Otkazi WHERE OD_ID = {$OD_ID} AND CT_ID = {$CT_ID} AND old_StartDate = '{$old_StartDate}'";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
 
@@ -382,7 +390,8 @@ else {
 				<thead>
 					<tr>
 						<th>Салон</th>
-						<th>Продажи</th>
+						<th>Продажи<i class="fa fa-question-circle" aria-hidden="true" title="Не включает суммы отказных заказов."></i></th>
+						<th>Скидки</th>
 						<th>Отказы</th>
 						<th>Дебиторка</th>
 					</tr>
@@ -421,9 +430,9 @@ else {
 
 						// Получаем сумму отказов по салону
 						$query = "SELECT SUM(OT.old_sum) Price
-									FROM OrdersData OD
-									JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
-									WHERE OD.Del = 0 AND YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]} AND OT.old_SH_ID = {$row["SH_ID"]} AND OT.type = 2";
+									FROM Otkazi OT
+									#JOIN OrdersData OD ON OD.OD_ID = OT.OD_ID
+									WHERE YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]} AND OT.old_SH_ID = {$row["SH_ID"]} AND OT.type = 2";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_otkaz = mysqli_result($subres,0,'Price');
 						$city_otkaz = $city_otkaz + $shop_otkaz;
@@ -438,23 +447,29 @@ else {
 						$shop_debt = $shop_price - $shop_discount - $month_payment_sum;
 						$city_debt = $city_debt + $shop_debt;
 
-						$format_shop_price = number_format(($shop_price - $shop_discount + $shop_otkaz), 0, '', ' ');
+						$shop_percent = round($shop_discount / ($shop_price - $shop_discount) * 100, 2);
+						$format_shop_price = number_format(($shop_price - $shop_discount), 0, '', ' ');
+						$format_shop_discount = number_format($shop_discount, 0, '', ' ');
 						$format_shop_otkaz = number_format($shop_otkaz, 0, '', ' ');
 						$format_shop_debt = number_format($shop_debt, 0, '', ' ');
 
 						echo "<tr>";
 						echo "<td class='nowrap'><a href='{$location}&SH_ID={$row["SH_ID"]}' ".( $SH_ID == $row["SH_ID"] ? "style='color: #D65C4F;'" : "" ).">{$row["Shop"]}:</a></td>";
 						echo "<td class='txtright'>{$format_shop_price}</td>";
+						echo "<td class='txtright'>{$format_shop_discount}<i class='fa fa-question-circle' aria-hidden='true' title='{$shop_percent}%'></i></td>";
 						echo "<td class='txtright' style='color: #911;'>{$format_shop_otkaz}</td>";
 						echo "<td class='txtright'>{$format_shop_debt}</td>";
 						echo "</tr>";
 					}
-					$format_city_price = number_format($city_price - $city_discount + $city_otkaz, 0, '', ' ');
+					$city_percent = round($city_discount / ($city_price - $city_discount) * 100, 2);
+					$format_city_price = number_format($city_price - $city_discount, 0, '', ' ');
+					$format_city_discount = number_format($city_discount, 0, '', ' ');
 					$format_city_otkaz = number_format($city_otkaz, 0, '', ' ');
 					$format_city_debt = number_format($city_debt, 0, '', ' ');
 					echo "<tr>";
 					echo "<td class='nowrap'><b><a href='{$location}' ".( $SH_ID ? "" : "style='color: #D65C4F;'" ).">ВСЕГО:</a></b></td>";
 					echo "<td class='txtright'><b>{$format_city_price}</b></td>";
+					echo "<td class='txtright'><b>{$format_city_discount}</b><i class='fa fa-question-circle' aria-hidden='true' title='{$city_percent}%'></td>";
 					echo "<td class='txtright' style='color: #911;'><b>{$format_city_otkaz}</b></td>";
 					echo "<td class='txtright'><b>{$format_city_debt}</b></td>";
 					echo "</tr>";
@@ -464,31 +479,33 @@ else {
 			</table>
 			<br>
 			<br>
-			<b>Список отказов:</b><br>
+			<b>Список отказов/замены:</b><br>
 			<table>
 				<thead>
 					<tr>
 						<th>Код</th>
 						<th>Салон</th>
 						<th>Сумма</th>
-						<th>Примечание</th>
+						<th>Статус</th>
+						<th></th>
 					</tr>
 				</thead>
 				<tbody>
 					<?
-					$query = "SELECT OD.Code, SH.Shop, OT.old_sum, CONCAT(IF(OT.type = 1, 'Замена', 'Отказ'), '<br>', IFNULL(OT.comment, '')) comment
+					$query = "SELECT OD.OD_ID, OD.Code, SH.Shop, OT.old_sum, IF(OT.type = 1, 'Замена', 'Отказ') comment, OT.old_StartDate
 								FROM OrdersData OD
 								JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
-								JOIN Shops SH ON SH.SH_ID = OT.old_SH_ID AND CT_ID = {$CT_ID} AND retail = 1
-								WHERE OD.Del = 0 AND YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]}";
+								JOIN Shops SH ON SH.SH_ID = OT.old_SH_ID
+								WHERE OT.CT_ID = {$CT_ID} AND YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]}";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						$format_old_price = number_format($row["old_sum"], 0, '', ' ');
 						echo "<tr>";
-						echo "<td>{$row["Code"]}</td>";
+						echo "<td><b><a href='?CT_ID={$CT_ID}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b></td>";
 						echo "<td>{$row["Shop"]}</td>";
-						echo "<td class='txtright'>{$format_old_price}</td>";
+						echo "<td class='txtright'><b>{$format_old_price}</b></td>";
 						echo "<td style='color: #911;'>{$row["comment"]}</td>";
+						echo "<td><a href='#' onclick='if(confirm(\"Убрать заказ <b>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&old_StartDate={$row["old_StartDate"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
 					}
 					?>
@@ -714,7 +731,7 @@ else {
 				<th width="65">Оплата</th>
 				<th width="20">Т</th>
 				<th width="65">Остаток</th>
-				<th width="65">Отказ</th>
+<!--				<th width="65">Отказ</th>-->
 				<th width="70">Действие</th>
 			</tr>
 		</thead>
@@ -740,7 +757,7 @@ else {
 				<th width="65"></th>
 				<th width="20"></th>
 				<th width="65"></th>
-				<th width="65"></th>
+<!--				<th width="65"></th>-->
 				<th width="70"></th>
 			</tr>
 		</thead>
@@ -766,15 +783,15 @@ else {
 						,OP.terminal_payer
 						,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
 						,OD.confirmed
-						,IFNULL(OT.type, 0) type
-						,IFNULL(OT.comment, '') comment
-						,IFNULL(OT.old_SH_ID, OD.SH_ID) old_SH_ID
-						,IFNULL(OT.old_StartDate, OD.StartDate) old_StartDate
+						#,IFNULL(OT.type, 0) type
+						#,IFNULL(OT.comment, '') comment
+						#,IFNULL(OT.old_SH_ID, OD.SH_ID) old_SH_ID
+						#,IFNULL(OT.old_StartDate, OD.StartDate) old_StartDate
 				  FROM OrdersData OD
 				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
 				  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 				  LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE IFNULL(payment_sum, 0) != 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
-				  LEFT JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
+				  #LEFT JOIN (SELECT * FROM Otkazi WHERE CT_ID = {$CT_ID}) OT ON OT.OD_ID = OD.OD_ID
 				  LEFT JOIN (SELECT ODD.OD_ID
 								   ,IFNULL(PM.PT_ID, 2) PT_ID
 								   ,ODD.ODD_ID itemID
@@ -852,9 +869,9 @@ else {
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
 					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a></td>
 					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>
-					<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>
-					<td><span style='color: #911;'>{$otkaz_cell}</span></td>
-					<td>";
+					<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>";
+//					echo "<td><span style='color: #911;'>{$otkaz_cell}</span></td>";
+					echo "<td>";
 
 			// Если заказ заблокирован, то показываем глаз. Иначе - карандаш.
 			if( $disabled ) {
@@ -866,7 +883,7 @@ else {
 			// Если есть права на редактирование заказа и заказ не закрыт, то показываем кнопку разделения заказа и отказа
 			if( in_array('order_add', $Rights) and !$is_lock ) {
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' location='{$location}' payment='{$row["payment_sum"]}' type='{$row["type"]}' comment='{$row["comment"]}' old_SH_ID='{$row["old_SH_ID"]}' old_StartDate='{$row["old_StartDate"]}' old_sum='{$row["Price"]}' title='Пометить как отказ'><i class='fa fa-hand-paper-o fa-lg' aria-hidden='true'></i></a>";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' location='{$location}' payment='{$row["payment_sum"]}' old_sum='{$row["Price"]}' title='Пометить как отказ/замена.'><i class='fa fa-hand-paper-o fa-lg' aria-hidden='true'></i></a>";
 			}
 
 			echo "</td></tr>";
@@ -957,22 +974,14 @@ else {
 		</div>
 		<fieldset style="display: inline-block; width: calc(100% - 65px);">
 			<input type="hidden" name="OD_ID">
-			<input type="hidden" name="old_SH_ID">
-			<input type="hidden" name="old_StartDate">
 			<input type="hidden" name="old_sum">
 			<label for='type'>Тип отказа:</label>
 			<div class='btnset' id="type" style="display: inline-block;">
-				<label for="otkaz0" title="Отменить отказ">Отмена</label>
-				<input type="radio" name="type" id="otkaz0" value="0">
-				<label for="otkaz1">Замена</label>
-				<input type="radio" name="type" id="otkaz1" value="1">
-				<label for="otkaz2">Отказ</label>
-				<input type="radio" name="type" id="otkaz2" value="2">
+				<label for="otkaz1" style="width: 80px;">Замена</label>
+				<input required type="radio" name="type" id="otkaz1" value="1">
+				<label for="otkaz2" style="width: 80px;">Отказ</label>
+				<input required type="radio" name="type" id="otkaz2" value="2">
 			</div>
-			<br>
-			<br>
-			<label for="otkaz_comment">Комментарий:</label>
-			<input type="text" name="comment" id="otkaz_comment">
 		</fieldset>
 		<div>
 			<hr>
@@ -1008,7 +1017,7 @@ else {
 			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID+"&FA_ID=<?=$FA_ID?>&CT_ID=<?=$CT_ID?>", dataType: "script", async: false });
 
 			$('#add_payment').dialog({
-				width: 550,
+				width: 650,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
@@ -1023,15 +1032,15 @@ else {
 				var terminal_payer = $(this).parents('tr').find('input[type="text"].terminal_payer');
 				var terminal_payer_hidden = $(this).parents('tr').find('input[type="hidden"].terminal_payer');
 				var account = $(this).parents('tr').find('select.account');
-				var haccount = $(this).parents('tr').find('input.account');
+//				var haccount = $(this).parents('tr').find('input.account');
 				if( ch ) {
 					$(terminal_payer).prop('disabled', false);
 					$(terminal_payer).prop('required', true);
 					$(terminal_payer_hidden).val( $(terminal_payer).val() );
 					$(account).prop('disabled', true);
 					$(account).hide('fast');
-					$(haccount).prop('disabled', false);
-					$(haccount).show('fast');
+//					$(haccount).prop('disabled', false);
+//					$(haccount).show('fast');
 				}
 				else {
 					$(terminal_payer).prop('disabled', true);
@@ -1039,14 +1048,14 @@ else {
 					$(terminal_payer_hidden).val('');
 					$(account).prop('disabled', false);
 					$(account).show('fast');
-					$(haccount).prop('disabled', true);
-					$(haccount).hide('fast');
+//					$(haccount).prop('disabled', true);
+//					$(haccount).hide('fast');
 				}
 			});
 
-			$('#add_payment .terminal_payer').change(function() {
-				$(this).parent('td').find('input[type="hidden"]').val($(this).val());
-			});
+//			$('#add_payment .terminal_payer').change(function() {
+//				$(this).parent('td').find('input[type="hidden"]').val($(this).val());
+//			});
 			$('#add_payment .terminal').change();
 			return false;
 		});
@@ -1197,20 +1206,11 @@ else {
 		// Кнопка изменения статуса отказа
 		$('.order_otkaz_btn').click( function() {
 			var OD_ID = $(this).attr('id');
-			var old_SH_ID = $(this).attr('old_SH_ID');
-			var old_StartDate = $(this).attr('old_StartDate');
 			var old_sum = $(this).attr('old_sum');
-			var type = $(this).attr('type');
-			var comment = $(this).attr('comment');
 			var payment = $(this).attr('payment');
 
 			// Заполнение формы
-			$('#order_otkaz #otkaz'+type).prop('checked', true);
-			$('#order_otkaz input[type="radio"]').button('refresh');
-			$('#order_otkaz input[name="comment"]').val(comment);
 			$('#order_otkaz input[name="OD_ID"]').val(OD_ID);
-			$('#order_otkaz input[name="old_SH_ID"]').val(old_SH_ID);
-			$('#order_otkaz input[name="old_StartDate"]').val(old_StartDate);
 			$('#order_otkaz input[name="old_sum"]').val(old_sum);
 
 			if( payment != 0 ) {
@@ -1219,7 +1219,7 @@ else {
 			}
 			else {
 				$('#order_otkaz').dialog({
-					width: 500,
+					width: 400,
 					modal: true,
 					show: 'blind',
 					hide: 'explode',

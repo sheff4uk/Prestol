@@ -95,15 +95,13 @@
 		</div>
 		</fieldset>
 <?
-	if( in_array('order_add_confirm', $Rights) ) {
-?>
-		<div class="accordion">
-			<h3>Найдено <span></span> "Свободных"</h3>
-			<div>
-			</div>
-		</div>
-<?
-	}
+//	if( in_array('order_add_confirm', $Rights) ) {
+//		echo "<div class=\"accordion\">";
+//		echo "<h3>Найдено <span></span> \"Свободных\"</h3>";
+//		echo "<div>";
+//		echo "</div>";
+//		echo "</div>";
+//	}
 ?>
 		<div>
 			<hr>
@@ -229,15 +227,13 @@
 		</div>
 		</fieldset>
 <?
-	if( in_array('order_add_confirm', $Rights) ) {
-?>
-		<div class="accordion">
-			<h3>Найдено <span></span> "Свободных"</h3>
-			<div>
-			</div>
-		</div>
-<?
-	}
+//	if( in_array('order_add_confirm', $Rights) ) {
+//		echo "<div class=\"accordion\">";
+//		echo "<h3>Найдено <span></span> \"Свободных\"</h3>";
+//		echo "<div>";
+//		echo "</div>";
+//		echo "</div>";
+//	}
 ?>
 		<div>
 			<hr>
