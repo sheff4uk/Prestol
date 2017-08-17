@@ -24,16 +24,16 @@
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 
 		// Добавление заготовок
-		$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Tariff, Comment)
-				  VALUES ({$Worker}, {$Blank}, {$Amount}, {$Tariff}, '{$Comment}')";
+		$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Tariff, Comment, author)
+				  VALUES ({$Worker}, {$Blank}, {$Amount}, {$Tariff}, '{$Comment}', {$_SESSION["id"]})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$bs_id = mysqli_insert_id( $mysqli );
 
 		// Добавление связанных заготовок
 		foreach ($_POST["wd_id"] as $key => $value) {
 			$sub_amount = $_POST["amount"][$key] * $Amount * -1;
-			$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Comment, PBS_ID)
-					  VALUES ({$value}, {$_POST["bll_id"][$key]}, {$sub_amount}, '-=авто запись=-', {$bs_id})";
+			$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Comment, PBS_ID, author)
+					  VALUES ({$value}, {$_POST["bll_id"][$key]}, {$sub_amount}, '-=авто запись=-', {$bs_id}, {$_SESSION["id"]})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
