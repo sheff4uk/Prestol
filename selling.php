@@ -173,14 +173,14 @@
 		// Получаем из базы доп. сведения по заказу
 		$query = "SELECT OD.SH_ID, OD.StartDate FROM OrdersData OD WHERE OD.OD_ID = {$OD_ID}";
 		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$old_SH_ID = mysqli_result($subres,0,'SH_ID');
-		$old_StartDate = mysqli_result($subres,0,'StartDate');
+		$SH_ID = mysqli_result($subres,0,'SH_ID');
+		$StartDate = mysqli_result($subres,0,'StartDate');
 
 		if( $old_StartDate ) {
 			if( $old_sum ) {
 				$query = "INSERT INTO Otkazi
-					SET OD_ID = {$OD_ID}, CT_ID = {$CT_ID}, type = {$type}, old_SH_ID = {$old_SH_ID}, old_StartDate = '{$old_StartDate}', old_sum = {$old_sum}
-					ON DUPLICATE KEY UPDATE type = {$type}, old_SH_ID = {$old_SH_ID}, old_sum = {$old_sum}";
+					SET OD_ID = {$OD_ID}, type = {$type}, SH_ID = {$SH_ID}, StartDate = '{$StartDate}', old_sum = {$old_sum}
+					ON DUPLICATE KEY UPDATE type = {$type}, old_sum = {$old_sum}";
 				if( mysqli_query( $mysqli, $query ) ) {
 					$query = "UPDATE OrdersData SET StartDate = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена', ' Отказ')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 					if( mysqli_query( $mysqli, $query ) ) {
@@ -205,9 +205,10 @@
 	// Отмена отказа/замены
 	if( isset($_GET["del_otkaz"]) ) {
 		$OD_ID = $_GET["del_otkaz"];
-		$old_StartDate = $_GET["old_StartDate"];
+		$SH_ID = $_GET["SH_ID"];
+		$StartDate = $_GET["StartDate"];
 
-		$query = "DELETE FROM Otkazi WHERE OD_ID = {$OD_ID} AND CT_ID = {$CT_ID} AND old_StartDate = '{$old_StartDate}'";
+		$query = "DELETE FROM Otkazi WHERE OD_ID = {$OD_ID} AND SH_ID = {$SH_ID} AND StartDate = '{$StartDate}'";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
@@ -431,8 +432,7 @@ else {
 						// Получаем сумму отказов по салону
 						$query = "SELECT SUM(OT.old_sum) Price
 									FROM Otkazi OT
-									#JOIN OrdersData OD ON OD.OD_ID = OT.OD_ID
-									WHERE YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]} AND OT.old_SH_ID = {$row["SH_ID"]} AND OT.type = 2";
+									WHERE YEAR(OT.StartDate) = {$_GET["year"]} AND MONTH(OT.StartDate) = {$_GET["month"]} AND OT.SH_ID = {$row["SH_ID"]} AND OT.type = 2";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_otkaz = mysqli_result($subres,0,'Price');
 						$city_otkaz = $city_otkaz + $shop_otkaz;
@@ -484,6 +484,7 @@ else {
 				<thead>
 					<tr>
 						<th>Код</th>
+						<th>Дата</th>
 						<th>Салон</th>
 						<th>Сумма</th>
 						<th>Статус</th>
@@ -492,20 +493,29 @@ else {
 				</thead>
 				<tbody>
 					<?
-					$query = "SELECT OD.OD_ID, OD.Code, SH.Shop, OT.old_sum, IF(OT.type = 1, 'Замена', 'Отказ') comment, OT.old_StartDate
+					$query = "SELECT OD.OD_ID
+									,OD.Code
+									,SH.Shop
+									,OT.old_sum
+									,IF(OT.type = 1, 'Замена', 'Отказ') comment
+									,OT.StartDate
+									,DAY(OT.StartDate) day
+									,MONTH(OT.StartDate) month
+									,OT.SH_ID
 								FROM OrdersData OD
 								JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
-								JOIN Shops SH ON SH.SH_ID = OT.old_SH_ID
-								WHERE OT.CT_ID = {$CT_ID} AND YEAR(OT.old_StartDate) = {$_GET["year"]} AND MONTH(OT.old_StartDate) = {$_GET["month"]}";
+								JOIN Shops SH ON SH.SH_ID = OT.SH_ID AND SH.CT_ID = {$CT_ID}
+								WHERE YEAR(OT.StartDate) = {$_GET["year"]} AND MONTH(OT.StartDate) = {$_GET["month"]}";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						$format_old_price = number_format($row["old_sum"], 0, '', ' ');
 						echo "<tr>";
 						echo "<td><b><a href='?CT_ID={$CT_ID}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b></td>";
+						echo "<td><span class='nowrap'><b>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></span></td>";
 						echo "<td>{$row["Shop"]}</td>";
 						echo "<td class='txtright'><b>{$format_old_price}</b></td>";
 						echo "<td style='color: #911;'>{$row["comment"]}</td>";
-						echo "<td><a href='#' onclick='if(confirm(\"Убрать заказ <b>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&old_StartDate={$row["old_StartDate"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
+						echo "<td><a href='#' onclick='if(confirm(\"Убрать заказ <b>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
 					}
 					?>
@@ -791,7 +801,6 @@ else {
 				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
 				  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 				  LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE IFNULL(payment_sum, 0) != 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
-				  #LEFT JOIN (SELECT * FROM Otkazi WHERE CT_ID = {$CT_ID}) OT ON OT.OD_ID = OD.OD_ID
 				  LEFT JOIN (SELECT ODD.OD_ID
 								   ,IFNULL(PM.PT_ID, 2) PT_ID
 								   ,ODD.ODD_ID itemID
