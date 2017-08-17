@@ -424,11 +424,14 @@
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
 						LEFT JOIN Users USR ON USR.USR_ID = PL.author
 						LEFT JOIN FinanceAccount FA ON FA.FA_ID = PL.FA_ID
-						WHERE DATEDIFF(NOW(), PL.Date) <= {$datediff} AND PL.Pay <> 0";
+						WHERE
+							#DATEDIFF(NOW(), PL.Date) <= {$datediff} AND
+							PL.Pay <> 0";
 			if( isset($_GET["worker"]) ) {
 				$query .= " AND PL.WD_ID = {$_GET["worker"]}";
 			}
-			$query .= " ORDER BY PL.PL_ID DESC";
+			$query .= " ORDER BY PL.PL_ID DESC
+						LIMIT 100";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
