@@ -298,7 +298,7 @@
 			{
 				$color = ($row["Amount"] < 0) ? "#E74C3C" : "#16A085";
 				echo "<tr>";
-				echo "<td><b>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></td>";
+				echo "<td><b class='nowrap'>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></td>";
 				echo "<td>{$row["Time"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>";
 				echo "<td class='blank {$row["Bold"]}' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>";
