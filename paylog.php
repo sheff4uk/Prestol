@@ -357,7 +357,9 @@
 			<tbody>
 <?
 			$query = "SELECT BL.Balance
-							,DATE_FORMAT(DATE(BL.Date), '%d.%m.%Y') Date
+							#,DATE_FORMAT(DATE(BL.Date), '%d.%m.%Y') Date
+							,DAY(BL.Date) day
+							,MONTH(BL.Date) month
 							,TIME(BL.Date) Time
 					  FROM BalanceLog BL
 					  WHERE WD_ID = {$_GET["worker"]} AND DATEDIFF(NOW(), Date) <= {$datediff}
@@ -372,8 +374,8 @@
 				else
 					$color = '';
 				echo "<tr>";
-				echo "<td><span nowrap'>{$row["Date"]}</span></td>";
-				echo "<td><span nowrap'>{$row["Time"]}</span></td>";
+				echo "<td><span class='nowrap'><b>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></span></td>";
+				echo "<td><span class='nowrap'>{$row["Time"]}</span></td>";
 				echo "<td class='txtright'><span class='nowrap{$color}'>{$format_balance}</span></td>";
 				echo "</tr>";
 			}
