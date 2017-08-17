@@ -56,7 +56,7 @@
 				<input required type='number' name='Pay' min='0' style="text-align:right; width: 90px;">
 			</div>
 			<div id="wr_account">
-				<label>Счет:</label>
+				<label>Касса:</label>
 				<select name="account" id="account">
 					<option value="">-=Выберите счёт=-</option>
 					<optgroup label="Нал">
