@@ -1,5 +1,4 @@
 <?
-//	session_start();
 	include "config.php";
 	$title = 'Платежи';
 	include "header.php";
@@ -16,8 +15,6 @@
 
 	$year = date("Y");
 	$month = date("n");
-//	$lastyear = date("Y",strtotime("-1 months"));
-//	$lastmonth = date("n",strtotime("-1 months"));
 	$lastyear = $month == 1 ? $year - 1 : $year;
 	$lastmonth = $month == 1 ? 12 : $month - 1;
 
@@ -389,16 +386,17 @@
 	</div>
 
 	<div class="log-pay halfblock">
-		<h1>Движение денег</h1>
+		<h1>Журнал начислений и выплат</h1>
 		<table class='main_table'>
 			<thead>
 			<tr>
-				<th width='90'>Дата</th>
+				<th width='60'>Дата</th>
+				<th width='60'>Время</th>
 				<th width='30%'>Работник</th>
 				<th width='60'>Начислено</th>
 				<th width='60'>Выдано</th>
 				<th width='70%'>Примечание</th>
-				<th width='60'>Действие</th>
+<!--				<th width='30'></th>-->
 			</tr>
 			</thead>
 			<tbody>
@@ -406,7 +404,10 @@
 	<?
 			$query = "SELECT PL.PL_ID
 							,IFNULL(PL.Link, '') Link
-							,DATE_FORMAT(PL.ManDate, '%d.%m.%Y') ManDate
+							#,DATE_FORMAT(PL.ManDate, '%d.%m.%Y') ManDate
+							,DAY(PL.Date) day
+							,MONTH(PL.Date) month
+							,TIME(PL.Date) Time
 							,WD.Name Worker
 							,ABS(PL.Pay) Pay
 							,REPLACE(PL.Comment, '\r\n', '<br>') Comment
@@ -418,17 +419,18 @@
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
 						LEFT JOIN FinanceAccount FA ON FA.FA_ID = PL.FA_ID
-						WHERE DATEDIFF(NOW(), PL.ManDate) <= {$datediff} AND PL.Pay <> 0";
+						WHERE DATEDIFF(NOW(), PL.Date) <= {$datediff} AND PL.Pay <> 0";
 			if( isset($_GET["worker"]) ) {
 				$query .= " AND PL.WD_ID = {$_GET["worker"]}";
 			}
-			$query .= " ORDER BY PL.ManDate DESC, PL.Link, PL.PL_ID DESC";
+			$query .= " ORDER BY PL.PL_ID DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
 				$format_pay = number_format($row["Pay"], 0, '', ' ');
 				echo "<tr class='{$row["Archive"]}' id='pl{$row["PL_ID"]}'>";
-				echo "<td>{$row["ManDate"]}</td>";
+				echo "<td><span class='nowrap'><b>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></span></td>";
+				echo "<td><span>{$row["Time"]}</span></td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'><span><a href='?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>";
 				if ( $row["FA_ID"] ) {
 					$bank = $row["bank"] ? ' <i title="Безнал" class="fa fa-credit-card" aria-hidden="true"></i>' : '';
@@ -448,30 +450,31 @@
 					$pos = strpos($odd, '_');
 					$odd = substr($odd, 0, $pos);
 					if( $step == '0' ) {
-						$query = "SELECT IFNULL(OD.Code, 'Свободные') Code, IFNULL(OD.confirmed, 1) confirmed FROM OrdersDataBlank ODB LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID WHERE ODB.ODB_ID = {$odd}";
+						$query = "SELECT OD.OD_ID, IFNULL(OD.Code, 'Свободные') Code, IFNULL(OD.confirmed, 1) confirmed FROM OrdersDataBlank ODB LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID WHERE ODB.ODB_ID = {$odd}";
 					}
 					else {
-						$query = "SELECT IFNULL(OD.Code, 'Свободные') Code, IFNULL(OD.confirmed, 1) confirmed FROM OrdersDataDetail ODD LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID WHERE ODD.ODD_ID = {$odd}";
+						$query = "SELECT OD.OD_ID, IFNULL(OD.Code, 'Свободные') Code, IFNULL(OD.confirmed, 1) confirmed FROM OrdersDataDetail ODD LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID WHERE ODD.ODD_ID = {$odd}";
 					}
 					$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					$Code = mysqli_result($subres,0,'Code');
+					$OD_ID = mysqli_result($subres,0,'OD_ID');
 					$confirmed = mysqli_result($subres,0,'confirmed');
-					echo "<b>|{$Code}|</b> ";
+					echo "<a href='orderdetail.php?id={$OD_ID}' target='_blank' title='Посмотреть заказ.'><b>|{$Code}|</b></a> ";
 				}
 				echo "{$row["Comment"]}</span></td>";
-				echo "<td".( (strpos($row["Link"],"ODS") === 0 and $confirmed) ? " class='td_step step_confirmed'" : "" ).">";
-				if ($row["Link"] == '') {
-					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' ".($row["FA_ID"] ? "account='{$row["FA_ID"]}'" : "")." class='edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
-				}
-				if( strpos($row["Link"],"ODS") === 0 ) { // Если запись из этапов производства - редактируем
-					if( $step == '0' ) {
-						echo "<a href='#' odbid='{$odd}' plid='{$row["PL_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
-					}
-					else {
-						echo "<a href='#' id='{$odd}' plid='{$row["PL_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
-					}
-				}
-				echo "</td>";
+//				echo "<td".( (strpos($row["Link"],"ODS") === 0 and $confirmed) ? " class='td_step step_confirmed'" : "" ).">";
+//				if ($row["Link"] == '') {
+//					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' ".($row["FA_ID"] ? "account='{$row["FA_ID"]}'" : "")." class='edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
+//				}
+//				if( strpos($row["Link"],"ODS") === 0 ) { // Если запись из этапов производства - редактируем
+//					if( $step == '0' ) {
+//						echo "<a href='#' odbid='{$odd}' plid='{$row["PL_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
+//					}
+//					else {
+//						echo "<a href='#' id='{$odd}' plid='{$row["PL_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
+//					}
+//				}
+//				echo "</td>";
 				echo "</tr>";
 			}
 	?>
