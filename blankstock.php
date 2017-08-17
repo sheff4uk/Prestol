@@ -261,7 +261,7 @@
 				<th>Кол-во</th>
 				<th>Тариф</th>
 				<th>Примечание</th>
-<!--				<th>Действие</th>-->
+				<th></th>
 			</tr>
 			</thead>
 			<tbody>
@@ -280,8 +280,10 @@
 							,WD.WD_ID
 							,BL.BL_ID
 							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
+							,USR.Name
 						FROM BlankStock BS
 						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
+						LEFT JOIN Users USR ON USR.USR_ID = BS.author
 						LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
 						LEFT JOIN (
 							SELECT BL.BL_ID, BLL.BLL_ID
@@ -303,7 +305,7 @@
 				echo "<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$row["Amount"]}</b></td>";
 				echo "<td class='tariff txtright'>{$row["Tariff"]}</td>";
 				echo "<td class='comment'><pre>{$row["Comment"]}</pre></td>";
-//				echo "<td><a href='#' id='{$row["BS_ID"]}' class='button edit_blank' location='{$location}' title='Редактировать заготовки'><i class='fa fa-pencil fa-lg'></i></a></td>";
+				echo "<td>".($row["Name"] ? "<i class='fa fa-lg fa-user' aria-hidden='true' title='{$row["Name"]}' style='cursor: pointer;'></i>" : "")."</td>";
 				echo "</tr>";
 			}
 	?>

@@ -398,7 +398,8 @@
 				<th width='60'>Начислено</th>
 				<th width='60'>Выдано</th>
 				<th width='70%'>Примечание</th>
-				<th width='30'></th>
+				<th width='25'></th>
+				<th width='25'></th>
 			</tr>
 			</thead>
 			<tbody>
@@ -418,8 +419,10 @@
 							,IF(PL.Archive = 1, 'pl-archive', '') Archive
 							,FA.bank
 							,FA.FA_ID
+							,USR.Name
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
+						LEFT JOIN Users USR ON USR.USR_ID = PL.author
 						LEFT JOIN FinanceAccount FA ON FA.FA_ID = PL.FA_ID
 						WHERE DATEDIFF(NOW(), PL.Date) <= {$datediff} AND PL.Pay <> 0";
 			if( isset($_GET["worker"]) ) {
@@ -469,6 +472,7 @@
 					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' pay = '{$row["Pay"]}' account='{$row["FA_ID"]}' comment='{$row["Comment"]}' class='edit_pay' location='{$location}' title='Редактировать выдачу.'><i class='fa fa-pencil fa-lg'></i></a>";
 				}
 				echo "</td>";
+				echo "<td>".($row["Name"] ? "<i class='fa fa-lg fa-user' aria-hidden='true' title='{$row["Name"]}' style='cursor: pointer;'></i>" : "")."</td>";
 				echo "</tr>";
 			}
 	?>
