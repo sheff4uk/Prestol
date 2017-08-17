@@ -370,7 +370,7 @@
 
 		// Форма добавления часов
 		$('.tscell').click(function() {
-			var workername = $(this).parents('tr').find('.worker > a').html();
+			var workername = $(this).parents('tr').find('.worker a ').html();
 			var workertariffs = $(this).parents('tr').find('.tariffs').html();
 			var date = $(this).attr('id');
 			var worker = $(this).parents('tr').find('.worker').attr('val');

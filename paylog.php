@@ -396,7 +396,7 @@
 				<th width='60'>Начислено</th>
 				<th width='60'>Выдано</th>
 				<th width='70%'>Примечание</th>
-<!--				<th width='30'></th>-->
+				<th width='30'></th>
 			</tr>
 			</thead>
 			<tbody>
@@ -462,19 +462,11 @@
 					echo "<a href='orderdetail.php?id={$OD_ID}' target='_blank' title='Посмотреть заказ.'><b>|{$Code}|</b></a> ";
 				}
 				echo "{$row["Comment"]}</span></td>";
-//				echo "<td".( (strpos($row["Link"],"ODS") === 0 and $confirmed) ? " class='td_step step_confirmed'" : "" ).">";
-//				if ($row["Link"] == '') {
-//					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' date='{$row["ManDate"]}' ".($row["FA_ID"] ? "account='{$row["FA_ID"]}'" : "")." class='edit_pay' location='{$location}' title='Редактировать платеж'><i class='fa fa-pencil fa-lg'></i></a>";
-//				}
-//				if( strpos($row["Link"],"ODS") === 0 ) { // Если запись из этапов производства - редактируем
-//					if( $step == '0' ) {
-//						echo "<a href='#' odbid='{$odd}' plid='{$row["PL_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
-//					}
-//					else {
-//						echo "<a href='#' id='{$odd}' plid='{$row["PL_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}' title='Редактировать этапы'><i class='fa fa-pencil fa-lg'></i></a>";
-//					}
-//				}
-//				echo "</td>";
+				echo "<td>";
+				if ( $row["FA_ID"] ) {
+					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' pay = '{$row["Pay"]}' account='{$row["FA_ID"]}' comment='{$row["Comment"]}' class='edit_pay' location='{$location}' title='Редактировать выдачу.'><i class='fa fa-pencil fa-lg'></i></a>";
+				}
+				echo "</td>";
 				echo "</tr>";
 			}
 	?>

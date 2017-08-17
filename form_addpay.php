@@ -1,10 +1,11 @@
 <?
-	// Добавление платежа
+	// Добавление платежа/редактирование выдачи
 	if( isset($_POST["Pay"]) )
 	{
 		include "config.php";
 		include "header.php";
 
+		$PL_ID = $_POST["pl_id"];
 		$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
 		$Pay = $_POST["Pay"] <> "" ? $_POST["Pay"] : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
@@ -12,10 +13,17 @@
 		$location = $_POST["location"];
 		$account = $_POST["account"] ? $_POST["account"] : "NULL";
 
-		// Добавление
-		$query = "INSERT INTO PayLog(WD_ID, Pay, Comment, FA_ID, author)
-				  VALUES ({$Worker}, {$Sign}{$Pay}, '{$Comment}', {$account}, {$_SESSION['id']})";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( $PL_ID ) { //Редактирование выдачи
+			$query = "UPDATE PayLog
+						SET WD_ID = {$Worker}, Pay = {$Sign}{$Pay}, Comment = '{$Comment}', FA_ID = {$account}, author = {$_SESSION['id']}
+						WHERE PL_ID = {$PL_ID}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+		else { // Добавление
+			$query = "INSERT INTO PayLog(WD_ID, Pay, Comment, FA_ID, author)
+					  VALUES ({$Worker}, {$Sign}{$Pay}, '{$Comment}', {$account}, {$_SESSION['id']})";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
@@ -26,6 +34,7 @@
 <div id='addpay' class="addproduct" style='display:none'>
 	<form method="post" action="form_addpay.php">
 		<fieldset>
+			<input type='hidden' name='pl_id'>
 			<input type='hidden' name='sign'>
 			<input type='hidden' name='location'>
 			<div>
@@ -95,29 +104,38 @@
 
 		// Форма добавления платежа
 		$('.edit_pay').click(function() {
+			var id = $(this).attr('id');
 			var location = $(this).attr('location');
 			var sign = $(this).attr('sign');
 			var account = $(this).attr('account');
 			var worker = $(this).attr('worker');
+			var pay = $(this).attr('pay');
+			var comment = $(this).attr('comment');
 
 			// Очистка диалога
-			$( '#addpay input[type="number"], #addpay select, #addpay input[type="text"]' ).val('');
-			$('#addpay #worker').val('').trigger('change');
+			$( '#addpay input[type="number"], #addpay select, #addpay input[type="text"], #addpay input[type="hidden"]' ).val('');
+			$('#addpay #worker').trigger('change');
 
 			// Заполнение
-			$('#addpay input[name="sign"]').val(sign);
+			$('#addpay input[name="pl_id"]').val(id);
 			$('#addpay input[name="location"]').val(location);
+			$('#addpay input[name="sign"]').val(sign);
+			$('#addpay select[name="account"]').val(account);
+			$('#addpay select[name="Worker"]').val(worker).trigger('change');
+			$('#addpay input[name="Pay"]').val(pay);
+			$('#addpay input[name="Comment"]').val(comment);
 
-			if( typeof worker !== "undefined" ) {
-				$('#addpay select[name="Worker"]').val(worker).trigger('change');
-			}
 
-			if( typeof $(this).attr('comment') !== "undefined" ) { // Добавление премии из табеля
-				var pay = $(this).attr('pay');
-				var comment = $(this).attr('comment');
-				$('#addpay input[name="Pay"]').val(pay);
-				$('#addpay input[name="Comment"]').val(comment);
-			}
+//			if( typeof worker !== "undefined" ) {
+//				$('#addpay select[name="Worker"]').val(worker).trigger('change');
+//			}
+
+//			if( typeof $(this).attr('comment') !== "undefined" ) { // Добавление премии из табеля
+//				var pay = $(this).attr('pay');
+//				var comment = $(this).attr('comment');
+//				$('#addpay input[name="Pay"]').val(pay);
+//				$('#addpay input[name="Comment"]').val(comment);
+//			}
 
 			// Вызов формы
 			$('#addpay').dialog({

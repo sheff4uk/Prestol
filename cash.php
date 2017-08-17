@@ -623,7 +623,7 @@
 						</div>
 					</th>
 
-					<th width="120" class="th_filter">
+					<th width="105" class="th_filter">
 						<div class="th_name" id="account_label">Все счета</div>
 						<i class="fa fa-filter fa-lg"></i>
 						<div id="account_filter" class="filter_block" style="width: 200px;">
@@ -662,7 +662,7 @@
 						</div>
 					</th>
 
-					<th width="100" class="th_filter">
+					<th width="115" class="th_filter">
 						<div class="th_name" id="author_label">Все авторы</div>
 						<i class="fa fa-filter fa-lg"></i>
 						<div id="author_filter" class="filter_block" style="width: 200px;">
