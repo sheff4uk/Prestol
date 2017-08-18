@@ -71,6 +71,8 @@
 
 	//Получаем статус заказов (В работе, Свободные, Отгруженные, Удаленные)
 	$archive = $_GET["archive"] ? $_GET["archive"] : 0;
+
+	echo $id_list;
 ?>
 	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
 	<div class="coupon">
