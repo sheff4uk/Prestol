@@ -14,31 +14,7 @@
 		echo "<title>{$_GET["print_title"]}</title>";
 	}
 	?>
-<!--
-	<script type="text/javascript" src="../js/prototype.js"></script>
-	<script type="text/javascript">
-		//page height in px
-		//thisPageTotal is the total of pixels on the current page, in px
-		pageHeight = 1000;
-		thisPageTotal = 0;
 
-		Event.observe(window, 'load', function(){
-			$$('.coupon').each(function(el){
-				var layout = el.getLayout();
-				thisPageTotal += parseInt(layout.get('margin-box-height'));
-				if(thisPageTotal > pageHeight) {
-					thisPageTotal = parseInt(layout.get('margin-box-height'));
-					var pageBreak = new Element('div', {
-						'class': 'pagebreak'
-					});
-					el.insert({before: pageBreak});
-				}
-				//this shows the current amount of px on the current page
-//				el.update(thisPageTotal);
-			});
-		});
-	</script>
--->
 	<style>
 		.pagebreak {
 			page-break-after: always;
@@ -92,6 +68,9 @@
 	if(isset($_GET["Chairs"])) $product_types .= ",1";
 	if(isset($_GET["Others"])) $product_types .= ",0";
 //	$product_types = substr($product_types, 1);
+
+	//Получаем статус заказов (В работе, Свободные, Отгруженные, Удаленные)
+	$archive = $_GET["archive"] ? $_GET["archive"] : 0;
 ?>
 	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
 	<div class="coupon">
@@ -102,7 +81,7 @@
 					if(isset($_GET["CD"])) echo "<td width='50'>Код</td>";
 					if(isset($_GET["CN"])) echo "<td width='9%'>Заказчик</td>";
 					if(isset($_GET["SD"])) echo "<td width='4%'>Дата продажи</td>";
-					if(isset($_GET["ED"])) echo "<td width='4%'>Дата сдачи</td>";
+					if(isset($_GET["ED"])) echo "<td width='4%'>Дата ".($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))."</td>";
 					if(isset($_GET["SH"])) echo "<td width='7%'>Салон</td>";
 					if(isset($_GET["ON"])) echo "<td width='5%'>№ квитанции</td>";
 					if(isset($_GET["Z"])) echo "<td width='20%'>Заказ</td>";
@@ -123,8 +102,7 @@
 					,IFNULL(OD.Code, '') Code
 					,IFNULL(OD.ClientName, '') ClientName
 					,DATE_FORMAT(OD.StartDate, '%d.%m<br>%Y') StartDate
-					,DATE_FORMAT(OD.EndDate, '%d.%m<br>%Y') EndDate
-					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
+					,DATE_FORMAT(IFNULL(OD.DelDate, IFNULL(OD.ReadyDate, OD.EndDate)), '%d.%m<br>%Y') EndDate
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
 					,OD.OrderNumber
 					,ODD_ODB.Zakaz
@@ -135,12 +113,12 @@
 					,IFNULL(ODD_ODB.Steps, '') Steps
 					,IFNULL(OD.Comment, '') Comment
 					,IF(OD.SH_ID IS NULL, 1, 0) is_free
-			  FROM OrdersData OD
-			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-			  LEFT JOIN (SELECT ODD.OD_ID
-			  				   ,ODD.ODD_ID itemID
-			  				   ,IFNULL(PM.PT_ID, 2) PT_ID
+				FROM OrdersData OD
+				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+				LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+				LEFT JOIN (SELECT ODD.OD_ID
+							   ,ODD.ODD_ID itemID
+							   ,IFNULL(PM.PT_ID, 2) PT_ID
 							   ,CONCAT('<b>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
 							   ,ODD.Patina
 							   ,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
@@ -191,10 +169,20 @@
 						WHERE ODB.Del = 0
 						GROUP BY ODB.ODB_ID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-			  WHERE OD.OD_ID IN ({$id_list})
-			  AND ODD_ODB.PT_ID IN({$product_types})
-			  #GROUP BY ODD_ODB.itemID
-			  ORDER BY is_free, OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
+				WHERE OD.OD_ID IN ({$id_list})
+				AND ODD_ODB.PT_ID IN({$product_types})";
+
+				if($archive == "2") {
+					$query .= " ORDER BY OD.ReadyDate DESC, ";
+				}
+				elseif($archive == "3") {
+					$query .= " ORDER BY OD.DelDate DESC, ";
+				}
+				else {
+					$query .= " ORDER BY OD.AddDate, ";
+				}
+
+				$query .= "SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	// Получаем количество изделий в заказе для группировки ячеек
@@ -212,8 +200,19 @@
 				) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 				WHERE OD.OD_ID IN ({$id_list})
 				AND ODD_ODB.PT_ID IN({$product_types})
-				GROUP BY OD.OD_ID
-				ORDER BY is_free, OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
+				GROUP BY OD.OD_ID";
+
+				if($archive == "2") {
+					$query .= " ORDER BY OD.ReadyDate DESC, ";
+				}
+				elseif($archive == "3") {
+					$query .= " ORDER BY OD.DelDate DESC, ";
+				}
+				else {
+					$query .= " ORDER BY OD.AddDate, ";
+				}
+
+				$query .= "SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$odid = 0;
 	while( $row = mysqli_fetch_array($res) )
@@ -240,14 +239,7 @@
 		if(isset($_GET["CD"]) and $span) echo "<td width='50' style='{$border}' rowspan='{$cnt}' class='nowrap'><b>{$row["Code"]}</b></td>";
 		if(isset($_GET["CN"]) and $span) echo "<td width='9%' style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}</td>";
 		if(isset($_GET["SD"]) and $span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["StartDate"]}</td>";
-		if(isset($_GET["ED"]) and $span) {
-			if( $archive ) {
-				echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["ReadyDate"]}</td>";
-			}
-			else {
-				echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["EndDate"]}</td>";
-			}
-		}
+		if(isset($_GET["ED"]) and $span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["EndDate"]}</td>";
 		if(isset($_GET["SH"]) and $span) echo "<td width='7%' style='{$border}' rowspan='{$cnt}'>{$row["Shop"]}</td>";
 		if(isset($_GET["ON"]) and $span) echo "<td width='5%' style='{$border}' rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
 		if(isset($_GET["Z"])) echo "<td width='20%' style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";

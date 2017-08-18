@@ -602,6 +602,7 @@
 	<div class="wr_main_table_head"> <!-- Обертка шапки -->
 	<table class="main_table">
 		<input type="hidden" name="shpid" value="<?=$_GET["shpid"]?>">
+		<input type="hidden" name="archive" value="<?=$archive?>">
 		<input type="text" id="print_title" name="print_title" placeholder="Введите заголовок таблицы">
 		<div id="print_products">
 			<input type="checkbox" value="1" checked name="Tables" id="Tables" class="print_products"><label for="Tables">Печатать столы</label>
@@ -747,8 +748,6 @@
 					,IFNULL(OD.ClientName, '') ClientName
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 					,DATE_FORMAT(IFNULL(OD.DelDate, IFNULL(OD.ReadyDate, OD.EndDate)), '%d.%m.%Y') EndDate
-					#,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
-					#,DATE_FORMAT(OD.DelDate, '%d.%m.%Y') DelDate
 					,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
 					,IFNULL(OD.SH_ID, 0) SH_ID
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
