@@ -369,6 +369,10 @@
 					<input type='text' class='clienttags' name='ClientName' size='38'>
 				</div>
 				<div>
+					<label>№ квитанции:</label>
+					<input type='text' name='OrderNumber' autocomplete='off'>
+				</div>
+				<div>
 					<label>Дата продажи:</label>
 					<input type='text' name='StartDate' class='date from' size='12' value='<?//=date("d.m.Y") ?>' date='<?//=date("d.m.Y") ?>' autocomplete='off'>
 				</div>
@@ -396,10 +400,6 @@
 						}
 						?>
 					</select>
-				</div>
-				<div>
-					<label>№ квитанции:</label>
-					<input type='text' name='OrderNumber' autocomplete='off'>
 				</div>
 				<div>
 					<p style='color: #911;'>ВНИМАНИЕ! Патина указывается у каждого изделия персонально в специальной графе "патина".</p>
