@@ -5,7 +5,7 @@
 
 switch( $_GET["do"] )
 {
-	// Фильтр таблици денежных операций
+	// Фильтр таблицы денежных операций
 	case "cash":
 		$_SESSION["cash_type"] = $_GET["cash_type"];			// Тип
 		$_SESSION["cash_sum_from"] = $_GET["cash_sum_from"];	// Сумма от

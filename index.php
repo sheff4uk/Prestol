@@ -474,7 +474,8 @@
 			<th width="5%"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>' class='<?=($_SESSION["f_SD"] != "") ? "filtered" : ""?>'></th>
 			<th width="5%"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>' class='<?=($_SESSION["f_ED"] != "") ? "filtered" : ""?>'></th>
 			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags <?=($_SESSION["f_SH"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_SH"] ?>'></th>
-			<th width="5%"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>' class="<?=($_SESSION["f_ON"] != "") ? "filtered" : ""?>"></th>
+<!--			<th width="40"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>' class="<?=($_SESSION["f_ON"] != "") ? "filtered" : ""?>"></th>-->
+			<th width="40"></th>
 			<th width="25%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class="<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>"></th>
 			<th width="15%" id="MT_filter" class="select2_filter"><input type="text" disabled style="width: 100%;" class="<?=( $_SESSION["f_M"] != "" ? "filtered" : "" )?>"><div id="material-select" style=""><select name="MT_ID[]" multiple style="width: 100%;"></select></div></th>
 			<th width="15%" style="font-size: 0;">
@@ -612,11 +613,11 @@
 		<thead>
 		<tr>
 			<th width="53"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
-			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик</label></th>
+			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик<br>Квитанция</label></th>
 			<th width="5%"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
 			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br><?=($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))?></label></th>
 			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
-			<th width="5%"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">№<br>квитанции</label></th>
+			<th width="40"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">Мест</label></th>
 			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
 			<th width="15%"><input type="checkbox" disabled value="8" checked name="M" class="print_col" id="M"><label for="M">Материал</label></th>
 			<th width="15%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
@@ -646,7 +647,7 @@
 			<th width="5%"></th>
 			<th width="5%"></th>
 			<th width="5%"></th>
-			<th width="5%"></th>
+			<th width="40"></th>
 			<th width="25%"></th>
 			<th width="15%"></th>
 			<th width="15%"></th>
@@ -864,7 +865,7 @@
 				  $query .= " AND OD.Code LIKE '%{$_SESSION["f_CD"]}%'";
 			  }
 			  if( $_SESSION["f_CN"] != "" ) {
-				  $query .= " AND OD.ClientName LIKE '%{$_SESSION["f_CN"]}%'";
+				  $query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%')";
 			  }
 			  if( $_SESSION["f_SD"] != "" ) {
 				  $query .= " AND DATE_FORMAT(OD.StartDate, '%d.%m.%Y') LIKE '%{$_SESSION["f_SD"]}%'";
@@ -879,9 +880,9 @@
 				  }
 				  $query .= ")";
 			  }
-			  if( $_SESSION["f_ON"] != "" ) {
-				  $query .= " AND OD.OrderNumber LIKE '%{$_SESSION["f_ON"]}%'";
-			  }
+//			  if( $_SESSION["f_ON"] != "" ) {
+//				  $query .= " AND OD.OrderNumber LIKE '%{$_SESSION["f_ON"]}%'";
+//			  }
 			  if( $_SESSION["f_N"] != "" ) {
 				  $query .= " AND OD.Comment LIKE '%{$_SESSION["f_N"]}%'";
 			  }
@@ -950,11 +951,12 @@
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'>{$row["Code"]}</span></td>";
-		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}</span></td>";
+		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>";
 		echo "<td><span>{$row["StartDate"]}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
 		echo "<td class='".( (!$disabled and $row["SHP_ID"] == 0) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
-		echo "<td><span>{$row["OrderNumber"]}</span></td>";
+		//echo "<td><span>{$row["OrderNumber"]}</span></td>";
+		echo "<td><span></span></td>";
 		if( $disabled ) {
 			echo "<td><span class='nowrap'>{$row["Zakaz_lock"]}</span></td>";
 		}
@@ -978,7 +980,7 @@
 					if($row["Name"]) $title .= " ({$row["Name"]})";
 					break;
 			}
-		echo " class='painting_cell ".(!$disabled ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
+		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 ) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
 		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".($disabled ? "step_disabled" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		// Если заказ принят
