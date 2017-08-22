@@ -362,6 +362,7 @@
 			<th>Заказчик</th>
 			<th>Дата продажи</th>
 			<th>Дата сдачи</th>
+			<th>Отгружено</th>
 			<th>Салон</th>
 			<th>№ квитанции</th>
 			<th>Цвет</th>
@@ -374,6 +375,7 @@
 					,OD.ClientName
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 					,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
+					,IFNULL(DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y'), 'нет') ReadyDate
 					,IFNULL(OD.SH_ID, 0) SH_ID
 					,OD.OrderNumber
 					,OD.Color
@@ -394,6 +396,7 @@
 	$ClientName = mysqli_result($res,0,'ClientName');
 	$StartDate = mysqli_result($res,0,'StartDate');
 	$EndDate = mysqli_result($res,0,'EndDate');
+	$ReadyDate = mysqli_result($res,0,'ReadyDate');
 	$Shop = mysqli_result($res,0,'SH_ID');
 	$OrderNumber = mysqli_result($res,0,'OrderNumber');
 	$Color = mysqli_result($res,0,'Color');
@@ -411,6 +414,7 @@
 			<td><input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>' <?=($disabled ? "disabled" : "")?>></td>
 			<td><input type='text' name='StartDate' class='date from' value='<?=$StartDate?>' date='<?=$StartDate?>' <?=($disabled ? "disabled" : "")?>></td>
 			<td><input type='text' name='EndDate' class='date to' value='<?=$EndDate?>' <?=($disabled ? "disabled" : "")?>></td>
+			<td style='text-align: center;'><?=$ReadyDate?></td>
 			<td>
 				<div style='box-shadow: 0px 0px 5px 5px <?=$CTColor?>;'>
 				<select required name='Shop' <?=($disabled ? "disabled" : "")?>>
