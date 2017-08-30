@@ -818,7 +818,7 @@ case "add_payment":
 					,OP.payment_sum
 					,IF(IFNULL(OP.terminal_payer, '') = '', 0, 1) terminal
 					,OP.terminal_payer
-					,IFNULL(OP.CT_ID, 0) CT_ID
+					#,IFNULL(OP.CT_ID, 0) CT_ID
 					,IFNULL(OP.FA_ID, 0) FA_ID
 					,USR.Name
 					,IF(OP.FA_ID IS NOT NULL AND OP.terminal_payer IS NULL, FA.name, '') account
