@@ -792,21 +792,19 @@ case "shipment":
 // Форма добавления платежа к заказу
 case "add_payment":
 	$OD_ID = $_GET["OD_ID"];
-	$FA_ID = $_GET["FA_ID"];
-	$CT_ID = $_GET["CT_ID"];
 	$html = "";
 
-	// Узнаем фамилию заказчика и дату продажи
-	$query = "SELECT ClientName, DATE_FORMAT(StartDate, '%d.%m.%Y') StartDate FROM OrdersData WHERE OD_ID = {$OD_ID}";
+	// Узнаем фамилию заказчика, салон, счет терминала в салоне
+	$query = "SELECT OD.ClientName, SH.SH_ID, SH.Shop, SH.FA_ID FROM OrdersData OD JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD.OD_ID = {$OD_ID}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$ClientName = mysqli_result($res,0,'ClientName');
-	$StartDate = mysqli_result($res,0,'StartDate');
-
-//	$html = "<p style='color: #911;'>В случае, когда нужно совершить возврат денег по заказу. Он так же записывается в эту таблицу со знаком минус.</p>";
+	$SH_ID = mysqli_result($res,0,'SH_ID');
+	$Shop = mysqli_result($res,0,'Shop');
+	$FA_ID = mysqli_result($res,0,'FA_ID');
 
 	$html .= "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 	$html .= "<table><thead><tr>";
-	$html .= "<th style='width: 56px;'></th>";
+	$html .= "<th style='width: 56px;'>Касса</th>";
 	$html .= "<th>Дата</th>";
 	$html .= "<th>Сумма</th>";
 	$html .= "<th>Терминал</th>";
@@ -824,106 +822,53 @@ case "add_payment":
 					,IFNULL(OP.FA_ID, 0) FA_ID
 					,USR.Name
 					,IF(OP.FA_ID IS NOT NULL AND OP.terminal_payer IS NULL, FA.name, '') account
+					,SH.Shop
 				FROM OrdersPayment OP
 				LEFT JOIN Users USR ON USR.USR_ID = OP.author
 				LEFT JOIN FinanceAccount FA ON FA.FA_ID = OP.FA_ID
+				LEFT JOIN Shops SH ON SH.SH_ID = OP.SH_ID
 				WHERE OD_ID = {$OD_ID} AND IFNULL(payment_sum, 0) != 0
 				ORDER BY OP_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-//	$payment_count = 0; // Счетчик кол-ва платежей
-//	$factory_payment = "<i class='fa fa-money' aria-hidden='true' title='Оплата на производстве'></i>";
 
 	while( $row = mysqli_fetch_array($res) ) {
 		$html .= "<tr>";
-//		if( (in_array('order_add_confirm', $Rights) and $row["FA_ID"]) or (!in_array('order_add_confirm', $Rights) and $row["CT_ID"] == $CT_ID) ) {
-//			$html .= "<td>";
-//			// Если админ, то показываем селект со счетами
-//			if( in_array('order_add_confirm', $Rights) ) {
-//				//$factory_payment_select = "<select style='width: 50px;' class='account' name='FA_ID[]'><option value=''>Салон</option>";
-//				$factory_payment_select = "<select style='width: 50px;' class='account' name='FA_ID[]'>";
-//				$query = "SELECT FA_ID, name, IF(FA_ID = {$row["FA_ID"]}, 'selected', '') selected FROM FinanceAccount";
-//				$subres = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-//				while( $subrow = mysqli_fetch_array($subres) ) {
-//					$factory_payment_select .= "<option {$subrow["selected"]} value='{$subrow["FA_ID"]}'>{$subrow["name"]}</option>";
-//				}
-//				$factory_payment_select .= "</select>";
-//				$html .= $factory_payment_select;
-//			}
-//			else {
-//				$html .= "<input type='hidden' class='account' name='FA_ID[]' value='{$row["FA_ID"]}'>";
-//			}
-//			$html .= "</td>";
-//			$html .= "<td><input type='hidden' name='OP_ID[]' value='{$row["OP_ID"]}'><input type='text' class='date' name='payment_date[]' value='{$row["payment_date"]}' readonly></td>";
-//			$html .= "<td><input type='number' class='payment_sum' name='payment_sum[]' value='{$row["payment_sum"]}'></td>";
-//			if( $FA_ID ) {
-//				$html .= "<td><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal'></td>";
-//				$html .= "<td><input type='text' class='terminal_payer' value='{$row["terminal_payer"]}'><input type='hidden' class='terminal_payer' name='terminal_payer[]' value='{$row["terminal_payer"]}'></td>";
-//			}
-//			else {
-//				$html .= "<td style='display: none;'><input ".($row["terminal"] ? 'checked' : '')." type='checkbox' class='terminal'></td>";
-//				$html .= "<td style='display: none;'><input type='text' class='terminal_payer' value='{$row["terminal_payer"]}'><input type='hidden' class='terminal_payer' name='terminal_payer[]' value='{$row["terminal_payer"]}'></td>";
-//			}
-//
-//			$payment_count++;
-//		}
-//		else {
-//			// Пояснение к платежу
-//			if( in_array('order_add_confirm', $Rights) ) {
-//				$payment_title = "Оплата в салоне";
-//			}
-//			elseif( $row["CT_ID"] != $CT_ID ) {
-//				$payment_title = "Оплата в другом салоне";
-//			}
-//			else {
-//				$payment_title = "Оплата на производстве";
-//			}
-			if( $row["account"] ) {
-				$html .= "<td><i class='fa fa-money' aria-hidden='true' title='Оплата на производстве ({$row["account"]}).'></i></td>";
-			}
-			else {
-				$html .= "<td></td>";
-			}
-			$html .= "<td>{$row["payment_date"]}</td>";
-			$format_payment_sum = number_format($row["payment_sum"], 0, '', ' ');
-			$color = $row["payment_sum"] > 0 ? "#16A085" : "#E74C3C";
-			$html .= "<td class='txtright'><b style='color: {$color};'>{$format_payment_sum}</b></td>";
-//			if( $FA_ID ) {
-				$html .= "<td>".($row["terminal"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
-				$html .= "<td>{$row["terminal_payer"]}</td>";
-//			}
-//			else {
-//				$html .= "<td style='display: none;'>".($row["terminal"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
-//				$html .= "<td style='display: none;'>{$row["terminal_payer"]}</td>";
-//			}
-//		}
+		if( $row["account"] ) {
+			$html .= "<td class='nowrap'><b>{$row["account"]}</b></td>";
+		}
+		else {
+			$html .= "<td class='nowrap'>".($row["terminal"] ? "" : $row["Shop"])."</td>";
+		}
+		$html .= "<td>{$row["payment_date"]}</td>";
+		$format_payment_sum = number_format($row["payment_sum"], 0, '', ' ');
+		$color = $row["payment_sum"] > 0 ? "#16A085" : "#E74C3C";
+		$html .= "<td class='txtright'><b style='color: {$color};'>{$format_payment_sum}</b></td>";
+		$html .= "<td>".($row["terminal"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
+		$html .= "<td>{$row["terminal_payer"]}</td>";
 		$html .= "<td>{$row["Name"]}</td>";
 		$html .= "</tr>";
 	}
-//	if( $payment_count == 0 and $StartDate != '' ) {
-//		$payment_date = $StartDate;
-//	}
-//	else {
-		$payment_date = date('d.m.Y');
-//	}
+	$payment_date = date('d.m.Y');
 	$html .= "<tr style='background: #6f6;'>";
 
-	if( in_array('order_add_confirm', $Rights) ) {
-		//$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'><option value=''>Салон</option>";
-		$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'>";
-		$query = "SELECT FA_ID, name, IF(FA_ID = 1, 'selected', '') selected FROM FinanceAccount";
-		$subres = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-		while( $subrow = mysqli_fetch_array($subres) ) {
-			$html .= "<option {$subrow["selected"]} value='{$subrow["FA_ID"]}'>{$subrow["name"]}</option>";
+	$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'>";
+	$html .= "<option value=''>{$Shop}</option>";
+	if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
+		$query = "SELECT FA.FA_ID, FA.name FROM FinanceAccount FA";
+		$query .= in_array('finance_account', $Rights) ? " WHERE FA.USR_ID = {$_SESSION["id"]}" : "";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+		while( $row = mysqli_fetch_array($res) ) {
+			$html .= "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
 		}
-		$html .= "</select></td>";
 	}
-	else {
-		$html .= "<td><input type='hidden' name='CT_ID_add' value='{$CT_ID}'></td>";
-	}
+	$html .= "</select>";
+	$html .= "<input type='hidden' name='SH_ID_add' value='{$SH_ID}'></td>";
 
-	$html .= "<td><input type='text' class='date' name='payment_date_add' value='{$payment_date}' readonly></td>";
+	$html .= "<td><input type='text' class='' style='width: 90px; text-align: center;' name='payment_date_add' value='{$payment_date}' readonly></td>";
+
 	$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
-	if( $FA_ID and !in_array('order_add_confirm', $Rights) ) {
+
+	if( $FA_ID ) {
 		$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
 		$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
 	}
@@ -931,6 +876,7 @@ case "add_payment":
 		$html .= "<td><input style='display: none;' type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
 		$html .= "<td><input style='display: none;' type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
 	}
+
 	$html .= "<td>{$_SESSION['name']}</td>";
 	$html .= "</tr></tbody></table>";
 

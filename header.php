@@ -13,15 +13,16 @@
 					JOIN Users USR ON USR.USR_ID = OM.author
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-					WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NULL AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops}))
-					#ORDER BY OM.OM_ID DESC
+					WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR OD.SH_ID IS NULL)" : "")."
 				  UNION ALL
 				  SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 0 is_read, USR.Name
 					FROM OrdersMessage OM
 					JOIN Users USR ON USR.USR_ID = OM.author
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-					WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NOT NULL AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops})) AND DATEDIFF(NOW(), OM.read_time) <= 7
+					WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NOT NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
+						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR OD.SH_ID IS NULL)" : "")."
 				  ORDER BY is_read DESC, OM_ID DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -63,15 +64,16 @@
 					LEFT JOIN Users USR ON USR.USR_ID = OM.read_user
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-					WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NULL AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops}))
-					#ORDER BY OM.OM_ID DESC
+					WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR OD.SH_ID IS NULL)" : "")."
 				  UNION ALL
 				  SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 0 is_read, USR.Name
 					FROM OrdersMessage OM
 					LEFT JOIN Users USR ON USR.USR_ID = OM.read_user
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-					WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NOT NULL AND (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops})) AND DATEDIFF(NOW(), OM.read_time) <= 7
+					WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NOT NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
+						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR OD.SH_ID IS NULL)" : "")."
 				  ORDER BY is_read DESC, OM_ID DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -106,7 +108,7 @@
 	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=37'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=38'>
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
@@ -340,25 +342,16 @@
 		if( in_array('screen_paylog', $Rights) ) {
 			$menu["Платежи"] = "paylog.php";
 		}
-		if( in_array('screen_paylog', $Rights) ) {
+		if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
 			$menu["Касса"] = "cash.php";
 		}
 		$menu["Выход (".$_SESSION['name'].")"] = "exit.php";
-//		$menu = array ("Материалы" => "materials.php"
-////					  ,"Производство" => "workers.php?worker=0&type=1&isready=0"
-//					  ,"Свободные{$ischeckcount}" => "/orderdetail.php?free=1"
-//					  ,"Заготовки" => "blankstock.php"
-//					  ,"Табель" => "timesheet.php"
-//					  ,"Платежи" => "paylog.php"
-////					  ,"Печатные формы" => "toprint.php"
-//					  ,"Выход ({$_SESSION['name']})" => "exit.php");
 	}
 	echo "<ul class='navbar-nav'>";
 	foreach ($menu as $title=>$url) {
 		$class = strpos($_SERVER["REQUEST_URI"], $url) !== false ? "class='active'" : "";
 		echo "<li $class><a href='$url'>$title</a></li>";
 	}
-//	echo "<li class='exit'><a href='exit.php'>Выход ({$_SESSION['name']})</a></li>";
 	echo "</ul>";
 	echo "</nav>";
 

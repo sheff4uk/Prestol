@@ -4,7 +4,7 @@
 	include "header.php";
 
 	// Проверка прав на доступ к экрану
-	if( !in_array('screen_paylog', $Rights) ) {
+	if( !in_array('finance_all', $Rights) and !in_array('finance_account', $Rights) ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 		die('Недостаточно прав для совершения операции');
 	}
@@ -85,26 +85,25 @@
 		$OP_ID = $_POST["OP_ID"];
 		$FA_ID = $_POST["account"];
 
-		$query = "UPDATE OrdersPayment
-				  SET send = 2
-				  WHERE OP_ID = {$OP_ID}";
+		$query = "INSERT INTO Finance (money, date, FA_ID, FC_ID, comment, OP_ID, author)
+				SELECT ABS(OP.payment_sum) money
+					,NOW() date
+					,{$FA_ID} FA_ID
+					,3 FC_ID
+					,CONCAT(CT.City, '/', SH.Shop, ' (', OP.cost_name, ')') comment
+					,OP.OP_ID
+					,{$_SESSION['id']} author
+				FROM OrdersPayment OP
+				JOIN Shops SH ON SH.SH_ID = OP.SH_ID
+				JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+				WHERE OP.OP_ID = {$OP_ID}";
 		if( !mysqli_query( $mysqli, $query ) ) {
 			$_SESSION["alert"] = mysqli_error( $mysqli );
 		}
 		else {
-			$query = "INSERT INTO Finance (money, date, FA_ID, FC_ID, comment, OP_ID, author)
-
-					SELECT ABS(OP.payment_sum) money
-						#,OP.payment_date date
-						,NOW() date
-						,{$FA_ID} FA_ID
-						,3 FC_ID
-						,CONCAT(CT.City, ' (', OP.cost_name, ')') comment
-						,OP.OP_ID
-						,{$_SESSION['id']} author
-					FROM OrdersPayment OP
-					LEFT JOIN Cities CT ON CT.CT_ID = OP.CT_ID
-					WHERE OP.OP_ID = {$OP_ID}";
+			$query = "UPDATE OrdersPayment
+					  SET send = 2
+					  WHERE OP_ID = {$OP_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"] = mysqli_error( $mysqli );
 			}
@@ -269,12 +268,19 @@
 <div style="width: 1000px; margin: auto;">
 	<div style="display: flex;">
 		<div id="wr_account">
-			<a href="#" class="add_account_btn" style="margin: 10px; display: block; text-align: center;"><b><i class="fa fa-plus"></i> Добавить счет</b></a>
+			<?
+			if( !in_array('finance_account', $Rights) ) {
+				echo "<a href='#' class='add_account_btn' style='margin: 10px; display: block; text-align: center;'><b><i class='fa fa-plus'></i> Добавить счет</b></a>";
+			}
+			?>
 			<table class="main_table">
 				<tbody>
 					<?
 						$total = 0;
-						$query = "SELECT FA_ID, name, start_balance, end_balance, USR_ID, bank FROM FinanceAccount ORDER BY IFNULL(bank, 0), FA_ID";
+						$query = "SELECT FA_ID, name, start_balance, end_balance, USR_ID, bank
+									FROM FinanceAccount
+									".(in_array('finance_account', $Rights) ? "WHERE USR_ID = {$_SESSION['id']}" : "")."
+									ORDER BY IFNULL(bank, 0), FA_ID";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{
@@ -283,21 +289,31 @@
 							$money = number_format($row["end_balance"], 0, '', ' ');
 
 							echo "<tr>";
-							echo "<td class='account_label'>{$row["name"]}<a href='#' class='add_account_btn' FA_ID='{$row["FA_ID"]}' bank='{$row["bank"]}' name='{$row["name"]}' start_balance='{$row["start_balance"]}' USR_ID='{$row["USR_ID"]}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a></td>";
+							echo "<td class='account_label'>{$row["name"]}";
+							if( !in_array('finance_account', $Rights) ) {
+								echo "<a href='#' class='add_account_btn' FA_ID='{$row["FA_ID"]}' bank='{$row["bank"]}' name='{$row["name"]}' start_balance='{$row["start_balance"]}' USR_ID='{$row["USR_ID"]}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a>";
+							}
+							echo "</td>";
 							echo "<td width='120' class='txtright' style='color: {$color};'><b>{$money}</b></td>";
 							echo "</tr>";
 						}
-						$color = $total < 0 ? '#E74C3C' : '#16A085';
-						$money = number_format($total, 0, '', ' ');
+						if( !in_array('finance_account', $Rights) ) {
+							$color = $total < 0 ? '#E74C3C' : '#16A085';
+							$money = number_format($total, 0, '', ' ');
 
-						echo "<tr>";
-						echo "<td><h3>Капитал:</h3></td>";
-						echo "<td width='120' class='txtright' style='color: {$color};'><h3>{$money}</h3></td>";
-						echo "</tr>";
+							echo "<tr>";
+							echo "<td><h3>Капитал:</h3></td>";
+							echo "<td width='120' class='txtright' style='color: {$color};'><h3>{$money}</h3></td>";
+							echo "</tr>";
+						}
 					?>
 				</tbody>
 			</table>
-			<a href="#" class="add_category_btn" style="margin: 10px; display: block; text-align: center;"><b><i class="fa fa-plus"></i> Добавить категорию</b></a>
+			<?
+			if( !in_array('finance_account', $Rights) ) {
+				echo "<a href='#' class='add_category_btn' style='margin: 10px; display: block; text-align: center;'><b><i class='fa fa-plus'></i> Добавить категорию</b></a>";
+			}
+			?>
 		</div>
 
 		<div id="wr_send">
@@ -313,20 +329,21 @@
 							,DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
 							,ABS(OP.payment_sum) payment_sum
 							,OP.cost_name
+							,SH.Shop
 							,CT.City
 					FROM OrdersPayment OP
-					JOIN Cities CT ON CT.CT_ID = OP.CT_ID
+					JOIN Shops SH ON SH.SH_ID = OP.SH_ID
+					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 					WHERE send = 1 AND payment_sum < 0
+						".(in_array('finance_account', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
 					ORDER BY OP.payment_date DESC";
 
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			while( $row = mysqli_fetch_array($res) ) {
 				$payment_sum = number_format($row["payment_sum"], 0, '', ' ');
-				$delmessage = addslashes("Принять <b>{$payment_sum}р</b> из {$row["City"]} ({$row["cost_name"]})?<br><b>Внимание!</b> Данную операцию отменить невозможно.");
-
 				echo "<tr>";
-				echo "<td>{$row["City"]} ({$row["cost_name"]})</td>";
+				echo "<td>{$row["City"]}/{$row["Shop"]} ({$row["cost_name"]})</td>";
 				echo "<td>{$row["payment_date"]}</td>";
 				echo "<td class='txtright'><b>{$payment_sum}</b></td>";
 				echo "<td><a class='button add_send_btn' OP_ID='{$row["OP_ID"]}' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
@@ -630,7 +647,10 @@
 							<div class='btnset'>
 								<?
 								echo "<input id='account_select_all' class='select_all' type='checkbox' name='all_accounts' value='1' form='filter_form'><label for='account_select_all'>Все счета</label>";
-								$query = "SELECT FA_ID, name FROM FinanceAccount ORDER BY IFNULL(bank, 0), FA_ID";
+								$query = "SELECT FA_ID, name
+											FROM FinanceAccount
+											".(in_array('finance_account', $Rights) ? "WHERE USR_ID = {$_SESSION["id"]}" : "")."
+											ORDER BY IFNULL(bank, 0), FA_ID";
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 								while( $row = mysqli_fetch_array($res) )
 								{
@@ -742,7 +762,7 @@
 									,IFNULL(FC.type, 0) type
 									,IFNULL(FC.type, -1) * F.money money
 									,FA.name account
-									,IF(F.to_account IS NULL, FC.name, CONCAT(FA.name, ' => ', TFA.name)) category
+									,IF(F.to_account IS NULL, FC.name, CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name)) category
 									,KA.Naimenovanie kontragent
 									,F.comment
 									,F.money sum
@@ -771,7 +791,7 @@
 									,0 type
 									,F.money
 									,TFA.name account
-									,CONCAT(FA.name, ' => ', TFA.name) category
+									,CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name) category
 									,NULL kontragent
 									,F.comment
 									,F.money sum
@@ -796,6 +816,7 @@
 							".($_SESSION["cash_sum_from"] != "" ? "AND SF.sum >= {$_SESSION["cash_sum_from"]}" : "")."
 							".($_SESSION["cash_sum_to"] != "" ? "AND SF.sum <= {$_SESSION["cash_sum_to"]}" : "")."
 							".($FA_IDs != "" ? "AND SF.account_filter IN ({$FA_IDs})" : "")."
+							".(in_array('finance_account', $Rights) ? "AND SF.account_filter IN(SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]})" : "")."
 							".($FC_IDs != "" ? "AND SF.FC_ID IN ({$FC_IDs})" : "")."
 							".($USR_IDs != "" ? "AND SF.USR_ID IN ({$USR_IDs})" : "")."
 							".($KA_IDs != "" ? "AND SF.KA_ID IN ({$KA_IDs})" : "")."
@@ -811,7 +832,7 @@
 					$money = number_format($row["money"], 0, '', ' ');
 					$type = ($row["type"] == 1 ? '<i class="fa fa-plus" style="color: #16A085;"></i>' : ($row["type"] == -1 ? '<i class="fa fa-minus" style="color: #E74C3C;"></i>' : '<i class="fa fa-exchange"></i>'));
 
-					if( $row["receipt"] == 0 or $FA_IDs != "" ) {
+					if( $row["receipt"] == 0 or $FA_IDs != "" or in_array('finance_account', $Rights) ) {
 						echo "<tr>";
 						echo "<td>{$row["date"]}</td>";
 						echo "<td style='text-align: center;'>{$type}</td>";
@@ -821,7 +842,7 @@
 						echo "<td><span class='nowrap'>{$row["author"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["kontragent"]}</span></td>";
 						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
-						if( $row["is_edit"] ) {
+						if( $row["is_edit"] and $row["receipt"] == 0 ) {
 							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["date"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a></td>";
 						}
 						else {
@@ -877,26 +898,35 @@
 				<label for="account">Счет:</label><br>
 				<select required name="account" id="account" style="width: 140px;">
 					<option value="">-=Выберите счёт=-</option>
-					<optgroup label="Нал">
 						<?
-						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
-						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						while( $row = mysqli_fetch_array($res) )
-						{
-							echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+						if( !in_array('finance_account', $Rights) ) {
+							echo "<optgroup label='Нал'>";
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+							}
+							echo "</optgroup>";
+							echo "<optgroup label='Безнал'>";
+
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+							}
+							echo "</optgroup>";
+						}
+						else {
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]}";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+							}
 						}
 						?>
-					</optgroup>
-					<optgroup label="Безнал">
-						<?
-						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1";
-						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						while( $row = mysqli_fetch_array($res) )
-						{
-							echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
-						}
-						?>
-					</optgroup>
 				</select>
 			</div>
 			<div class="field">
@@ -944,10 +974,15 @@
 		<fieldset>
 			<input type="hidden" id="OP_ID" name="OP_ID">
 			<div style="text-align: center;">
-				<label for="account">Счет:</label><br>
+				<label for="account">Касса:</label><br>
 					<div class='btnset'>
 					<?
-					$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
+					if( !in_array('finance_account', $Rights) ) {
+						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
+					}
+					else {
+						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]}";
+					}
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) )
 					{

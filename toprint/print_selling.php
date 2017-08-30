@@ -67,8 +67,7 @@
 				<?
 					echo "<td width='4%'>Дата отгрузки</td>";
 					echo "<td width='50'>Код</td>";
-					echo "<td width='5%'>Квитанция</td>";
-					echo "<td width='9%'>Заказчик</td>";
+					echo "<td width='9%'>Заказчик<br>Квитанция</td>";
 					echo "<td width='20%'>Заказ</td>";
 					echo "<td width='15%'>Пластик/ткань</td>";
 					echo "<td width='10%'>Цвет покраски</td>";
@@ -181,8 +180,7 @@
 
 		if($span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["ReadyDate"]}</td>";
 		if($span) echo "<td width='50' style='{$border}' rowspan='{$cnt}' class='nowrap'><b>{$row["Code"]}</b></td>";
-		if($span) echo "<td width='5%' style='{$border}' rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
-		if($span) echo "<td width='9%' style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}</td>";
+		if($span) echo "<td width='9%' style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></td>";
 		echo "<td width='20%' style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";
 		echo "<td width='15%' style='{$border}'>{$row["Material"]}</td>";
 		if($span) echo "<td width='10%' style='{$border}' rowspan='{$cnt}'>{$row["Color"]}</td>";

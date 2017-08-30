@@ -13,7 +13,7 @@
 	// Сохраняем в базу список товаров и перезагружаем экран
 	if( isset($_GET["Tables"]) or isset($_GET["Chairs"]) or isset($_GET["Others"]) ) {
 		// Создаем запись в таблице PrintForms и получаем ID
-		$query = "INSERT INTO PrintForms SET CT_ID = {$USR_City}, USR_ID = {$_SESSION["id"]}, SHP_ID = ".($_GET["shpid"] ? $_GET["shpid"] : "NULL");
+		$query = "INSERT INTO PrintForms SET USR_ID = {$_SESSION["id"]}, SHP_ID = ".($_GET["shpid"] ? $_GET["shpid"] : "NULL");
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$id = mysqli_insert_id($mysqli);
 

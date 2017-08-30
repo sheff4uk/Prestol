@@ -14,7 +14,8 @@
 					FROM OrdersData OD
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-					WHERE (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops})) AND OD_ID = {$_GET["id"]}";
+					WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}
+						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR OD.SH_ID IS NULL)" : "");
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$OD_ID = mysqli_result($res,0,'OD_ID');
 		$Del = mysqli_result($res,0,'Del');
@@ -418,28 +419,29 @@
 			<td>
 				<div style='box-shadow: 0px 0px 5px 5px <?=$CTColor?>;'>
 				<select required name='Shop' <?=($disabled ? "disabled" : "")?>>
-					<option value="">-=Выберите салон=-</option>
 					<option value="0" selected style="background: #999;">Свободные</option>
 					<?
 					if( $SHP_ID ) {
-						$query = "SELECT Shops.SH_ID
-										,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
-										,IF(Shops.SH_ID = {$Shop}, 'selected', '') AS selected
-										,Cities.Color
-									FROM Shops
-									JOIN Cities ON Cities.CT_ID = Shops.CT_ID
-									WHERE Cities.CT_ID IN (SELECT CT_ID FROM Shipment WHERE SHP_ID = {$SHP_ID})
-									ORDER BY Cities.City, Shops.Shop";
+						$query = "SELECT SH.SH_ID
+										,CONCAT(CT.City, '/', SH.Shop) AS Shop
+										,IF(SH.SH_ID = {$Shop}, 'selected', '') AS selected
+										,CT.Color
+									FROM Shops SH
+									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+									WHERE CT.CT_ID IN (SELECT CT_ID FROM Shipment WHERE SHP_ID = {$SHP_ID})
+										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+									ORDER BY CT.City, SH.Shop";
 					}
 					else {
-						$query = "SELECT Shops.SH_ID
-										,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
-										,IF(Shops.SH_ID = {$Shop}, 'selected', '') AS selected
-										,Cities.Color
-									FROM Shops
-									JOIN Cities ON Cities.CT_ID = Shops.CT_ID
-									WHERE Cities.CT_ID IN ({$USR_cities}) OR Shops.SH_ID IN ({$USR_shops})
-									ORDER BY Cities.City, Shops.Shop";
+						$query = "SELECT SH.SH_ID
+										,CONCAT(CT.City, '/', SH.Shop) AS Shop
+										,IF(SH.SH_ID = {$Shop}, 'selected', '') AS selected
+										,CT.Color
+									FROM Shops SH
+									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+									WHERE CT.CT_ID IN ({$USR_cities})
+										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+									ORDER BY CT.City, SH.Shop";
 					}
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) )

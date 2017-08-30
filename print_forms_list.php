@@ -86,7 +86,6 @@ $query = "SELECT PF_ID
 				,USR.Name
 				,PF.SHP_ID
 			FROM PrintForms PF
-			LEFT JOIN Cities CT ON CT.CT_ID = PF.CT_ID
 			LEFT JOIN Users USR ON USR.USR_ID = PF.USR_ID
 			LEFT JOIN Kontragenty KA ON KA.KA_ID = PF.platelshik_id
 			WHERE IFNULL(PF.summa, 0) > 0 AND year = {$year}".(in_array('print_forms_view_autor', $Rights) ? " AND PF.USR_ID = {$_SESSION['id']}" : "").($payer ? " AND KA.KA_ID = {$payer}" : "")."

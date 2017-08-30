@@ -12,18 +12,21 @@
 	
 	$location = $_SERVER['REQUEST_URI'];
 	$_SESSION["location"] = $location;
-	
+
 	// Формируем выпадающее меню салонов в таблицу
-	$query = "SELECT Shops.SH_ID
-					,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
-					,Cities.Color
-				FROM Shops
-				JOIN Cities ON Cities.CT_ID = Shops.CT_ID
-				WHERE Cities.CT_ID IN ({$USR_cities}) OR Shops.SH_ID IN ({$USR_shops})
-				ORDER BY Cities.City, Shops.Shop";
+	$query = "SELECT SH.SH_ID
+					,CONCAT(CT.City, '/', SH.Shop) AS Shop
+					,CT.Color
+				FROM Shops SH
+				JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+				WHERE CT.CT_ID IN ({$USR_cities})
+					".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+				ORDER BY CT.City, SH.Shop";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$select_shops = "<select class='select_shops'>";
-	$select_shops .= "<option value='0' style='background: #999;'>Свободные</option>";
+	if( in_array('order_add_confirm', $Rights) ) {
+		$select_shops .= "<option value='0' style='background: #999;'>Свободные</option>";
+	}
 	while( $row = mysqli_fetch_array($res) ) {
 		$select_shops .= "<option value='{$row["SH_ID"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
 	}
@@ -383,16 +386,21 @@
 				<div>
 					<label>Салон:</label>
 					<select required name='Shop' style="width: 300px;">
-						<option value="">-=Выберите салон=-</option>
-						<option value="0" style="background: #999;">Свободные</option>
 						<?
-						$query = "SELECT Shops.SH_ID
-										,CONCAT(Cities.City, '/', Shops.Shop) AS Shop
-										,Cities.Color
-									FROM Shops
-									JOIN Cities ON Cities.CT_ID = Shops.CT_ID
-									WHERE Cities.CT_ID IN ({$USR_cities}) OR Shops.SH_ID IN ({$USR_shops})
-									ORDER BY Cities.City, Shops.Shop";
+						if( !$USR_Shop ) {
+							echo "<option value=''>-=Выберите салон=-</option>";
+						}
+						if( in_array('order_add_confirm', $Rights) ) {
+							echo "<option value='0' style='background: #999;'>Свободные</option>";
+						}
+						$query = "SELECT SH.SH_ID
+										,CONCAT(CT.City, '/', SH.Shop) AS Shop
+										,CT.Color
+									FROM Shops SH
+									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+									WHERE CT.CT_ID IN ({$USR_cities})
+										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+									ORDER BY CT.City, SH.Shop";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{
@@ -478,7 +486,7 @@
 			<th width="40"></th>
 			<th width="25%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class="<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>"></th>
 			<th width="15%" id="MT_filter" class="select2_filter"><input type="text" disabled style="width: 100%;" class="<?=( $_SESSION["f_M"] != "" ? "filtered" : "" )?>"><div id="material-select" style=""><select name="MT_ID[]" multiple style="width: 100%;"></select></div></th>
-			<th width="15%" style="font-size: 0;">
+			<th width="10%" style="font-size: 0;">
 				<style>
 					#material-select {
 						display: none;
@@ -620,7 +628,7 @@
 			<th width="40"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">Мест</label></th>
 			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
 			<th width="15%"><input type="checkbox" disabled value="8" checked name="M" class="print_col" id="M"><label for="M">Материал</label></th>
-			<th width="15%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
+			<th width="10%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет<br>краски</label></th>
 			<th width="100"><input type="checkbox" disabled value="10" name="PR" class="print_col" id="PR"><label for="PR">Этапы</label></th>
 			<th width="40"><input type="checkbox" disabled value="11" name="CF" class="print_col" id="CF"><label for="CF">Принят</label></th>
 			<th width="40"><input type="checkbox" disabled value="12" name="X" class="print_col" id="X"><label for="X">X</label>
@@ -650,7 +658,7 @@
 			<th width="40"></th>
 			<th width="25%"></th>
 			<th width="15%"></th>
-			<th width="15%"></th>
+			<th width="10%"></th>
 			<th width="100"></th>
 			<th width="40"></th>
 			<th width="40"></th>
@@ -740,8 +748,7 @@
 	}
 
 	$is_orders_ready = 1;	// Собираем готовые заказы чтобы можно ставить дату отгрузки (когда все готовы должна получиться 1)
-	$orders_count = 0;		// Счетчик готовых заказов
-	$counter = 0;			// Счетчик видимых заказов
+	$orders_count = 0;		// Счетчик видимых заказов
 	$orders_IDs = "0";		// Список ID заказов для Select2 материалов
 
 	$query = "SELECT OD.OD_ID
@@ -842,7 +849,8 @@
 						GROUP BY ODB.ODB_ID
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-			  WHERE (IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) OR IFNULL(SH.SH_ID, 0) IN ({$USR_shops}))";
+			  WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+			  	".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND SH.retail) OR OD.SH_ID IS NULL)" : "");
 
 			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
 			  switch ($archive) {
@@ -954,7 +962,7 @@
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>";
 		echo "<td><span>{$row["StartDate"]}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td class='".( (!$disabled and $row["SHP_ID"] == 0) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
+		echo "<td class='".( (!$disabled and $row["SHP_ID"] == 0 and !$USR_Shop) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
 		//echo "<td><span>{$row["OrderNumber"]}</span></td>";
 		echo "<td><span></span></td>";
 		if( $disabled ) {
@@ -1000,30 +1008,30 @@
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td>";
 
-		// Если заказ заблокирован, то показываем глаз. Иначе - карандаш.
-		if( $disabled ) {
-			echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
-		}
-		else {
-			echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
-		}
-		// Если есть права на редактирование заказа и заказ не закрыт, то показываем кнопку разделения заказа
-		if( in_array('order_add', $Rights) and !$is_lock and $row["Del"] == 0) {
-			echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
-		}
+		// Если пользователю доступен только один салон в регионе, то не показываем кнопки действий.
+		if( !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) ) {
+			// Если заказ заблокирован, то показываем глаз. Иначе - карандаш.
+			if( $disabled ) {
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
+			}
+			else {
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+			}
 
-		$counter++;
+			// Если есть права на редактирование заказа и заказ не закрыт, то показываем кнопку разделения заказа
+			if( in_array('order_add', $Rights) and !$is_lock and $row["Del"] == 0) {
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
+			}
 
-		echo "<action>";
-		if( $row["SHP_ID"] == 0 ) {
-			if( $row["Archive"] == 0 and $row["Del"] == 0 ) {
-				if( $row["IsReady"] and $row["IsPainting"] == 3 ) {
-					if( in_array('order_ready', $Rights) ) {
-						//echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа.\", \"?ready={$row["OD_ID"]}\")) return false;' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
-						echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='confirm(\"Пожалуйста, подтвердите <b>отгрузку</b> заказа.\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+			echo "<action>";
+			if( $row["SHP_ID"] == 0 ) {
+				if( $row["Archive"] == 0 and $row["Del"] == 0 ) {
+					if( $row["IsReady"] and $row["IsPainting"] == 3 ) {
+						if( in_array('order_ready', $Rights) ) {
+							//echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа.\", \"?ready={$row["OD_ID"]}\")) return false;' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+							echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='confirm(\"Пожалуйста, подтвердите <b>отгрузку</b> заказа.\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+						}
 					}
-				}
-//				else {
 					if( !$disabled ) {
 						//echo "<a href='#' class='' onclick='if(confirm(\"<b>Подтвердите удаление заказа!</b>\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 						if( in_array('order_add_confirm', $Rights) ) {
@@ -1034,19 +1042,19 @@
 						}
 						echo "<a href='#' class='' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 					}
-//				}
+				}
 			}
+			else {
+				echo "<a href='/?shpid={$row["SHP_ID"]}#ord{$row["OD_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a>";
+			}
+			echo "</action>";
 		}
-		else {
-			echo "<a href='/?shpid={$row["SHP_ID"]}#ord{$row["OD_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a>";
-		}
+		echo "</td></tr>";
+
 		if( !$row["IsReady"] || $row["IsPainting"] != 3 ) {
 			$is_orders_ready = 0;
 		}
 		$orders_count++;
-		echo "</action>";
-
-		echo "</td></tr>";
 
 		// Заполнение массива для JavaScript
 		$query = "SELECT ODD.ODD_ID
@@ -1201,7 +1209,7 @@
 				$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
 				$('#wr_shipping_date button').hide('fast');
 				$('#wr_shipping_date font').show('fast');
-				if( !<?=$orders_count?> ) {
+				if( !count ) {
 					$('#wr_shipping_date font').html('&nbsp;&nbsp;Список пуст!');
 				}
 				else {
@@ -1219,7 +1227,7 @@
 
 	$(document).ready(function(){
 
-		$('#counter').html('<?=$counter?>');
+		$('#counter').html('<?=$orders_count?>');
 
 		// Select2 для выбора салона
 		$('select[name="Shop"]').select2({

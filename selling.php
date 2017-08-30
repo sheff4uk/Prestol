@@ -11,6 +11,7 @@
 
 	$CT_ID = (isset($_GET["CT_ID"]) and (int)$_GET["CT_ID"] > 0) ? $_GET["CT_ID"] : 0;
 	$SH_ID = (isset($_GET["SH_ID"]) and (int)$_GET["SH_ID"] > 0) ? $_GET["SH_ID"] : 0;
+	$SH_ID = $USR_Shop ? $USR_Shop : $SH_ID;
 	$year = (isset($_GET["year"]) and (int)$_GET["year"] >= 0) ? $_GET["year"] : "";
 	$month = (isset($_GET["month"]) and (int)$_GET["month"] >= 0) ? $_GET["month"] : "";
 
@@ -26,13 +27,8 @@
 		}
 	}
 
-	// Узнаем к какому банку привязан терминал в регионе (если есть)
-	$query = "SELECT FA_ID FROM Cities WHERE CT_ID = {$CT_ID}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$FA_ID = mysqli_result($res,0,'FA_ID');
-
 	// Формируем выпадающее меню салонов в таблицу
-	$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1 ORDER BY Shop";
+	$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1 ".($USR_Shop ? "AND SH_ID = {$USR_Shop}" : "")." ORDER BY Shop";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$select_shops = "";
 	while( $row = mysqli_fetch_array($res) ) {
@@ -45,8 +41,8 @@
 	$location = "selling.php?CT_ID={$CT_ID}".( ($year != "" and $month != "") ? '&year='.$year.'&month='.$month : '' );
 	$_SESSION["location"] = $_SERVER['REQUEST_URI'];
 
-	// Добавление в базу нового платежа (или обновление старого)
-	if( isset($_GET["add_payment"]) )
+	// Добавление в базу нового платежа
+	if( isset($_GET["add_payment"]) and $_POST["payment_sum_add"] )
 	{
 		$OD_ID = $_POST["OD_ID"];
 		$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date_add"]) );
@@ -54,7 +50,7 @@
 		$terminal = $_POST["terminal_add"];
 		$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer_add"] ).'\'' : 'NULL';
 		$FA_ID_add = $_POST["FA_ID_add"] ? $_POST["FA_ID_add"] : 'NULL';
-		$CT_ID_add = $_POST["CT_ID_add"] ? $_POST["CT_ID_add"] : 'NULL';
+		$SH_ID_add = $_POST["FA_ID_add"] ? 'NULL' : $_POST["SH_ID_add"];
 
 		if( $payment_sum ) {
 			// Записываем новый платеж в таблицу платежей
@@ -63,8 +59,8 @@
 							,payment_date = '{$payment_date}'
 							,payment_sum = {$payment_sum}
 							,terminal_payer = {$terminal_payer}
-							,CT_ID = {$CT_ID_add}
-							,FA_ID = ".($terminal ? $FA_ID : $FA_ID_add)."
+							,SH_ID = {$SH_ID_add}
+							,FA_ID = ".($terminal ? "(SELECT SH.FA_ID FROM Shops SH JOIN OrdersData OD ON OD.SH_ID = SH.SH_ID AND OD.OD_ID = {$OD_ID})" : $FA_ID_add)."
 							,author = {$_SESSION['id']}";
 			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
 			else {
@@ -75,25 +71,6 @@
 				}
 			}
 		}
-
-//		foreach ($_POST["OP_ID"] as $key => $value) {
-//			$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date"][$key]) );
-//			$payment_sum = ($_POST["payment_sum"][$key] != '') ? $_POST["payment_sum"][$key] : 'NULL';
-//			$terminal_payer = ($_POST["terminal_payer"][$key] != '') ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer"][$key] ).'\'' : 'NULL';
-//			$terminal = ($_POST["terminal_payer"][$key] != '') ? 1 : 0;
-//			$FA_ID_edit = $_POST["FA_ID"][$key] ? $_POST["FA_ID"][$key] : 'NULL';
-//
-//			$query = "UPDATE OrdersPayment
-//						 SET payment_date = '{$payment_date}'
-//							,payment_sum = {$payment_sum}
-//							,terminal_payer = {$terminal_payer}
-//							".(in_array('order_add_confirm', $Rights) ? ",CT_ID = ".($_POST["FA_ID"][$key] ? 'NULL' : $CT_ID) : '')."
-//							,FA_ID = ".($terminal ? $FA_ID : $FA_ID_edit)."
-//						WHERE OP_ID = {$value}";
-//			if( !mysqli_query( $mysqli, $query ) ) {
-//				$_SESSION["alert"] = mysqli_error( $mysqli );
-//			}
-//		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
 		die;
@@ -125,6 +102,7 @@
 	if( isset($_GET["add_cost"]) )
 	{
 		$OP_ID = $_POST["OP_ID"];
+		$SH_ID = $_POST["SH_ID"];
 		$cost_name = mysqli_real_escape_string( $mysqli, $_POST["cost_name"] );
 		$cost_date = date( 'Y-m-d', strtotime($_POST["cost_date"]) );
 		$cost = $_POST["cost"] ? $_POST["cost"] : 0;
@@ -132,13 +110,12 @@
 		$send = $_POST["send"] ? $_POST["send"] : "NULL";
 
 		if( $OP_ID != '' ) { // Редактируем расход
-			$query = "UPDATE OrdersPayment SET cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send} WHERE OP_ID = {$OP_ID}";
+			$query = "UPDATE OrdersPayment SET SH_ID = {$SH_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']} WHERE OP_ID = {$OP_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
 		}
 		else { // Добавляем расход
 			if( $cost ) {
-				$CT_ID = $_POST["CT_ID"];
-				$query = "INSERT INTO OrdersPayment SET CT_ID = {$CT_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']}";
+				$query = "INSERT INTO OrdersPayment SET SH_ID = {$SH_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']}";
 				if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
 			}
 		}
@@ -176,7 +153,7 @@
 		$SH_ID = mysqli_result($subres,0,'SH_ID');
 		$StartDate = mysqli_result($subres,0,'StartDate');
 
-		if( $old_StartDate ) {
+		if( $StartDate ) {
 			if( $old_sum ) {
 				$query = "INSERT INTO Otkazi
 					SET OD_ID = {$OD_ID}, type = {$type}, SH_ID = {$SH_ID}, StartDate = '{$StartDate}', old_sum = {$old_sum}
@@ -270,23 +247,27 @@
 </form>
 
 <?
-	// Узнаем общий остаток наличных
-	$query = "SELECT SUM(IFNULL(pay_in,0)) - SUM(IFNULL(pay_out,0)) ostatok FROM `OstatkiShops` WHERE CT_ID = {$CT_ID}";
+// Узнаем общий остаток наличных
+	$query = "SELECT SUM(IFNULL(pay_in,0)) - SUM(IFNULL(pay_out,0)) ostatok FROM MonthlySellInOut";
+	if( $USR_Shop ) {
+		$query .= " WHERE SH_ID = {$USR_Shop}";
+	}
+	else {
+		$query .= " WHERE SH_ID IN(SELECT SH_ID FROM Shops WHERE CT_ID = {$CT_ID})";
+	}
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$ostatok = mysqli_result($res,0,'ostatok');
 	$format_ostatok = number_format($ostatok, 0, '', ' ');
 	$now_date = date('d.m.Y');
 	if( $CT_ID ) {
-?>
-<h3 style="display: inline-block; margin: 10px 20px;">Остаток наличных: <?=$format_ostatok?></h3>
-<a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='+' CT_ID='<?=$CT_ID?>' title='Внести приход'><i class='fa fa-plus fa-lg' style='color: white; background: green; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>
-<a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='-' CT_ID='<?=$CT_ID?>' title='Внести расход'><i class='fa fa-minus fa-lg' style='color: white; background: red; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>
-<a href='#' class='add_cost_btn' cost_date='<?=$now_date?>' sign='' CT_ID='<?=$CT_ID?>' title='Внести отправку денег'><i class='fa fa-exchange fa-lg' style="color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;"></i></a>
-<?
-				 }
-else {
-	echo "<h3 style='display: inline-block; margin: 10px 20px;'>&nbsp;</h3>";
-}
+		echo "<h3 style='display: inline-block; margin: 10px 20px;'>Остаток наличных: {$format_ostatok}</h3>";
+		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='+' CT_ID='{$CT_ID}' title='Внести приход'><i class='fa fa-plus fa-lg' style='color: white; background: green; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
+		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='-' CT_ID='{$CT_ID}' title='Внести расход'><i class='fa fa-minus fa-lg' style='color: white; background: red; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
+		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='' CT_ID='{$CT_ID}' title='Внести отправку денег'><i class='fa fa-exchange fa-lg' style='color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>";
+	}
+	else {
+		echo "<h3 style='display: inline-block; margin: 10px 20px;'>&nbsp;</h3>";
+	}
 ?>
 
 	<!-- КНОПКИ ОТЧЕТОВ -->
@@ -371,9 +352,7 @@ else {
 				$locking_form = "
 					<form method='post' action='{$location}&add_locking_date=1' id='locking_form'>
 						<input type='text' class='date' name='locking_date' value='{$locking_date}' placeholder='Дата закрытия' autocomplete='off'>
-						<input type='hidden' name='ostatok' value='{$ostatok}'>
 						<button>Cохранить</button>
-						<img src='/img/attention.png' class='attention' title='Разблокировать отчет невозможно так как следующий месяц закрыт.' style='display: none;'>
 					</form>
 					<br>
 				";
@@ -395,6 +374,7 @@ else {
 						<th>Скидки</th>
 						<th>Отказы</th>
 						<th>Дебиторка</th>
+						<th>Касса</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -403,7 +383,8 @@ else {
 					$city_discount = 0;
 					$city_otkaz = 0;
 					$city_debt = 0;
-					$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1 ORDER BY SH_ID";
+					$city_cash = 0;
+					$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1 ".($USR_Shop ? "AND SH_ID = {$USR_Shop}" : "")." ORDER BY SH_ID";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						// Получаем сумму выручки по салону
@@ -447,11 +428,18 @@ else {
 						$shop_debt = $shop_price - $shop_discount - $month_payment_sum;
 						$city_debt = $city_debt + $shop_debt;
 
+						// Узнаем остаток в кассе по салону
+						$query = "SELECT SUM(IFNULL(pay_in,0)) - SUM(IFNULL(pay_out,0)) ostatok FROM MonthlySellInOut WHERE SH_ID = {$row["SH_ID"]}";
+						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						$shop_cash = mysqli_result($subres,0,'ostatok');
+						$city_cash = $city_cash + $shop_cash;
+
 						$shop_percent = round($shop_discount / ($shop_price - $shop_discount) * 100, 2);
 						$format_shop_price = number_format(($shop_price - $shop_discount), 0, '', ' ');
 						$format_shop_discount = number_format($shop_discount, 0, '', ' ');
 						$format_shop_otkaz = number_format($shop_otkaz, 0, '', ' ');
 						$format_shop_debt = number_format($shop_debt, 0, '', ' ');
+						$format_shop_cash = number_format($shop_cash, 0, '', ' ');
 
 						echo "<tr>";
 						echo "<td class='nowrap'><a href='{$location}&SH_ID={$row["SH_ID"]}' ".( $SH_ID == $row["SH_ID"] ? "style='color: #D65C4F;'" : "" ).">{$row["Shop"]}:</a></td>";
@@ -459,112 +447,29 @@ else {
 						echo "<td class='txtright'>{$format_shop_discount}<i class='fa fa-question-circle' aria-hidden='true' title='{$shop_percent}%'></i></td>";
 						echo "<td class='txtright' style='color: #911;'>{$format_shop_otkaz}</td>";
 						echo "<td class='txtright'>{$format_shop_debt}</td>";
+						echo "<td class='txtright'>{$format_shop_cash}</td>";
 						echo "</tr>";
 					}
-					$city_percent = round($city_discount / ($city_price - $city_discount) * 100, 2);
-					$format_city_price = number_format($city_price - $city_discount, 0, '', ' ');
-					$format_city_discount = number_format($city_discount, 0, '', ' ');
-					$format_city_otkaz = number_format($city_otkaz, 0, '', ' ');
-					$format_city_debt = number_format($city_debt, 0, '', ' ');
-					echo "<tr>";
-					echo "<td class='nowrap'><b><a href='{$location}' ".( $SH_ID ? "" : "style='color: #D65C4F;'" ).">ВСЕГО:</a></b></td>";
-					echo "<td class='txtright'><b>{$format_city_price}</b></td>";
-					echo "<td class='txtright'><b>{$format_city_discount}</b><i class='fa fa-question-circle' aria-hidden='true' title='{$city_percent}%'></td>";
-					echo "<td class='txtright' style='color: #911;'><b>{$format_city_otkaz}</b></td>";
-					echo "<td class='txtright'><b>{$format_city_debt}</b></td>";
-					echo "</tr>";
-
-				?>
-				</tbody>
-			</table>
-			<br>
-			<br>
-			<b>Список отказов/замены:</b><br>
-			<table>
-				<thead>
-					<tr>
-						<th>Код</th>
-						<th>Дата</th>
-						<th>Салон</th>
-						<th>Сумма</th>
-						<th>Статус</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?
-					$query = "SELECT OD.OD_ID
-									,OD.Code
-									,SH.Shop
-									,OT.old_sum
-									,IF(OT.type = 1, 'Замена', 'Отказ') comment
-									,OT.StartDate
-									,DAY(OT.StartDate) day
-									,MONTH(OT.StartDate) month
-									,OT.SH_ID
-								FROM OrdersData OD
-								JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
-								JOIN Shops SH ON SH.SH_ID = OT.SH_ID AND SH.CT_ID = {$CT_ID}
-								WHERE YEAR(OT.StartDate) = {$_GET["year"]} AND MONTH(OT.StartDate) = {$_GET["month"]}";
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					while( $row = mysqli_fetch_array($res) ) {
-						$format_old_price = number_format($row["old_sum"], 0, '', ' ');
+					if( !$USR_Shop ) {
+						$city_percent = round($city_discount / ($city_price - $city_discount) * 100, 2);
+						$format_city_price = number_format($city_price - $city_discount, 0, '', ' ');
+						$format_city_discount = number_format($city_discount, 0, '', ' ');
+						$format_city_otkaz = number_format($city_otkaz, 0, '', ' ');
+						$format_city_debt = number_format($city_debt, 0, '', ' ');
+						$format_city_cash = number_format($city_cash, 0, '', ' ');
 						echo "<tr>";
-						echo "<td><b><a href='?CT_ID={$CT_ID}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b></td>";
-						echo "<td><span class='nowrap'><b>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></span></td>";
-						echo "<td>{$row["Shop"]}</td>";
-						echo "<td class='txtright'><b>{$format_old_price}</b></td>";
-						echo "<td style='color: #911;'>{$row["comment"]}</td>";
-						echo "<td><a href='#' onclick='if(confirm(\"Убрать заказ <b>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
+						echo "<td class='nowrap'><b><a href='{$location}' ".( $SH_ID ? "" : "style='color: #D65C4F;'" ).">ВСЕГО:</a></b></td>";
+						echo "<td class='txtright'><b>{$format_city_price}</b></td>";
+						echo "<td class='txtright'><b>{$format_city_discount}</b><i class='fa fa-question-circle' aria-hidden='true' title='{$city_percent}%'></td>";
+						echo "<td class='txtright' style='color: #911;'><b>{$format_city_otkaz}</b></td>";
+						echo "<td class='txtright'><b>{$format_city_debt}</b></td>";
+						echo "<td class='txtright'><b>{$format_city_cash}</b></td>";
 						echo "</tr>";
 					}
-					?>
+				?>
 				</tbody>
 			</table>
 			</div>
-
-		<?
-		if( $FA_ID ) {
-		?>
-			<table>
-				<tbody>
-				<?
-					$terminal_sum = 0;
-					$query = "SELECT DATE_FORMAT(OP.payment_date, '%d.%m') payment_date
-									,OP.payment_sum
-									,OP.terminal_payer
-									,OD.Code
-									,YEAR(OD.StartDate) year
-									,MONTH(OD.StartDate) month
-									,OD.OD_ID
-								FROM OrdersPayment OP
-								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID AND OD.Del = 0
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NOT NULL
-								ORDER BY OP.payment_date DESC";
-				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				while( $row = mysqli_fetch_array($res) ) {
-					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
-					$terminal_sum = $terminal_sum + $row["payment_sum"];
-					echo "<tr>";
-					echo "<td title='№ упаковки'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b></td>";
-					echo "<td>{$row["payment_date"]}</td>";
-					echo "<td class='nowrap'>{$row["terminal_payer"]}</td>";
-					echo "<td class='txtright'><b>{$format_sum}</b></td>";
-					echo "</tr>";
-				}
-				$format_terminal_sum = number_format($terminal_sum, 0, '', ' ');
-				?>
-				</tbody>
-				<thead>
-					<tr>
-						<th colspan='3' class='nowrap'><b>Оплата по ТЕРМИНАЛУ:</b></th>
-						<th class='txtright'><b><?=$format_terminal_sum?></b></th>
-					</tr>
-				</thead>
-			</table>
-		<?
-		}
-		?>
 
 		<div id="accordion" style="display: inline-block; width: 400px;">
 			<h3 id="section1"></h3>
@@ -572,7 +477,6 @@ else {
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
 				<?
-					$cache_sum = 0;
 					$query = "SELECT OP.OP_ID
 									,DATE_FORMAT(OP.payment_date, '%d.%m') payment_date_short
 									,DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
@@ -582,22 +486,27 @@ else {
 									,YEAR(OD.StartDate) year
 									,MONTH(OD.StartDate) month
 									,OD.OD_ID
+									,OP.SH_ID
+									,SH.Shop
 								FROM OrdersPayment OP
+								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($USR_Shop ? "SH.SH_ID = {$USR_Shop}" : "SH.CT_ID = {$CT_ID}")."
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID} AND IFNULL(OP.payment_sum, 0) > 0 AND OP.terminal_payer IS NULL
+								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) > 0 AND OP.terminal_payer IS NULL
 								ORDER BY OP.payment_date DESC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$cache_sum = 0;
 				while( $row = mysqli_fetch_array($res) ) {
 					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 					$cache_sum = $cache_sum + $row["payment_sum"];
 					$cache_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : "<span>{$row["cost_name"]}</span>";
 					echo "<tr>";
-					echo "<td width='240'>{$cache_name}</td>";
 					echo "<td width='49'>{$row["payment_date_short"]}</td>";
 					echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
+					echo "<td width='60'><span>{$row["Shop"]}</span></td>";
+					echo "<td width='180'>{$cache_name}</td>";
 					echo "<td width='22'>";
 						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
-							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='+' title='Изменить приход'><i class='fa fa-pencil fa-lg'></i></a>";
+							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='+' title='Изменить приход'><i class='fa fa-pencil fa-lg'></i></a>";
 						}
 					echo "</td>";
 					echo "</tr>";
@@ -622,9 +531,12 @@ else {
 									,YEAR(OD.StartDate) year
 									,MONTH(OD.StartDate) month
 									,OD.OD_ID
+									,OP.SH_ID
+									,SH.Shop
 								FROM OrdersPayment OP
+								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($USR_Shop ? "SH.SH_ID = {$USR_Shop}" : "SH.CT_ID = {$CT_ID}")."
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NULL
+								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NULL
 								ORDER BY OP.payment_date DESC";
 
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -634,12 +546,13 @@ else {
 						$format_cost = number_format($row["payment_sum"], 0, '', ' ');
 						$cost_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : "<span>{$row["cost_name"]}</span>";
 						echo "<tr>";
-						echo "<td width='240'>{$cost_name}</td>";
 						echo "<td width='49'>{$row["payment_date_short"]}</td>";
 						echo "<td width='70' class='txtright'><b>{$format_cost}</b></td>";
+						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
+						echo "<td width='180'>{$cost_name}</td>";
 						echo "<td width='22'>";
 						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
-							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='-' title='Изменить расход'><i class='fa fa-pencil fa-lg'></i></a>";
+							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='-' title='Изменить расход'><i class='fa fa-pencil fa-lg'></i></a>";
 						}
 						echo "</td>";
 						echo "</tr>";
@@ -650,7 +563,7 @@ else {
 			</table>
 			</div>
 
-			<h3 id="section3">Section 3</h3>
+			<h3 id="section3"></h3>
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
@@ -664,10 +577,13 @@ else {
 									,YEAR(OD.StartDate) year
 									,MONTH(OD.StartDate) month
 									,OD.OD_ID
-									,send
+									,OP.SH_ID
+									,SH.Shop
+									,OP.send
 								FROM OrdersPayment OP
+								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($USR_Shop ? "SH.SH_ID = {$USR_Shop}" : "SH.CT_ID = {$CT_ID}")."
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND OP.CT_ID = {$CT_ID} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NOT NULL
+								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NOT NULL
 								ORDER BY OP.payment_date DESC";
 
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -675,14 +591,14 @@ else {
 					while( $row = mysqli_fetch_array($res) ) {
 						$sum_send = $sum_send + $row["payment_sum"];
 						$format_cost = number_format($row["payment_sum"], 0, '', ' ');
-						$cost_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : "<span>{$row["cost_name"]}</span>";
 						echo "<tr>";
-						echo "<td width='240'>{$cost_name}</td>";
 						echo "<td width='49'>{$row["payment_date_short"]}</td>";
 						echo "<td width='70' class='txtright'><b>{$format_cost}</b></td>";
+						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
+						echo "<td width='180'><span>{$row["cost_name"]}</span></td>";
 						echo "<td width='22'>";
-						if( $locking == 0 and $row["Code"] == '' and $row["send"] != 2 ) { // Если месяц не закрыт
-							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='' send='{$row["send"]}' title='Изменить отправку'><i class='fa fa-pencil fa-lg'></i></a>";
+						if( $locking == 0 and $row["send"] != 2 ) { // Если месяц не закрыт
+							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='' title='Изменить отправку'><i class='fa fa-pencil fa-lg'></i></a>";
 						}
 						echo "</td>";
 						echo "</tr>";
@@ -692,10 +608,92 @@ else {
 				</tbody>
 			</table>
 			</div>
+
+			<h3 id="section4"></h3>
+			<div>
+			<table class="main_table" style="margin: 0; display: table;">
+				<tbody>
+				<?
+					$query = "SELECT DATE_FORMAT(OP.payment_date, '%d.%m') payment_date
+									,OP.payment_sum
+									,OP.terminal_payer
+									,OD.Code
+									,YEAR(OD.StartDate) year
+									,MONTH(OD.StartDate) month
+									,OD.OD_ID
+									,SH.Shop
+								FROM OrdersPayment OP
+								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($USR_Shop ? "SH.SH_ID = {$USR_Shop}" : "SH.CT_ID = {$CT_ID}")."
+								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID AND OD.Del = 0
+								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NOT NULL
+								ORDER BY OP.payment_date DESC";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					$terminal_sum = 0;
+					while( $row = mysqli_fetch_array($res) ) {
+						$format_sum = number_format($row["payment_sum"], 0, '', ' ');
+						$terminal_sum = $terminal_sum + $row["payment_sum"];
+						echo "<tr>";
+						echo "<td width='49'>{$row["payment_date"]}</td>";
+						echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
+						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
+						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b></td>";
+						echo "<td width='140' class='nowrap'>{$row["terminal_payer"]}</td>";
+						echo "</tr>";
+					}
+					$format_terminal_sum = number_format($terminal_sum, 0, '', ' ');
+				?>
+				</tbody>
+			</table>
+			</div>
+			<h3 id="section5"></h3>
+			<div>
+			<table class="main_table" style="margin: 0; display: table;">
+				<tbody>
+					<?
+					$query = "SELECT DATE_FORMAT(OT.StartDate, '%d.%m') reject_date
+									,OD.OD_ID
+									,OD.Code
+									,SH.Shop
+									,OT.old_sum
+									,IF(OT.type = 1, 'Замена', 'Отказ') comment
+									,OT.StartDate
+									,OT.SH_ID
+								FROM OrdersData OD
+								JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
+								JOIN Shops SH ON SH.SH_ID = OT.SH_ID ".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "AND SH.CT_ID = {$CT_ID}")."
+								WHERE YEAR(OT.StartDate) = {$_GET["year"]} AND MONTH(OT.StartDate) = {$_GET["month"]}";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					$reject_count = 0;
+					while( $row = mysqli_fetch_array($res) ) {
+						$format_old_price = number_format($row["old_sum"], 0, '', ' ');
+						++$reject_count;
+						echo "<tr>";
+						echo "<td width='49'><span class='nowrap'>{$row["reject_date"]}</span></td>";
+						echo "<td width='70' class='txtright'><b>{$format_old_price}</b></td>";
+						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
+						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b></td>";
+						echo "<td width='120' style='color: #911;'>{$row["comment"]}</td>";
+						echo "<td width='22'><a href='#' onclick='if(confirm(\"Убрать заказ <b>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
+						echo "</tr>";
+					}
+					?>
+				</tbody>
+			</table>
+			</div>
 		</div>
 	</div>
 	<?
-		echo "<script> $(document).ready(function() { $('.wr_main_table_body').css('height', 'calc(100vh - 430px)'); $('#MT_header').css('margin-top','210px'); $('#section1').html('ПРИХОД наличных: {$format_cache_sum}'); $('#section2').html('РАСХОД наличных: {$format_sum_cost}'); $('#section3').html('ОТПРАВКА наличных: {$format_sum_send}'); }); </script>";
+		echo "<script>
+			$(document).ready(function() {
+				$('.wr_main_table_body').css('height', 'calc(100vh - 430px)');
+				$('#MT_header').css('margin-top','210px');
+				$('#section1').html('ПРИХОД наличных: {$format_cache_sum}');
+				$('#section2').html('РАСХОД наличных: {$format_sum_cost}');
+				$('#section3').html('ОТПРАВКА наличных: {$format_sum_send}');
+				$('#section4').html('Оплата по ТЕРМИНАЛУ: {$format_terminal_sum}');
+				$('#section5').html('Отказы/замены: {$reject_count}');
+			});
+		</script>";
 	}
 	?>
 	<!--Форма для диалога печати-->
@@ -713,13 +711,15 @@ else {
 			<tr>
 				<th width="55">Дата отгрузки</th>
 				<th width="59">Код</th>
-				<th width="5%">Квитанция</th>
-				<th width="5%">Заказчик</th>
+				<th width="5%">Заказчик<br>Квитанция</th>
 				<th width="25%">Наименование</th>
 				<th width="15%">Материал</th>
 				<th width="15%">Цвет</th>
 				<th width="40">Кол-во</th>
 				<th width="10%">Салон<br>
+					<?
+					if( !$USR_Shop ) {
+					?>
 					<input type="hidden" name="CT_ID" value="<?=$_GET['CT_ID']?>">
 					<input type="hidden" name="year" value="<?=$_GET['year']?>">
 					<input type="hidden" name="month" value="<?=$_GET['month']?>">
@@ -733,6 +733,9 @@ else {
 							}
 						?>
 					</select>
+					<?
+					}
+					?>
 				</th>
 				<th width="100">Примечание</th>
 				<th width="100">Дата продажи</th>
@@ -753,7 +756,6 @@ else {
 			<tr>
 				<th width="55"></th>
 				<th width="59"></th>
-				<th width="5%"></th>
 				<th width="5%"></th>
 				<th width="25%"></th>
 				<th width="15%"></th>
@@ -791,53 +793,55 @@ else {
 						,ROUND(IFNULL(OD.discount, 0) / SUM(ODD_ODB.Price) * 100) percent
 						,IFNULL(OP.payment_sum, 0) payment_sum
 						,OP.terminal_payer
-						,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
+						,IF(OS.locking_date IS NOT NULL, 1, 0) is_lock
 						,OD.confirmed
 						#,IFNULL(OT.type, 0) type
 						#,IFNULL(OT.comment, '') comment
 						#,IFNULL(OT.old_SH_ID, OD.SH_ID) old_SH_ID
 						#,IFNULL(OT.old_StartDate, OD.StartDate) old_StartDate
-				  FROM OrdersData OD
-				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
-				  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-				  LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE IFNULL(payment_sum, 0) != 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
-				  LEFT JOIN (SELECT ODD.OD_ID
-								   ,IFNULL(PM.PT_ID, 2) PT_ID
-								   ,ODD.ODD_ID itemID
-								   ,ODD.Price * ODD.Amount Price
+					FROM OrdersData OD
+					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+						".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
+					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
+					LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE IFNULL(payment_sum, 0) != 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
+					LEFT JOIN (
+						SELECT ODD.OD_ID
+								,IFNULL(PM.PT_ID, 2) PT_ID
+								,ODD.ODD_ID itemID
+								,ODD.Price * ODD.Amount Price
 
-								   ,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), ''), '</i></b><br>') Zakaz
+								,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), ''), '</i></b><br>') Zakaz
 
-								   ,CONCAT(IFNULL(CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')'), ''), '<br>') Material
-								   ,CONCAT(ODD.Amount, '<br>') Amount
+								,CONCAT(IFNULL(CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')'), ''), '<br>') Material
+								,CONCAT(ODD.Amount, '<br>') Amount
 
-							FROM OrdersDataDetail ODD
-							LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-							LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-							LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-							LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-							LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-							WHERE ODD.Del = 0
-							GROUP BY ODD.ODD_ID
-							UNION ALL
-							SELECT ODB.OD_ID
-								  ,0 PT_ID
-								  ,ODB.ODB_ID itemID
-								  ,ODB.Price * ODB.Amount Price
+						FROM OrdersDataDetail ODD
+						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+						WHERE ODD.Del = 0
+						GROUP BY ODD.ODD_ID
+						UNION ALL
+						SELECT ODB.OD_ID
+								,0 PT_ID
+								,ODB.ODB_ID itemID
+								,ODB.Price * ODB.Amount Price
 
-								  ,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), ''), '</i></b><br>') Zakaz
+								,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), ''), '</i></b><br>') Zakaz
 
-								  ,CONCAT(IFNULL(CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')'), ''), '<br>') Material
-								  ,CONCAT(ODB.Amount, '<br>') Amount
+								,CONCAT(IFNULL(CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')'), ''), '<br>') Material
+								,CONCAT(ODB.Amount, '<br>') Amount
 
-							FROM OrdersDataBlank ODB
-							LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-							LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-							LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-							WHERE ODB.Del = 0
-							GROUP BY ODB.ODB_ID
-							ORDER BY PT_ID DESC, itemID
-							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+						FROM OrdersDataBlank ODB
+						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+						WHERE ODB.Del = 0
+						GROUP BY ODB.ODB_ID
+						ORDER BY PT_ID DESC, itemID
+						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 					WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID}
 					".(($year != '' and $month != '') ? (($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year) : '')."
 					GROUP BY OD.OD_ID
@@ -865,13 +869,12 @@ else {
 						<span>{$row["ReadyDate"]}</span>
 					</td>
 					<td>{$row["Code"]}</td>
-					<td><span>{$row["OrderNumber"]}</span></td>
-					<td><span>{$row["ClientName"]}</span></td>
+					<td><span>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>
 					<td><span class='nowrap'>{$row["Zakaz"]}</span></td>
 					<td><span class='nowrap material'>{$row["Material"]}</span></td>
 					<td>{$row["Color"]}</td>
 					<td class='material'><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>
-					<td id='{$row["OD_ID"]}'><span><select ".($is_lock ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
+					<td id='{$row["OD_ID"]}'><span><select ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
 					<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
 					<td id='{$row["OD_ID"]}'><input type='text' class='date sell_date' value='{$row["StartDate"]}'></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
@@ -948,23 +951,36 @@ else {
 	<form method='post' action='<?=$location?>&add_cost=1'>
 		<fieldset>
 			<input type="hidden" name="OP_ID" id="OP_ID">
-			<input type="hidden" name="CT_ID" id="CT_ID">
 			<input type="hidden" name="sign" id="sign">
-			<div style="width: 230px; display: inline-block; margin-right: 15px; vertical-align: top;">
-				<label for="cost_name">Наименование:</label><br>
+			<div style="width: 100px; display: inline-block; margin-right: 15px; vertical-align: top;">
+				<label for="cost">Сумма:</label><br>
+				<input type="number" name="cost" min="0" id="cost" style="width: 100%; text-align: right;">
+			</div>
+			<div style="width: 90px; display: inline-block; vertical-align: top;">
+				<label for="cost_date">Дата:</label><br>
+				<input readonly type="text" name="cost_date" class="" id="cost_date" style="width: 100%; text-align: center;">
+			</div>
+			<br><br>
+			<div style="width: 210px; display: inline-block; vertical-align: top;">
+				<label for="SH_ID">Касса:</label><br>
+				<select size="4" name="SH_ID" id="SH_ID" style="width: 100%;" required>
+					<?
+					$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND retail = 1 ".($USR_Shop ? "AND SH_ID = {$USR_Shop}" : "")." ORDER BY SH_ID";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) ) {
+						echo "<option ".($USR_Shop ? "selected" : "")." value='{$row["SH_ID"]}'>{$row["Shop"]}</option>";
+					}
+					?>
+				</select>
+			</div>
+			<br><br>
+			<div style="width: 210px; display: inline-block; vertical-align: top;">
+				<label for="cost_name">Комментарий:</label><br>
 				<input type="text" name="cost_name" id="cost_name" style="width: 100%;">
 				<div id="wr_send" style="display: none">
 					<input type="checkbox" name="send" id="send" value="1">
 					<label for="send">Отправка наличных</label>
 				</div>
-			</div>
-			<div style="width: 90px; display: inline-block; margin-right: 15px; vertical-align: top;">
-				<label for="cost_name">Дата:</label><br>
-				<input readonly type="text" name="cost_date" class="date" id="cost_date" style="width: 100%;">
-			</div>
-			<div style="width: 100px; display: inline-block; vertical-align: top;">
-				<label for="cost">Сумма:</label><br>
-				<input type="number" name="cost" min="1" id="cost" style="width: 100%; text-align: right;">
 			</div>
 		</fieldset>
 		<div>
@@ -1023,7 +1039,7 @@ else {
 		// Кнопка добавления платежа
 		$('.add_payment_btn').click( function() {
 			var OD_ID = $(this).attr('id');
-			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID+"&FA_ID=<?=$FA_ID?>&CT_ID=<?=$CT_ID?>", dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID, dataType: "script", async: false });
 
 			$('#add_payment').dialog({
 				width: 650,
@@ -1160,35 +1176,20 @@ else {
 		$('.add_cost_btn').click( function() {
 			var sign = $(this).attr('sign');
 			var cost_date = $(this).attr('cost_date');
+			var shop = $(this).attr('shop');
+			var OP_ID = $(this).attr('id');
+			var cost_name = $(this).attr('cost_name');
+			var cost = $(this).attr('cost');
 
-			// Очистка диалога
-			$('#add_cost #OP_ID').val('');
-			$('#add_cost #CT_ID').val('');
-			$('#add_cost #cost_name').val('');
+			$('#add_cost #SH_ID').val(shop);
 			$('#add_cost #cost_date').val(cost_date);
-			$('#add_cost #cost').val('');
+			$('#add_cost #OP_ID').val(OP_ID);
+			$('#add_cost #cost_name').val(cost_name);
+			$('#add_cost #cost').val(cost);
 			$('#send').prop('checked', false);
 
-			var OP_ID = $(this).attr('id');
-
-			if( OP_ID > 0 ) {
-				var cost_name = $(this).attr('cost_name');
-				var cost = $(this).attr('cost');
-				var send = $(this).attr('send');
-				$('#add_cost #OP_ID').val(OP_ID);
-				$('#add_cost #cost_name').val(cost_name);
-				$('#add_cost #cost').val(cost);
-				if( send ) {
-					$('#add_cost #send').prop('checked', true);
-				}
-			}
-			else {
-				var CT_ID = $(this).attr('CT_ID');
-				$('#add_cost #CT_ID').val(CT_ID);
-			}
-
 			$('#add_cost').dialog({
-				width: 550,
+				width: 300,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
@@ -1196,16 +1197,19 @@ else {
 			});
 			$( "#cost_date" ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
 
-			if (sign == '-') {
-				$('#add_cost').dialog('option', 'title', 'РАСХОД');
+			if (sign == '+') {
+				$('#add_cost').dialog('option', 'title', 'ПРИХОД');
+				$('#add_cost fieldset').css('background', '#9f9');
 				$('#add_cost #sign').val(sign);
 			}
-			else if (sign == '+') {
-				$('#add_cost').dialog('option', 'title', 'ПРИХОД');
+			else if (sign == '-') {
+				$('#add_cost').dialog('option', 'title', 'РАСХОД');
+				$('#add_cost fieldset').css('background', '#f99');
 				$('#add_cost #sign').val(sign);
 			}
 			else {
 				$('#add_cost').dialog('option', 'title', 'ОТПРАВКА ДЕНЕГ');
+				$('#add_cost fieldset').css('background', '#99f');
 				$('#wr_send input').prop('checked', true);
 				$('#add_cost #sign').val('-');
 			}

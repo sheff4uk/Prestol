@@ -7,9 +7,9 @@ switch( $_GET["do"] )
 case "shopstags":
 	// Автокомплит салонов
 	$query = "SELECT Shop FROM (
-				SELECT CT.CT_ID, CT.City AS Shop FROM Cities CT WHERE CT.CT_ID IN ({$USR_cities}) GROUP BY CT.City
+				SELECT CT.CT_ID, CT.City AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID WHERE CT.CT_ID IN ({$USR_cities}) ".($USR_Shop ? "AND SH.retail" : "")." GROUP BY CT.City
 				UNION
-				SELECT CT.CT_ID, CONCAT(CT.City, '/', SH.Shop) AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID WHERE CT.CT_ID IN ({$USR_cities}) OR SH.SH_ID IN ({$USR_shops})
+				SELECT CT.CT_ID, CONCAT(CT.City, '/', SH.Shop) AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID WHERE CT.CT_ID IN ({$USR_cities}) ".($USR_Shop ? "AND SH.retail" : "")."
 				UNION
 				SELECT 0, 'Свободные' AS Shop) SHT
 			  WHERE Shop LIKE '%{$_GET["term"]}%'";
