@@ -818,7 +818,6 @@ case "add_payment":
 					,OP.payment_sum
 					,IF(IFNULL(OP.terminal_payer, '') = '', 0, 1) terminal
 					,OP.terminal_payer
-					#,IFNULL(OP.CT_ID, 0) CT_ID
 					,IFNULL(OP.FA_ID, 0) FA_ID
 					,USR.Name
 					,IF(OP.FA_ID IS NOT NULL AND OP.terminal_payer IS NULL, FA.name, '') account
@@ -854,11 +853,15 @@ case "add_payment":
 	$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'>";
 	$html .= "<option value=''>{$Shop}</option>";
 	if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
-		$query = "SELECT FA.FA_ID, FA.name FROM FinanceAccount FA";
+		$query = "SELECT FA.FA_ID, FA.name, IF(FA.USR_ID = {$_SESSION["id"]}, 'selected', '') selected FROM FinanceAccount FA";
 		$query .= in_array('finance_account', $Rights) ? " WHERE FA.USR_ID = {$_SESSION["id"]}" : "";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		while( $row = mysqli_fetch_array($res) ) {
-			$html .= "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+			// Если на производстве, то по дефолту касса пользователя
+			if( in_array('order_add_confirm', $Rights) ) {
+				$query = "SELECT ";
+			}
+				$html .= "<option ".(in_array('order_add_confirm', $Rights) ? $row["selected"] : "")." value='{$row["FA_ID"]}'>{$row["name"]}</option>";
 		}
 	}
 	$html .= "</select>";
