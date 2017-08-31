@@ -489,7 +489,7 @@
 									,OP.SH_ID
 									,SH.Shop
 								FROM OrdersPayment OP
-								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($USR_Shop ? "SH.SH_ID = {$USR_Shop}" : "SH.CT_ID = {$CT_ID}")."
+								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) > 0 AND OP.terminal_payer IS NULL
 								ORDER BY OP.payment_date DESC";
@@ -534,7 +534,7 @@
 									,OP.SH_ID
 									,SH.Shop
 								FROM OrdersPayment OP
-								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($USR_Shop ? "SH.SH_ID = {$USR_Shop}" : "SH.CT_ID = {$CT_ID}")."
+								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NULL
 								ORDER BY OP.payment_date DESC";
@@ -581,7 +581,7 @@
 									,SH.Shop
 									,OP.send
 								FROM OrdersPayment OP
-								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($USR_Shop ? "SH.SH_ID = {$USR_Shop}" : "SH.CT_ID = {$CT_ID}")."
+								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NOT NULL
 								ORDER BY OP.payment_date DESC";
@@ -623,7 +623,7 @@
 									,OD.OD_ID
 									,SH.Shop
 								FROM OrdersPayment OP
-								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($USR_Shop ? "SH.SH_ID = {$USR_Shop}" : "SH.CT_ID = {$CT_ID}")."
+								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID AND OD.Del = 0
 								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NOT NULL
 								ORDER BY OP.payment_date DESC";
@@ -660,7 +660,7 @@
 									,OT.SH_ID
 								FROM OrdersData OD
 								JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
-								JOIN Shops SH ON SH.SH_ID = OT.SH_ID ".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "AND SH.CT_ID = {$CT_ID}")."
+								JOIN Shops SH ON SH.SH_ID = OT.SH_ID ".($SH_ID ? "AND SH.SH_ID = {$SH_ID}" : "AND SH.CT_ID = {$CT_ID}")."
 								WHERE YEAR(OT.StartDate) = {$_GET["year"]} AND MONTH(OT.StartDate) = {$_GET["month"]}";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					$reject_count = 0;
