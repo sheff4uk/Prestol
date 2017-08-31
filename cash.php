@@ -837,8 +837,8 @@
 						echo "<td>{$row["date"]}</td>";
 						echo "<td style='text-align: center;'>{$type}</td>";
 						echo "<td class='txtright' style='color: {$color};'><b>{$money}</b></td>";
-						echo "<td><span>{$row["account"]}</span></td>";
-						echo "<td><span>{$row["category"]}</span></td>";
+						echo "<td><span class='nowrap'>{$row["account"]}</span></td>";
+						echo "<td><span class='nowrap'>{$row["category"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["author"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["kontragent"]}</span></td>";
 						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
