@@ -7,6 +7,12 @@
 
 	include "checkrights.php";
 
+	// Функция делает ссылки кликабельными
+	function src_url($src) {
+		$src = preg_replace('/((?:\w+:\/\/|www\.)[\w.\/%\d&?#+=-]+)/i', '<a href="\1" target="_blank" class="button">\1</a>', $src);
+		return $src;
+	}
+
 	if( in_array('order_add', $Rights) ) {
 		$query = "SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 1 is_read, USR.Name
 					FROM OrdersMessage OM
