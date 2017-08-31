@@ -248,19 +248,24 @@
 
 <?
 // Узнаем общий остаток наличных
-	$query = "SELECT SUM(IFNULL(pay_in,0)) - SUM(IFNULL(pay_out,0)) ostatok FROM MonthlySellInOut";
-	if( $USR_Shop ) {
-		$query .= " WHERE SH_ID = {$USR_Shop}";
+	$query = "SELECT SUM(IFNULL(MSIO.pay_in,0)) - SUM(IFNULL(MSIO.pay_out,0)) ostatok, SH.Shop
+				FROM MonthlySellInOut MSIO
+				JOIN Shops SH ON SH.SH_ID = MSIO.SH_ID";
+	if( $SH_ID ) {
+		$query .= " WHERE MSIO.SH_ID = {$SH_ID}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$label = "Касса ".mysqli_result($res,0,'Shop').":";
 	}
 	else {
-		$query .= " WHERE SH_ID IN(SELECT SH_ID FROM Shops WHERE CT_ID = {$CT_ID})";
+		$query .= " WHERE MSIO.SH_ID IN(SELECT SH_ID FROM Shops WHERE CT_ID = {$CT_ID})";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$label = "Остаток наличных:";
 	}
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$ostatok = mysqli_result($res,0,'ostatok');
 	$format_ostatok = number_format($ostatok, 0, '', ' ');
 	$now_date = date('d.m.Y');
 	if( $CT_ID ) {
-		echo "<h3 style='display: inline-block; margin: 10px 20px;'>Остаток наличных: {$format_ostatok}</h3>";
+		echo "<h3 style='display: inline-block; margin: 10px 20px;'>{$label} {$format_ostatok}</h3>";
 		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='+' CT_ID='{$CT_ID}' title='Внести приход'><i class='fa fa-plus fa-lg' style='color: white; background: green; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
 		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='-' CT_ID='{$CT_ID}' title='Внести расход'><i class='fa fa-minus fa-lg' style='color: white; background: red; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
 		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='' CT_ID='{$CT_ID}' title='Внести отправку денег'><i class='fa fa-exchange fa-lg' style='color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>";
