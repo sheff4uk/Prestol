@@ -342,13 +342,6 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$locking = mysqli_result($res,0,'locking_date') ? 1 : 0;
 		$locking_date = mysqli_result($res,0,'locking_date');
-
-//		// Узнаем закрыт ли следующий месяц
-//		$query = "SELECT locking_date
-//					FROM OstatkiShops
-//					WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$nextyear} AND month = {$nextmonth}";
-//		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//		$locking_next = mysqli_result($res,0,'locking_date') ? 1 : 0;
 	?>
 		<div id='selling_report'>
 			<div style="display: inline-block; vertical-align:top;">
@@ -1062,15 +1055,12 @@
 				var terminal_payer = $(this).parents('tr').find('input[type="text"].terminal_payer');
 				var terminal_payer_hidden = $(this).parents('tr').find('input[type="hidden"].terminal_payer');
 				var account = $(this).parents('tr').find('select.account');
-//				var haccount = $(this).parents('tr').find('input.account');
 				if( ch ) {
 					$(terminal_payer).prop('disabled', false);
 					$(terminal_payer).prop('required', true);
 					$(terminal_payer_hidden).val( $(terminal_payer).val() );
 					$(account).prop('disabled', true);
 					$(account).hide('fast');
-//					$(haccount).prop('disabled', false);
-//					$(haccount).show('fast');
 				}
 				else {
 					$(terminal_payer).prop('disabled', true);
@@ -1078,14 +1068,9 @@
 					$(terminal_payer_hidden).val('');
 					$(account).prop('disabled', false);
 					$(account).show('fast');
-//					$(haccount).prop('disabled', true);
-//					$(haccount).hide('fast');
 				}
 			});
 
-//			$('#add_payment .terminal_payer').change(function() {
-//				$(this).parent('td').find('input[type="hidden"]').val($(this).val());
-//			});
 			$('#add_payment .terminal').change();
 			return false;
 		});
