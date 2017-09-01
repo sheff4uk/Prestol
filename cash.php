@@ -364,7 +364,12 @@
 			<input readonly type="text" name="cash_to" class="date to" value="<?=$cash_to?>">
 			 ]
 		</form>
-		<p>Изменение: <b id="cash_change"></b></p>
+		<?
+		if( in_array('finance_all', $Rights) ) {
+			echo "<p style='display: inline-block; margin: 10px;'>Изменение локальное: <b id='cash_change_local'></b></p>";
+		}
+		?>
+		<p style="display: inline-block; margin: 10px;">Изменение: <b id="cash_change"></b></p>
 		<a href="?reset_filter=1" style="display: none; position: absolute; right: -10px; bottom: 0;" id="reset_filter">Сбросить фильтры</a>
 	</div>
 
@@ -742,6 +747,7 @@
 								,SF.type
 								,SF.money
 								,SF.account
+								,SF.local
 								,SF.category
 								,SF.kontragent
 								,SF.comment
@@ -762,6 +768,7 @@
 									,IFNULL(FC.type, 0) type
 									,IFNULL(FC.type, -1) * F.money money
 									,FA.name account
+									,FA.local
 									,IF(F.to_account IS NULL, FC.name, CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name)) category
 									,KA.Naimenovanie kontragent
 									,F.comment
@@ -791,6 +798,7 @@
 									,0 type
 									,F.money
 									,TFA.name account
+									,TFA.local
 									,CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name) category
 									,NULL kontragent
 									,F.comment
@@ -826,8 +834,10 @@
 
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				$cash_in = 0; // Сумма видимых операций
+				$cash_in_local = 0; // Сумма видимых операций локальных
 				while( $row = mysqli_fetch_array($res) ) {
 					$cash_in = $cash_in + $row["money"];
+					$cash_in_local = $cash_in_local + $row["money"] * $row["local"];
 					$color = $row["money"] < 0 ? '#E74C3C' : '#16A085';
 					$money = number_format($row["money"], 0, '', ' ');
 					$type = ($row["type"] == 1 ? '<i class="fa fa-plus" style="color: #16A085;"></i>' : ($row["type"] == -1 ? '<i class="fa fa-minus" style="color: #E74C3C;"></i>' : '<i class="fa fa-exchange"></i>'));
@@ -855,6 +865,11 @@
 				$color = $cash_in < 0 ? '#E74C3C' : '#16A085';
 				$cash_change = "<span style='color: {$color};'>{$cash_in}</span>";
 				$cash_change = addslashes( $cash_change );
+
+				$cash_in_local = number_format($cash_in_local, 0, '', ' ');
+				$color_local = $cash_in_local < 0 ? '#E74C3C' : '#16A085';
+				$cash_change_local = "<span style='color: {$color_local};'>{$cash_in_local}</span>";
+				$cash_change_local = addslashes( $cash_change_local );
 			?>
 			</tbody>
 		</table>
@@ -864,6 +879,7 @@
 <script>
 	$(document).ready(function() {
 		$('#cash_change').html('<?=$cash_change?>');
+		$('#cash_change_local').html('<?=$cash_change_local?>');
 	});
 </script>
 
