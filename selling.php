@@ -886,6 +886,7 @@
 			// Если заказ заблокирован, то показываем глаз. Иначе - карандаш.
 			if( $disabled ) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
+				echo "<script>$('#ord{$row["OD_ID"]} .add_payment_btn').button({disabled: true});</script>";
 			}
 			else {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
