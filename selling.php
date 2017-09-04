@@ -860,6 +860,7 @@
 			$format_diff = number_format($row["Price"] - $row["payment_sum"], 0, '', ' ');
 			$diff_color = ($row["Price"] == $row["payment_sum"]) ? "#6f6" : (($row["Price"] < $row["payment_sum"]) ? "#f66" : "#fff");
 			$otkaz_cell = ($row["type"] == 1) ? "<b>Замена</b><br>{$row["comment"]}" : (($row["type"] == 2) ? "<b>Отказ</b><br>{$row["comment"]}" : "");
+			$payment_btn = "<a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a>";
 			echo "
 				<tr id='ord{$row["OD_ID"]}'>
 					<td>
@@ -877,7 +878,7 @@
 					<td id='{$row["OD_ID"]}'><input type='text' class='date sell_date' value='{$row["StartDate"]}'></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
-					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a></td>
+					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}' dis='{$disabled}'>{$format_payment}</a></td>
 					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>
 					<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>";
 //					echo "<td><span style='color: #911;'>{$otkaz_cell}</span></td>";
@@ -886,7 +887,6 @@
 			// Если заказ заблокирован, то показываем глаз. Иначе - карандаш.
 			if( $disabled ) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
-				echo "<script>$('#ord{$row["OD_ID"]} .add_payment_btn').button({disabled: true});</script>";
 			}
 			else {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
@@ -1038,7 +1038,8 @@
 		// Кнопка добавления платежа
 		$('.add_payment_btn').click( function() {
 			var OD_ID = $(this).attr('id');
-			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID, dataType: "script", async: false });
+			var disabled = $(this).attr('dis');
+			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID+"&disabled="+disabled, dataType: "script", async: false });
 
 			$('#add_payment').dialog({
 				width: 650,

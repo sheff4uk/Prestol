@@ -792,10 +792,17 @@ case "shipment":
 // Форма добавления платежа к заказу
 case "add_payment":
 	$OD_ID = $_GET["OD_ID"];
+	$disabled = $_GET["disabled"];
 	$html = "";
 
 	// Узнаем фамилию заказчика, салон, счет терминала в салоне
-	$query = "SELECT OD.ClientName, SH.SH_ID, SH.Shop, SH.FA_ID FROM OrdersData OD JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD.OD_ID = {$OD_ID}";
+	$query = "SELECT OD.ClientName
+					,SH.SH_ID
+					,SH.Shop
+					,SH.FA_ID
+				FROM OrdersData OD
+				JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+				WHERE OD.OD_ID = {$OD_ID}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$ClientName = mysqli_result($res,0,'ClientName');
 	$SH_ID = mysqli_result($res,0,'SH_ID');
@@ -847,41 +854,46 @@ case "add_payment":
 		$html .= "<td>{$row["Name"]}</td>";
 		$html .= "</tr>";
 	}
-	$payment_date = date('d.m.Y');
-	$html .= "<tr style='background: #6f6;'>";
-
-	$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'>";
-	$html .= "<option value=''>{$Shop}</option>";
-	if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
-		$query = "SELECT FA.FA_ID, FA.name, IF(FA.USR_ID = {$_SESSION["id"]}, 'selected', '') selected FROM FinanceAccount FA";
-		$query .= in_array('finance_account', $Rights) ? " WHERE FA.USR_ID = {$_SESSION["id"]}" : "";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-		while( $row = mysqli_fetch_array($res) ) {
-			// Если на производстве, то по дефолту касса пользователя
-			if( in_array('order_add_confirm', $Rights) ) {
-				$query = "SELECT ";
+	if( !$disabled ) { // Если заказ не закрыт то можно добавить оплату
+		$payment_date = date('d.m.Y');
+		$html .= "<tr style='background: #6f6;'>";
+		$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'>";
+		$html .= "<option value=''>{$Shop}</option>";
+		if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
+			$query = "SELECT FA.FA_ID, FA.name, IF(FA.USR_ID = {$_SESSION["id"]}, 'selected', '') selected FROM FinanceAccount FA";
+			$query .= in_array('finance_account', $Rights) ? " WHERE FA.USR_ID = {$_SESSION["id"]}" : "";
+			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+			while( $row = mysqli_fetch_array($res) ) {
+				// Если на производстве, то по дефолту касса пользователя
+				if( in_array('order_add_confirm', $Rights) ) {
+					$query = "SELECT ";
+				}
+					$html .= "<option ".(in_array('order_add_confirm', $Rights) ? $row["selected"] : "")." value='{$row["FA_ID"]}'>{$row["name"]}</option>";
 			}
-				$html .= "<option ".(in_array('order_add_confirm', $Rights) ? $row["selected"] : "")." value='{$row["FA_ID"]}'>{$row["name"]}</option>";
 		}
-	}
-	$html .= "</select>";
-	$html .= "<input type='hidden' name='SH_ID_add' value='{$SH_ID}'></td>";
+		$html .= "</select>";
+		$html .= "<input type='hidden' name='SH_ID_add' value='{$SH_ID}'></td>";
 
-	$html .= "<td><input type='text' class='' style='width: 90px; text-align: center;' name='payment_date_add' value='{$payment_date}' readonly></td>";
+		$html .= "<td><input type='text' class='' style='width: 90px; text-align: center;' name='payment_date_add' value='{$payment_date}' readonly></td>";
 
-	$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
+		$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
 
-	if( $FA_ID ) {
-		$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
-		$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
+		if( $FA_ID ) {
+			$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
+			$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
+		}
+		else {
+			$html .= "<td><input style='display: none;' type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
+			$html .= "<td><input style='display: none;' type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
+		}
+
+		$html .= "<td>{$_SESSION['name']}</td>";
+		$html .= "</tr>";
 	}
 	else {
-		$html .= "<td><input style='display: none;' type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
-		$html .= "<td><input style='display: none;' type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
+		$html .= "<tr style='background: #6f6;'><td colspan='6'><b>Отчетный период закрыт. Внесение оплаты невозможно.</b></td></tr>";
 	}
-
-	$html .= "<td>{$_SESSION['name']}</td>";
-	$html .= "</tr></tbody></table>";
+	$html .= "</tbody></table>";
 
 	$html .= "<div class='accordion'>";
 	$html .= "<h3>Памятка по внесению оплаты</h3>";
