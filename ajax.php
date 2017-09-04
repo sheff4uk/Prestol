@@ -792,7 +792,8 @@ case "shipment":
 // Форма добавления платежа к заказу
 case "add_payment":
 	$OD_ID = $_GET["OD_ID"];
-	$disabled = $_GET["disabled"];
+//	$disabled = $_GET["disabled"];
+	$disabled = 0;
 	$html = "";
 
 	// Узнаем фамилию заказчика, салон, счет терминала в салоне
