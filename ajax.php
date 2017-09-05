@@ -792,23 +792,24 @@ case "shipment":
 // Форма добавления платежа к заказу
 case "add_payment":
 	$OD_ID = $_GET["OD_ID"];
-//	$disabled = $_GET["disabled"];
-	$disabled = 0;
 	$html = "";
 
-	// Узнаем фамилию заказчика, салон, счет терминала в салоне
+	// Узнаем фамилию заказчика, салон, счет терминала в салоне, закрыт ли месяц
 	$query = "SELECT OD.ClientName
 					,SH.SH_ID
 					,SH.Shop
 					,SH.FA_ID
+					,IF(OS.locking_date IS NOT NULL, 1, 0) is_lock
 				FROM OrdersData OD
 				JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+				LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 				WHERE OD.OD_ID = {$OD_ID}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$ClientName = mysqli_result($res,0,'ClientName');
 	$SH_ID = mysqli_result($res,0,'SH_ID');
 	$Shop = mysqli_result($res,0,'Shop');
 	$FA_ID = mysqli_result($res,0,'FA_ID');
+	$is_lock = mysqli_result($res,0,'is_lock');
 
 	$html .= "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 	$html .= "<table><thead><tr>";
@@ -855,7 +856,7 @@ case "add_payment":
 		$html .= "<td>{$row["Name"]}</td>";
 		$html .= "</tr>";
 	}
-	if( !$disabled ) { // Если заказ не закрыт то можно добавить оплату
+	if( !$is_lock ) { // Если заказ не закрыт то можно добавить оплату
 		$payment_date = date('d.m.Y');
 		$html .= "<tr style='background: #6f6;'>";
 		$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'>";

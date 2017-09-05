@@ -878,7 +878,7 @@
 					<td id='{$row["OD_ID"]}'><input type='text' class='date sell_date' value='{$row["StartDate"]}'></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
-					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}' dis='{$disabled}'>{$format_payment}</a></td>
+					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a></td>
 					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>
 					<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>";
 //					echo "<td><span style='color: #911;'>{$otkaz_cell}</span></td>";
@@ -1038,8 +1038,7 @@
 		// Кнопка добавления платежа
 		$('.add_payment_btn').click( function() {
 			var OD_ID = $(this).attr('id');
-			var disabled = $(this).attr('dis');
-			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID+"&disabled="+disabled, dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID, dataType: "script", async: false });
 
 			$('#add_payment').dialog({
 				width: 650,
