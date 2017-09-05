@@ -875,7 +875,7 @@
 					<td class='material'><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>
 					<td id='{$row["OD_ID"]}'><span><select ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
 					<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
-					<td id='{$row["OD_ID"]}'><input ".($disabled ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}'></td>
+					<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}'></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
 					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a></td>
