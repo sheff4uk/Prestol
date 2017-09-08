@@ -23,7 +23,7 @@
 					".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 				ORDER BY CT.City, SH.Shop";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$select_shops = "<select class='select_shops'>";
+	$select_shops = "<select class='select_shops' style='display: none;'>";
 	if( in_array('order_add_confirm', $Rights) ) {
 		$select_shops .= "<option value='0' style='background: #999;'>Свободные</option>";
 	}
@@ -31,7 +31,6 @@
 		$select_shops .= "<option value='{$row["SH_ID"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
 	}
 	$select_shops .= "</select>";
-	$select_shops = addslashes($select_shops);
 
 	// Добавление в базу нового заказа
 	if( isset($_POST["Shop"]) )
@@ -962,7 +961,7 @@
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>";
 		echo "<td><span>{$row["StartDate"]}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td class='".( (!$disabled and $row["SHP_ID"] == 0 and !$USR_Shop) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span></td>";
+		echo "<td class='".( (!$disabled and $row["SHP_ID"] == 0 and !$USR_Shop) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span>{$select_shops}</td>";
 		//echo "<td><span>{$row["OrderNumber"]}</span></td>";
 		echo "<td><span></span></td>";
 		if( $disabled ) {
@@ -1005,7 +1004,7 @@
 		}
 		echo "<td val='{$row["confirmed"]}' class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td class='X'><input type='checkbox' {$checkedX} value='1'></td>";
-		echo "<td>{$row["Comment"]}</td>";
+		echo "<td class='".(!$disabled ? "comment_cell" : "")."' id='{$row["OD_ID"]}'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
 		echo "<td>";
 
 		// Если пользователю доступен только один салон в регионе, то не показываем кнопки действий.
@@ -1029,7 +1028,7 @@
 					if( $row["IsReady"] and $row["IsPainting"] == 3 ) {
 						if( in_array('order_ready', $Rights) ) {
 							//echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа.\", \"?ready={$row["OD_ID"]}\")) return false;' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
-							echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='confirm(\"Пожалуйста, подтвердите <b>отгрузку</b> заказа.\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+							echo "<a href='#' class='shipping' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='confirm(\"Пожалуйста, подтвердите <b>отгрузку</b> заказа.\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 						}
 					}
 					if( !$disabled ) {
@@ -1040,7 +1039,7 @@
 						else {
 							$message = "Пожалуйста, подтвердите <b>удаление</b> заказа.";
 						}
-						echo "<a href='#' class='' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+						echo "<a href='#' class='deleting' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 					}
 				}
 			}
@@ -1461,21 +1460,41 @@
 		}
 		?>
 
-		// Редактирование салона
+		// Редактирование салона аяксом
 		$('.shop_cell').dblclick(function() {
 			var SH_ID = $(this).attr('SH_ID');
-			var shop_span = $(this).html();
-			$(this).html('<?=$select_shops?>');
+			$(this).find('span').hide();
+			$(this).find('select').show();
+			$(this).find('select').val(SH_ID).focus();
+		});
+		$('.shop_cell select').change(function() {
+			var OD_ID = $(this).parents('td').attr('id');
+			var val = $(this).val();
+			$.ajax({ url: "ajax.php?do=update_shop&OD_ID="+OD_ID+"&SH_ID="+val, dataType: "script", async: false });
+			$(this).parents('.shop_cell').find('select').hide();
+			$(this).parents('.shop_cell').find('span').show();
+		});
+		$('.shop_cell select').blur(function() {
+			$(this).parents('.shop_cell').find('select').hide();
+			$(this).parents('.shop_cell').find('span').show();
+		});
 
-			$(this).find('select').val(SH_ID).focus().on('change', function() {
-				var OD_ID = $(this).parents('td').attr('id');
-				var val = $(this).val();
-				$.ajax({ url: "ajax.php?do=update_shop&OD_ID="+OD_ID+"&SH_ID="+val, dataType: "script", async: false });
-			});
-
-			$(this).find('select').blur(function() {
-				$(this).parents('.shop_cell').html(shop_span);
-			});
+		// Редактирование примечания аяксом
+		$('.comment_cell').dblclick(function() {
+			$(this).find('span').hide();
+			$(this).find('textarea').show();
+			$(this).find('textarea').focus();
+		});
+		$('.comment_cell textarea').change(function() {
+			var OD_ID = $(this).parents('td').attr('id');
+			var val = $(this).val();
+			$.ajax({ type: "POST", url: "ajax.php?do=update_comment&OD_ID="+OD_ID, data: {comment: val}, dataType: "script", async: false });
+			$(this).parent('.comment_cell').find('textarea').hide();
+			$(this).parent('.comment_cell').find('span').show();
+		});
+		$('.comment_cell textarea').blur(function() {
+			$(this).parent('.comment_cell').find('textarea').hide();
+			$(this).parent('.comment_cell').find('span').show();
 		});
 
 //		// В форме добавления заказа если выбираем Свободные - дата продажи пустая

@@ -321,7 +321,7 @@ case "ispainting":
 			if( $isready == 1 and $val == 3 ) {
 				if( in_array('order_ready', $Rights) ) {
 					//echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' ".( $SH_ID == 0 ? 'style=\"display: none;\"' : '')." onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
-					$html .= "<a href='#' class='' ".( $SH_ID == 0 ? "style='display: none;'" : "")." onclick='confirm(\"Пожалуйста, подтвердите <b>отгрузку</b> заказа.\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$id}\", dataType: \"script\", async: false });});' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+					$html .= "<a href='#' class='shipping' ".( $SH_ID == 0 ? "style='display: none;'" : "")." onclick='confirm(\"Пожалуйста, подтвердите <b>отгрузку</b> заказа.\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$id}\", dataType: \"script\", async: false });});' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 				}
 			}
 //			else {
@@ -333,7 +333,7 @@ case "ispainting":
 					else {
 						$message = "Пожалуйста, подтвердите <b>удаление</b> заказа.";
 					}
-					$html .= "<a href='#' class='' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$id}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+					$html .= "<a href='#' class='deleting' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$id}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 				}
 //			}
 		}
@@ -1017,18 +1017,33 @@ case "update_shop":
 	$CTColor = mysqli_result($res,0,'CTColor');
 	$ShopCity = mysqli_result($res,0,'ShopCity');
 	$SH_ID = mysqli_result($res,0,'SH_ID');
-	$shop_span = "<span style='background: {$CTColor};'>{$ShopCity}</span>";
-	$shop_span = addslashes($shop_span);
+	$ShopCity = addslashes($ShopCity);
 
-	echo "$('.shop_cell[id={$OD_ID}]').html('{$shop_span}');";
+	echo "$('.shop_cell[id={$OD_ID}] span').html('{$ShopCity}');";
+	echo "$('.shop_cell[id={$OD_ID}] span').attr('style', 'background: {$CTColor};');";
 	echo "$('.shop_cell[id={$OD_ID}]').attr('SH_ID', '{$SH_ID}');";
 	echo "noty({timeout: 3000, text: 'Салон изменен с <b>{$old_shop}</b> на <b>{$new_shop}</b>', type: 'success'});";
 	if( $SH_ID == 0 ) {
-		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a').css('display', 'none');";
+		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a.shipping').hide();";
 	}
 	else {
-		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a').css('display', '');";
+		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a.shipping').show();";
 	}
+
+	break;
+///////////////////////////////////////////////////////////////////
+
+// Редактирование комментариев
+case "update_comment":
+	$OD_ID = $_GET["OD_ID"];
+	$comment = mysqli_real_escape_string( $mysqli, $_POST["comment"] );
+
+	// Обновляем комментарий
+	$query = "UPDATE OrdersData SET Comment = '{$comment}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
+	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+
+	echo "$('.comment_cell[id={$OD_ID}] span').html('{$comment}');";
+	echo "noty({timeout: 3000, text: 'Комментарий был обновлен.', type: 'success'});";
 
 	break;
 ///////////////////////////////////////////////////////////////////
