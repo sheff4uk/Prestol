@@ -32,8 +32,8 @@
 		// Добавление связанных заготовок
 		foreach ($_POST["wd_id"] as $key => $value) {
 			$sub_amount = $_POST["amount"][$key] * $Amount * -1;
-			$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Comment, PBS_ID, author)
-					  VALUES ({$value}, {$_POST["bll_id"][$key]}, {$sub_amount}, '-=авто запись=-', {$bs_id}, {$_SESSION["id"]})";
+			$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, PBS_ID, author)
+					  VALUES ({$value}, {$_POST["bll_id"][$key]}, {$sub_amount}, {$bs_id}, {$_SESSION["id"]})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
@@ -283,6 +283,7 @@
 							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
 							,USR.Name
 							,PBS.BS_ID is_parent
+							,BS.PBS_ID
 						FROM BlankStock BS
 						LEFT JOIN BlankStock PBS ON PBS.PBS_ID = BS.BS_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
@@ -300,7 +301,7 @@
 			while( $row = mysqli_fetch_array($res) )
 			{
 				$color = ($row["Amount"] < 0) ? "#E74C3C" : "#16A085";
-				echo "<tr class='".(($row["Comment"] == "-=авто запись=-") ? "auto_record" : ($row["is_parent"] ? "is_parent" : ""))."'>";
+				echo "<tr class='".(($row["PBS_ID"]) ? "auto_record" : ($row["is_parent"] ? "is_parent" : ""))."'>";
 				echo "<td>".($row["is_parent"] ? "<i class='fa fa-arrow-right'></i>" : "")."</td>";
 				echo "<td><b class='nowrap'>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></td>";
 				echo "<td>{$row["Time"]}</td>";
