@@ -254,6 +254,7 @@
 		<table>
 			<thead>
 			<tr>
+				<th></th>
 				<th>Дата</th>
 				<th>Время</th>
 				<th>Работник</th>
@@ -281,7 +282,9 @@
 							,BL.BL_ID
 							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
 							,USR.Name
+							,PBS.BS_ID is_parent
 						FROM BlankStock BS
+						LEFT JOIN BlankStock PBS ON PBS.PBS_ID = BS.BS_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
 						LEFT JOIN Users USR ON USR.USR_ID = BS.author
 						LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
@@ -297,7 +300,8 @@
 			while( $row = mysqli_fetch_array($res) )
 			{
 				$color = ($row["Amount"] < 0) ? "#E74C3C" : "#16A085";
-				echo "<tr>";
+				echo "<tr class='".(($row["Comment"] == "-=авто запись=-") ? "auto_record" : ($row["is_parent"] ? "is_parent" : ""))."'>";
+				echo "<td>".($row["is_parent"] ? "<i class='fa fa-arrow-right'></i>" : "")."</td>";
 				echo "<td><b class='nowrap'>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></td>";
 				echo "<td>{$row["Time"]}</td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>";
@@ -313,6 +317,35 @@
 			</tbody>
 		</table>
 	</div>
+
+<style>
+	.auto_record {
+		//opacity: .5;
+	}
+	.auto_record td {
+		visibility: hidden;
+		padding: 0px;
+		font-size: 0em;
+		transition: .3s;
+		-webkit-transition: .3s;
+		background-color: #ddd;
+	}
+	.is_parent:hover + .auto_record td {
+		visibility: visible;
+		font-size: 1em;
+	}
+	.auto_record:hover td {
+		visibility: visible;
+		font-size: 1em;
+	}
+	.is_parent .fa-arrow-right {
+		transition: .3s;
+		-webkit-transition: .3s;
+	}
+	.is_parent:hover .fa-arrow-right {
+		transform: rotate(90deg);
+	}
+</style>
 
 <script>
 	$(document).ready(function() {
