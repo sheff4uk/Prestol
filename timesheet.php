@@ -176,11 +176,17 @@
 		<tr>
 			<th width="100">Работник</th>
 			<?
+				// Получаем производственный календарь
+				$j = @file_get_contents('http://basicdata.ru/api/json/calend/');
+				$data = json_decode($j, true);
+
 				$i = 1;
 				$workdays = 0;
 				while ($i <= $days) {
 					$date = $year.'-'.$month.'-'.$i;
-					if (date('N', strtotime($date)) >= 6) { // Выделяем цветом выходные дни
+					$day_of_week = date('N', strtotime($date)); // День недели
+					$is_working = $data["data"][$year][$month][$i]["isWorking"]; // Статус из API календара
+					if ( ($day_of_week >= 6 and $is_working !== 0) or ($is_working === 2) ) { // Выделяем цветом выходные дни
 						echo "<th style='background: chocolate;'>".$i++."</th>";
 					}
 					else {
