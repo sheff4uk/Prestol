@@ -17,7 +17,7 @@
 	// Добавление заготовок
 	if( isset($_POST["Blank"]) )
 	{
-		$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
+		$Worker = $_POST["Worker"] > 0 ? $_POST["Worker"] : "NULL";
 		$Blank = $_POST["Blank"] <> "" ? $_POST["Blank"] : "NULL";
 		$Amount = $_POST["Amount"] <> "" ? $_POST["Amount"] : "NULL";
 		$Tariff = $_POST["Tariff"] <> "" ? $_POST["Tariff"] : "NULL";
@@ -31,6 +31,7 @@
 
 		// Добавление связанных заготовок
 		foreach ($_POST["wd_id"] as $key => $value) {
+			$value = $value > 0 ? $value : "NULL";
 			$sub_amount = $_POST["amount"][$key] * $Amount * -1;
 			$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, PBS_ID, author)
 					  VALUES ({$value}, {$_POST["bll_id"][$key]}, {$sub_amount}, {$bs_id}, {$_SESSION["id"]})";
@@ -67,6 +68,7 @@
 					<label>Работник:</label>
 					<select required name="Worker" id="worker" style="width: 200px;">
 						<option value="">-=Выберите работника=-</option>
+						<option value="0">Без работника</option>
 						<optgroup label="Частые">
 							<?
 							$query = "SELECT WD.WD_ID, WD.Name, COUNT(1) cnt
@@ -164,9 +166,9 @@
 						echo "</tr>";
 
 						// Вывод запасов заготовок поименно
-						$query = "SELECT BC.BL_ID, WD.WD_ID, WD.Name, (BC.count + BC.start_balance) Amount, BC.start_balance
+						$query = "SELECT BC.BL_ID, BC.WD_ID, IFNULL(WD.Name, 'Без работника') Name, (BC.count + BC.start_balance) Amount, BC.start_balance
 									FROM BlankCount BC
-									JOIN WorkersData WD ON WD.WD_ID = BC.WD_ID
+									LEFT JOIN WorkersData WD ON WD.WD_ID = BC.WD_ID
 									WHERE BC.BL_ID = {$row["BLL_ID"]}";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $subrow = mysqli_fetch_array($subres) )
@@ -295,7 +297,7 @@
 							LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
 							GROUP BY BL.BL_ID
 						) BLL ON BLL.BL_ID = BL.BL_ID
-						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0 AND BS.WD_ID IS NOT NULL
+						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0
 						ORDER BY BS.Date DESC, BS.BS_ID";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
@@ -378,13 +380,12 @@
 			val = $(this).val();
 			if( val != '' ) {
 				$('#addblank #blank').prop('disabled', false);
-				$.ajax({ url: "ajax.php?do=blank_dropdown&wd_id="+val, dataType: "script", async: false });
 			}
 			else {
 				$('#addblank #blank').prop('disabled', true);
 				$('#addblank #blank').val('').change();
-				$.ajax({ url: "ajax.php?do=blank_dropdown&wd_id=0", dataType: "script", async: false });
 			}
+			$.ajax({ url: "ajax.php?do=blank_dropdown&wd_id="+val, dataType: "script", async: false });
 		});
 
 		// При выборе заготовки выводится аяксом список задействованных заготовок

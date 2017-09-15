@@ -1270,12 +1270,12 @@ case "blank_dropdown":
 	$min_size = 4;
 	$html = "";
 
-	if( $wd_id != 0 ) {
+	if( $wd_id != "null" ) {
 		// Список частых заготовок
 		$html .= "<optgroup label='Частые'>";
 		$query = "SELECT BL.BL_ID, BL.Name
 					FROM BlankList BL
-					JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND BS.WD_ID = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 90
+					JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND IFNULL(BS.WD_ID, 0) = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 90
 					GROUP BY BL.BL_ID
 					ORDER BY BL.PT_ID, BL.Name";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
@@ -1291,7 +1291,7 @@ case "blank_dropdown":
 		$html .= "<optgroup label='Остальные'>";
 		$query = "SELECT BL.BL_ID, BL.Name
 					FROM BlankList BL
-					LEFT JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND BS.WD_ID = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 90
+					LEFT JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND IFNULL(BS.WD_ID, 0) = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 90
 					WHERE BS.BL_ID IS NULL
 					ORDER BY BL.PT_ID, BL.Name";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
@@ -1335,9 +1335,9 @@ case "subblank_dropdown":
 			$count++;
 
 			// Формируем выпадающий список со связанными заготовками
-			$query = "SELECT BC.WD_ID, (BC.count + BC.start_balance) count, WD.Name
+			$query = "SELECT IFNULL(BC.WD_ID, 0) WD_ID, (BC.count + BC.start_balance) count, IFNULL(WD.Name, 'Без работника') Name
 						FROM BlankCount BC
-						JOIN WorkersData WD ON WD.WD_ID = BC.WD_ID
+						LEFT JOIN WorkersData WD ON WD.WD_ID = BC.WD_ID
 						WHERE BL_ID = {$row["BLL_ID"]}";
 			$subres = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			$select = "<select required name='wd_id[]' style='width: 250px;'>";
