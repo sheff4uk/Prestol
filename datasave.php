@@ -4,7 +4,7 @@ include "config.php";
 include "header.php";
 
 // Обновление параметров изделия
-if( $_GET["oddid"] )
+if( $_GET["oddid"] and isset($_POST["Amount"]) )
 {
 	if( !in_array('order_add', $Rights) ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
@@ -33,7 +33,7 @@ if( $_GET["oddid"] )
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		// Оставшиеся этапы помечаются архивом (Old)
-		$query = "UPDATE OrdersDataSteps SET Old = 1 WHERE ODD_ID = {$_GET["oddid"]}";
+		$query = "UPDATE OrdersDataSteps SET Old = 1, author = {$_SESSION['id']} WHERE ODD_ID = {$_GET["oddid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		// Добавляем заново все этапы
@@ -179,7 +179,7 @@ if( $_GET["oddid"] )
 }
 
 // Обновление параметров заготовки или прочего
-if( $_GET["odbid"] )
+elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 {
 	if( !in_array('order_add', $Rights) ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
@@ -264,14 +264,13 @@ if( $_GET["odbid"] )
 	$query = "UPDATE OrdersDataSteps SET Old = Old WHERE ODB_ID = {$_GET["odbid"]}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	//header( "Location: ".$_GET["location"]."#blank".$_GET["odbid"] ); // Перезагружаем экран
 	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#blank'.$_GET["odbid"].'">');
 	die;
 
 }
 
 // Обновление в базе производственных этапов
-if( isset($_POST["ODD_ID"]) )
+elseif( isset($_POST["ODD_ID"]) )
 {
 	if( !in_array('step_update', $Rights) ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
@@ -297,18 +296,16 @@ if( isset($_POST["ODD_ID"]) )
 	}
 
 	if( isset($_GET["plid"]) and $_GET["plid"] !== "" ) {
-		//header( "Location: ".$_GET["location"]."#pl".$_GET["plid"] );
 		exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#pl'.$_GET["plid"].'">');
 	}
 	else {
-		//header( "Location: ".$_GET["location"]."#prod".$_POST["ODD_ID"] );
 		exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#prod'.$_POST["ODD_ID"].'">');
 	}
 	die;
 }
 
 // Обновление производственных этапов для прочего
-if( isset($_POST["ODB_ID"]) )
+elseif( isset($_POST["ODB_ID"]) )
 {
 	if( !in_array('step_update', $Rights) ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
@@ -334,13 +331,17 @@ if( isset($_POST["ODB_ID"]) )
 	}
 
 	if( isset($_GET["plid"]) and $_GET["plid"] !== "" ) {
-		//header( "Location: ".$_GET["location"]."#pl".$_GET["plid"] );
 		exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#pl'.$_GET["plid"].'">');
 	}
 	else {
-		//header( "Location: ".$_GET["location"]."#blank".$_POST["ODB_ID"] );
 		exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#blank'.$_POST["ODB_ID"].'">');
 	}
 	die;
+}
+
+else {
+	exit ('<meta http-equiv="refresh" content="0; url=/">');
+	die;
+
 }
 ?>
