@@ -254,10 +254,22 @@
 	</script>
 
 <?
+	if( $_SESSION["error"] != '' ) {
+		$_SESSION["error"] = str_replace("\n", "", addslashes(htmlspecialchars($_SESSION["error"])));
+		echo "<script>$(document).ready(function() {noty({timeout: 10000, text: '{$_SESSION["error"]}', type: 'error'});});</script>";
+		$_SESSION["error"] = '';
+	}
+
 	if( $_SESSION["alert"] != '' ) {
 		$_SESSION["alert"] = str_replace("\n", "", addslashes(htmlspecialchars($_SESSION["alert"])));
 		echo "<script>$(document).ready(function() {noty({timeout: 10000, text: '{$_SESSION["alert"]}', type: 'alert'});});</script>";
 		$_SESSION["alert"] = '';
+	}
+
+	if( $_SESSION["success"] != '' ) {
+		$_SESSION["success"] = str_replace("\n", "", addslashes(htmlspecialchars($_SESSION["success"])));
+		echo "<script>$(document).ready(function() {noty({timeout: 3000, text: '{$_SESSION["success"]}', type: 'success'});});</script>";
+		$_SESSION["success"] = '';
 	}
 
 	//Получаем статус заказов (В работе, Свободные, Отгруженные, Удаленные)
@@ -331,7 +343,9 @@
 	}
 	else {
 		if( in_array('selling_all', $Rights) or in_array('selling_city', $Rights) ) {
-			$menu["Реализация"] = "selling.php";
+			$year = date("Y");
+			$month = date("n");
+			$menu["Реализация"] = "selling.php?CT_ID={$USR_City}&year={$year}&month={$month}";
 		}
 		if( in_array('print_forms_view_all', $Rights) or in_array('print_forms_view_autor', $Rights) ) {
 			$menu["Печатные формы"] = "print_forms_list.php";
@@ -356,21 +370,24 @@
 		}
 		$menu["Выход (".$_SESSION['name'].")"] = "exit.php";
 	}
-	echo "<ul class='navbar-nav'>";
+
+	// Формируем элементы меню
+	$nav_buttons = "";
 	foreach ($menu as $title=>$url) {
-		$class = strpos($_SERVER["REQUEST_URI"], $url) !== false ? "class='active'" : "";
-		echo "<li $class><a href='$url'>$title</a></li>";
+		$pieces = explode("?", $url);
+		$class = strpos($_SERVER["REQUEST_URI"], $pieces[0]) !== false ? "active" : "";
+		$nav_buttons .= "<li class='{$class}'><a href='{$url}'>{$title}</a></li>";
 	}
+
+	echo "<ul class='navbar-nav'>";
+	echo $nav_buttons;
 	echo "</ul>";
 	echo "</nav>";
 
 	echo "<div class='aside-nav'>";
 	echo "<div class='close_btn'><i class='fa fa-times fa-2x'></i></div>";
 	echo "<ul>";
-	foreach ($menu as $title=>$url) {
-		$class = strpos($_SERVER["REQUEST_URI"], $url) !== false ? "class='active'" : "";
-		echo "<li $class><a href='$url'>$title</a></li>";
-	}
+	echo $nav_buttons;
 	echo "</ul>";
 	echo "</div>";
 	// END NAVBAR

@@ -15,7 +15,6 @@
 	$year = (isset($_GET["year"]) and (int)$_GET["year"] >= 0) ? $_GET["year"] : "";
 	$month = (isset($_GET["month"]) and (int)$_GET["month"] >= 0) ? $_GET["month"] : "";
 
-
 	// Проверка прав на доступ к экрану (если пользователю доступен только город)
 	if( in_array('selling_city', $Rights) ) {
 		if( $CT_ID and $CT_ID != $USR_City ) {
@@ -229,7 +228,6 @@
 
 <form method="get" style="display: inline-block;">
 	<select name="CT_ID" onchange="this.form.submit()">
-		<option value="">-=Выберите город=-</option>
 		<?
 		$query = "SELECT CT.CT_ID, CONCAT(CT.City, ' (', GROUP_CONCAT(SH.Shop), ')') City, CT.Color
 					FROM Cities CT
@@ -244,10 +242,13 @@
 		}
 		?>
 	</select>
+	<input type="hidden" name="year" value="<?=$year?>">
+	<input type="hidden" name="month" value="<?=$month?>">
 </form>
 
 <?
-// Узнаем общий остаток наличных
+	if( !$CT_ID ) die;
+	// Узнаем общий остаток наличных
 	$query = "SELECT SUM(IFNULL(MSIO.pay_in,0)) - SUM(IFNULL(MSIO.pay_out,0)) ostatok, SH.Shop
 				FROM MonthlySellInOut MSIO
 				JOIN Shops SH ON SH.SH_ID = MSIO.SH_ID";
@@ -324,9 +325,14 @@
 
 		// Проверяем доступен ли месяц из GET в списке отчетных периодов
 		if( ($year != '' or $month != '') and !in_array("{$year}-{$month}", $OTCHET_MONTHS) ) {
-			//die('<h3>'.$MONTHS["{$month}"].'-'.$year.' отсутствует в списке доступных отчетов.<h3>');
-			exit ('<meta http-equiv="refresh" content="0; url=selling.php?CT_ID='.$CT_ID.'">');
-			die;
+			if( $year == 0 and $month == 0 ) {
+				die('<h3>Список свободных изделий пуст.<h3>');
+			}
+			else {
+				die('<h3>'.$MONTHS["{$month}"].'-'.$year.' отсутствует в списке доступных отчетов.<h3>');
+			}
+			//exit ('<meta http-equiv="refresh" content="0; url=selling.php?CT_ID='.$CT_ID.'">');
+			//die;
 		}
 		?>
 	</div>
@@ -791,6 +797,7 @@
 						,ROUND(IFNULL(OD.discount, 0) / SUM(ODD_ODB.Price) * 100) percent
 						,IFNULL(OP.payment_sum, 0) payment_sum
 						,OP.terminal_payer
+						,IF(IFNULL(OP.check_payment, 0) > 0, CheckPayment(OD.OD_ID), 0) attention
 						,IF(OS.locking_date IS NOT NULL, 1, 0) is_lock
 						,OD.confirmed
 						#,IFNULL(OT.type, 0) type
@@ -801,7 +808,17 @@
 					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 						".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
 					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-					LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE IFNULL(payment_sum, 0) != 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
+					LEFT JOIN (
+						SELECT OP.OD_ID
+							,SUM(OP.payment_sum) payment_sum
+							,GROUP_CONCAT(OP.terminal_payer) terminal_payer
+							,SUM(IF(OD.SH_ID != OP.SH_ID AND OP.terminal_payer IS NULL, 1, 0)) check_payment
+						FROM OrdersPayment OP
+						JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
+						WHERE IFNULL(payment_sum, 0) != 0
+						GROUP BY OP.OD_ID
+					) OP ON OP.OD_ID = OD.OD_ID
+					#LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE IFNULL(payment_sum, 0) != 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
 					LEFT JOIN (
 						SELECT ODD.OD_ID
 								,IFNULL(PM.PT_ID, 2) PT_ID
@@ -853,14 +870,13 @@
 			$confirmed = $row["confirmed"];		// Заказ принят в работу
 			// Запрет на редактирование
 			$disabled = !(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) and $is_lock == 0 and in_array('order_add', $Rights) );
-
 			$format_price = number_format($row["Price"], 0, '', ' ');
 			$format_payment = number_format($row["payment_sum"], 0, '', ' ');
 			$format_discount = number_format($row['discount'], 0, '', ' ');
 			$format_diff = number_format($row["Price"] - $row["payment_sum"], 0, '', ' ');
 			$diff_color = ($row["Price"] == $row["payment_sum"]) ? "#6f6" : (($row["Price"] < $row["payment_sum"]) ? "#f66" : "#fff");
 			$otkaz_cell = ($row["type"] == 1) ? "<b>Замена</b><br>{$row["comment"]}" : (($row["type"] == 2) ? "<b>Отказ</b><br>{$row["comment"]}" : "");
-			$payment_btn = "<a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a>";
+			$payment_btn = "<a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</a>";
 			echo "
 				<tr id='ord{$row["OD_ID"]}'>
 					<td>
@@ -878,7 +894,7 @@
 					<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}'></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
-					<td><a style='width: 100%; text-align: right;' class='add_payment_btn button nowrap' id='{$row["OD_ID"]}'>{$format_payment}</a></td>
+					<td>{$payment_btn}</td>
 					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>
 					<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>";
 //					echo "<td><span style='color: #911;'>{$otkaz_cell}</span></td>";
