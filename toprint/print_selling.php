@@ -21,7 +21,7 @@
 		body, td {
 			margin: 20px;
 			color: #333;
-			font-family: Verdana, Trebuchet MS, Tahoma, Arial, sans-serif;
+			font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
 			font-size: 10pt;
 		}
 		table {

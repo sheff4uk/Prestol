@@ -3,6 +3,12 @@ session_start();
 include "config.php";
 include "header.php";
 
+// Проверка прав на доступ к экрану
+if( !in_array('order_add', $Rights) ) {
+	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+	die('Недостаточно прав для совершения операции');
+}
+
 // Обновление параметров изделия
 if( $_GET["oddid"] and isset($_POST["Amount"]) )
 {
@@ -88,45 +94,22 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 
-	// Узнаем какой материал был ранее
-	$query = "SELECT IFNULL(MT.Material, '') Material, ODD.MT_ID
-			  FROM OrdersDataDetail ODD
-			  JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-			  WHERE ODD.ODD_ID = {$_GET["oddid"]}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$OldMaterial = mysqli_result($res,0,'Material');
-
-	// Если материалы не совпадают
-	if( $OldMaterial != $Material ) {
-//		$query = "UPDATE Materials SET Count = Count - 1 WHERE Material = '{$OldMaterial}' AND PT_ID = {$_POST["Type"]}";
-//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		if( $Material != '' ) { // Сохраняем в таблицу материалов полученный материал и узнаем его ID
-			$query = "INSERT INTO Materials
-						SET
-							PT_ID = {$_POST["Type"]},
-							Material = '{$Material}',
-							SH_ID = {$Shipper},
-							Count = 0
-						ON DUPLICATE KEY UPDATE
-							Count = Count + 1";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$mt_id = mysqli_insert_id( $mysqli );
-		}
-		else {
-			$mt_id = "NULL";
-		}
+	// Сохраняем в таблицу материалов полученный материал и узнаем его ID
+	if( $Material != '' ) {
+		$query = "INSERT INTO Materials
+					SET
+						PT_ID = {$_POST["Type"]},
+						Material = '{$Material}',
+						SH_ID = {$Shipper},
+						Count = 0
+					ON DUPLICATE KEY UPDATE
+						Count = Count + 1,
+						SH_ID = {$Shipper}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$mt_id = mysqli_insert_id( $mysqli );
 	}
 	else {
-		if( $Material != '' ) {
-			$mt_id = mysqli_result($res,0,'MT_ID');
-			// Обновляем поставщика у материала
-			$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE Material = '{$OldMaterial}' AND PT_ID = {$_POST["Type"]}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		}
-		else {
-			$mt_id = "NULL";
-		}
+		$mt_id = "NULL";
 	}
 
 	$query = "UPDATE OrdersDataDetail
@@ -150,28 +133,6 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 			  WHERE ODD_ID = {$_GET["oddid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["alert"] = mysqli_error( $mysqli );
-	}
-
-	// Если количество изделий уменьшено и изделие в работе, то переносим их на склад (свободные)
-	if( $amount > $_POST["Amount"] and $inprogress == 1)
-	{
-		// Перемещение на склад лишних изделий
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Comment, Price, is_check, order_date, arrival_date, sister_ID, creator, patina)
-				  SELECT NULL, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, ".($amount - $_POST["Amount"]).", Comment, {$Price}, 0, order_date, arrival_date, {$_GET["oddid"]}, {$_SESSION['id']}, patina FROM OrdersDataDetail WHERE ODD_ID = {$_GET["oddid"]}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-// Добавлено в триггер AddStepsAfterInsert
-//		$odd_id = mysqli_insert_id( $mysqli );
-//		// Копирование производственных этапов
-//		$query = "INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, WD_ID, IsReady, Tariff, Visible)
-//				  SELECT {$odd_id}, ST_ID, WD_ID, IsReady, Tariff, Visible FROM OrdersDataSteps
-//				  WHERE ODD_ID = {$_GET["oddid"]}";
-//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//
-//		// Обновляем этапы чтобы сработал триггер для движения денег
-//		$query = "UPDATE OrdersDataSteps SET Old = Old WHERE ODD_ID IN ({$_GET["oddid"]}, {$odd_id})";
-
-		$_SESSION["alert"] = 'Изделия отправлены в "Свободные". Пожалуйста, проверьте информацию по этапам производства и параметрам изделий на экране "Свободные" (выделены красным фоном).';
 	}
 
 	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#prod'.$_GET["oddid"].'">');
@@ -199,48 +160,23 @@ elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 	$Comment = trim($Comment);
 	$patina = mysqli_real_escape_string( $mysqli,$_POST["patina"] );
 	$patina = trim($patina);
-	$MPT_ID = $_POST["MPT_ID"] ? $_POST["MPT_ID"] : 0;
 
-	// Узнаем какой материал был ранее
-	$query = "SELECT IFNULL(MT.Material, '') Material, ODB.MT_ID, IFNULL(MT.PT_ID, 0) PT_ID
-			  FROM OrdersDataBlank ODB
-			  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-			  WHERE ODB.ODB_ID = {$_GET["odbid"]}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$OldMaterial = mysqli_result($res,0,'Material');
-	$OldMPT_ID = mysqli_result($res,0,'PT_ID');
-
-	// Если материалы не совпадают
-	if( $OldMaterial != $Material or $OldMPT_ID != $MPT_ID ) {
-//		$query = "UPDATE Materials SET Count = Count - 1 WHERE Material = '{$OldMaterial}' AND PT_ID = {$OldMPT_ID}";
-//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		if( $Material != '' ) { // Сохраняем в таблицу материалов полученный материал и узнаем его ID
-			$query = "INSERT INTO Materials
-						SET
-							PT_ID = {$MPT_ID},
-							Material = '{$Material}',
-							SH_ID = {$Shipper},
-							Count = 0
-						ON DUPLICATE KEY UPDATE
-							Count = Count + 1";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$mt_id = mysqli_insert_id( $mysqli );
-		}
-		else {
-			$mt_id = "NULL";
-		}
+	// Сохраняем в таблицу материалов полученный материал и узнаем его ID
+	if( $Material != '' ) {
+		$query = "INSERT INTO Materials
+					SET
+						PT_ID = {$_POST["MPT_ID"]},
+						Material = '{$Material}',
+						SH_ID = {$Shipper},
+						Count = 0
+					ON DUPLICATE KEY UPDATE
+						Count = Count + 1,
+						SH_ID = {$Shipper}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$mt_id = mysqli_insert_id( $mysqli );
 	}
 	else {
-		if( $Material != '' ) {
-			$mt_id = mysqli_result($res,0,'MT_ID');
-			// Обновляем поставщика у материала
-			$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE Material = '{$OldMaterial}' AND PT_ID = {$MPT_ID}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		}
-		else {
-			$mt_id = "NULL";
-		}
+		$mt_id = "NULL";
 	}
 
 	$query = "UPDATE OrdersDataBlank
@@ -259,10 +195,6 @@ elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["alert"] = mysqli_error( $mysqli );
 	}
-
-	// Обновление этапов чтобы сработал триггер
-	$query = "UPDATE OrdersDataSteps SET Old = Old WHERE ODB_ID = {$_GET["odbid"]}";
-	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#blank'.$_GET["odbid"].'">');
 	die;

@@ -1,5 +1,12 @@
 <?
-	include "config.php";
+include "config.php";
+include "header.php";
+
+// Проверка прав на доступ к экрану
+if( !in_array('order_add', $Rights) ) {
+	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+	die('Недостаточно прав для совершения операции');
+}
 
 	if( isset($_GET["id"]) ) {
 		$AddDate = date("Y-m-d");

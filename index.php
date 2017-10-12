@@ -13,24 +13,24 @@
 	$location = $_SERVER['REQUEST_URI'];
 	$_SESSION["location"] = $location;
 
-	// Формируем выпадающее меню салонов в таблицу
-	$query = "SELECT SH.SH_ID
-					,CONCAT(CT.City, '/', SH.Shop) AS Shop
-					,CT.Color
-				FROM Shops SH
-				JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-				WHERE CT.CT_ID IN ({$USR_cities})
-					".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-				ORDER BY CT.City, SH.Shop";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$select_shops = "<select class='select_shops' style='display: none;'>";
-	if( in_array('order_add_confirm', $Rights) ) {
-		$select_shops .= "<option value='0' style='background: #999;'>Свободные</option>";
-	}
-	while( $row = mysqli_fetch_array($res) ) {
-		$select_shops .= "<option value='{$row["SH_ID"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
-	}
-	$select_shops .= "</select>";
+//	// Формируем выпадающее меню салонов в таблицу
+//	$query = "SELECT SH.SH_ID
+//					,CONCAT(CT.City, '/', SH.Shop) AS Shop
+//					,CT.Color
+//				FROM Shops SH
+//				JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+//				WHERE CT.CT_ID IN ({$USR_cities})
+//					".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+//				ORDER BY CT.City, SH.Shop";
+//	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//	$select_shops = "<select class='select_shops' style='display: none;'>";
+//	if( in_array('order_add_confirm', $Rights) ) {
+//		$select_shops .= "<option value='0' style='background: #999;'>Свободные</option>";
+//	}
+//	while( $row = mysqli_fetch_array($res) ) {
+//		$select_shops .= "<option value='{$row["SH_ID"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
+//	}
+//	$select_shops .= "</select>";
 
 	// Добавление в базу нового заказа
 	if( isset($_POST["Shop"]) )
@@ -367,22 +367,6 @@
 		<form method='post'>
 			<fieldset>
 				<div>
-					<label>Заказчик:</label>
-					<input type='text' class='clienttags' name='ClientName' size='38'>
-				</div>
-				<div>
-					<label>№ квитанции:</label>
-					<input type='text' name='OrderNumber' autocomplete='off'>
-				</div>
-				<div>
-					<label>Дата продажи:</label>
-					<input type='text' name='StartDate' class='date from' size='12' value='<?//=date("d.m.Y") ?>' date='<?//=date("d.m.Y") ?>' autocomplete='off'>
-				</div>
-				<div>
-					<label>Дата сдачи:</label>
-					<input type='text' name='EndDate' class='date to' size='12' autocomplete='off'>
-				</div>
-				<div>
 					<label>Салон:</label>
 					<select required name='Shop' style="width: 300px;">
 						<?
@@ -395,6 +379,7 @@
 						$query = "SELECT SH.SH_ID
 										,CONCAT(CT.City, '/', SH.Shop) AS Shop
 										,CT.Color
+										,SH.retail
 									FROM Shops SH
 									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 									WHERE CT.CT_ID IN ({$USR_cities})
@@ -403,10 +388,26 @@
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{
-							echo "<option value='{$row["SH_ID"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
+							echo "<option value='{$row["SH_ID"]}' retail='{$row["retail"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
 						}
 						?>
 					</select>
+				</div>
+				<div id="ClientName">
+					<label>Заказчик:</label>
+					<input type='text' class='clienttags' name='ClientName' autocomplete='off'>
+				</div>
+				<div id="OrderNumber">
+					<label>№ квитанции:</label>
+					<input type='text' name='OrderNumber' autocomplete='off'>
+				</div>
+				<div id="StartDate">
+					<label>Дата продажи:</label>
+					<input type='text' name='StartDate' class='date from' size='12' value='<?//=date("d.m.Y") ?>' autocomplete='off'>
+				</div>
+				<div>
+					<label>Дата сдачи:</label>
+					<input type='text' name='EndDate' class='date to' size='12' autocomplete='off'>
 				</div>
 				<div>
 					<p style='color: #911;'>ВНИМАНИЕ! Патина указывается у каждого изделия персонально в специальной графе "патина".</p>
@@ -951,9 +952,12 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
+		if( !in_array('order_add_confirm', $Rights) and !$row["SH_ID"] ) {
+			$is_lock = 1;
+		}
 		$confirmed = $row["confirmed"];		// Заказ принят в работу
 		// Запрет на редактирование
-		$disabled = !(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) and $is_lock == 0 and in_array('order_add', $Rights) and $row["Del"] == 0 );
+		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and $is_lock == 0 and $row["Del"] == 0 );
 
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
 		echo "<tr id='ord{$row["OD_ID"]}'>";
@@ -961,8 +965,7 @@
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>";
 		echo "<td><span>{$row["StartDate"]}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td class='".( (!$disabled and $row["SHP_ID"] == 0 and !$USR_Shop) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span>{$select_shops}</td>";
-		//echo "<td><span>{$row["OrderNumber"]}</span></td>";
+		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$row["Del"]) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none;'></select></td>";
 		echo "<td><span></span></td>";
 		if( $disabled ) {
 			echo "<td><span class='nowrap'>{$row["Zakaz_lock"]}</span></td>";
@@ -1007,19 +1010,15 @@
 		echo "<td class='".(!$disabled ? "comment_cell" : "")."' id='{$row["OD_ID"]}'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
 		echo "<td>";
 
-		// Если пользователю доступен только один салон в регионе, то не показываем кнопки действий.
+		// Если пользователю доступен только один салон в регионе, то не показываем кнопки действий у чужих салонов.
 		if( !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) ) {
-			// Если заказ заблокирован, то показываем глаз. Иначе - карандаш.
-			if( $disabled ) {
-				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
+			// Если заказ не заблокирован и не удален, то показываем карандаш и кнопку разделения. Иначе - глаз.
+			if( !$is_lock and in_array('order_add', $Rights) and !$row["Del"] ) {
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
 			}
 			else {
-				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
-			}
-
-			// Если есть права на редактирование заказа и заказ не закрыт, то показываем кнопку разделения заказа
-			if( in_array('order_add', $Rights) and !$is_lock and $row["Del"] == 0) {
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
 			}
 
 			echo "<action>";
@@ -1196,6 +1195,7 @@
 </div>
 
 <script>
+	// Функция проверяет готов ли список заказов к отгрузке
 	function check_shipping(ready, count, filter) {
 		if( filter ) {
 			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
@@ -1224,7 +1224,38 @@
 		}
 	}
 
+	// Добавляем к ссылке печати столбцы и строки которые будем печатать
+	function changelink() {
+		var data = $('#printtable').serialize();
+		$("#toprint").attr('href', '/toprint/main.php?' + data);
+		$("#post-link").val('http://<?=$_SERVER['HTTP_HOST']?>/toprint/main.php?' + data);
+		$("#print_forms > a").attr('href', '/print_forms.php?' + data);
+		$("#labelsbox").attr('href', '/labels_box.php?' + data);
+		return false;
+	}
+
 	$(document).ready(function(){
+
+		// Если выбран розничный салон - показываем доп поля в форме добавления заказа
+		$('#order_form select[name="Shop"]').on("change", function() {
+			var retail = $('#order_form select[name="Shop"] option:selected').attr('retail');
+			if( retail == 1 ) {
+				$('#order_form #ClientName').show('fast');
+					$('#order_form #ClientName input').attr('disabled', false);
+				$('#order_form #OrderNumber').show('fast');
+					$('#order_form #OrderNumber input').attr('disabled', false);
+				$('#order_form #StartDate').show('fast');
+					$('#order_form #StartDate input').attr('disabled', false);
+			}
+			else {
+				$('#order_form #ClientName').hide('fast');
+					$('#order_form #ClientName input').attr('disabled', true);
+				$('#order_form #OrderNumber').hide('fast');
+					$('#order_form #OrderNumber input').attr('disabled', true);
+				$('#order_form #StartDate').hide('fast');
+					$('#order_form #StartDate input').attr('disabled', true);
+			}
+		});
 
 		$('#counter').html('<?=$orders_count?>');
 
@@ -1347,6 +1378,10 @@
 		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 
 		$('.print_products').button();
+		$('.print_col, .print_row, .print_products').change( function() { changelink(); });
+
+		$('#print_btn').click( function() { changelink(); });
+		$('#print_title').change( function() { changelink(); });
 
 		$('select[name="f_PR"]').attr('title', $('select[name="f_PR"] option:selected').html()); // Подсказка выбранного работника в фильтре
 		$('select[name="f_ST"]').attr('title', $('select[name="f_ST"] option:selected').html()); // Подсказка статуса этапа в фильтре
@@ -1372,27 +1407,33 @@
 		// Открытие диалога печати
 		$("#toprint").printPage();
 
-		$(function() {
-			// Кнопка добавления заказа
-			$('#add_btn').click( function() {
-				$('#order_form').dialog({
-					width: 500,
-					modal: true,
-					show: 'blind',
-					hide: 'explode',
-					closeText: 'Закрыть'
-				});
+		// Кнопка добавления заказа
+		$('#add_btn').click( function() {
+			// Очистка формы
+			$('#order_form fieldset select').val('').trigger('change');
+			$('#order_form fieldset input').val('');
+			$('#order_form fieldset textarea').val('');
 
-				// Автокомплит поверх диалога
-				$( ".colortags" ).autocomplete( "option", "appendTo", "#order_form" );
+			// Скрытие полей
+			$('#order_form #ClientName').hide('fast');
+				$('#order_form #ClientName input').attr('disabled', true);
+			$('#order_form #OrderNumber').hide('fast');
+				$('#order_form #OrderNumber input').attr('disabled', true);
+			$('#order_form #StartDate').hide('fast');
+				$('#order_form #StartDate input').attr('disabled', true);
 
-				return false;
+			$('#order_form').dialog({
+				width: 500,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
 			});
 
-			$('.print_col, .print_row, .print_products').change( function() { changelink(); });
+			// Автокомплит поверх диалога
+			$( ".colortags" ).autocomplete( "option", "appendTo", "#order_form" );
 
-			$('#print_btn').click( function() { changelink(); });
-			$('#print_title').change( function() { changelink(); });
+			return false;
 		});
 
 		// Смена статуса принятия аяксом
@@ -1415,14 +1456,6 @@
 			$.ajax({ url: "ajax.php?do=Xlabel&od_id="+id+"&val="+val, dataType: "script", async: false });
 		});
 
-		function changelink() { // Добавляем к ссылке печати столбцы и строки которые будем печатать
-			var data = $('#printtable').serialize();
-			$("#toprint").attr('href', '/toprint/main.php?' + data);
-			$("#post-link").val('http://<?=$_SERVER['HTTP_HOST']?>/toprint/main.php?' + data);
-			$("#print_forms > a").attr('href', '/print_forms.php?' + data);
-			$("#labelsbox").attr('href', '/labels_box.php?' + data);
-			return false;
-		}
 		$("#copy-button").click(function() {
 			noty({timeout: 3000, text: 'Ссылка на таблицу скопирована в буфер обмена', type: 'success'});
 		});
@@ -1462,10 +1495,11 @@
 
 		// Редактирование салона аяксом
 		$('.shop_cell').dblclick(function() {
+			var OD_ID = $(this).attr('id');
 			var SH_ID = $(this).attr('SH_ID');
+			$.ajax({ url: "ajax.php?do=create_shop_select&OD_ID="+OD_ID+"&SH_ID="+SH_ID, dataType: "script", async: false });
 			$(this).find('span').hide();
-			$(this).find('select').show();
-			$(this).find('select').val(SH_ID).focus();
+			$(this).find('.select_shops').show().focus();
 		});
 		$('.shop_cell select').change(function() {
 			var OD_ID = $(this).parents('td').attr('id');
@@ -1488,7 +1522,8 @@
 		$('.comment_cell textarea').change(function() {
 			var OD_ID = $(this).parents('td').attr('id');
 			var val = $(this).val();
-			$.ajax({ type: "POST", url: "ajax.php?do=update_comment&OD_ID="+OD_ID, data: {comment: val}, dataType: "script", async: false });
+			val = val.split("\u000A").join("%0d%0a\u000A"); // Замена символов переноса строки для GET
+			$.ajax({ url: "ajax.php?do=update_comment&OD_ID="+OD_ID+"&val="+val, dataType: "script", async: true });
 			$(this).parent('.comment_cell').find('textarea').hide();
 			$(this).parent('.comment_cell').find('span').show();
 		});

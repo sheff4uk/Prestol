@@ -520,10 +520,9 @@ case "materials":
 		// Если в списке материалов уже есть такое название
 		if( mysqli_num_rows($res) ) {
 			$mtid = mysqli_result($res,0,'MT_ID');
-			$query = "SELECT MT_ID, Count FROM Materials WHERE PT_ID = {$ptid} AND Material = '{$oldval}'";
+			$query = "SELECT MT_ID FROM Materials WHERE PT_ID = {$ptid} AND Material = '{$oldval}'";
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			$oldmtid = mysqli_result($res,0,'MT_ID');
-			$oldcount = mysqli_result($res,0,'Count');
 
 			// Меняем в заказах старый id материала на новый
 			$query = "UPDATE OrdersDataDetail SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
@@ -532,13 +531,12 @@ case "materials":
 			$query = "UPDATE OrdersDataBlank SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
 			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
-			// Удаляем старый материал из списка
-			$query = "DELETE FROM Materials WHERE MT_ID = {$oldmtid}";
+			// У старого материала сохраняем ссылку на новый материал PMT_ID
+			$query = "UPDATE Materials SET PMT_ID = {$mtid} WHERE MT_ID = {$oldmtid}";
 			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query1: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-
-			// Прибавляем старый счетчик к новому
-			$query = "UPDATE Materials SET Count = Count + {$oldcount} WHERE Material = '{$val}' AND PT_ID = {$ptid}";
-			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+			// Если старый материал был чьим то родителем, то заменяем у его потомков родителя на нового
+			$query = "UPDATE Materials SET PMT_ID = {$mtid} WHERE PMT_ID = {$oldmtid}";
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query1: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 			// Меняем на экране старый id материала на новый
 			echo "$('.mt{$oldmtid}').addClass('mt{$mtid}');";
@@ -551,6 +549,7 @@ case "materials":
 		}
 		echo "noty({timeout: 3000, text: 'Название материала изменено на <b>{$val}</b>', type: 'success'});";
 	}
+	// Сохранение пометки о выведении
 	$query = "SELECT removed FROM Materials WHERE Material = '{$val}' AND PT_ID = {$ptid}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$oldremoved = mysqli_result($res,0,'removed');
@@ -989,6 +988,62 @@ case "update_price":
 	break;
 ///////////////////////////////////////////////////////////////////
 
+// Формирование дропдауна со списком салонов
+case "create_shop_select":
+	$OD_ID = $_GET["OD_ID"];
+	$SH_ID = $_GET["SH_ID"] ? $_GET["SH_ID"] : "NULL";
+	$html = "";
+
+	// Узнаём отгрузку у заказа, дату отгрузки и регион
+	$query = "SELECT IFNULL(OD.SHP_ID, 0) SHP_ID
+					,OD.ReadyDate
+					,SH.CT_ID
+				FROM OrdersData OD
+				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+				WHERE OD_ID = {$OD_ID}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+	$SHP_ID = mysqli_result($res,0,'SHP_ID');
+	$ReadyDate = mysqli_result($res,0,'ReadyDate');
+	$CT_ID = mysqli_result($res,0,'CT_ID');
+
+	// Формируем элементы дропдауна
+	if( in_array('order_add_confirm', $Rights) ) {
+		$html .= "<option value='0' selected style='background: #999;'>Свободные</option>";
+	}
+	if( $SHP_ID or $ReadyDate ) {
+		$query = "SELECT SH.SH_ID
+						,CONCAT(CT.City, '/', SH.Shop) AS Shop
+						,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
+						,CT.Color
+					FROM Shops SH
+					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+					WHERE CT.CT_ID = {$CT_ID}
+						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+					ORDER BY CT.City, SH.Shop";
+	}
+	else {
+		$query = "SELECT SH.SH_ID
+						,CONCAT(CT.City, '/', SH.Shop) AS Shop
+						,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
+						,CT.Color
+					FROM Shops SH
+					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+					WHERE CT.CT_ID IN ({$USR_cities})
+						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+					ORDER BY CT.City, SH.Shop";
+	}
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+	while( $row = mysqli_fetch_array($res) )
+	{
+		$html .= "<option value='{$row["SH_ID"]}' {$row["selected"]} style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
+	}
+
+	$html = addslashes($html);
+	echo "window.top.window.$('.shop_cell#{$OD_ID} .select_shops').html('{$html}');";
+
+	break;
+///////////////////////////////////////////////////////////////////
+
 // Редактирование салона
 case "update_shop":
 	$OD_ID = $_GET["OD_ID"];
@@ -1008,6 +1063,7 @@ case "update_shop":
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS ShopCity
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,IFNULL(OD.SH_ID, 0) SH_ID
+					,CheckPayment(OD.OD_ID) attention
 				FROM OrdersData OD
 				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 				LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -1018,10 +1074,22 @@ case "update_shop":
 	$ShopCity = mysqli_result($res,0,'ShopCity');
 	$SH_ID = mysqli_result($res,0,'SH_ID');
 	$ShopCity = addslashes($ShopCity);
+	$attention = mysqli_result($res,0,'attention');
 
 	echo "$('.shop_cell[id={$OD_ID}] span').html('{$ShopCity}');";
 	echo "$('.shop_cell[id={$OD_ID}] span').attr('style', 'background: {$CTColor};');";
 	echo "$('.shop_cell[id={$OD_ID}]').attr('SH_ID', '{$SH_ID}');";
+	// Если есть оплата в кассу другого салона
+	if( $attention ) {
+		echo "$('.add_payment_btn[id={$OD_ID}]').addClass('attention');";
+		echo "$('.add_payment_btn[id={$OD_ID}]').attr('title', 'Имеются платежи, внесённые в кассу другого салона!');";
+		echo "noty({timeout: 10000, text: 'У этого заказа имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.', type: 'error'});";
+	}
+	else {
+		echo "$('.add_payment_btn[id={$OD_ID}]').removeClass('attention');";
+		echo "$('.add_payment_btn[id={$OD_ID}]').removeAttr('title');";
+	}
+
 	echo "noty({timeout: 3000, text: 'Салон изменен с <b>{$old_shop}</b> на <b>{$new_shop}</b>', type: 'success'});";
 	if( $SH_ID == 0 ) {
 		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a.shipping').hide();";
@@ -1036,7 +1104,7 @@ case "update_shop":
 // Редактирование комментариев
 case "update_comment":
 	$OD_ID = $_GET["OD_ID"];
-	$comment = mysqli_real_escape_string( $mysqli, $_POST["comment"] );
+	$comment = mysqli_real_escape_string( $mysqli, $_GET["val"] );
 
 	// Обновляем комментарий
 	$query = "UPDATE OrdersData SET Comment = '{$comment}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";

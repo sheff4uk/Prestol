@@ -158,16 +158,16 @@
 					SET OD_ID = {$OD_ID}, type = {$type}, SH_ID = {$SH_ID}, StartDate = '{$StartDate}', old_sum = {$old_sum}
 					ON DUPLICATE KEY UPDATE type = {$type}, old_sum = {$old_sum}";
 				if( mysqli_query( $mysqli, $query ) ) {
-					$query = "UPDATE OrdersData SET StartDate = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена', ' Отказ')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
-					if( mysqli_query( $mysqli, $query ) ) {
-						$_SESSION["alert"] = "Заказ перемещен в \"Свободные\"";
-					}
-					else { $_SESSION["alert"] = mysqli_error( $mysqli ); }
+					$_SESSION["alert"] = "В таблице отказов/замен сделана запись. ";
 				}
 				else { $_SESSION["alert"] = mysqli_error( $mysqli ); }
 			}
+			$query = "UPDATE OrdersData SET StartDate = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена', ' Отказ')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
+			if( mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["alert"] .= "Заказ перемещен в \"Свободные\"";
+			}
 			else {
-				$_SESSION["alert"] = "Сумма заказа не установлена! Введите стоимость и повторите попытку.";
+				$_SESSION["alert"] .= mysqli_error( $mysqli );
 			}
 		}
 		else {
@@ -867,9 +867,9 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
-			$confirmed = $row["confirmed"];		// Заказ принят в работу
-			// Запрет на редактирование
-			$disabled = !(( in_array('order_add_confirm', $Rights) or $confirmed == 0 ) and $is_lock == 0 and in_array('order_add', $Rights) );
+//			$confirmed = $row["confirmed"];		// Заказ принят в работу
+//			// Запрет на редактирование
+//			$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and $is_lock == 0 and $row["Del"] == 0 );
 			$format_price = number_format($row["Price"], 0, '', ' ');
 			$format_payment = number_format($row["payment_sum"], 0, '', ' ');
 			$format_discount = number_format($row['discount'], 0, '', ' ');
@@ -891,7 +891,7 @@
 					<td class='material'><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>
 					<td id='{$row["OD_ID"]}'><span><select ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
 					<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
-					<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}'></td>
+					<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
 					<td><a style='width: 100%; text-align: right;' class='update_price_btn button nowrap' id='{$row["OD_ID"]}'>{$format_price}</a></td>
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
 					<td>{$payment_btn}</td>
@@ -900,17 +900,14 @@
 //					echo "<td><span style='color: #911;'>{$otkaz_cell}</span></td>";
 					echo "<td>";
 
-			// Если заказ заблокирован, то показываем глаз. Иначе - карандаш.
-			if( $disabled ) {
-				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
-			}
-			else {
-				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
-			}
-			// Если есть права на редактирование заказа и заказ не закрыт, то показываем кнопку разделения заказа и отказа
+			// Если есть права на редактирование заказа и заказ не закрыт, то показываем карандашь, кнопку разделения и отказа
 			if( in_array('order_add', $Rights) and !$is_lock ) {
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' location='{$location}' payment='{$row["payment_sum"]}' old_sum='{$row["Price"]}' title='Пометить как отказ/замена.'><i class='fa fa-hand-paper-o fa-lg' aria-hidden='true'></i></a>";
+			}
+			else {
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
 			}
 
 			echo "</td></tr>";
@@ -1007,7 +1004,7 @@
 <!-- Конец формы добавления/редактирования расхода/прихода -->
 
 <!-- Форма отказа -->
-<div id='order_otkaz' title='Статус отказа' style='display:none'>
+<div id='order_otkaz' style='display:none'>
 	<form method='post' action="<?=$location?>&order_otkaz=1">
 		<div style="display: inline-block;">
 			<i class='fa fa-hand-paper-o fa-4x' aria-hidden='true'></i>
