@@ -268,7 +268,7 @@
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
-								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\' title=\'Для отмены изменений нажмите клавишу ESC\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
+								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
 								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
 
@@ -316,7 +316,7 @@
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
-								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\' title=\'Для отмены изменений нажмите клавишу ESC\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
+								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
 								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
 
