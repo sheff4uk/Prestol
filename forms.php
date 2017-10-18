@@ -51,7 +51,7 @@
 		</div>
 		<div>
 			<label>Ткань:</label>
-			<input type='text' class='textiletags' name='Material' style='width: 200px;'>
+			<input type='text' class='materialtags_1' name='Material' style='width: 200px;'>
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
 				<option value="">-=Другой=-</option>
 				<?
@@ -183,7 +183,7 @@
 		</div>
 		<div>
 			<label>Пластик:</label>
-			<input type='text' class="plastictags" name='Material' style="width: 200px;">
+			<input type='text' class="materialtags_2" name='Material' style="width: 200px;">
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
 				<option value="">-=Другой=-</option>
 				<?
@@ -305,7 +305,7 @@
 			</div>
 			<div>
 				<label>Ткань:</label>
-				<input type='text' class='textiletags' name='Material' style='width: 200px;'>
+				<input type='text' class='materialtags_1' name='Material' style='width: 200px;'>
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
 					<option value="">-=Другой=-</option>
 					<?
@@ -319,7 +319,7 @@
 			</div>
 			<div>
 				<label>Пластик:</label>
-				<input type='text' class="plastictags" name='Material' style="width: 200px;">
+				<input type='text' class="materialtags_2" name='Material' style="width: 200px;">
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
 					<option value="">-=Другой=-</option>
 					<?

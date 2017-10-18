@@ -801,7 +801,7 @@
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
-							   '\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\' title=\'Для отмены изменений нажмите клавишу ESC\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></span><br>') Material
+							   '\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></span><br>') Material
 
 							   ,CONCAT('<a ".(in_array('step_update', $Rights) ? "href=\'#\'" : "")." id=\'', ODD.ODD_ID, '\' class=\'".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODD}, ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
 
@@ -835,7 +835,7 @@
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
-							   '\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\' title=\'Для отмены изменений нажмите клавишу ESC\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></span><br>') Material
+							   '\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></span><br>') Material
 
 							  ,CONCAT('<a ".(in_array('step_update', $Rights) ? "href=\'#\'" : "")." odbid=\'', ODB.ODB_ID, '\' class=\'".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODB}, ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
 
@@ -1293,88 +1293,6 @@
 		// Проверяем можно ли отгружать
 		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?> ,<?=(($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0?>);
 
-		$( ".shopstags" ).autocomplete({ // Автокомплит салонов
-			source: "autocomplete.php?do=shopstags"
-		});
-
-		$( ".colortags" ).autocomplete({ // Автокомплит цветов
-			source: "autocomplete.php?do=colortags"
-		});
-
-		$( ".textiletags" ).autocomplete({ // Автокомплит тканей
-			source: "autocomplete.php?do=textiletags",
-			minLength: 2,
-			select: function( event, ui ) {
-				$('select[name="Shipper"]').val(ui.item.SH_ID);
-			},
-			create: function() {
-				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
-					var listItem = $( "<li>" )
-						.append( item.label )
-						.appendTo( ul );
-
-					if (item.removed == 1) {
-						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
-					}
-
-					return listItem;
-				}
-			}
-		});
-
-		$( ".plastictags" ).autocomplete({ // Автокомплит пластиков
-			source: "autocomplete.php?do=plastictags",
-			minLength: 2,
-			select: function( event, ui ) {
-				$('select[name="Shipper"]').val(ui.item.SH_ID);
-			},
-			create: function() {
-				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
-					var listItem = $( "<li>" )
-						.append( item.label )
-						.appendTo( ul );
-
-					if (item.removed == 1) {
-						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
-					}
-
-					return listItem;
-				}
-			}
-		});
-
-		$( ".textileplastictags" ).autocomplete({ // Автокомплит материалов
-			source: "autocomplete.php?do=textileplastictags",
-			minLength: 2,
-			select: function( event, ui ) {
-				$('select[name="Shipper"]').val(ui.item.SH_ID);
-			},
-			create: function() {
-				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
-					var listItem = $( "<li>" )
-						.append( item.label )
-						.appendTo( ul );
-
-					if (item.removed == 1) {
-						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
-					}
-
-					return listItem;
-				}
-			}
-		});
-
-		// При очистке поля с материалом - очищаем поставщика
-		$( ".textiletags, .plastictags, .textileplastictags" ).on("keyup", function() {
-			if( $(this).val().length < 2 ) {
-				$('select[name="Shipper"]').val('');
-			}
-		});
-
-		$( ".clienttags" ).autocomplete({ // Автокомплит заказчиков
-			source: "autocomplete.php?do=clienttags"
-		});
-
 		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 
 		$('.print_products').button();
@@ -1392,10 +1310,6 @@
 			$(event.target.form).submit();
 		});
 		$( ".main_table .shopstags" ).on( "autocompleteselect", function( event, ui ) {
-			$(this).val(ui.item.value);
-			$(event.target.form).submit();
-		});
-		$( ".main_table .textileplastictags" ).on( "autocompleteselect", function( event, ui ) {
 			$(this).val(ui.item.value);
 			$(event.target.form).submit();
 		});

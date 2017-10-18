@@ -299,8 +299,7 @@ $(document).ready(function(){
 		});
 
 		// Автокомплит поверх диалога
-		$( ".colortags" ).autocomplete( "option", "appendTo", "#addchair" );
-		$( ".textiletags" ).autocomplete( "option", "appendTo", "#addchair" );
+		$( ".materialtags_1" ).autocomplete( "option", "appendTo", "#addchair" );
 		
 		return false;
 	});
@@ -463,8 +462,7 @@ $(document).ready(function(){
 		});
 		
 		// Автокомплит поверх диалога
-		$( ".colortags" ).autocomplete( "option", "appendTo", "#addtable" );
-		$( ".plastictags" ).autocomplete( "option", "appendTo", "#addtable" );
+		$( ".materialtags_2" ).autocomplete( "option", "appendTo", "#addtable" );
 		
 		return false;
 	});
@@ -636,9 +634,8 @@ $(document).ready(function(){
 		});
 
 		// Автокомплит поверх диалога
-		$( ".textileplastictags" ).autocomplete( "option", "appendTo", "#addblank" );
-		$( ".textiletags" ).autocomplete( "option", "appendTo", "#addblank" );
-		$( ".plastictags" ).autocomplete( "option", "appendTo", "#addblank" );
+		$( ".materialtags_1" ).autocomplete( "option", "appendTo", "#addblank" );
+		$( ".materialtags_2" ).autocomplete( "option", "appendTo", "#addblank" );
 
 		return false;
 	});
@@ -795,13 +792,70 @@ $(document).ready(function(){
 			}, 1);
 		}
 
-		// Автокомплит материалов
-		$( ".materialtags_1" ).autocomplete({
-			source: "autocomplete.php?do=textiletags"
+///////////////////////////////////////////////////////////////////
+
+		// АВТОКОМПЛИТЫ
+		$( ".shopstags" ).autocomplete({ // Автокомплит салонов
+			source: "autocomplete.php?do=shopstags"
 		});
-		$( ".materialtags_2" ).autocomplete({
-			source: "autocomplete.php?do=plastictags"
+
+		$( ".colortags" ).autocomplete({ // Автокомплит цветов
+			source: "autocomplete.php?do=colortags"
 		});
+
+		$( ".clienttags" ).autocomplete({ // Автокомплит заказчиков
+			source: "autocomplete.php?do=clienttags"
+		});
+
+		$( ".materialtags_1" ).autocomplete({ // Автокомплит тканей
+			source: "autocomplete.php?do=textiletags",
+			minLength: 2,
+			select: function( event, ui ) {
+				$(this).parent('div').find('select[name="Shipper"]').val(ui.item.SH_ID);
+			},
+			create: function() {
+				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					var listItem = $( "<li>" )
+						.append( item.label )
+						.appendTo( ul );
+
+					if (item.removed == 1) {
+						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
+					}
+
+					return listItem;
+				}
+			}
+		});
+
+		$( ".materialtags_2" ).autocomplete({ // Автокомплит пластиков
+			source: "autocomplete.php?do=plastictags",
+			minLength: 2,
+			select: function( event, ui ) {
+				$(this).parent('div').find('select[name="Shipper"]').val(ui.item.SH_ID);
+			},
+			create: function() {
+				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					var listItem = $( "<li>" )
+						.append( item.label )
+						.appendTo( ul );
+
+					if (item.removed == 1) {
+						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
+					}
+
+					return listItem;
+				}
+			}
+		});
+
+		// При очистке поля с материалом - очищаем поставщика
+		$( ".materialtags_1, .materialtags_2" ).on("keyup", function() {
+			if( $(this).val().length < 2 ) {
+				$(this).parent('div').find('select[name="Shipper"]').val('');
+			}
+		});
+
 //////////////////////////////////////////
 
 		// Смена статуса лакировки аяксом

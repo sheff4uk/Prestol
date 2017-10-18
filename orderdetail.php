@@ -558,7 +558,7 @@
 				echo "bg-gray'>";
 		}
 		echo "{$row["Material"]}</span>";
-		echo "<input type='text' class='materialtags_{$row["PT_ID"]}' style='display: none;' title='Для отмены изменений нажмите клавишу ESC'>";
+		echo "<input type='text' class='materialtags_{$row["PT_ID"]}' style='display: none;'>";
 		echo "<input type='checkbox' style='display: none;' title='Выведен'>";
 		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";
@@ -645,7 +645,7 @@
 				echo "bg-gray'>";
 		}
 		echo "{$row["Material"]}</span>";
-		echo "<input type='text' class='materialtags_{$row["PT_ID"]}' style='display: none;' title='Для отмены изменений нажмите клавишу ESC'>";
+		echo "<input type='text' class='materialtags_{$row["PT_ID"]}' style='display: none;'>";
 		echo "<input type='checkbox' style='display: none;' title='Выведен'>";
 		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";
@@ -918,101 +918,6 @@ if( $id != "NULL" ) {
 			var lnk = $(this).attr('lnk');
 			$('.ord_log_row[lnk="'+lnk+'"] td').css('background', 'none');
 		});
-
-		$( ".colortags" ).autocomplete({ // Автокомплит цветов
-			source: "autocomplete.php?do=colortags"
-		});
-
-		$( ".textiletags" ).autocomplete({ // Автокомплит тканей
-			source: "autocomplete.php?do=textiletags",
-			minLength: 2,
-			select: function( event, ui ) {
-				$('select[name="Shipper"]').val(ui.item.SH_ID);
-			},
-			create: function() {
-				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
-					var listItem = $( "<li>" )
-						.append( item.label )
-						.appendTo( ul );
-
-					if (item.removed == 1) {
-						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
-					}
-
-					return listItem;
-				}
-			}
-		});
-
-		$( ".plastictags" ).autocomplete({ // Автокомплит пластиков
-			source: "autocomplete.php?do=plastictags",
-			minLength: 2,
-			select: function( event, ui ) {
-				$('select[name="Shipper"]').val(ui.item.SH_ID);
-			},
-			create: function() {
-				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
-					var listItem = $( "<li>" )
-						.append( item.label )
-						.appendTo( ul );
-
-					if (item.removed == 1) {
-						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
-					}
-
-					return listItem;
-				}
-			}
-		});
-
-		$( ".textileplastictags" ).autocomplete({ // Автокомплит материалов
-			source: "autocomplete.php?do=textileplastictags",
-			minLength: 2,
-			select: function( event, ui ) {
-				$('select[name="Shipper"]').val(ui.item.SH_ID);
-			},
-			create: function() {
-				$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
-					var listItem = $( "<li>" )
-						.append( item.label )
-						.appendTo( ul );
-
-					if (item.removed == 1) {
-						listItem.addClass( "removed" ).attr( "title", "Выведен!" )
-					}
-
-					return listItem;
-				}
-			}
-		});
-
-		// При очистке поля с материалом - очищаем поставщика
-		$( ".textiletags, .plastictags, .textileplastictags" ).on("keyup", function() {
-			if( $(this).val().length < 2 ) {
-				$('select[name="Shipper"]').val('');
-			}
-		});
-
-		$( ".clienttags" ).autocomplete({ // Автокомплит заказчиков
-			source: "autocomplete.php?do=clienttags"
-		});
-
-//		// В форме редактирования заказа если выбираем Свободные - дата продажи пустая
-//		$('#order_form select[name="Shop"]').on("change", function() {
-//			var StartDate = $('#order_form input[name="StartDate"]').attr('date');
-//			if( $(this).val() === '0' ) {
-//				$('#order_form input[name="StartDate"]').val('');
-//			}
-//			else {
-//				$('#order_form input[name="StartDate"]').val(StartDate);
-//			}
-//		});
-
-//		$('#order_form input[name="StartDate"]').on("change", function() {
-//			$(this).attr('date', $(this).val());
-//		});
-
-//		odid = <?= ($id == 'NULL') ? 0 : $id ?>;
 
 		$('.attention img').show();
 
