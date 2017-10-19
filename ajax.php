@@ -1256,8 +1256,8 @@ case "material_list":
 	$length = mysqli_result($res,0,'length') ? mysqli_result($res,0,'length') : 0;
 
 	$query = "SELECT RPAD(MT.Material, {$length}, ' ') Material
-					,RPAD(CONCAT('- ', ROUND(SUM(ODD_ODB.MT_amount), 1), ' м.п.'), 12, ' ') MT_amount
-					#,IF(ODD_ODB.MT_amount, DATE_FORMAT(ODD_ODB.order_date, '%d.%m.%Y'), '') order_date
+					,RPAD(CONCAT('- ', ROUND(ODD_ODB.MT_amount, 1), ' м.п.'), 12, ' ') MT_amount
+					,IF(ODD_ODB.MT_amount, DATE_FORMAT(ODD_ODB.order_date, '%d.%m.%Y'), '') order_date
 				FROM Materials MT
 				JOIN (
 					SELECT MT_ID, MT_amount, order_date
@@ -1268,12 +1268,10 @@ case "material_list":
 					FROM OrdersDataBlank
 					WHERE ODB_ID IN ($odbids)
 				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
-				GROUP BY MT.MT_ID
 				ORDER BY MT.Material";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	while( $row = mysqli_fetch_array($res) ) {
-		//$materials_name .= $row["Material"]."\\t".$row["MT_amount"]."\\t".$row["order_date"]."\\r\\n";
-		$materials_name .= $row["Material"]."\\t".$row["MT_amount"]."\\r\\n";
+		$materials_name .= $row["Material"]."\\t".$row["MT_amount"]."\\t".$row["order_date"]."\\r\\n";
 	}
 	//$materials_name = addslashes( $materials_name );
 	echo "window.top.window.$('#materials_name').html('{$materials_name}');";
