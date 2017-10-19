@@ -119,6 +119,7 @@
 		$FA_ID = $_POST["FA_ID"];
 		$bank = ($_POST["bank"] == '1') ? '1' : 'NULL';
 		$name = mysqli_real_escape_string( $mysqli, $_POST["name"] );
+		$color = $_POST["color"];
 		$start_balance = $_POST["start_balance"] ? $_POST["start_balance"] : '0';
 		$USR_ID = $_POST["USR_ID"] ? $_POST["USR_ID"] : 'NULL';
 
@@ -128,6 +129,7 @@
 							,name = '{$name}'
 							,start_balance = {$start_balance}
 							,USR_ID = {$USR_ID}
+							,color = '{$color}'
 						WHERE FA_ID = {$FA_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"] = mysqli_error( $mysqli );
@@ -277,7 +279,7 @@
 				<tbody>
 					<?
 						$total = 0;
-						$query = "SELECT FA_ID, name, start_balance, end_balance, USR_ID, bank
+						$query = "SELECT FA_ID, name, start_balance, end_balance, USR_ID, bank, color
 									FROM FinanceAccount
 									".(in_array('finance_account', $Rights) ? "WHERE USR_ID = {$_SESSION['id']}" : "")."
 									ORDER BY IFNULL(bank, 0), FA_ID";
@@ -289,9 +291,9 @@
 							$money = number_format($row["end_balance"], 0, '', ' ');
 
 							echo "<tr>";
-							echo "<td class='account_label'>{$row["name"]}";
+							echo "<td class='account_label'><span style='background-color: {$row["color"]}; border-radius: 20%;'>{$row["name"]}</span>";
 							if( !in_array('finance_account', $Rights) ) {
-								echo "<a href='#' class='add_account_btn' FA_ID='{$row["FA_ID"]}' bank='{$row["bank"]}' name='{$row["name"]}' start_balance='{$row["start_balance"]}' USR_ID='{$row["USR_ID"]}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a>";
+								echo "<a href='#' class='add_account_btn' FA_ID='{$row["FA_ID"]}' bank='{$row["bank"]}' name='{$row["name"]}' color='{$row["color"]}' start_balance='{$row["start_balance"]}' USR_ID='{$row["USR_ID"]}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a>";
 							}
 							echo "</td>";
 							echo "<td width='120' class='txtright' style='color: {$color};'><b>{$money}</b></td>";
@@ -747,6 +749,7 @@
 								,SF.type
 								,SF.money
 								,SF.account
+								,SF.color
 								,SF.local
 								,SF.category
 								,SF.kontragent
@@ -768,6 +771,7 @@
 									,IFNULL(FC.type, 0) type
 									,IFNULL(FC.type, -1) * F.money money
 									,FA.name account
+									,FA.color
 									,FA.local
 									,IF(F.to_account IS NULL, FC.name, CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name)) category
 									,KA.Naimenovanie kontragent
@@ -798,6 +802,7 @@
 									,0 type
 									,F.money
 									,TFA.name account
+									,TFA.color
 									,TFA.local
 									,CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name) category
 									,NULL kontragent
@@ -847,7 +852,7 @@
 						echo "<td>{$row["date"]}</td>";
 						echo "<td style='text-align: center;'>{$type}</td>";
 						echo "<td class='txtright' style='color: {$color};'><b>{$money}</b></td>";
-						echo "<td><span class='nowrap'>{$row["account"]}</span></td>";
+						echo "<td><span class='nowrap' style='background-color: {$row["color"]}; border-radius: 20%;'>{$row["account"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["category"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["author"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["kontragent"]}</span></td>";
@@ -1036,6 +1041,10 @@
 				<input required type="text" name="name" id="name" autocomplete="off" style="width: 200px;">
 			</div>
 			<div class="field">
+				<label for="сcolor">Цвет:</label><br>
+				<input required type="color" name="color" id="color">
+			</div>
+			<div class="field">
 				<label for="start_balance">Начальный баланс:</label><br>
 				<input type="number" name="start_balance" autocomplete="off" id="start_balance" style="width: 100px; text-align: right;">
 			</div>
@@ -1208,6 +1217,7 @@
 			$('#add_account input[name="bank"]').prop('checked', false);
 			$('#add_account .btnset').buttonset("refresh");
 			$('#add_account #name').val('');
+			$('#add_account #color').val('');
 			$('#add_account #start_balance').val('');
 			$('#add_account #USR_ID').val('').trigger('change');
 
@@ -1216,6 +1226,7 @@
 			if( FA_ID > 0 ) {
 				var bank = $(this).attr('bank');
 				var name = $(this).attr('name');
+				var color = $(this).attr('color');
 				var start_balance = $(this).attr('start_balance');
 				var USR_ID = $(this).attr('USR_ID');
 
@@ -1228,6 +1239,7 @@
 				}
 					$('#add_account .btnset').buttonset("refresh");
 				$('#add_account #name').val(name);
+				$('#add_account #color').val(color);
 				$('#add_account #start_balance').val(start_balance);
 				$('#add_account #USR_ID').val(USR_ID).trigger('change');
 			}
