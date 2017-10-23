@@ -1234,7 +1234,15 @@
 		return false;
 	}
 
-	$(document).ready(function(){
+	// Выбрать все в форме отгрузки
+	function selectall(ch) {
+		$('#orders_to_shipment .chbox.show').prop('checked', ch);
+		$('#orders_to_shipment #selectalltop').prop('checked', ch);
+		$('#orders_to_shipment #selectallbottom').prop('checked', ch);
+		return false;
+	}
+
+	$(function(){
 
 		// Если выбран розничный салон - показываем доп поля в форме добавления заказа
 		$('#order_form select[name="Shop"]').on("change", function() {
@@ -1350,6 +1358,49 @@
 			return false;
 		});
 
+		// Обработчики чекбоксов в форме отгрузки
+		$('#orders_to_shipment').on('change', '#selectalltop', function(){
+			ch = $('#selectalltop').prop('checked');
+			selectall(ch);
+			return false;
+		});
+		$('#orders_to_shipment').on('change', '#selectalltop', function(){
+			ch = $('#selectalltop').prop('checked');
+			selectall(ch);
+			return false;
+		});
+		$('#orders_to_shipment').on('change', '.chbox', function(){
+			var checked_status = true;
+			$('.chbox.show').each(function(){
+				if( !$(this).prop('checked') )
+				{
+					checked_status = $(this).prop('checked');
+				}
+			});
+			$('#selectalltop').prop('checked', checked_status);
+			$('#selectallbottom').prop('checked', checked_status);
+			return false;
+		});
+		// Конец обработчиков чекбоксов
+
+		// В форме отгрузки фильтр по салонам
+		$('#orders_to_shipment').on('change', '.button_shops', function(){
+			var id = $(this).attr('id');
+			if( $(this).prop('checked') ) {
+				$('#to_shipment .'+id).show('fast');
+				$('#to_shipment .'+id+' input[type=checkbox]').removeClass('hide');
+				$('#to_shipment .'+id+' input[type=checkbox]').addClass('show');
+				$('#to_shipment .'+id+' input[type=checkbox]').change();
+			}
+			else {
+				$('#to_shipment .'+id+' input[type=checkbox]').prop('checked', false);
+				$('#to_shipment .'+id).hide('fast');
+				$('#to_shipment .'+id+' input[type=checkbox]').removeClass('show');
+				$('#to_shipment .'+id+' input[type=checkbox]').addClass('hide');
+				$('#to_shipment .'+id+' input[type=checkbox]').change();
+			}
+		});
+
 		// Смена статуса принятия аяксом
 		$('.edit_confirmed').click(function() {
 			var id = $(this).parents('tr').attr('id');
@@ -1374,11 +1425,21 @@
 			noty({timeout: 3000, text: 'Ссылка на таблицу скопирована в буфер обмена', type: 'success'});
 		});
 
-		// Форма формирования отгрузки
+		// Форма составления отгрузки
 		$('#add_shipment').click(function() {
-			//$('select[name="CT_ID"]').val('');
-			//$('#orders_to_shipment').html('');
-			//$('#add_shipment_form .accordion').accordion( "option", "active", 1 );
+			$('select[name="CT_ID"]').val('');
+			$('#orders_to_shipment').html('');
+			$('#add_shipment_form .accordion').accordion( "option", "active", 1 );
+
+			<?
+			// Если на экране отгрузки - заполняем форму отгрузки
+			if( isset($_GET["shpid"]) ) { // Если в отгрузке - заполняем форму отгрузки
+				echo "$('#add_shipment_form select[name=CT_ID]').val('{$CT_ID}');";
+				echo "$('#add_shipment_form input[name=shp_title]').val('{$shp_title}');";
+				echo '$.ajax({ url: "ajax.php?do=shipment&CT_ID='.$CT_ID.'&shpid='.$_GET["shpid"].'", dataType: "script", async: false });';
+				echo "$('#add_shipment_form .accordion').accordion( 'option', 'active', 0 );";
+			}
+			?>
 
 			$('#add_shipment_form').dialog({
 				position: { my: "center top", at: "center top", of: window },
@@ -1397,15 +1458,6 @@
 			$.ajax({ url: "ajax.php?do=shipment&CT_ID="+CT_ID, dataType: "script", async: false });
 			$('#add_shipment_form .accordion').accordion( "option", "active", 0 );
 		});
-
-		<?
-		if( isset($_GET["shpid"]) ) { // Если в отгрузке - заполняем форму отгрузки
-			echo "$('#add_shipment_form select[name=CT_ID]').val('{$CT_ID}');";
-			echo "$('#add_shipment_form input[name=shp_title]').val('{$shp_title}');";
-			echo '$.ajax({ url: "ajax.php?do=shipment&CT_ID='.$CT_ID.'&shpid='.$_GET["shpid"].'", dataType: "script", async: false });';
-			echo "$('#add_shipment_form .accordion').accordion( 'option', 'active', 0 );";
-		}
-		?>
 
 		// Редактирование салона аяксом
 		$('.shop_cell').dblclick(function() {

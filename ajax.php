@@ -571,218 +571,170 @@ case "materials":
 case "shipment":
 		$CT_ID = $_GET["CT_ID"] ? $_GET["CT_ID"] : 0;
 
-		$html = "";
-		$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID}";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-		while( $row = mysqli_fetch_array($res) ) {
-			$html .= "<label for='shop{$row["SH_ID"]}'>{$row["Shop"]}</label><input type='checkbox' id='shop{$row["SH_ID"]}' class='button_shops'>";
-		}
-		$html .= "<br><br>";
-
-		// Снимаем ограничение в 1024 на GROUP_CONCAT
-		$query = "SET @@group_concat_max_len = 10000;";
-		mysqli_query( $mysqli, $query );
-
-		$query = "SELECT OD.OD_ID
-						,OD.Code
-						,IFNULL(OD.ClientName, '') ClientName
-						,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
-						,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
-						,OD.Color
-						,OD.IsPainting
-						,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
-						,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
-						,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
-						,IF(OD.SHP_ID IS NULL, '', 'checked') checked
-						,OD.SH_ID
-						,SH.Shop
-						,OD.confirmed
-						,REPLACE(OD.Comment, '\r\n', '<br>') Comment
-				  FROM OrdersData OD
-				  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
-				  JOIN (
-					  SELECT ODD.OD_ID
-							,IFNULL(PM.PT_ID, 2) PT_ID
-							,ODD.ODD_ID itemID
-							,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), ''), '</a></b><br>') Zakaz
-
-							,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
-								CASE ODD.IsExist
-									WHEN 0 THEN 'bg-red'
-									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
-									WHEN 2 THEN 'bg-green'
-									ELSE 'bg-gray'
-								END,
-							'\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
-
-							,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
-
-						FROM OrdersDataDetail ODD
-						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
-						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-						WHERE ODD.Del = 0
-						GROUP BY ODD.ODD_ID
-						UNION ALL
-						SELECT ODB.OD_ID
-							  ,0 PT_ID
-							  ,ODB.ODB_ID itemID
-							  ,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODB.Amount, '</b> ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), ''), '</a></b><br>') Zakaz
-
-							  ,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
-								CASE ODB.IsExist
-									WHEN 0 THEN 'bg-red'
-									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
-									WHEN 2 THEN 'bg-green'
-									ELSE 'bg-gray'
-								END,
-							  '\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
-
-							  ,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
-
-						FROM OrdersDataBlank ODB
-						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
-						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-						WHERE ODB.Del = 0
-						GROUP BY ODB.ODB_ID
-						ORDER BY PT_ID DESC, itemID
-						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-				  WHERE OD.Del = 0";
-		if( $_GET["shpid"] ) {
-			$query .= " AND ((OD.ReadyDate IS NULL AND OD.SHP_ID IS NULL) OR OD.SHP_ID = {$_GET["shpid"]})";
+		// Проверяем права на отгрузку заказа
+		if( !in_array('order_ready', $Rights) ) {
+			echo "noty({timeout: 3000, text: 'Недостаточно прав для совершения операции!', type: 'error'});";
 		}
 		else {
-			$query .= " AND OD.ReadyDate IS NULL AND OD.SHP_ID IS NULL";
-		}
-		$query .= " GROUP BY OD.OD_ID ORDER BY OD.OD_ID";
-
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-		$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
-		$html .= "<table class='main_table' id='to_shipment'><thead><tr>";
-		$html .= "<th width='70'>Код</th>";
-		$html .= "<th width='20%'>Заказчик [Продажа]-[Сдача]</th>";
-		$html .= "<th width='10%'>Салон</th>";
-		$html .= "<th width='30%'>Заказ</th>";
-		$html .= "<th width='20%'>Материал</th>";
-		$html .= "<th width='20%'>Цвет</th>";
-		$html .= "<th width='100'>Этапы</th>";
-		$html .= "<th width='40'>Принят</th>";
-		$html .= "<th width='20%'>Примечание</th>";
-		$html .= "</tr></thead><tbody>";
-		while( $row = mysqli_fetch_array($res) ) {
-			$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
-			$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox hide' value='{$row["OD_ID"]}'>";
-			$html .= "<label for='ord_sh{$row["OD_ID"]}'".($row["checked"] == 'checked' ? "style='color: red;'" : "").">{$row["Code"]}</label></td>";
-			$html .= "<td><span class='nowrap'>{$row["ClientName"]}<br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
-			$html .= "<td><span class='nowrap'>{$row["Shop"]}</span></td>";
-			$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
-			switch ($row["IsPainting"]) {
-				case 1:
-					$class = "notready";
-					$title = "Не в работе";
-					break;
-				case 2:
-					$class = "inwork";
-					$title = "В работе";
-					break;
-				case 3:
-					$class = "ready";
-					$title = "Готово";
-					break;
-			}
-			$html .= "<td><span class='nowrap'>{$row["Material"]}</span></td>";
-			$html .= "<td class='{$class}' title='{$title}'>{$row["Color"]}</td>";
-			$html .= "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
-				// Если заказ принят
-				if( $row["confirmed"] == 1 ) {
-					$class = 'confirmed';
-					$title = 'Принят в работу';
-				}
-				else {
-					$class = 'not_confirmed';
-					$title = 'Не принят в работу';
-				}
-			$html .= "<td class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
-			$html .= "<td>{$row["Comment"]}</td>";
-			$html .= "</tr>";
-		}
-		$html .= "</tbody></table>";
-		$html .= "<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>";
-		$html = addslashes($html);
-		echo "window.top.window.$('#orders_to_shipment').html('{$html}');";
-		$js = "
-			function selectall(ch) {
-				$('.chbox.show').prop('checked', ch);
-				$('#selectalltop').prop('checked', ch);
-				$('#selectallbottom').prop('checked', ch);
-				return false;
-			}
-
-			$(function() {
-				$('#selectalltop').change(function(){
-					ch = $('#selectalltop').prop('checked');
-					selectall(ch);
-					return false;
-				});
-
-				$('#selectallbottom').change(function(){
-					ch = $('#selectallbottom').prop('checked');
-					selectall(ch);
-					return false;
-				});
-
-				$('.chbox').change(function(){
-					var checked_status = true;
-					$('.chbox.show').each(function(){
-						if( !$(this).prop('checked') )
-						{
-							checked_status = $(this).prop('checked');
-						}
-					});
-					$('#selectalltop').prop('checked', checked_status);
-					$('#selectallbottom').prop('checked', checked_status);
-					return false;
-				});
-			});
-		";
-		$js .= "
-			$('.button_shops').button();
-
-			$('.button_shops').on('change', function() {
-				var id = $(this).attr('id');
-				if( $(this).prop('checked') ) {
-					$('#to_shipment .'+id).show('fast');
-					$('#to_shipment .'+id+' input[type=checkbox]').removeClass('hide');
-					$('#to_shipment .'+id+' input[type=checkbox]').addClass('show');
-					$('#to_shipment .'+id+' input[type=checkbox]').change();
-				}
-				else {
-					$('#to_shipment .'+id+' input[type=checkbox]').prop('checked', false);
-					$('#to_shipment .'+id).hide('fast');
-					$('#to_shipment .'+id+' input[type=checkbox]').removeClass('show');
-					$('#to_shipment .'+id+' input[type=checkbox]').addClass('hide');
-					$('#to_shipment .'+id+' input[type=checkbox]').change();
-				}
-			});
-		";
-		echo $js;
-
-		// Если на экране отгрузки - включаем задействованные салоны
-		if( $_GET["shpid"] ) {
-			$query = "SELECT SH_ID FROM OrdersData WHERE SHP_ID = {$_GET["shpid"]} GROUP BY SH_ID";
+			$html = "";
+			$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID}";
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			while( $row = mysqli_fetch_array($res) ) {
-				echo "$('#add_shipment_form #shop".$row["SH_ID"]."').prop('checked', true).change();";
+				$html .= "<label for='shop{$row["SH_ID"]}'>{$row["Shop"]}</label><input type='checkbox' id='shop{$row["SH_ID"]}' class='button_shops'>";
 			}
-		}
-		else {
-			echo "$('.button_shops').prop('checked', true).change();";
+			$html .= "<br><br>";
+
+			// Снимаем ограничение в 1024 на GROUP_CONCAT
+			$query = "SET @@group_concat_max_len = 10000;";
+			mysqli_query( $mysqli, $query );
+
+			$query = "SELECT OD.OD_ID
+							,OD.Code
+							,IFNULL(OD.ClientName, '') ClientName
+							,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
+							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
+							,OD.Color
+							,OD.IsPainting
+							,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
+							,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
+							,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
+							,IF(OD.SHP_ID IS NULL, '', 'checked') checked
+							,OD.SH_ID
+							,SH.Shop
+							,OD.confirmed
+							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
+					  FROM OrdersData OD
+					  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
+					  JOIN (
+						  SELECT ODD.OD_ID
+								,IFNULL(PM.PT_ID, 2) PT_ID
+								,ODD.ODD_ID itemID
+								,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), ''), '</a></b><br>') Zakaz
+
+								,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
+									CASE ODD.IsExist
+										WHEN 0 THEN 'bg-red'
+										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
+										WHEN 2 THEN 'bg-green'
+										ELSE 'bg-gray'
+									END,
+								'\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
+
+								,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
+
+							FROM OrdersDataDetail ODD
+							LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+							LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+							LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+							LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+							LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+							LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+							LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+							WHERE ODD.Del = 0
+							GROUP BY ODD.ODD_ID
+							UNION ALL
+							SELECT ODB.OD_ID
+								  ,0 PT_ID
+								  ,ODB.ODB_ID itemID
+								  ,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODB.Amount, '</b> ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), ''), '</a></b><br>') Zakaz
+
+								  ,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
+									CASE ODB.IsExist
+										WHEN 0 THEN 'bg-red'
+										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
+										WHEN 2 THEN 'bg-green'
+										ELSE 'bg-gray'
+									END,
+								  '\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
+
+								  ,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
+
+							FROM OrdersDataBlank ODB
+							LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
+							LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+							LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+							LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+							WHERE ODB.Del = 0
+							GROUP BY ODB.ODB_ID
+							ORDER BY PT_ID DESC, itemID
+							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+					  WHERE OD.Del = 0";
+			if( $_GET["shpid"] ) {
+				$query .= " AND ((OD.ReadyDate IS NULL AND OD.SHP_ID IS NULL) OR OD.SHP_ID = {$_GET["shpid"]})";
+			}
+			else {
+				$query .= " AND OD.ReadyDate IS NULL AND OD.SHP_ID IS NULL";
+			}
+			$query .= " GROUP BY OD.OD_ID";
+			$query .= " ORDER BY OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
+
+			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+			$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
+			$html .= "<table class='main_table' id='to_shipment'><thead><tr>";
+			$html .= "<th width='70'>Код</th>";
+			$html .= "<th width='20%'>Заказчик [Продажа]-[Сдача]</th>";
+			$html .= "<th width='10%'>Салон</th>";
+			$html .= "<th width='30%'>Заказ</th>";
+			$html .= "<th width='20%'>Материал</th>";
+			$html .= "<th width='20%'>Цвет</th>";
+			$html .= "<th width='100'>Этапы</th>";
+			$html .= "<th width='40'>Принят</th>";
+			$html .= "<th width='20%'>Примечание</th>";
+			$html .= "</tr></thead><tbody>";
+			while( $row = mysqli_fetch_array($res) ) {
+				$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
+				$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox hide' value='{$row["OD_ID"]}'>";
+				$html .= "<label for='ord_sh{$row["OD_ID"]}'".($row["checked"] == 'checked' ? "style='color: red;'" : "").">{$row["Code"]}</label></td>";
+				$html .= "<td><span class='nowrap'>{$row["ClientName"]}<br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
+				$html .= "<td><span class='nowrap'>{$row["Shop"]}</span></td>";
+				$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
+				switch ($row["IsPainting"]) {
+					case 1:
+						$class = "notready";
+						$title = "Не в работе";
+						break;
+					case 2:
+						$class = "inwork";
+						$title = "В работе";
+						break;
+					case 3:
+						$class = "ready";
+						$title = "Готово";
+						break;
+				}
+				$html .= "<td><span class='nowrap'>{$row["Material"]}</span></td>";
+				$html .= "<td class='{$class}' title='{$title}'>{$row["Color"]}</td>";
+				$html .= "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
+					// Если заказ принят
+					if( $row["confirmed"] == 1 ) {
+						$class = 'confirmed';
+						$title = 'Принят в работу';
+					}
+					else {
+						$class = 'not_confirmed';
+						$title = 'Не принят в работу';
+					}
+				$html .= "<td class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
+				$html .= "<td>{$row["Comment"]}</td>";
+				$html .= "</tr>";
+			}
+			$html .= "</tbody></table>";
+			$html .= "<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>";
+			$html = addslashes($html);
+			echo "window.top.window.$('#orders_to_shipment').html('{$html}');";
+			echo "window.top.window.$('.button_shops').button();";
+
+			// Если на экране отгрузки - включаем задействованные салоны
+			if( $_GET["shpid"] ) {
+				$query = "SELECT SH_ID FROM OrdersData WHERE SHP_ID = {$_GET["shpid"]} GROUP BY SH_ID";
+				$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+				while( $row = mysqli_fetch_array($res) ) {
+					echo "$('#add_shipment_form #shop".$row["SH_ID"]."').prop('checked', true).change();";
+				}
+			}
+			else {
+				echo "$('.button_shops').prop('checked', true).change();";
+			}
 		}
 
 	break;
