@@ -1044,11 +1044,13 @@ case "update_shop":
 
 	echo "noty({timeout: 3000, text: 'Салон изменен с <b>{$old_shop}</b> на <b>{$new_shop}</b>', type: 'success'});";
 	if( $SH_ID == 0 ) {
-		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a.shipping').hide();";
+//		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a.shipping').hide();";
+		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"]').hide('fast');";
+		echo "noty({timeout: 4000, text: 'Заказ перемещен в <b>СВОБОДНЫЕ</b>', type: 'alert'});";
 	}
-	else {
-		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a.shipping').show();";
-	}
+//	else {
+//		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a.shipping').show();";
+//	}
 
 	break;
 ///////////////////////////////////////////////////////////////////
