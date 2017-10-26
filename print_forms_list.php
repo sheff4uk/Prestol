@@ -25,7 +25,7 @@ else {
 ?>
 <form>
 	<script>
-		$( document ).ready(function() {
+		$(function() {
 			$("#year option[value='<?=$year?>']").prop('selected', true);
 			$("#payer option[value='<?=$payer?>']").prop('selected', true);
 		});
@@ -58,10 +58,32 @@ else {
 <br>
 
 <script>
-	$(document).ready(function() {
+	$(function() {
 		$('#payer').select2({ placeholder: 'Выберите контрагента', language: 'ru' });
 	});
 </script>
+
+<style>
+	#add_invoice_btn {
+		background: url(../img/bt_speed_dial_1x.png) no-repeat scroll center center transparent;
+		bottom: 100px;
+		cursor: pointer;
+		width: 56px;
+		height: 56px;
+		opacity: .4;
+		position: fixed;
+		right: 50px;
+		z-index: 9;
+		border-radius: 50%;
+		background-color: #16A085;
+		box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
+	}
+	#add_invoice_btn:hover {
+		opacity: 1;
+	}
+</style>
+
+<a id='add_invoice_btn' href='#' title='Создать накладную'></a>
 
 <table>
 	<thead>

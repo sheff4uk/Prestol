@@ -186,8 +186,8 @@
 						$query = "UPDATE OrdersDataBlank SET Amount = {$left}, author = NULL WHERE ODB_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						// Вставляем в новый заказ переносимые изделия
-						$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, MT_ID, Amount, Comment, IsExist, order_date, arrival_date, Price, sister_ID, creator, patina)
-						SELECT {$newOD_ID}, BL_ID, Other, MT_ID, {$right}, Comment, IsExist, order_date, arrival_date, Price, {$value}, {$_SESSION['id']}, patina FROM OrdersDataBlank WHERE ODB_ID = {$value}";
+						$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, MT_ID, Amount, Comment, IsExist, order_date, arrival_date, Price, opt_price, sister_ID, creator, patina)
+						SELECT {$newOD_ID}, BL_ID, Other, MT_ID, {$right}, Comment, IsExist, order_date, arrival_date, Price, opt_price, {$value}, {$_SESSION['id']}, patina FROM OrdersDataBlank WHERE ODB_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					}
 					else {
@@ -195,8 +195,8 @@
 						$query = "UPDATE OrdersDataDetail SET Amount = {$left}, author = NULL WHERE ODD_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						// Вставляем в новый заказ переносимые изделия
-						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Color, Comment, is_check, order_date, arrival_date, Price, sister_ID, creator, patina)
-						SELECT {$newOD_ID}, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, {$right}, Color, Comment, is_check, order_date, arrival_date, Price, {$value}, {$_SESSION['id']}, patina FROM OrdersDataDetail WHERE ODD_ID = {$value}";
+						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Color, Comment, is_check, order_date, arrival_date, Price, opt_price, sister_ID, creator, patina)
+						SELECT {$newOD_ID}, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, {$right}, Color, Comment, is_check, order_date, arrival_date, Price, opt_price, {$value}, {$_SESSION['id']}, patina FROM OrdersDataDetail WHERE ODD_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					}
 				}

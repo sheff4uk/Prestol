@@ -21,7 +21,7 @@
 					  ,IFNULL(PM.PT_ID, 2) PT_ID
 					  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), '')) Zakaz
 					  ,ODD.Amount
-					  ,ODD.Price
+					  ,IFNULL(ODD.opt_price, ODD.Price) Price
 				FROM OrdersDataDetail ODD
 				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 				LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
@@ -33,7 +33,7 @@
 					  ,0 PT_ID
 					  ,CONCAT(IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), '')) Zakaz
 					  ,ODB.Amount
-					  ,ODB.Price
+					  ,IFNULL(ODB.opt_price, ODB.Price) Price
 				FROM OrdersDataBlank ODB
 				LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 				WHERE ODB.Del = 0

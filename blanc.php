@@ -13,11 +13,11 @@ session_start();
 
 	foreach ($_POST["tovar_tcena"] as $key => $value) {
 		if( $_POST["pt"][$key] > 0 ) {
-			$query = "UPDATE OrdersDataDetail SET Price = {$value}, author = {$_SESSION['id']} WHERE ODD_ID = {$_POST["item"][$key]}";
+			$query = "UPDATE OrdersDataDetail SET opt_price = {$value}, author = {$_SESSION['id']} WHERE ODD_ID = {$_POST["item"][$key]}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 		elseif( $_POST["pt"][$key] == '0' ) {
-			$query = "UPDATE OrdersDataBlank SET Price = {$value}, author = {$_SESSION['id']} WHERE ODB_ID = {$_POST["item"][$key]}";
+			$query = "UPDATE OrdersDataBlank SET opt_price = {$value}, author = {$_SESSION['id']} WHERE ODB_ID = {$_POST["item"][$key]}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 

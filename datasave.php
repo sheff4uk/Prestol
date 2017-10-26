@@ -73,7 +73,7 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	}
 
 	// Обновляем информацию об изделии
-	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
+//	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 	$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 	$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
 	$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
@@ -123,7 +123,7 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 				 ,MT_ID = {$mt_id}
 				 ,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
 				 ,Amount = {$_POST["Amount"]}
-				 ,Price = {$Price}
+				 #,Price = {$Price}
 				 ,Comment = '{$Comment}'
 				 ,is_check = 1
 				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
@@ -146,7 +146,7 @@ elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 		die('Недостаточно прав для совершения операции');
 	}
-	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
+//	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 	$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
 	$Other = trim($_POST["Other"]);
 	$Other = mysqli_real_escape_string( $mysqli, $Other );
@@ -183,7 +183,7 @@ elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 			  SET BL_ID = {$Blank}
 				 ,Other = '{$Other}'
 				 ,Amount = {$_POST["Amount"]}
-				 ,Price = {$Price}
+				 #,Price = {$Price}
 				 ,Comment = '{$Comment}'
 				 ,MT_ID = {$mt_id}
 				 ,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
