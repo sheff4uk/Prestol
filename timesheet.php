@@ -223,7 +223,7 @@
 						,IFNULL(MPP.PremiumPercent, '') ManPercent
 						,IF(MPP.DisableNormHours = 1, 'checked', '') DNHcheck
 						,WD.IsActive
-						,SUM(TS.Hours) Hours
+						,IFNULL(SUM(TS.Hours), 0) Hours
 						FROM WorkersData WD
 						LEFT JOIN TimeSheet TS ON TS.WD_ID = WD.WD_ID AND YEAR(TS.Date) = {$year} AND MONTH(TS.Date) = {$month}
 						LEFT JOIN MonthlyPremiumPercent MPP ON MPP.WD_ID = WD.WD_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
