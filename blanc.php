@@ -28,18 +28,20 @@ session_start();
 		$tovar_massa = mysqli_real_escape_string( $mysqli,$_POST["tovar_massa"][$key] );
 		$item = ($_POST["item"][$key]) ? $_POST["item"][$key] : "NULL";
 		$pt = ($_POST["pt"][$key]) ? $_POST["pt"][$key] : "NULL";
+		$od_id = ($_POST["odid"][$key]) ? $_POST["odid"][$key] : "NULL";
 		$query = "INSERT INTO PrintFormsProducts(OD_ID, PF_ID, sort, ItemID, PT_ID, Amount, Price, Zakaz, tovar_ed, tovar_okei, tovar_massa)
-				  VALUES ({$_POST["odid"][$key]}, {$id}, {$Counter}, {$item}, {$pt}, {$_POST["tovar_kolvo"][$key]}, {$_POST["tovar_tcena"][$key]}, '{$tovar_name}', '{$tovar_ed}', '{$tovar_okei}', '{$tovar_massa}')";
+				  VALUES ({$od_id}, {$id}, {$Counter}, {$item}, {$pt}, {$_POST["tovar_kolvo"][$key]}, {$_POST["tovar_tcena"][$key]}, '{$tovar_name}', '{$tovar_ed}', '{$tovar_okei}', '{$tovar_massa}')";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$Counter++;
 		$summa = $summa + $_POST["tovar_tcena"][$key] * $_POST["tovar_kolvo"][$key];
 
 		// Узнаем код заказа и приписываем его вначало наименования
-		$query = "SELECT Code From OrdersData WHERE OD_ID = {$_POST["odid"][$key]}";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$Code = mysqli_result($res,0,'Code');
-
-		$_POST["tovar_name"][$key] = "[{$Code}] {$_POST["tovar_name"][$key]}";
+		if( $_POST["odid"][$key] ) {
+			$query = "SELECT Code From OrdersData WHERE OD_ID = {$_POST["odid"][$key]}";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query1: " .mysqli_error( $mysqli ));
+			$Code = mysqli_result($res,0,'Code');
+			$_POST["tovar_name"][$key] = "[{$Code}] {$_POST["tovar_name"][$key]}";
+		}
 	}
 
 	// Обновляем информацию по контрагентам
