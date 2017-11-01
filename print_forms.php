@@ -133,7 +133,7 @@
             </tr>
           <tr>
             <td width="250" align="left" valign="top">Название ООО или фамилия ИП:</td>
-            <td align="left" valign="top"><input required type="text" autocomplete="off" value="<?=htmlspecialchars($Name)?>" name="gruzootpravitel_name" id="gruzootpravitel_name" class="forminput" placeholder=""></td>
+            <td align="left" valign="top"><input type="text" autocomplete="off" value="<?=htmlspecialchars($Name)?>" name="gruzootpravitel_name" id="gruzootpravitel_name" class="forminput" placeholder=""></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">ИНН:</td>
@@ -197,7 +197,7 @@
             <td width="250" align="left" valign="top">Название ООО или фамилия ИП:</td>
             <td align="left" valign="top">
             	<input type="hidden" name="platelshik_id" id="platelshik_id" class="forminput">
-            	<input required type="text" autocomplete="off" name="platelshik_name" id="platelshik_name" class="forminput" placeholder="Введите минимум 2 символа для поиска контрагента">
+            	<input type="text" autocomplete="off" name="platelshik_name" id="platelshik_name" class="forminput" placeholder="Введите минимум 2 символа для поиска контрагента">
             </td>
           </tr>
           <tr>
@@ -221,7 +221,7 @@
             <td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_tel" id="platelshik_tel" class="forminput" placeholder=""></td>
           </tr>
           <tr>
-            <td colspan="2" align="left" valign="top"><strong>Банковские реквизиты плательщика&nbsp;</strong></td>
+            <td colspan="2" align="left" valign="top"><strong>Банковские реквизиты плательщика:</strong></td>
           </tr>
           <tr>
             <td width="250" align="left" valign="top">Расчетный счет:</td>
@@ -786,6 +786,7 @@ $(document).ready(function() {
 	$( "#platelshik_name" ).autocomplete({
 		source: "kontragenty.php",
 		minLength: 2,
+		autoFocus: true,
 		select: function( event, ui ) {
 			$('#platelshik_id').val(ui.item.id);
 			$('#platelshik_inn').val(ui.item.INN);
@@ -820,6 +821,7 @@ $(document).ready(function() {
 	$( "#gruzopoluchatel_name" ).autocomplete({
 		source: "kontragenty.php",
 		minLength: 2,
+		autoFocus: true,
 		select: function( event, ui ) {
 			$('#gruzopoluchatel_id').val(ui.item.id);
 			$('#gruzopoluchatel_inn').val(ui.item.INN);
@@ -854,6 +856,7 @@ $(document).ready(function() {
 	$( "#postavshik_name" ).autocomplete({
 		source: "kontragenty.php",
 		minLength: 2,
+		autoFocus: true,
 		select: function( event, ui ) {
 			$('#postavshik_id').val(ui.item.id);
 			$('#postavshik_inn').val(ui.item.INN);
