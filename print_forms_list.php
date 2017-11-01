@@ -57,39 +57,12 @@ else {
 </form>
 <br>
 
-<script>
-	$(function() {
-		$('#payer').select2({ placeholder: 'Выберите контрагента', language: 'ru' });
-	});
-</script>
-
-<style>
-	#add_invoice_btn {
-		background: url(../img/bt_speed_dial_1x.png) no-repeat scroll center center transparent;
-		bottom: 100px;
-		cursor: pointer;
-		width: 56px;
-		height: 56px;
-		opacity: .4;
-		position: fixed;
-		right: 50px;
-		z-index: 9;
-		border-radius: 50%;
-		background-color: #16A085;
-		box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
-	}
-	#add_invoice_btn:hover {
-		opacity: 1;
-	}
-</style>
-
-<a id='add_invoice_btn' href='#' title='Создать накладную'></a>
-
 <table>
 	<thead>
 		<tr>
 			<th>Сумма</th>
 			<th>Плательщик</th>
+			<th>Грузополучатель</th>
 			<th>Номер</th>
 			<th>Накладная</th>
 			<th>Счет</th>
@@ -101,7 +74,8 @@ else {
 <?
 $query = "SELECT PF_ID
 				,PF.summa
-				,KA.Naimenovanie
+				,KAp.Naimenovanie platelshik
+				,KAg.Naimenovanie gruzopoluchatel
 				,PF.count
 				,nakladnaya_date
 				,schet_date
@@ -109,7 +83,8 @@ $query = "SELECT PF_ID
 				,PF.SHP_ID
 			FROM PrintForms PF
 			LEFT JOIN Users USR ON USR.USR_ID = PF.USR_ID
-			LEFT JOIN Kontragenty KA ON KA.KA_ID = PF.platelshik_id
+			LEFT JOIN Kontragenty KAp ON KAp.KA_ID = PF.platelshik_id
+			LEFT JOIN Kontragenty KAg ON KAg.KA_ID = PF.gruzopoluchatel_id
 			WHERE IFNULL(PF.summa, 0) > 0 AND year = {$year}".(in_array('print_forms_view_autor', $Rights) ? " AND PF.USR_ID = {$_SESSION['id']}" : "").($payer ? " AND KA.KA_ID = {$payer}" : "")."
 			ORDER BY PF.PF_ID DESC";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -118,7 +93,8 @@ while( $row = mysqli_fetch_array($res) ) {
 	$number = str_pad($row["count"], 8, '0', STR_PAD_LEFT);
 	echo "<tr>";
 	echo "<td class='txtright'>{$summa}</td>";
-	echo "<td><a href='/print_forms.php?pfid={$row["PF_ID"]}' target='_blank'>{$row["Naimenovanie"]}</a></td>";
+	echo "<td><a href='/print_forms.php?pfid={$row["PF_ID"]}' target='_blank'>{$row["platelshik"]}</a></td>";
+	echo "<td><a href='/print_forms.php?pfid={$row["PF_ID"]}' target='_blank'>{$row["gruzopoluchatel"]}</a></td>";
 	echo "<td>{$number}</td>";
 	echo "<td><a href='open_print_form.php?type=nakladnaya&PF_ID={$row["PF_ID"]}&number={$number}' target='_blank'>{$row["nakladnaya_date"]}</a></td>";
 	echo "<td><a href='open_print_form.php?type=schet&PF_ID={$row["PF_ID"]}&number={$number}' target='_blank'>{$row["schet_date"]}</a></td>";
@@ -133,6 +109,12 @@ while( $row = mysqli_fetch_array($res) ) {
 ?>
 	</tbody>
 </table>
+
+<script>
+	$(function() {
+		$('#payer').select2({ placeholder: 'Выберите контрагента', language: 'ru' });
+	});
+</script>
 
 <?
 	include "footer.php";
