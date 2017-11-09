@@ -785,8 +785,10 @@ case "invoice":
 							,OD.confirmed
 							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
 							,IFNULL(OP.payment_sum, 0) payment_sum
+							,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
 						FROM OrdersData OD
 						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+						LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 						JOIN (
 							SELECT ODD.OD_ID
 								,IFNULL(PM.PT_ID, 2) PT_ID
@@ -858,6 +860,7 @@ case "invoice":
 							AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))
 							AND OD.ReadyDate IS NOT NULL
 							AND IFNULL(OP.payment_sum, 0) = 0
+							AND NOT (OS.locking_date IS NOT NULL AND SH.KA_ID IS NULL)
 						GROUP BY OD.OD_ID
 						ORDER BY OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
 
