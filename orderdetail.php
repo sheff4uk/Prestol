@@ -8,7 +8,7 @@
 		// Проверка прав на доступ к экрану
 		// Проверка города
 		$query = "SELECT OD.OD_ID
-						,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
+						,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
 						,OD.confirmed
 						,OD.Del
 					FROM OrdersData OD
@@ -300,10 +300,14 @@
 						,WD.Name
 						,OD.Comment
 						,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
-						,SH.retail
+						,IF(SH.KA_ID IS NULL, 1, 0) retail
 						,SH.CT_ID
 						,IFNULL(OD.SHP_ID, 0) SHP_ID
+						,OD.PFI_ID
+						,PFI.count
+						,PFI.platelshik_id
 				  FROM OrdersData OD
+				  LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 				  LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
 				  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 				  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -325,6 +329,9 @@
 		$retail = mysqli_result($res,0,'retail');
 		$CT_ID = mysqli_result($res,0,'CT_ID');
 		$SHP_ID = mysqli_result($res,0,'SHP_ID');
+		$PFI_ID = mysqli_result($res,0,'PFI_ID');
+		$count = mysqli_result($res,0,'count');
+		$platelshik_id = mysqli_result($res,0,'platelshik_id');
 ?>
 	<form method='post' id='order_form' action='<?=$location?>&order_update=1'>
 	<table class="">
@@ -348,16 +355,40 @@
 				<br>
 				<input type='text' name='OrderNumber' style='width: 90px;' value='<?=$OrderNumber?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail) ? "" : "disabled")?> placeholder='Квитанция'>
 			</td>
-			<td><input type='text' name='StartDate' class='date from' value='<?=$StartDate?>' date='<?=$StartDate?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail) ? "" : "disabled")?> <?=( (in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $StartDate) ? "readonly title='Чтобы стереть дату продажи перейдите в реализацию и нажмите на символ ладошки справа.'" : "" )?>></td>
+
+			<?
+			// Если заказ в накладной - под датой продажи ссылка на накладную
+			if( $PFI_ID ) {
+				$invoice = "<br><b><a href='open_print_form.php?type=invoice&PFI_ID={$PFI_ID}&number={$count}' target='_blank'>Накладная</a></b>";
+				$title="Чтобы стереть дату продажи анулируйте накладную в актах сверки, затем перейдите в реализацию и нажмите на символ ладошки справа.";
+			}
+			else {
+				$invoice = "";
+				$title = "Чтобы стереть дату продажи перейдите в реализацию и нажмите на символ ладошки справа.";
+			}
+			echo "<td><input type='text' name='StartDate' class='date from' value='{$StartDate}' date='{$StartDate}' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail) ? "" : "disabled")." ".( (in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $StartDate) ? "readonly title='{$title}'" : "" ).">{$invoice}</td>";
+			?>
+
 			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date to' value='{$EndDate}' ".($disabled ? "disabled" : "").">")) ?></td>
 			<td>
 			<div style='box-shadow: 0px 0px 10px 10px <?=$CTColor?>;'>
 				<select name='Shop' <?=((!in_array('order_add', $Rights) or $is_lock or $Del) ? "disabled" : "")?>>
 					<?
-					if( in_array('order_add_confirm', $Rights) ) {
-						echo "<option value='0' selected style='background: #999;'>Свободные</option>";
+					if( $PFI_ID ) {
+						$query = "SELECT SH.SH_ID
+										,CONCAT(CT.City, '/', SH.Shop) AS Shop
+										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
+										,CT.Color
+									FROM Shops SH
+									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+									WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.KA_ID IS NULL" : "SH.KA_ID = {$platelshik_id}")."
+										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+									ORDER BY CT.City, SH.Shop";
 					}
-					if( $SHP_ID or $ReadyDate ) {
+					elseif( $SHP_ID or $ReadyDate ) {
+						if( in_array('order_add_confirm', $Rights) ) {
+							echo "<option value='0' selected style='background: #999;'>Свободные</option>";
+						}
 						$query = "SELECT SH.SH_ID
 										,CONCAT(CT.City, '/', SH.Shop) AS Shop
 										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
@@ -369,6 +400,9 @@
 									ORDER BY CT.City, SH.Shop";
 					}
 					else {
+						if( in_array('order_add_confirm', $Rights) ) {
+							echo "<option value='0' selected style='background: #999;'>Свободные</option>";
+						}
 						$query = "SELECT SH.SH_ID
 										,CONCAT(CT.City, '/', SH.Shop) AS Shop
 										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
@@ -461,9 +495,9 @@
 ?>
 <div class="halfblock">
 	<p>
-		<button <?=($disabled ? 'disabled' : '')?> class='edit_product1'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
-		<button <?=($disabled ? 'disabled' : '')?> class='edit_product2'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
-		<button <?=($disabled ? 'disabled' : '')?> class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки/прочее</button>
+		<button <?=(($disabled or $PFI_ID) ? 'disabled' : '')?> class='edit_product1'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
+		<button <?=(($disabled or $PFI_ID) ? 'disabled' : '')?> class='edit_product2'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
+		<button <?=(($disabled or $PFI_ID) ? 'disabled' : '')?> class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки/прочее</button>
 	</p>
 
 	<!-- Таблица изделий -->
@@ -567,10 +601,10 @@
 		echo "<td>";
 		
 		if( $row["Del"] == 0 ) {
-			echo "<button ".($disabled ? 'disabled' : '')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></button>";
+			echo "<button ".(($disabled or $PFI_ID) ? 'disabled' : '')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></button>";
 
 			$delmessage = addslashes("Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?");
-			echo "<button ".(($disabled or $row["inprogress"] != 0) ? 'disabled' : '')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button>";
+			echo "<button ".(($disabled or $PFI_ID or $row["inprogress"]) ? 'disabled' : '')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button>";
 		}
 		echo "</td></tr>";
 

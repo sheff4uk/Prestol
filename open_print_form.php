@@ -18,7 +18,13 @@ if( in_array('print_forms_view_autor', $Rights) ) {
 	}
 }
 
-$filename = $_GET["type"].'_'.$_GET["PF_ID"].'_'.$_GET["number"].'.pdf';
+if( $_GET["PF_ID"] ) {
+	$filename = $_GET["type"].'_'.$_GET["PF_ID"].'_'.$_GET["number"].'.pdf';
+}
+elseif( $_GET["PFI_ID"] ) {
+	$filename = $_GET["type"].'_'.$_GET["PFI_ID"].'_'.$_GET["number"].'.pdf';
+}
+
 if( $out = file_get_contents('print_forms/'.$filename) ) {
 	header('Content-Type: application/pdf');
 	header('Content-Length: '.strlen( $out ));

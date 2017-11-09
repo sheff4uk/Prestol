@@ -3,10 +3,23 @@
 	include "config.php";
 	include "checkrights.php";
 
-	$query = "SELECT KA_ID, Naimenovanie, IFNULL(Jur_adres, '') Jur_adres, IFNULL(Fakt_adres, '') Fakt_adres, IFNULL(Telefony, '') Telefony, IFNULL(INN, '') INN, IFNULL(OKPO, '') OKPO, IFNULL(KPP, '') KPP, IFNULL(Pasport, '') Pasport, IFNULL(Email, '') Email, IFNULL(Schet, '') Schet, IFNULL(Bank, '') Bank, IFNULL(BIK, '') BIK, IFNULL(KS, '') KS, IFNULL(Bank_adres, '') Bank_adres FROM Kontragenty WHERE Naimenovanie LIKE '%{$_GET["term"]}%' ORDER BY Naimenovanie";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	while( $row = mysqli_fetch_array($res) ) {
-		$Kontragenty[] = array( "id"=>$row["KA_ID"], "value"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+if( isset($_GET["KA_ID"]) ) { // Если указан контрагент - показываем только его
+	if( $_GET["KA_ID"] == "0" ) { // Если розница - показываем не привязанных к салонам
+		$query = "SELECT KA.KA_ID, Naimenovanie, IFNULL(Jur_adres, '') Jur_adres, IFNULL(Fakt_adres, '') Fakt_adres, IFNULL(Telefony, '') Telefony, IFNULL(INN, '') INN, IFNULL(OKPO, '') OKPO, IFNULL(KPP, '') KPP, IFNULL(Pasport, '') Pasport, IFNULL(Email, '') Email, IFNULL(Schet, '') Schet, IFNULL(Bank, '') Bank, IFNULL(BIK, '') BIK, IFNULL(KS, '') KS, IFNULL(Bank_adres, '') Bank_adres FROM Kontragenty KA LEFT JOIN Shops SH ON SH.KA_ID = KA.KA_ID WHERE Naimenovanie LIKE '%{$_GET["term"]}%' AND SH.KA_ID IS NULL ORDER BY Naimenovanie";
 	}
-	echo json_encode($Kontragenty);
+	else { // Показываем этого контрагента и остальных
+		$query = "SELECT KA_ID, Naimenovanie, IFNULL(Jur_adres, '') Jur_adres, IFNULL(Fakt_adres, '') Fakt_adres, IFNULL(Telefony, '') Telefony, IFNULL(INN, '') INN, IFNULL(OKPO, '') OKPO, IFNULL(KPP, '') KPP, IFNULL(Pasport, '') Pasport, IFNULL(Email, '') Email, IFNULL(Schet, '') Schet, IFNULL(Bank, '') Bank, IFNULL(BIK, '') BIK, IFNULL(KS, '') KS, IFNULL(Bank_adres, '') Bank_adres FROM Kontragenty WHERE KA_ID = {$_GET["KA_ID"]}
+		UNION
+		SELECT KA.KA_ID, Naimenovanie, IFNULL(Jur_adres, '') Jur_adres, IFNULL(Fakt_adres, '') Fakt_adres, IFNULL(Telefony, '') Telefony, IFNULL(INN, '') INN, IFNULL(OKPO, '') OKPO, IFNULL(KPP, '') KPP, IFNULL(Pasport, '') Pasport, IFNULL(Email, '') Email, IFNULL(Schet, '') Schet, IFNULL(Bank, '') Bank, IFNULL(BIK, '') BIK, IFNULL(KS, '') KS, IFNULL(Bank_adres, '') Bank_adres FROM Kontragenty KA LEFT JOIN Shops SH ON SH.KA_ID = KA.KA_ID WHERE Naimenovanie LIKE '%{$_GET["term"]}%' AND SH.KA_ID IS NULL";
+	}
+}
+else { // Иначе показываем контрагентов с подстрокой term
+	$query = "SELECT KA_ID, Naimenovanie, IFNULL(Jur_adres, '') Jur_adres, IFNULL(Fakt_adres, '') Fakt_adres, IFNULL(Telefony, '') Telefony, IFNULL(INN, '') INN, IFNULL(OKPO, '') OKPO, IFNULL(KPP, '') KPP, IFNULL(Pasport, '') Pasport, IFNULL(Email, '') Email, IFNULL(Schet, '') Schet, IFNULL(Bank, '') Bank, IFNULL(BIK, '') BIK, IFNULL(KS, '') KS, IFNULL(Bank_adres, '') Bank_adres FROM Kontragenty WHERE Naimenovanie LIKE '%{$_GET["term"]}%' ORDER BY Naimenovanie";
+}
+
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+while( $row = mysqli_fetch_array($res) ) {
+	$Kontragenty[] = array( "id"=>$row["KA_ID"], "value"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+}
+echo json_encode($Kontragenty);
 ?>

@@ -242,7 +242,7 @@
 					,GROUP_CONCAT(ODD_ODB.ODB_ID SEPARATOR ',') ODB_ID
 					,WD.Name
 					,IF(ODD_ODB.IsReady = 1, 'ready', 'inwork') ready_status
-					,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
+					,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
 					,OD.confirmed
 			  FROM OrdersData OD
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID

@@ -156,8 +156,8 @@
 
 		if( $left_sum != 0 and $right_sum != 0 ) {
 			// Создание копии заказа
-			$query = "INSERT INTO OrdersData(SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, WD_ID, Comment, Progress, IsReady, Del, creator, confirmed)
-			SELECT SHP_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, WD_ID, Comment, Progress, IsReady, Del, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, WD_ID, Comment, Progress, IsReady, Del, creator, confirmed)
+			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, Color, IsPainting, WD_ID, Comment, Progress, IsReady, Del, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
@@ -379,7 +379,7 @@
 						$query = "SELECT SH.SH_ID
 										,CONCAT(CT.City, '/', SH.Shop) AS Shop
 										,CT.Color
-										,SH.retail
+										,IF(SH.KA_ID IS NULL, 1, 0) retail
 									FROM Shops SH
 									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 									WHERE CT.CT_ID IN ({$USR_cities})
@@ -454,7 +454,7 @@
 	}
 
 	// Кнопка печати документов
-	if( in_array('print_forms', $Rights) ) {
+	if( in_array('print_forms_view_all', $Rights) or in_array('print_forms_view_author', $Rights) ) {
 		echo '<div id="print_forms" title="Печатные формы" style="display: none;">';
 		echo '<a id="forms" target="_blank"></a>';
 		echo '</div>';
@@ -775,14 +775,17 @@
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.Del = 0, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,BIT_AND(ODD_ODB.IsReady) IsReady
 					,IFNULL(OD.SHP_ID, 0) SHP_ID
-					,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
+					,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
 					,OD.confirmed
 					,OD.Del
+					,OD.PFI_ID
+					,PFI.count
 			  FROM OrdersData OD
 			  LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
 			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 			  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
+			  LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 			  LEFT JOIN (SELECT ODD.OD_ID
 			  				   ,{$PRfilterODD}
 							   ,BIT_AND(IF(ODS.Visible = 1 AND ODS.Old = 0, ODS.IsReady, 1)) IsReady
@@ -850,7 +853,8 @@
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 			  WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
-			  	".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND SH.retail) OR OD.SH_ID IS NULL)" : "");
+				".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+				".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "");
 
 			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
 			  switch ($archive) {
@@ -963,16 +967,28 @@
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'>{$row["Code"]}</span></td>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>";
-		echo "<td><span>{$row["StartDate"]}</span></td>";
+
+		// Если заказ в накладной - на дате продажи ссылка на накладную
+		if( $row["PFI_ID"] ) {
+			$invoice = "<br><b><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'>Накладная</a></b>";
+		}
+		else {
+			$invoice = "";
+		}
+
+		echo "<td><span>{$row["StartDate"]}{$invoice}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
 		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$row["Del"]) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none;'></select></td>";
 		echo "<td><span></span></td>";
-		if( $disabled ) {
+
+		// Если есть запрет на редактирование или заказ в накладной - изделия не кликабельные
+		if( $disabled or $row["PFI_ID"] ) {
 			echo "<td><span class='nowrap'>{$row["Zakaz_lock"]}</span></td>";
 		}
 		else {
 			echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 		}
+
 		echo "<td class='nowrap'>{$row["Material"]}</td>";
 		echo "<td val='{$row["IsPainting"]}'";
 			switch ($row["IsPainting"]) {
@@ -1038,7 +1054,9 @@
 						else {
 							$message = "Пожалуйста, подтвердите <b>удаление</b> заказа.";
 						}
-						echo "<a href='#' class='deleting' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+						if( !$row["PFI_ID"] ) {
+							echo "<a href='#' class='deleting' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+						}
 					}
 				}
 			}
@@ -1236,7 +1254,7 @@
 
 	// Выбрать все в форме отгрузки
 	function selectall(ch) {
-		$('#orders_to_shipment .chbox.show').prop('checked', ch);
+		$('#orders_to_shipment .chbox.show').prop('checked', ch).change();
 		$('#orders_to_shipment #selectalltop').prop('checked', ch);
 		$('#orders_to_shipment #selectallbottom').prop('checked', ch);
 		return false;
@@ -1364,8 +1382,8 @@
 			selectall(ch);
 			return false;
 		});
-		$('#orders_to_shipment').on('change', '#selectalltop', function(){
-			ch = $('#selectalltop').prop('checked');
+		$('#orders_to_shipment').on('change', '#selectallbottom', function(){
+			ch = $('#selectallbottom').prop('checked');
 			selectall(ch);
 			return false;
 		});

@@ -7,9 +7,9 @@ switch( $_GET["do"] )
 case "shopstags":
 	// Автокомплит салонов
 	$query = "SELECT Shop FROM (
-				SELECT CT.CT_ID, CT.City AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID WHERE CT.CT_ID IN ({$USR_cities}) ".($USR_Shop ? "AND SH.retail" : "")." GROUP BY CT.City
+				SELECT CT.CT_ID, CT.City AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID WHERE CT.CT_ID IN ({$USR_cities}) ".($USR_Shop ? "AND IF(SH.KA_ID IS NULL, 1, 0)" : "")." GROUP BY CT.City
 				UNION
-				SELECT CT.CT_ID, CONCAT(CT.City, '/', SH.Shop) AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID WHERE CT.CT_ID IN ({$USR_cities}) ".($USR_Shop ? "AND SH.retail" : "")."
+				SELECT CT.CT_ID, CONCAT(CT.City, '/', SH.Shop) AS Shop FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID WHERE CT.CT_ID IN ({$USR_cities}) ".($USR_Shop ? "AND IF(SH.KA_ID IS NULL, 1, 0)" : "")."
 				UNION
 				SELECT 0, 'Свободные' AS Shop) SHT
 			  WHERE Shop LIKE '%{$_GET["term"]}%'";
@@ -114,7 +114,7 @@ case "price":
 		$query = "SELECT ODD.Price, CONCAT(ODD.Price, IFNULL(CONCAT(' (', ODD.Length, 'x', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), ''), ')'), '')) Label
 					FROM OrdersDataDetail ODD
 					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
-					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = {$_GET["retail"]}
+					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND IF(SH.KA_ID IS NULL, 1, 0) = {$_GET["retail"]}
 					WHERE ODD.Price IS NOT NULL AND ODD.PM_ID = {$_GET["PM_ID"]} AND ODD.PME_ID {$mechanism}
 					AND DATEDIFF(NOW(),OD.AddDate) <= 90
 					AND ODD.Del = 0

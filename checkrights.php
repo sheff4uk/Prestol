@@ -18,10 +18,11 @@
 		}
 	}
 	else {
-		// Узнаем город и роль пользователя
-		$query = "SELECT CT_ID, RL_ID FROM Users WHERE USR_ID = {$_SESSION['id']}";
+		// Узнаем город, контрагента и роль пользователя
+		$query = "SELECT CT_ID, KA_ID, RL_ID FROM Users WHERE USR_ID = {$_SESSION['id']}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$USR_City = mysqli_result($res,0,'CT_ID');
+		$USR_KA = mysqli_result($res,0,'KA_ID');
 		$USR_Role = mysqli_result($res,0,'RL_ID');
 
 		// Получаем права пользователя
@@ -31,8 +32,8 @@
 			$Rights[] = $row["RT_ID"];
 		}
 
-		// Если в реализации доступен только город и у пользователя указан салон, то сохраняем салон.
-		if( in_array('selling_city', $Rights) ) {
+		// Если в реализации или сверках доступен только город и у пользователя указан салон, то сохраняем салон.
+		if( in_array('selling_city', $Rights) or in_array('sverki_city', $Rights) ) {
 			$query = "SELECT SH_ID FROM Users WHERE USR_ID = {$_SESSION['id']}";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$USR_Shop = mysqli_result($res,0,'SH_ID');

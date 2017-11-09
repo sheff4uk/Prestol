@@ -927,6 +927,7 @@ td.tscell > i {
 
 .del { /*Удаленные позиции*/
 	opacity: .5;
+	text-decoration: line-through;
 }
 .del td:last-child:before {
 	content: "Удалено";

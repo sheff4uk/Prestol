@@ -115,7 +115,7 @@
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=39'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=40'>
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
@@ -127,7 +127,7 @@
 	<script src="js/ui/jquery-ui.js"></script>
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
 	<script src="js/modal.js?v=8"></script>
-	<script src="js/script.js?v=23" type="text/javascript"></script>
+	<script src="js/script.js?v=24" type="text/javascript"></script>
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
 	<script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript"></script>
@@ -301,7 +301,7 @@
 			<div class="aside-nav-control navbar-brand">
 				<i class="fa fa-bars fa-lg"></i>
 			</div>
-			<a class="navbar-brand" href="/" title="На главную">ПРЕСТОЛ</a>
+			<a class="navbar-brand" href="/" title="На главную"><?=$company_name?></a>
 			<?
 			if( in_array('order_add', $Rights) ) {
 			?>
@@ -349,6 +349,9 @@
 		}
 		if( in_array('print_forms_view_all', $Rights) or in_array('print_forms_view_autor', $Rights) ) {
 			$menu["Печатные формы"] = "print_forms_list.php";
+		}
+		if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_shop', $Rights) or in_array('sverki_opt', $Rights) ) {
+			$menu["Сверки"] = "sverki.php";
 		}
 		if( in_array('screen_materials', $Rights) ) {
 			$menu["Материалы"] = "materials.php";

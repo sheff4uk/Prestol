@@ -1,6 +1,12 @@
 $.fx.speeds._default = 300;
 //var odid;
 
+// Форматирование числа в денежный формат
+Number.prototype.format = function(n, x) {
+	var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\.' : '$') + ')';
+	return this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$& ');
+};
+
 // Функция генерирует форму с этапами производства
 function makeform(id, other, location, plid)
 {
