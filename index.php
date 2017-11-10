@@ -987,7 +987,7 @@
 
 		echo "<td><span>{$row["StartDate"]}{$invoice}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$row["Del"] and !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["KA_ID"] and $USR_KA != $row["KA_ID"])) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none;'></select></td>";
+		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$row["Del"] and !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"])) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none;'></select></td>";
 		echo "<td><span></span></td>";
 
 		// Если есть запрет на редактирование или заказ в накладной - изделия не кликабельные
@@ -1036,7 +1036,7 @@
 		echo "<td>";
 
 		// Если пользователю доступен только один салон в регионе или оптовик, то не показываем кнопки действий у чужих салонов.
-		if( !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["KA_ID"] and $USR_KA != $row["KA_ID"]) ) {
+		if( !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) ) {
 			// Если заказ не заблокирован и не удален, то показываем карандаш и кнопку разделения. Иначе - глаз.
 			if( !$is_lock and in_array('order_add', $Rights) and !$row["Del"] ) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
@@ -1073,6 +1073,10 @@
 				echo "<a href='/?shpid={$row["SHP_ID"]}#ord{$row["OD_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a>";
 			}
 			echo "</action>";
+		}
+		// Иначе показываем глаз
+		else {
+			echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
 		}
 		echo "</td></tr>";
 

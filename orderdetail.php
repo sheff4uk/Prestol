@@ -15,7 +15,8 @@
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 					WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}
-						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR OD.SH_ID IS NULL)" : "");
+						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+						".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "");
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$OD_ID = mysqli_result($res,0,'OD_ID');
 		$Del = mysqli_result($res,0,'Del');
@@ -294,6 +295,7 @@
 						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
 						,DATE_FORMAT(OD.DelDate, '%d.%m.%Y') DelDate
 						,IFNULL(OD.SH_ID, 0) SH_ID
+						,IFNULL(SH.KA_ID, 0) KA_ID
 						,OD.OrderNumber
 						,OD.Color
 						,OD.IsPainting
@@ -320,6 +322,7 @@
 		$ReadyDate = mysqli_result($res,0,'ReadyDate');
 		$DelDate = mysqli_result($res,0,'DelDate');
 		$SH_ID = mysqli_result($res,0,'SH_ID');
+		$KA_ID = mysqli_result($res,0,'KA_ID');
 		$OrderNumber = mysqli_result($res,0,'OrderNumber');
 		$Color = mysqli_result($res,0,'Color');
 		$IsPainting = mysqli_result($res,0,'IsPainting');
@@ -372,9 +375,22 @@
 			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date to' value='{$EndDate}' ".($disabled ? "disabled" : "").">")) ?></td>
 			<td>
 			<div style='box-shadow: 0px 0px 10px 10px <?=$CTColor?>;'>
-				<select name='Shop' <?=((!in_array('order_add', $Rights) or $is_lock or $Del) ? "disabled" : "")?>>
+				<select name='Shop' <?=((!in_array('order_add', $Rights) or $is_lock or $Del or ($SH_ID == "0" and !in_array('order_add_confirm', $Rights))) ? "disabled" : "")?>>
 					<?
-					if( $PFI_ID ) {
+					if( $SH_ID == "0" or in_array('order_add_confirm', $Rights)) {
+						echo "<option value='0' selected style='background: #999;'>Свободные</option>";
+					}
+					// Если пользователю доступен только один салон в регионе или оптовик, то выводится только текущий салон и нельзя менять его
+					if( ($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) or ($USR_KA and $SH_ID and $USR_KA != $KA_ID) ) {
+						$query = "SELECT SH.SH_ID
+										,CONCAT(CT.City, '/', SH.Shop) AS Shop
+										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
+										,CT.Color
+									FROM Shops SH
+									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+									WHERE SH.SH_ID = {$SH_ID}";
+					}
+					elseif( $PFI_ID ) {
 						$query = "SELECT SH.SH_ID
 										,CONCAT(CT.City, '/', SH.Shop) AS Shop
 										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
@@ -387,9 +403,6 @@
 									ORDER BY CT.City, SH.Shop";
 					}
 					elseif( $SHP_ID or $ReadyDate ) {
-						if( in_array('order_add_confirm', $Rights) ) {
-							echo "<option value='0' selected style='background: #999;'>Свободные</option>";
-						}
 						$query = "SELECT SH.SH_ID
 										,CONCAT(CT.City, '/', SH.Shop) AS Shop
 										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
@@ -402,9 +415,6 @@
 									ORDER BY CT.City, SH.Shop";
 					}
 					else {
-						if( in_array('order_add_confirm', $Rights) ) {
-							echo "<option value='0' selected style='background: #999;'>Свободные</option>";
-						}
 						$query = "SELECT SH.SH_ID
 										,CONCAT(CT.City, '/', SH.Shop) AS Shop
 										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
