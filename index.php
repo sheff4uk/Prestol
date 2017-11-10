@@ -274,9 +274,12 @@
 						LEFT JOIN (
 							SELECT PM.PT_ID, PM.space * ODD.Amount space
 							FROM OrdersData OD
+							JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 							JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 							WHERE OD.SHP_ID = {$_GET["shpid"]}
+								".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+								".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 						) PMS ON PMS.PT_ID = PT.PT_ID
 						GROUP BY PT.PT_ID
 						ORDER BY PT.PT_ID";
@@ -573,6 +576,8 @@
 						FROM OrdersData OD
 						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 						WHERE OD.SHP_ID = {$_GET["shpid"]}
+							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+							".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 						GROUP BY OD.SH_ID";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$check_shops = 1; // Если при выходе из цикла будет 1, то выбраны все салоны
@@ -909,7 +914,9 @@
 			  }
 			}
 			else {  // Если в отгрузке - показываем список этой отгрузки
-				$query .= " AND OD.SHP_ID = {$_GET["shpid"]}";
+				$query .= " AND OD.SHP_ID = {$_GET["shpid"]}
+							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+							".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "");
 				if( isset($_GET["shop"]) ) {
 					$shops = "0";
 					foreach( $_GET["shop"] as $k => $v) {
@@ -1184,6 +1191,8 @@
 								FROM Cities CT
 								JOIN Shops SH ON SH.CT_ID = CT.CT_ID
 								".(isset($_GET["shpid"]) ? ' WHERE CT.CT_ID = '.$CT_ID : '')."
+								".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+								".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 								GROUP BY CT.CT_ID
 								ORDER BY CT.City";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

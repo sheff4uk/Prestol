@@ -577,7 +577,11 @@ case "shipment":
 		}
 		else {
 			$html = "";
-			$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID}";
+			$query = "SELECT SH_ID, Shop
+						FROM Shops
+						WHERE CT_ID = {$CT_ID}
+							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+							".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "");
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			while( $row = mysqli_fetch_array($res) ) {
 				$html .= "<label for='shop{$row["SH_ID"]}'>{$row["Shop"]}</label><input type='checkbox' id='shop{$row["SH_ID"]}' class='button_shops'>";
@@ -603,10 +607,10 @@ case "shipment":
 							,SH.Shop
 							,OD.confirmed
 							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
-					  FROM OrdersData OD
-					  JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
-					  JOIN (
-						  SELECT ODD.OD_ID
+						FROM OrdersData OD
+						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
+						JOIN (
+							SELECT ODD.OD_ID
 								,IFNULL(PM.PT_ID, 2) PT_ID
 								,ODD.ODD_ID itemID
 								,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), ''), '</a></b><br>') Zakaz
@@ -634,20 +638,20 @@ case "shipment":
 							GROUP BY ODD.ODD_ID
 							UNION ALL
 							SELECT ODB.OD_ID
-								  ,0 PT_ID
-								  ,ODB.ODB_ID itemID
-								  ,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODB.Amount, '</b> ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), ''), '</a></b><br>') Zakaz
+								,0 PT_ID
+								,ODB.ODB_ID itemID
+								,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODB.Amount, '</b> ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), ''), '</a></b><br>') Zakaz
 
-								  ,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
+								,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
 									CASE ODB.IsExist
 										WHEN 0 THEN 'bg-red'
 										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
 										WHEN 2 THEN 'bg-green'
 										ELSE 'bg-gray'
 									END,
-								  '\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
+								'\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
 
-								  ,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
+								,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
 
 							FROM OrdersDataBlank ODB
 							LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
@@ -657,8 +661,10 @@ case "shipment":
 							WHERE ODB.Del = 0
 							GROUP BY ODB.ODB_ID
 							ORDER BY PT_ID DESC, itemID
-							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-					  WHERE OD.Del = 0";
+						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+						WHERE OD.Del = 0
+							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+							".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "");
 			if( $_GET["shpid"] ) {
 				$query .= " AND ((OD.ReadyDate IS NULL AND OD.SHP_ID IS NULL) OR OD.SHP_ID = {$_GET["shpid"]})";
 			}
@@ -855,7 +861,7 @@ case "invoice":
 						) OP ON OP.OD_ID = OD.OD_ID
 						WHERE SH.CT_ID = {$CT_ID}
 							".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.KA_ID IS NULL")."
-							".((in_array('sverki_city', $Rights) and $USR_Shop) ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 							AND OD.Del = 0
 							AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))
 							AND OD.ReadyDate IS NOT NULL

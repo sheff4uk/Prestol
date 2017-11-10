@@ -20,7 +20,8 @@
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 					WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
-						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR OD.SH_ID IS NULL)" : "")."
+						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+						".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
 				  UNION ALL
 				  SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 0 is_read, USR.Name
 					FROM OrdersMessage OM
@@ -28,7 +29,8 @@
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 					WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NOT NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
-						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR OD.SH_ID IS NULL)" : "")."
+						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+						".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
 				  ORDER BY is_read DESC, OM_ID DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -71,7 +73,8 @@
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 					WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
-						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR OD.SH_ID IS NULL)" : "")."
+						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+						".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
 				  UNION ALL
 				  SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 0 is_read, USR.Name
 					FROM OrdersMessage OM
@@ -79,7 +82,8 @@
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 					WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NOT NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
-						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR OD.SH_ID IS NULL)" : "")."
+						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+						".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
 				  ORDER BY is_read DESC, OM_ID DESC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 

@@ -19,10 +19,9 @@
 	}
 	else {
 		// Узнаем город, контрагента и роль пользователя
-		$query = "SELECT CT_ID, KA_ID, RL_ID FROM Users WHERE USR_ID = {$_SESSION['id']}";
+		$query = "SELECT CT_ID, RL_ID FROM Users WHERE USR_ID = {$_SESSION['id']}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$USR_City = mysqli_result($res,0,'CT_ID');
-		$USR_KA = mysqli_result($res,0,'KA_ID');
 		$USR_Role = mysqli_result($res,0,'RL_ID');
 
 		// Получаем права пользователя
@@ -30,6 +29,13 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query1: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$Rights[] = $row["RT_ID"];
+		}
+
+		// Если в сверках разрешение для оптовика - сохраняем ID контрагента
+		if( in_array('sverki_opt', $Rights) ) {
+			$query = "SELECT KA_ID FROM Users WHERE USR_ID = {$_SESSION['id']}";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$USR_KA = mysqli_result($res,0,'KA_ID');
 		}
 
 		// Если в реализации или сверках доступен только город и у пользователя указан салон, то сохраняем салон.
