@@ -1172,6 +1172,7 @@ case "create_shop_select":
 					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 					WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.KA_ID IS NULL" : "SH.KA_ID = {$platelshik_id}")."
 						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 					ORDER BY CT.City, SH.Shop";
 	}
 	elseif( $SHP_ID or $ReadyDate ) {
@@ -1186,6 +1187,7 @@ case "create_shop_select":
 					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 					WHERE CT.CT_ID = {$CT_ID}
 						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 					ORDER BY CT.City, SH.Shop";
 	}
 	else {
@@ -1200,6 +1202,7 @@ case "create_shop_select":
 					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 					WHERE CT.CT_ID IN ({$USR_cities})
 						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 					ORDER BY CT.City, SH.Shop";
 	}
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
