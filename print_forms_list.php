@@ -5,7 +5,7 @@ $title = 'Архив печатных форм';
 include "header.php";
 
 // Проверка прав на доступ к экрану
-if( !in_array('print_forms_view_all', $Rights) and !in_array('print_forms_view_autor', $Rights) ) {
+if( !in_array('print_forms_view_all', $Rights) and !in_array('print_forms_view_author', $Rights) ) {
 	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 	die('Недостаточно прав для совершения операции');
 }
@@ -85,7 +85,7 @@ $query = "SELECT PF_ID
 			LEFT JOIN Users USR ON USR.USR_ID = PF.USR_ID
 			LEFT JOIN Kontragenty KAp ON KAp.KA_ID = PF.platelshik_id
 			LEFT JOIN Kontragenty KAg ON KAg.KA_ID = PF.gruzopoluchatel_id
-			WHERE IFNULL(PF.summa, 0) > 0 AND year = {$year}".(in_array('print_forms_view_autor', $Rights) ? " AND PF.USR_ID = {$_SESSION['id']}" : "").($payer ? " AND (KAp.KA_ID = {$payer} OR KAg.KA_ID = {$payer})" : "")."
+			WHERE IFNULL(PF.summa, 0) > 0 AND year = {$year}".(in_array('print_forms_view_author', $Rights) ? " AND PF.USR_ID = {$_SESSION['id']}" : "").($payer ? " AND (KAp.KA_ID = {$payer} OR KAg.KA_ID = {$payer})" : "")."
 			ORDER BY PF.PF_ID DESC";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {

@@ -5,7 +5,7 @@
 	include "header.php";
 
 	// Проверка прав на доступ к экрану
-	if( !in_array('print_forms_view_all', $Rights) and !in_array('print_forms_view_autor', $Rights) ) {
+	if( !in_array('print_forms_view_all', $Rights) and !in_array('print_forms_view_author', $Rights) ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 		die('Недостаточно прав для совершения операции');
 	}
