@@ -351,7 +351,7 @@
 			$month = date("n");
 			$menu["Реализация"] = "selling.php?CT_ID={$USR_City}&year={$year}&month={$month}";
 		}
-		if( in_array('print_forms_view_all', $Rights) or in_array('print_forms_view_autor', $Rights) ) {
+		if( in_array('print_forms_view_all', $Rights) or in_array('print_forms_view_author', $Rights) ) {
 			$menu["Печатные формы"] = "print_forms_list.php";
 		}
 		if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_shop', $Rights) or in_array('sverki_opt', $Rights) ) {
