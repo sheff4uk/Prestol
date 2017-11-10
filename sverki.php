@@ -134,7 +134,8 @@ if( isset($_GET["del"]) )
 	&nbsp;&nbsp;
 	<?
 	if( $payer ) {
-		echo "Сальдо: <b style='color: ".(($saldo < 0) ? "#E74C3C;" : "#16A085;")."'>{$saldo}</b>";
+		$saldo_format = number_format($saldo, 0, '', ' ');
+		echo "Сальдо: <b style='color: ".(($saldo < 0) ? "#E74C3C;" : "#16A085;")."'>{$saldo_format}</b>";
 	}
 	?>
 </form>
@@ -193,7 +194,8 @@ if( $payer ) {
 					,PFI.summa
 					,KA.Naimenovanie
 					,PFI.count
-					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date
+					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date_format
+					,PFI.date
 					,USR.Name
 					,PFI.del
 				FROM PrintFormsInvoice PFI
@@ -207,7 +209,8 @@ if( $payer ) {
 					,F.money
 					,KA.Naimenovanie
 					,NULL
-					,DATE_FORMAT(F.date, '%d.%m.%Y') date
+					,DATE_FORMAT(F.date, '%d.%m.%Y') date_format
+					,F.date
 					,USR.Name
 					,NULL
 				FROM Finance F
@@ -222,7 +225,8 @@ else {
 					,PFI.summa
 					,KA.Naimenovanie
 					,PFI.count
-					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date
+					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date_format
+					,PFI.date
 					,USR.Name
 					,PFI.del
 				FROM PrintFormsInvoice PFI
@@ -240,16 +244,16 @@ while( $row = mysqli_fetch_array($res) ) {
 	echo "<td>{$row["Naimenovanie"]}</td>";
 	if( $row["PFI_ID"] ) {
 		echo "<td class='txtright'><b>{$row["count"]}</b></td>";
-		echo "<td><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b>{$row["date"]}</b></a></td>";
+		echo "<td><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b>{$row["date_format"]}</b></a></td>";
 	}
 	else {
 		echo "<td>Оплата</td>";
-		echo "<td><b>{$row["date"]}</b></td>";
+		echo "<td><b>{$row["date_format"]}</b></td>";
 	}
 	echo "<td>{$row["Name"]}</td>";
 	if( $row["del"] == "0" ) {
 		$Naimenovanie = addslashes($row["Naimenovanie"]);
-		echo "<td><button onclick='if(confirm(\"Удалить накладную <b>№{$row["count"]} ({$Naimenovanie})</b> от <b>{$row["date"]}</b>?\", \"?del={$row["PFI_ID"]}&year={$year}&payer={$payer}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button></td>";
+		echo "<td><button onclick='if(confirm(\"Удалить накладную <b>№{$row["count"]} ({$Naimenovanie})</b> от <b>{$row["date_format"]}</b>?\", \"?del={$row["PFI_ID"]}&year={$year}&payer={$payer}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button></td>";
 	}
 	else {
 		echo "<td></td>";
