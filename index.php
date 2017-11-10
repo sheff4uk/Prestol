@@ -764,6 +764,7 @@
 					,DATE_FORMAT(IFNULL(OD.DelDate, IFNULL(OD.ReadyDate, OD.EndDate)), '%d.%m.%Y') EndDate
 					,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
 					,IFNULL(OD.SH_ID, 0) SH_ID
+					,IFNULL(SH.KA_ID, 0) KA_ID
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,OD.OrderNumber
@@ -986,7 +987,7 @@
 
 		echo "<td><span>{$row["StartDate"]}{$invoice}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$row["Del"] and !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"])) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none;'></select></td>";
+		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$row["Del"] and !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["KA_ID"] and $USR_KA != $row["KA_ID"])) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none;'></select></td>";
 		echo "<td><span></span></td>";
 
 		// Если есть запрет на редактирование или заказ в накладной - изделия не кликабельные
@@ -1034,8 +1035,8 @@
 		echo "<td class='".(!$disabled ? "comment_cell" : "")."' id='{$row["OD_ID"]}'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
 		echo "<td>";
 
-		// Если пользователю доступен только один салон в регионе, то не показываем кнопки действий у чужих салонов.
-		if( !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) ) {
+		// Если пользователю доступен только один салон в регионе или оптовик, то не показываем кнопки действий у чужих салонов.
+		if( !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["KA_ID"] and $USR_KA != $row["KA_ID"]) ) {
 			// Если заказ не заблокирован и не удален, то показываем карандаш и кнопку разделения. Иначе - глаз.
 			if( !$is_lock and in_array('order_add', $Rights) and !$row["Del"] ) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
