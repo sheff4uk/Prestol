@@ -251,7 +251,7 @@ while( $row = mysqli_fetch_array($res) ) {
 		echo "<td><b>{$row["date_format"]}</b></td>";
 	}
 	echo "<td>{$row["Name"]}</td>";
-	if( $row["del"] == "0" ) {
+	if( $row["del"] == "0" and !in_array('sverki_opt', $Rights) ) {
 		$Naimenovanie = addslashes($row["Naimenovanie"]);
 		echo "<td><button onclick='if(confirm(\"Удалить накладную <b>№{$row["count"]} ({$Naimenovanie})</b> от <b>{$row["date_format"]}</b>?\", \"?del={$row["PFI_ID"]}&year={$year}&payer={$payer}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button></td>";
 	}
