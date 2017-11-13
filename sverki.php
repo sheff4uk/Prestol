@@ -177,7 +177,7 @@ if( $payer ) {
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
 				WHERE YEAR(F.date) = {$year} AND KA.KA_ID = {$payer}
 
-				ORDER BY date DESC";
+				ORDER BY date DESC, PFI_ID DESC";
 }
 else {
 	$query = "SELECT PFI.PFI_ID
@@ -193,7 +193,7 @@ else {
 				LEFT JOIN Users USR ON USR.USR_ID = PFI.USR_ID
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
 				WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID IN ({$KA_IDs})
-				ORDER BY PFI.date DESC";
+				ORDER BY PFI.date DESC, PFI.PFI_ID DESC";
 }
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
