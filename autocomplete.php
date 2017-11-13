@@ -10,15 +10,13 @@ case "shopstags":
 				SELECT CT.CT_ID, CT.City AS Shop
 				FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID
 				WHERE CT.CT_ID IN ({$USR_cities})
-				".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-				".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
+				".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR SH.stock = 1)" : "")."
 				GROUP BY CT.City
 				UNION
 				SELECT CT.CT_ID, CONCAT(CT.City, '/', SH.Shop) AS Shop
 				FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID
 				WHERE CT.CT_ID IN ({$USR_cities})
-				".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-				".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
+				".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR SH.stock = 1)" : "")."
 				UNION
 				SELECT 0, 'Свободные' AS Shop) SHT
 			  WHERE Shop LIKE '%{$_GET["term"]}%'";
