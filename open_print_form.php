@@ -8,17 +8,17 @@ if( !in_array('print_forms_view_all', $Rights) and !in_array('print_forms_view_a
 	die('Недостаточно прав для совершения операции');
 }
 
-// Проверка автора если есть соответствующее право
-if( in_array('print_forms_view_author', $Rights) ) {
-	$query = "SELECT USR_ID FROM PrintForms WHERE PF_ID = {$_GET["PF_ID"]}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	if( mysqli_result($res,0,'USR_ID') != $_SESSION['id'] ) {
-		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-		die('Недостаточно прав для совершения операции');
-	}
-}
-
 if( $_GET["PF_ID"] ) {
+	// Проверка автора если есть соответствующее право
+	if( in_array('print_forms_view_author', $Rights) ) {
+		$query = "SELECT USR_ID FROM PrintForms WHERE PF_ID = {$_GET["PF_ID"]}";
+		echo $query;
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( mysqli_result($res,0,'USR_ID') != $_SESSION['id'] ) {
+			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+			die('Недостаточно прав для совершения операции');
+		}
+	}
 	$filename = $_GET["type"].'_'.$_GET["PF_ID"].'_'.$_GET["number"].'.pdf';
 }
 elseif( $_GET["PFI_ID"] ) {
