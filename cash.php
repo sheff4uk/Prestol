@@ -971,7 +971,7 @@
 					<?
 					$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
 								FROM Kontragenty
-								WHERE KA_ID IN ({$KA_IDs})
+								#WHERE KA_ID IN ({$KA_IDs})
 								ORDER BY count DESC";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
