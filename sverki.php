@@ -10,49 +10,6 @@ if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !
 	die('Недостаточно прав для совершения операции');
 }
 
-// Получаем список id доступных контрагентов
-$KA_IDs = "0";
-$query = "SELECT KA_ID FROM Kontragenty";
-// Подставляем условие в зависимости от разрешения пользователя
-if( in_array('sverki_opt', $Rights) ) {
-	$query .= " WHERE KA_ID IN ({$USR_KA})";
-}
-elseif( in_array('sverki_city', $Rights) ) {
-	if( $USR_Shop ) {
-		$query .= " WHERE KA_ID IN (
-						SELECT KA.KA_ID
-						FROM PrintFormsInvoice PFI
-						JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID AND OD.SH_ID = {$USR_Shop}
-						JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
-					)";
-	}
-	else {
-		$query .= " WHERE KA_ID IN (
-						SELECT KA.KA_ID
-						FROM Kontragenty KA
-						JOIN Shops SH ON SH.KA_ID = KA.KA_ID
-						WHERE SH.CT_ID = {$USR_City}
-						UNION
-						SELECT KA.KA_ID
-						FROM PrintFormsInvoice PFI
-						JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID
-						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$USR_City}
-						JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
-					)";
-	}
-}
-$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-// Узнаем сколько вернулось строк для дальнейшей проверки
-$num_rows = mysqli_num_rows($res);
-if( $num_rows == 1 ) {
-	$KA_IDs = mysqli_result($res,0,'KA_ID');
-}
-else {
-	while( $row = mysqli_fetch_array($res) ) {
-		$KA_IDs .= ",{$row["KA_ID"]}";
-	}
-}
-
 if( $_GET["year"] and (int)$_GET["year"] > 0 ) {
 	$year = $_GET["year"];
 }
@@ -74,7 +31,7 @@ else {
 }
 
 // Если вернулся только один контрагент - выбираем его в селекте
-if( $num_rows == 1 ) {
+if( $KA_num_rows == 1 ) {
 	$payer = $KA_IDs;
 }
 
@@ -112,7 +69,7 @@ if( isset($_GET["del"]) )
 ?>
 	</select>
 	&nbsp;&nbsp;
-	<label for="payer">Плательщик:</label>
+	<label for="payer">Контрагент:</label>
 	<select name="payer" id="payer" onchange="this.form.submit()">
 <?
 	if( !in_array('sverki_opt', $Rights) ) {

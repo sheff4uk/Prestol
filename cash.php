@@ -969,10 +969,13 @@
 				<select name="kontragent" id="kontragent" style="width: 300px;">
 					<option value=""></option>
 					<?
-					$query = "SELECT KA_ID, Naimenovanie FROM Kontragenty ORDER BY count DESC";
+					$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
+								FROM Kontragenty
+								WHERE KA_ID IN ({$KA_IDs})
+								ORDER BY count DESC";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
-						echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]}</option>";
+						echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$row["saldo"]})</option>";
 					}
 					?>
 				</select>
