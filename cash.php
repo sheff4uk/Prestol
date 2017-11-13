@@ -741,7 +741,7 @@
 				$FA_IDs = $_SESSION["cash_account"] != "" ? implode(",", $_SESSION["cash_account"]) : "";
 				$FC_IDs = $_SESSION["cash_category"] != "" ? implode(",", $_SESSION["cash_category"]) : "";
 				$USR_IDs = $_SESSION["cash_author"] != "" ? implode(",", $_SESSION["cash_author"]) : "";
-				$KA_IDs = $_SESSION["cash_kontragent"] != "" ? implode(",", $_SESSION["cash_kontragent"]) : "";
+				$KA_IDs_filter = $_SESSION["cash_kontragent"] != "" ? implode(",", $_SESSION["cash_kontragent"]) : "";
 
 				$query = "SELECT SF.F_ID
 								,SF.date_sort
@@ -832,7 +832,7 @@
 							".(in_array('finance_account', $Rights) ? "AND SF.account_filter IN(SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]})" : "")."
 							".($FC_IDs != "" ? "AND SF.FC_ID IN ({$FC_IDs})" : "")."
 							".($USR_IDs != "" ? "AND SF.USR_ID IN ({$USR_IDs})" : "")."
-							".($KA_IDs != "" ? "AND SF.KA_ID IN ({$KA_IDs})" : "")."
+							".($KA_IDs_filter != "" ? "AND SF.KA_ID IN ({$KA_IDs_filter})" : "")."
 							".($_SESSION["cash_comment"] ? "AND SF.comment LIKE '%{$_SESSION["cash_comment"]}%'" : "")."
 							#AND SF.comment LIKE '%возврат%'
 							ORDER BY SF.date_sort DESC, SF.F_ID DESC";
@@ -971,7 +971,7 @@
 					<?
 					$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
 								FROM Kontragenty
-								#WHERE KA_ID IN ({$KA_IDs})
+								WHERE KA_ID IN ({$KA_IDs})
 								ORDER BY count DESC";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
