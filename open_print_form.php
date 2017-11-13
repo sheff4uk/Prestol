@@ -34,7 +34,7 @@ elseif( $_GET["PFI_ID"] ) {
 			die('Недостаточно прав для совершения операции');
 		}
 	}
-	$filename = $_GET["type"].'__'.$_GET["PFI_ID"].'_'.$_GET["number"].'.pdf';
+	$filename = $_GET["type"].'_'.$_GET["PFI_ID"].'_'.$_GET["number"].'.pdf';
 }
 
 if( $out = file_get_contents('print_forms/'.$filename) ) {
