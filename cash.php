@@ -619,7 +619,7 @@
 		<table style="width: 100%;" class="main_table">
 			<thead class="finance_head">
 				<tr>
-					<th width="50">Дата</th>
+					<th width="55">Дата</th>
 					<th width="60" class="th_filter">
 						<div class="th_name" id="type_label">Тип</div>
 						<i class="fa fa-filter fa-lg"></i>
