@@ -192,6 +192,7 @@ if( !in_array('sverki_opt', $Rights) ) {
 if( $payer ) {
 	$query = "SELECT PFI.PFI_ID
 					,PFI.summa
+					,KA.KA_ID
 					,KA.Naimenovanie
 					,PFI.count
 					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date_format
@@ -207,6 +208,7 @@ if( $payer ) {
 
 				SELECT NULL
 					,F.money
+					,KA.KA_ID
 					,KA.Naimenovanie
 					,NULL
 					,DATE_FORMAT(F.date, '%d.%m.%Y') date_format
@@ -223,6 +225,7 @@ if( $payer ) {
 else {
 	$query = "SELECT PFI.PFI_ID
 					,PFI.summa
+					,KA.KA_ID
 					,KA.Naimenovanie
 					,PFI.count
 					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date_format
@@ -233,7 +236,7 @@ else {
 				LEFT JOIN Users USR ON USR.USR_ID = PFI.USR_ID
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
 				WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID IN ({$KA_IDs})
-				ORDER BY PFI.PFI_ID DESC";
+				ORDER BY PFI.date DESC";
 }
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
@@ -241,7 +244,7 @@ while( $row = mysqli_fetch_array($res) ) {
 //	$number = str_pad($row["count"], 8, '0', STR_PAD_LEFT);
 	echo "<tr ".($row["del"] ? "class='del'" : "").">";
 	echo "<td class='txtright' style='color: ".($row["PFI_ID"] ? "#E74C3C" : "#16A085").";'><b>{$summa}</b></td>";
-	echo "<td>{$row["Naimenovanie"]}</td>";
+	echo "<td><a href='sverki.php?year={$year}&payer={$row["KA_ID"]}'>{$row["Naimenovanie"]}</a></td>";
 	if( $row["PFI_ID"] ) {
 		echo "<td class='txtright'><b>{$row["count"]}</b></td>";
 		echo "<td><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b>{$row["date_format"]}</b></a></td>";
