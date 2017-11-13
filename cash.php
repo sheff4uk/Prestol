@@ -39,7 +39,7 @@
 		$type = $_POST["type"];
 		$category = ( $_POST["category"] and ( $type == -1 or $type == 1) ) ? $_POST["category"] : "NULL";
 		$to_account = ( $_POST["to_account"] and $type == 0 ) ? $_POST["to_account"] : "NULL";
-		$KA_ID = ( $_POST["kontragent"] and $type == 1 ) ? $_POST["kontragent"] : "NULL";
+		$KA_ID = ( $_POST["kontragent"] and $category == 9 ) ? $_POST["kontragent"] : "NULL";
 		$coment = mysqli_real_escape_string( $mysqli, $_POST["comment"] );
 
 		if( $F_ID != '' ) { // Редактируем операцию
@@ -1154,7 +1154,7 @@
 //		$( "input.date.from, input.date.to" ).datepicker( "option", "minDate", "<?=( date('d.m.Y', mktime(0, 0, 0, date("m")-1, 1, date("Y"))) )?>" );
 		$( "input.date.from, input.date.to" ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
 
-		// Кнопка добавления/редактирования расхода
+		// Кнопка добавления/редактирования операции
 		$('.add_operation_btn').click( function() {
 			var type = $(this).attr('type');
 			var cost_date = $(this).attr('cost_date');
@@ -1169,7 +1169,7 @@
 			$('#type > #type'+type).change();
 			$('#add_operation #category').val('');
 			$('#add_operation #to_account').val('');
-			$('#add_operation #kontragent').val('');
+			$('#add_operation #kontragent').val('').trigger('change');
 			$('#add_operation #comment').val('');
 
 			var F_ID = $(this).attr('id');
@@ -1278,13 +1278,19 @@
 		$('#type > input').change(function() {
 			type = $(this).val();
 			$.ajax({ url: "ajax.php?do=cash_category&type="+type, dataType: "script", async: false });
-			if( type == 1 ) {
+			$('#wr_kontragent').hide('fast');
+			return false;
+		});
+
+		// При выборе категории "Оплата по накладной", показываем контрагента
+		$('#add_operation').on('change', '#category', function() {
+			category = $(this).val();
+			if( category == 9 ) {
 				$('#wr_kontragent').show('fast');
 			}
 			else {
 				$('#wr_kontragent').hide('fast');
 			}
-			return false;
 		});
 
 		//$( "#cost_date" ).datepicker( "option", "minDate", "<?=( date('d.m.Y', mktime(0, 0, 0, date("m")-1, 1, date("Y"))) )?>" );
