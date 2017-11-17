@@ -101,24 +101,27 @@
 				<div class="mfr" style="font-size: 16px;" fontSize="16" onload="fontSize(this, 18);">Изготовитель: ООО «Престол», г.Киров ул.Луганская 59, т.89091317732, сайт: фабрикастульев.рф</div>
 			</div>
 			<div class="body-wr">
-				<div class="prod" style="font-size: 24px;" fontSize="24"><?=$value?></div>
+				<div class="half-block">
+					<p>Номер упаковки:</p>
+					<div class="number" style="font-size: 50px;"><?=$_POST["code"][$key]?></div>
+				</div>
+				<div class="half-block">
+					<p><?=$_POST["amount_label"][$key]?>:</p>
+					<div class="box" style="font-size: 32px;"><?=$_POST["amount"][$key]?></div>
+				</div>
+				<div class="half-block">
+					<p>Дата изготовления:</p>
+					<div class="date" style="font-size: 32px;"><?=$_POST["date"]?></div>
+				</div>
+				<div style="margin-bottom: -15px;">
+					<p>Изделие:</p>
+					<div class="prod" style="font-size: 24px;" fontSize="24"><?=$value?></div>
+				</div>
 				<div>
 					<p><?=$_POST["mat_label"][$key]?>:</p>
 					<div class="material" style="font-size: 16px;" fontSize="16"><?=$_POST["mat"][$key]?></div>
 					<p>Цвет:</p>
 					<div class="color" style="font-size: 16px;" fontSize="16"><?=$_POST["color"][$key]?></div>
-				</div>
-				<div class="half-block">
-					<p><?=$_POST["amount_label"][$key]?>:</p>
-					<div class="box" style="font-size: 16px;" fontSize="16"><?=$_POST["amount"][$key]?></div>
-				</div>
-				<div class="half-block">
-					<p>Дата изготовления:</p>
-					<div class="date" style="font-size: 16px;" fontSize="16"><?=$_POST["date"]?></div>
-				</div>
-				<div class="half-block">
-					<p>Номер упаковки:</p>
-					<div class="number" style="font-size: 16px;" fontSize="16"><?=$_POST["code"][$key]?></div>
 				</div>
 			</div>
 		</div>
