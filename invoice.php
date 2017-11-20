@@ -91,7 +91,7 @@ foreach ($_POST["ord"] as $key => $value) {
 
 	$query = "UPDATE OrdersData OD
 				JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-				SET OD.StartDate = IF(SH.KA_ID IS NULL, OD.StartDate, ".($return ? "NULL" : "'{$date}'")."), OD.PFI_ID = {$id}, OD.author = {$_SESSION["id"]} WHERE OD.OD_ID = {$value}";
+				SET OD.StartDate = IF((SH.KA_ID IS NULL AND OD.StartDate IS NOT NULL), OD.StartDate, ".($return ? "NULL" : "'{$date}'")."), OD.PFI_ID = {$id}, OD.author = {$_SESSION["id"]} WHERE OD.OD_ID = {$value}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	$id_list .= ",".$value;
