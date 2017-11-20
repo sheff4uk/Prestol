@@ -114,7 +114,22 @@ if( isset($_GET["del"]) )
 		box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
 	}
 
-	#add_invoice_btn:hover {
+	#add_invoice_btn_return {
+		background: url(../img/bt_speed_dial_1x.png) no-repeat scroll center center transparent;
+		bottom: 170px;
+		cursor: pointer;
+		width: 36px;
+		height: 36px;
+		opacity: .4;
+		position: fixed;
+		right: 60px;
+		z-index: 9;
+		border-radius: 50%;
+		background-color: #db4437;
+		box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
+	}
+
+	#add_invoice_btn:hover, #add_invoice_btn_return:hover {
 		opacity: 1;
 	}
 
@@ -129,16 +144,18 @@ if( isset($_GET["del"]) )
 
 <?
 if( !in_array('sverki_opt', $Rights) ) {
-	echo "<a id='add_invoice_btn' href='#' title='Создать накладную'></a>";
+	echo "<a id='add_invoice_btn' href='#' title='Создать накладную на ОТГРУЗКУ'></a>";
+	echo "<a id='add_invoice_btn_return' href='#' title='Создать накладную на ВОЗВРАТ'></a>";
 }
 ?>
 
 <table>
 	<thead>
 		<tr>
-			<th>Сумма</th>
-			<th>Плательщик</th>
-			<th>Номер<br>накладной</th>
+			<th>Дебет</th>
+			<th>Кредит</th>
+			<th>Контрагент</th>
+			<th>Операция/Документ</th>
 			<th>Дата</th>
 			<th>Автор</th>
 			<th></th>
@@ -148,14 +165,17 @@ if( !in_array('sverki_opt', $Rights) ) {
 <?
 if( $payer ) {
 	$query = "SELECT PFI.PFI_ID
-					,PFI.summa
+					,IF(PFI.rtrn = 1, NULL, PFI.summa) debet
+					,IF(PFI.rtrn = 1, PFI.summa, NULL) kredit
 					,KA.KA_ID
 					,KA.Naimenovanie
+					,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
 					,PFI.count
 					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date_format
 					,PFI.date
 					,USR.Name
 					,PFI.del
+					,PFI.rtrn
 				FROM PrintFormsInvoice PFI
 				LEFT JOIN Users USR ON USR.USR_ID = PFI.USR_ID
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
@@ -164,14 +184,17 @@ if( $payer ) {
 				UNION ALL
 
 				SELECT NULL
-					,F.money
+					,NULL debet
+					,F.money kredit
 					,KA.KA_ID
 					,KA.Naimenovanie
+					,CONCAT('Оплата от покупателя, <b>', F.comment, '</b>') document
 					,NULL
 					,DATE_FORMAT(F.date, '%d.%m.%Y') date_format
 					,F.date
 					,USR.Name
 					,NULL
+					,1
 				FROM Finance F
 				LEFT JOIN Users USR ON USR.USR_ID = F.author
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
@@ -181,14 +204,17 @@ if( $payer ) {
 }
 else {
 	$query = "SELECT PFI.PFI_ID
-					,PFI.summa
+					,IF(PFI.rtrn = 1, NULL, PFI.summa) debet
+					,IF(PFI.rtrn = 1, PFI.summa, NULL) kredit
 					,KA.KA_ID
 					,KA.Naimenovanie
+					,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
 					,PFI.count
 					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date_format
 					,PFI.date
 					,USR.Name
 					,PFI.del
+					,PFI.rtrn
 				FROM PrintFormsInvoice PFI
 				LEFT JOIN Users USR ON USR.USR_ID = PFI.USR_ID
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
@@ -197,21 +223,22 @@ else {
 }
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
-	$summa = number_format($row["summa"], 0, '', ' ');
+	$debet = $row["debet"] ? number_format($row["debet"], 0, '', ' ') : '';
+	$kredit = $row["kredit"] ? number_format($row["kredit"], 0, '', ' ') : '';
 //	$number = str_pad($row["count"], 8, '0', STR_PAD_LEFT);
 	echo "<tr ".($row["del"] ? "class='del'" : "").">";
-	echo "<td class='txtright' style='color: ".($row["PFI_ID"] ? "#E74C3C" : "#16A085").";'><b>{$summa}</b></td>";
+	echo "<td class='txtright' style='color: #E74C3C;'><b>{$debet}</b></td>";
+	echo "<td class='txtright' style='color: #16A085;'><b>{$kredit}</b></td>";
 	echo "<td><a href='sverki.php?year={$year}&payer={$row["KA_ID"]}'>{$row["Naimenovanie"]}</a></td>";
+	echo "<td>{$row["document"]}</td>";
 	if( $row["PFI_ID"] ) {
-		echo "<td class='txtright'><b>{$row["count"]}</b></td>";
 		echo "<td><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b>{$row["date_format"]}</b></a></td>";
 	}
 	else {
-		echo "<td>Оплата</td>";
 		echo "<td><b>{$row["date_format"]}</b></td>";
 	}
 	echo "<td>{$row["Name"]}</td>";
-	if( $row["del"] == "0" and !in_array('sverki_opt', $Rights) ) {
+	if( $row["del"] == "0" and $row["rtrn"] == "0" and !in_array('sverki_opt', $Rights) ) {
 		$Naimenovanie = addslashes($row["Naimenovanie"]);
 		echo "<td><button onclick='if(confirm(\"Удалить накладную <b>№{$row["count"]} ({$Naimenovanie})</b> от <b>{$row["date_format"]}</b>?\", \"?del={$row["PFI_ID"]}&year={$year}&payer={$payer}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button></td>";
 	}
@@ -225,10 +252,12 @@ while( $row = mysqli_fetch_array($res) ) {
 </table>
 
 <!-- Форма подготовки накладной -->
-<div id='add_invoice_form' title='Создание накладной' style='display:none'>
+<div id='add_invoice_form' style='display:none'>
 	<form method='post' action="invoice.php">
 		<fieldset style="text-align: center;">
 			<div>
+				<input type="hidden" name="year" value="<?=$year?>">
+				<input type="hidden" name="payer" value="<?=$payer?>">
 				<label>Контрагент:</label>
 				<select name="KA_ID" required>
 					<?
@@ -283,7 +312,7 @@ while( $row = mysqli_fetch_array($res) ) {
 					<table width="50%" class="forms" style="border: 2px solid;">
 						<tbody>
 							<tr align="left">
-								<td colspan="2"><strong>Информация о плательщике:</strong></td>
+								<td colspan="2"><strong id="KA_info"></strong></td>
 							</tr>
 							<tr>
 								<td width="200" align="left" valign="top">Название ООО или ИП:</td>
@@ -318,7 +347,7 @@ while( $row = mysqli_fetch_array($res) ) {
 					<table width="50%" class="forms" style="border: 2px solid;">
 						<tbody>
 							<tr>
-								<td colspan="2" align="left" valign="top"><strong>Банковские реквизиты плательщика:</strong></td>
+								<td colspan="2" align="left" valign="top"><strong id="KA_bank"></strong></td>
 							</tr>
 							<tr>
 								<td width="200" align="left" valign="top">Расчетный счет:</td>
@@ -348,7 +377,17 @@ while( $row = mysqli_fetch_array($res) ) {
 					</table>
 				</div>
 			</div>
-			<br>
+			<div id="num_rows" style="display: none;">
+				Количество строк:&nbsp;
+				<select style="margin: 10px;">
+					<option value="25">25</option>
+					<option value="50">50</option>
+					<option value="100">100</option>
+					<option value="250">250</option>
+					<option value="500">500</option>
+				</select>
+				<input type="hidden" name="num_rows">
+			</div>
 			<div class="accordion">
 				<h3>Список заказов</h3>
 				<div id="orders_to_invoice" style='text-align: left;'></div>
@@ -361,6 +400,7 @@ while( $row = mysqli_fetch_array($res) ) {
 				<input type='submit' value='Создать накладную' style='float: right;'>
 				<input type="text" name="date" id="date" class="date" style="float: right; margin: 4px 10px; width: 90px;" readonly>
 			</div>
+			<p id="return_message" style="color: #911; display: none;">ВНИМАНИЕ! Накладную на возврат товара отменить не возможно.</p>
 		</fieldset>
 	</form>
 </div>
@@ -399,15 +439,36 @@ while( $row = mysqli_fetch_array($res) ) {
 		$('#payer').select2({ placeholder: 'Выберите контрагента', language: 'ru' });
 
 		// Форма составления накладной
-		$('#add_invoice_btn').click(function() {
+		$('#add_invoice_btn, #add_invoice_btn_return').click(function() {
+			// Узнаём какая их 2-х кнопок была нажата
+			var this_id = $(this).attr('id');
+			var title;
+			if( this_id == 'add_invoice_btn' ) {
+				title = 'Накладная на ОТГРУЗКУ';
+				$('#KA_info').html('Информация о ГРУЗОПОЛУЧАТЕЛЕ:');
+				$('#KA_bank').html('Банковские реквизиты ГРУЗОПОЛУЧАТЕЛЯ:');
+				$('#num_rows').hide();
+				$('#num_rows input').val(0);
+				$('#return_message').hide();
+			}
+			else {
+				title = 'Накладная на ВОЗВРАТ'
+				$('#KA_info').html('Информация о ГРУЗООТПРАВИТЕЛЕ:');
+				$('#KA_bank').html('Банковские реквизиты ГРУЗООТПРАВИТЕЛЯ:');
+				$('#num_rows').show();
+				$('#num_rows input').val(25);
+				$('#return_message').show();
+			}
 			// Очистка
 			$('select[name="KA_ID"]').val('').change();
 			$('#orders_to_invoice').html('');
 			$('#add_invoice_form .accordion').accordion( "option", "active", 1 );
 			$('#date').val('<?=( date('d.m.Y') )?>');
+			$('#num_rows select').val(25);
 
 			$('#add_invoice_form').dialog({
 				position: { my: "center top", at: "center top", of: window },
+				title: title,
 				draggable: false,
 				width: 1000,
 				modal: true,
@@ -424,13 +485,23 @@ while( $row = mysqli_fetch_array($res) ) {
 		$('select[name="KA_ID"]').on('change', function() {
 			var KA_ID = $(this).val();
 			var CT_ID = $(this).find('option:selected').attr('CT_ID');
-			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID, dataType: "script", async: false });
+			var num_rows = $('#num_rows input').val();
+			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows, dataType: "script", async: false });
 			if( KA_ID ) {
 				$('#add_invoice_form .accordion').accordion( "option", "active", 0 );
 			}
 			else {
 				$('#add_invoice_form .accordion').accordion( "option", "active", 1 );
 			}
+		});
+
+		// При смене количества строк записываем значение в скрытое поле и вызываем аякс для подгрузки заказов
+		$('#num_rows select').on('change', function() {
+			$('#num_rows input').val($(this).val());
+			var KA_ID = $('select[name="KA_ID"]').val();
+			var CT_ID = $('select[name="KA_ID"]').find('option:selected').attr('CT_ID');
+			var num_rows = $('#num_rows input').val();
+			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows, dataType: "script", async: false });
 		});
 
 		// Обработчики чекбоксов в форме отгрузки

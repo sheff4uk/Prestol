@@ -2,6 +2,9 @@
 include "config.php";
 session_start();
 
+// Узнаем тип накладной ОТГРУЗКА/ВОЗВРАТ
+$return = $_POST["num_rows"] ? 1 : 0;
+
 // Сохраняем оптовые цены изделий в ODD/ODB
 foreach ($_POST["opt_price"] as $key => $value) {
 	$tbl = $_POST["tbl"][$key];
@@ -70,16 +73,25 @@ $count = mysqli_result($res,0,'count') ? mysqli_result($res,0,'count') : 1;
 
 // Сохраняем в таблицу PrintFormsInvoice данные по накладной
 $date = date( 'Y-m-d', strtotime($_POST["date"]) );
-$query = "INSERT INTO PrintFormsInvoice SET summa = {$_POST["summa"]}, platelshik_id = {$platelshik_id}, count = {$count}, date = '{$date}', USR_ID = {$_SESSION["id"]}";
+$query = "INSERT INTO PrintFormsInvoice SET summa = {$_POST["summa"]}, platelshik_id = {$platelshik_id}, count = {$count}, date = '{$date}', USR_ID = {$_SESSION["id"]}, rtrn = {$return}";
 mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $id = mysqli_insert_id($mysqli);
 
-// В таблице OrdersData записываем ID накладной, сохраняем дату продажи
+// Сохраняем у заказа дату продажи и ID накладной
 $id_list = "0";
 foreach ($_POST["ord"] as $key => $value) {
+	// Если возвратная накладная - помечаем исходные отгрузочные накладные как измененные (чтобы их нельзя было удалить)
+	if( $return ) {
+		$query = "UPDATE PrintFormsInvoice PFI
+					JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID AND OD.OD_ID = {$value}
+					SET PFI.rtrn = 2
+					WHERE PFI.rtrn = 0";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	}
+
 	$query = "UPDATE OrdersData OD
 				JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-				SET OD.StartDate = IF(SH.KA_ID IS NULL, OD.StartDate, '{$date}'), OD.PFI_ID = {$id}, OD.author = {$_SESSION["id"]} WHERE OD.OD_ID = {$value}";
+				SET OD.StartDate = IF(SH.KA_ID IS NULL, OD.StartDate, ".($return ? "NULL" : "'{$date}'")."), OD.PFI_ID = {$id}, OD.author = {$_SESSION["id"]} WHERE OD.OD_ID = {$value}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	$id_list .= ",".$value;
@@ -98,7 +110,7 @@ $query = "SELECT ODD_ODB.OD_ID
 					  ,IFNULL(PM.PT_ID, 2) PT_ID
 					  ,ODD.Amount
 					  ,ODD.opt_price Price
-					  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('+ патина (', ODD.patina, ')'), '')) Zakaz
+					  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('патина (', ODD.patina, ')'), '')) Zakaz
 				FROM OrdersDataDetail ODD
 				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 				LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
@@ -110,7 +122,7 @@ $query = "SELECT ODD_ODB.OD_ID
 					  ,0 PT_ID
 					  ,ODB.Amount
 					  ,ODB.opt_price Price
-					  ,CONCAT(IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('+ патина (', ODB.patina, ')'), '')) Zakaz
+					  ,CONCAT(IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('патина (', ODB.patina, ')'), '')) Zakaz
 				FROM OrdersDataBlank ODB
 				LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 				WHERE ODB.Del = 0
@@ -140,6 +152,7 @@ $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $
 $_POST["gruzootpravitel_name"] = mysqli_result($res,0,'Name');
 $_POST["gruzootpravitel_inn"] = mysqli_result($res,0,'INN');
 $_POST["gruzootpravitel_kpp"] = mysqli_result($res,0,'KPP');
+$_POST["gruzootpravitel_okpo"] = '';
 $_POST["gruzootpravitel_adres"] = mysqli_result($res,0,'Addres');
 $_POST["gruzootpravitel_director"] = mysqli_result($res,0,'Dir');
 $_POST["gruzootpravitel_tel"] = mysqli_result($res,0,'Phone');
@@ -150,6 +163,45 @@ $_POST["gruzootpravitel_ks"] = mysqli_result($res,0,'KS');
 $_POST["gruzopoluchatel"] = 0;
 $_POST["postavshik"] = 1;
 
+// Если накладная на возврат меняем грузоотправителя и получателя местами
+if( $return ) {
+	$platelshik_name = $_POST["platelshik_name"];
+	$platelshik_inn = $_POST["platelshik_inn"];
+	$platelshik_kpp = $_POST["platelshik_kpp"];
+	$platelshik_okpo = $_POST["platelshik_okpo"];
+	$platelshik_adres = $_POST["platelshik_adres"];
+	$platelshik_tel = $_POST["platelshik_tel"];
+	$platelshik_schet = $_POST["platelshik_schet"];
+	$platelshik_bank = $_POST["platelshik_bank"];
+	$platelshik_bik = $_POST["platelshik_bik"];
+	$platelshik_ks = $_POST["platelshik_ks"];
+	$platelshik_bank_adres = $_POST["platelshik_bank_adres"];
+
+	$_POST["platelshik_name"] = $_POST["gruzootpravitel_name"];
+	$_POST["platelshik_inn"] = $_POST["gruzootpravitel_inn"];
+	$_POST["platelshik_kpp"] = $_POST["gruzootpravitel_kpp"];
+	$_POST["platelshik_okpo"] = $_POST["gruzootpravitel_okpo"];
+	$_POST["platelshik_adres"] = $_POST["gruzootpravitel_adres"];
+	$_POST["platelshik_tel"] = $_POST["gruzootpravitel_tel"];
+	$_POST["platelshik_schet"] = $_POST["gruzootpravitel_schet"];
+	$_POST["platelshik_bank"] = $_POST["gruzootpravitel_bank"];
+	$_POST["platelshik_bik"] = $_POST["gruzootpravitel_bik"];
+	$_POST["platelshik_ks"] = $_POST["gruzootpravitel_ks"];
+	$_POST["platelshik_bank_adres"] = $_POST["gruzootpravitel_bank_adres"];
+
+	$_POST["gruzootpravitel_name"] = $platelshik_name;
+	$_POST["gruzootpravitel_inn"] = $platelshik_inn;
+	$_POST["gruzootpravitel_kpp"] = $platelshik_kpp;
+	$_POST["gruzootpravitel_okpo"] = $platelshik_okpo;
+	$_POST["gruzootpravitel_adres"] = $platelshik_adres;
+	$_POST["gruzootpravitel_tel"] = $platelshik_tel;
+	$_POST["gruzootpravitel_schet"] = $platelshik_schet;
+	$_POST["gruzootpravitel_bank"] = $platelshik_bank;
+	$_POST["gruzootpravitel_bik"] = $platelshik_bik;
+	$_POST["gruzootpravitel_ks"] = $platelshik_ks;
+	$_POST["gruzootpravitel_bank_adres"] = $platelshik_bank_adres;
+	$_POST["gruzootpravitel_director"] = '';
+}
 
 // Удаляем старые файлы
 $expire_time = 2*365*24*60*60; // Время через которое файл считается устаревшим (в сек.)
@@ -207,7 +259,7 @@ if( $curl = curl_init() ) {
 
 	curl_close($curl);
 
-	exit ('<meta http-equiv="refresh" content="0; url=sverki.php">');
+	exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_POST["year"]).'&payer='.($_POST["payer"]).'">');
 	die;
 }
 ?>

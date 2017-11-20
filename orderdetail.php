@@ -305,7 +305,7 @@
 						,IF(SH.KA_ID IS NULL, 1, 0) retail
 						,SH.CT_ID
 						,IFNULL(OD.SHP_ID, 0) SHP_ID
-						,OD.PFI_ID
+						,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
 						,PFI.count
 						,PFI.platelshik_id
 				  FROM OrdersData OD
@@ -374,63 +374,63 @@
 
 			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date to' value='{$EndDate}' ".($disabled ? "disabled" : "").">")) ?></td>
 			<td>
-			<div style='box-shadow: 0px 0px 10px 10px <?=$CTColor?>;'>
-				<select name='Shop' <?=((!in_array('order_add', $Rights) or $is_lock or $Del or ($SH_ID == "0" and !in_array('order_add_confirm', $Rights))) ? "disabled" : "")?>>
+			<div class='shop_cell' id='<?=$id?>' style='box-shadow: 0px 0px 10px 10px <?=$CTColor?>;'>
+				<select name='Shop' class='select_shops' <?=((!in_array('order_add', $Rights) or $is_lock or $Del or ($SH_ID == "0" and !in_array('order_add_confirm', $Rights))) ? "disabled" : "")?>>
 					<?
-					if( $SH_ID == "0" or in_array('order_add_confirm', $Rights)) {
-						echo "<option value='0' selected style='background: #999;'>Свободные</option>";
-					}
-					// Если пользователю доступен только один салон в регионе или оптовик, то выводится только текущий салон и нельзя менять его
-					if( ($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) or ($USR_KA and $SH_ID and $USR_KA != $KA_ID) ) {
-						$query = "SELECT SH.SH_ID
-										,CONCAT(CT.City, '/', SH.Shop) AS Shop
-										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
-										,CT.Color
-									FROM Shops SH
-									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-									WHERE SH.SH_ID = {$SH_ID}";
-					}
-					elseif( $PFI_ID ) {
-						$query = "SELECT SH.SH_ID
-										,CONCAT(CT.City, '/', SH.Shop) AS Shop
-										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
-										,CT.Color
-									FROM Shops SH
-									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-									WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.KA_ID IS NULL" : "SH.KA_ID = {$platelshik_id}")."
-										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-										".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-									ORDER BY CT.City, SH.Shop";
-					}
-					elseif( $SHP_ID or $ReadyDate ) {
-						$query = "SELECT SH.SH_ID
-										,CONCAT(CT.City, '/', SH.Shop) AS Shop
-										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
-										,CT.Color
-									FROM Shops SH
-									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-									WHERE CT.CT_ID = {$CT_ID}
-										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-										".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-									ORDER BY CT.City, SH.Shop";
-					}
-					else {
-						$query = "SELECT SH.SH_ID
-										,CONCAT(CT.City, '/', SH.Shop) AS Shop
-										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
-										,CT.Color
-									FROM Shops SH
-									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-									WHERE CT.CT_ID IN ({$USR_cities})
-										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-										".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-									ORDER BY CT.City, SH.Shop";
-					}
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					while( $row = mysqli_fetch_array($res) )
-					{
-						echo "<option value='{$row["SH_ID"]}' {$row["selected"]} style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
-					}
+//					if( $SH_ID == "0" or in_array('order_add_confirm', $Rights)) {
+//						echo "<option value='0' selected style='background: #999;'>Свободные</option>";
+//					}
+//					// Если пользователю доступен только один салон в регионе или оптовик, то выводится только текущий салон и нельзя менять его
+//					if( ($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) or ($USR_KA and $SH_ID and $USR_KA != $KA_ID) ) {
+//						$query = "SELECT SH.SH_ID
+//										,CONCAT(CT.City, '/', SH.Shop) AS Shop
+//										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
+//										,CT.Color
+//									FROM Shops SH
+//									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+//									WHERE SH.SH_ID = {$SH_ID}";
+//					}
+//					elseif( $PFI_ID ) {
+//						$query = "SELECT SH.SH_ID
+//										,CONCAT(CT.City, '/', SH.Shop) AS Shop
+//										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
+//										,CT.Color
+//									FROM Shops SH
+//									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+//									WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.KA_ID IS NULL" : "SH.KA_ID = {$platelshik_id}")."
+//										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+//										".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
+//									ORDER BY CT.City, SH.Shop";
+//					}
+//					elseif( $SHP_ID or $ReadyDate ) {
+//						$query = "SELECT SH.SH_ID
+//										,CONCAT(CT.City, '/', SH.Shop) AS Shop
+//										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
+//										,CT.Color
+//									FROM Shops SH
+//									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+//									WHERE CT.CT_ID = {$CT_ID}
+//										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+//										".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
+//									ORDER BY CT.City, SH.Shop";
+//					}
+//					else {
+//						$query = "SELECT SH.SH_ID
+//										,CONCAT(CT.City, '/', SH.Shop) AS Shop
+//										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
+//										,CT.Color
+//									FROM Shops SH
+//									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+//									WHERE CT.CT_ID IN ({$USR_cities})
+//										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+//										".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
+//									ORDER BY CT.City, SH.Shop";
+//					}
+//					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//					while( $row = mysqli_fetch_array($res) )
+//					{
+//						echo "<option value='{$row["SH_ID"]}' {$row["selected"]} style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
+//					}
 					?>
 				</select>
 				</div>
@@ -480,6 +480,9 @@
 
 	<script>
 		$(document).ready(function() {
+			// Выводится выпадающий список салонов аяксом
+			$.ajax({ url: "ajax.php?do=create_shop_select&OD_ID=<?=$id?>&SH_ID=<?=$SH_ID?>", dataType: "script", async: false });
+
 //			$("input.from[name='StartDate']").datepicker("disable");
 //			$( "input.from" ).datepicker( "option", "maxDate", "<?=$EndDate?>" );
 //			$( "input.to" ).datepicker( "option", "minDate", "<?=$StartDate?>" );
