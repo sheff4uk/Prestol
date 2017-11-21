@@ -1141,7 +1141,7 @@ case "update_price":
 // Формирование дропдауна со списком салонов
 case "create_shop_select":
 	$OD_ID = $_GET["OD_ID"];
-	$SH_ID = $_GET["SH_ID"] ? $_GET["SH_ID"] : "NULL";
+	$SH_ID = $_GET["SH_ID"] ? $_GET["SH_ID"] : 0;
 	$html = "";
 
 	// Узнаём отгрузку у заказа, дату отгрузки, регион, накладную, плательщика
@@ -1150,7 +1150,7 @@ case "create_shop_select":
 					,SH.CT_ID
 					,OD.PFI_ID
 					,PFI.platelshik_id
-					,IF(SH.KA_ID IS NULL, 1, 0) retail
+					,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL), 1, 0) retail
 				FROM OrdersData OD
 				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 				LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
@@ -1167,6 +1167,16 @@ case "create_shop_select":
 	if( $PFI_ID ) {
 		$query = "SELECT SH.SH_ID
 						,CONCAT(CT.City, '/', SH.Shop) AS Shop
+						,'selected' selected
+						,CT.Color
+					FROM Shops SH
+					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+					WHERE SH.SH_ID = {$SH_ID}
+
+					UNION
+
+					SELECT SH.SH_ID
+						,CONCAT(CT.City, '/', SH.Shop) AS Shop
 						,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
 						,CT.Color
 					FROM Shops SH
@@ -1174,13 +1184,24 @@ case "create_shop_select":
 					WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.KA_ID IS NULL" : "SH.KA_ID = {$platelshik_id}")."
 						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-					ORDER BY CT.City, SH.Shop";
+
+					ORDER Shop";
 	}
 	elseif( $SHP_ID or $ReadyDate ) {
-		if( in_array('order_add_confirm', $Rights) ) {
+		if( in_array('order_add_confirm', $Rights) or $SH_ID == 0 ) {
 			$html .= "<option value='0' selected style='background: #999;'>Свободные</option>";
 		}
 		$query = "SELECT SH.SH_ID
+						,CONCAT(CT.City, '/', SH.Shop) AS Shop
+						,'selected' selected
+						,CT.Color
+					FROM Shops SH
+					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+					WHERE SH.SH_ID = {$SH_ID}
+
+					UNION
+
+					SELECT SH.SH_ID
 						,CONCAT(CT.City, '/', SH.Shop) AS Shop
 						,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
 						,CT.Color
@@ -1189,13 +1210,24 @@ case "create_shop_select":
 					WHERE CT.CT_ID = {$CT_ID}
 						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-					ORDER BY CT.City, SH.Shop";
+
+					ORDER BY Shop";
 	}
 	else {
-		if( in_array('order_add_confirm', $Rights) ) {
+		if( in_array('order_add_confirm', $Rights) or $SH_ID == 0 ) {
 			$html .= "<option value='0' selected style='background: #999;'>Свободные</option>";
 		}
 		$query = "SELECT SH.SH_ID
+						,CONCAT(CT.City, '/', SH.Shop) AS Shop
+						,'selected' selected
+						,CT.Color
+					FROM Shops SH
+					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+					WHERE SH.SH_ID = {$SH_ID}
+
+					UNION
+
+					SELECT SH.SH_ID
 						,CONCAT(CT.City, '/', SH.Shop) AS Shop
 						,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
 						,CT.Color
@@ -1204,7 +1236,8 @@ case "create_shop_select":
 					WHERE CT.CT_ID IN ({$USR_cities})
 						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-					ORDER BY CT.City, SH.Shop";
+
+					ORDER BY Shop";
 	}
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	while( $row = mysqli_fetch_array($res) )
@@ -1761,7 +1794,7 @@ case "order_shp":
 		echo "noty({timeout: 3000, text: 'Заказ успешно отгружен!', type: 'success'});";
 
 		// Если это розничный заказ, то предлагаем перейти в реализацию
-		$query = "SELECT IF(SH.KA_ID IS NULL, 1, 0) retail, SH.CT_ID FROM OrdersData OD LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD_ID = {$od_id}";
+		$query = "SELECT IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL), 1, 0) retail, SH.CT_ID FROM OrdersData OD LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD_ID = {$od_id}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		$retail = mysqli_result($res,0,'retail');
 		if( $retail == "1" ) {

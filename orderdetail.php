@@ -290,6 +290,7 @@
 
 		$query = "SELECT OD.Code
 						,OD.ClientName
+						,DATE_FORMAT(OD.AddDate, '%d.%m.%Y') AddDate
 						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 						,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
@@ -302,7 +303,7 @@
 						,WD.Name
 						,OD.Comment
 						,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
-						,IF(SH.KA_ID IS NULL, 1, 0) retail
+						,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL), 1, 0) retail
 						,SH.CT_ID
 						,IFNULL(OD.SHP_ID, 0) SHP_ID
 						,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
@@ -317,6 +318,7 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$Code = mysqli_result($res,0,'Code');
 		$ClientName = mysqli_result($res,0,'ClientName');
+		$AddDate = mysqli_result($res,0,'AddDate');
 		$StartDate = mysqli_result($res,0,'StartDate');
 		$EndDate = mysqli_result($res,0,'EndDate');
 		$ReadyDate = mysqli_result($res,0,'ReadyDate');
@@ -335,12 +337,14 @@
 		$PFI_ID = mysqli_result($res,0,'PFI_ID');
 		$count = mysqli_result($res,0,'count');
 		$platelshik_id = mysqli_result($res,0,'platelshik_id');
+		// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информация заказа.
+		$editable = (!($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and !($SH_ID == 0 and !in_array('order_add_confirm', $Rights)));
 ?>
 	<form method='post' id='order_form' action='<?=$location?>&order_update=1'>
 	<table class="">
 		<thead>
 		<tr class='nowrap'>
-			<th>Код</th>
+			<th>Код<br>Создан</th>
 			<th>Заказчик<br>Квитанция</th>
 			<th>Дата продажи</th>
 			<?= ($ReadyDate ? "<th>Отгружено</th>" : ($DelDate ? "<th>Удалено</th>" : "<th>Дата сдачи</th>")) ?>
@@ -352,11 +356,11 @@
 		</thead>
 		<tbody>
 		<tr class='ord_log_row' lnk='*OD_ID<?=$id?>*' id='ord<?=$id?>'>
-			<td class="nowrap"><?=$Code?></td>
+			<td class="nowrap"><h1><?=$Code?></h1><?=$AddDate?></td>
 			<td>
-				<input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail) ? "" : "disabled")?> placeholder='Заказчик'>
+				<input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> placeholder='Заказчик'>
 				<br>
-				<input type='text' name='OrderNumber' style='width: 90px;' value='<?=$OrderNumber?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail) ? "" : "disabled")?> placeholder='Квитанция'>
+				<input type='text' name='OrderNumber' style='width: 90px;' value='<?=$OrderNumber?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> placeholder='Квитанция'>
 			</td>
 
 			<?
@@ -369,13 +373,13 @@
 				$invoice = "";
 				$title = "Чтобы стереть дату продажи перейдите в реализацию и нажмите на символ ладошки справа.";
 			}
-			echo "<td><input type='text' name='StartDate' class='date from' value='{$StartDate}' date='{$StartDate}' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail) ? "" : "disabled")." ".( (in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $StartDate) ? "readonly title='{$title}'" : "" ).">{$invoice}</td>";
+			echo "<td><input type='text' name='StartDate' class='date from' value='{$StartDate}' date='{$StartDate}' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")." readonly ".( (in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable and $StartDate) ? "title='{$title}'" : "" ).">{$invoice}</td>";
 			?>
 
-			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date to' value='{$EndDate}' ".($disabled ? "disabled" : "").">")) ?></td>
+			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date to' value='{$EndDate}' readonly ".((!$disabled and $editable) ? "" : "disabled").">")) ?></td>
 			<td>
 			<div class='shop_cell' id='<?=$id?>' style='box-shadow: 0px 0px 10px 10px <?=$CTColor?>;'>
-				<select name='Shop' class='select_shops' <?=((!in_array('order_add', $Rights) or $is_lock or $Del or ($SH_ID == "0" and !in_array('order_add_confirm', $Rights))) ? "disabled" : "")?>>
+				<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")?>>
 					<?
 //					if( $SH_ID == "0" or in_array('order_add_confirm', $Rights)) {
 //						echo "<option value='0' selected style='background: #999;'>Свободные</option>";
@@ -453,10 +457,10 @@
 						if($Name) $title .= " ({$Name})";
 						break;
 				}
-			echo " class='painting_cell ".((!$disabled and false) ? "painting" : "")." {$class}' title='{$title}'><div class='painting_workers'>{$Name}</div><input required type='text' class='colortags' name='Color' style='width: 160px;' value='{$Color}' autocomplete='off' ".($disabled ? "disabled" : "")."></td>";
+			echo " class='painting_cell ".((!$disabled and false) ? "painting" : "")." {$class}' title='{$title}'><div class='painting_workers'>{$Name}</div><input required type='text' class='colortags' name='Color' style='width: 160px;' value='{$Color}' autocomplete='off' ".((!$disabled and $editable) ? "" : "disabled")."></td>";
 			?>
 
-			<td><textarea name='Comment' rows='6' cols='15' <?=($disabled ? "disabled" : "")?>><?=$Comment?></textarea></td>
+			<td><textarea name='Comment' rows='6' cols='15' <?=((!$disabled and $editable) ? "" : "disabled")?>><?=$Comment?></textarea></td>
 			<td style="text-align: center;">
 				<?
 				// Если есть право редактированя - показываем кнопку клонирования
@@ -464,7 +468,7 @@
 					echo "<p><a href='#' onclick='if(confirm(\"<b>Подтвердите клонирование заказа!</b>\", \"clone_order.php?id={$id}&author={$_SESSION['id']}&confirmed=".(in_array('order_add_confirm', $Rights) ? 1 : 0)."\")) return false;' title='Клонировать'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></a></p>";
 				}
 				// Если розничный заказ - показываем кнопку перехода в реализацию
-				if( $retail and !$is_lock and !$Del ) {
+				if( $retail and !$is_lock and !$Del and $editable ) {
 					echo "<p><a href='/selling.php?CT_ID={$CT_ID}#ord{$id}' title='Перейти в реализацию'><i class='fa fa-money fa-2x' aria-hidden='true'></i></a></p>";
 				}
 				// Если заказ в отгрузке - показываем кнопку перехода в отгрузку
@@ -511,9 +515,9 @@
 ?>
 <div class="halfblock">
 	<p>
-		<button <?=(($disabled or $PFI_ID) ? 'disabled' : '')?> class='edit_product1'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
-		<button <?=(($disabled or $PFI_ID) ? 'disabled' : '')?> class='edit_product2'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
-		<button <?=(($disabled or $PFI_ID) ? 'disabled' : '')?> class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки/прочее</button>
+		<button <?=(($disabled or $PFI_ID or !$editable) ? 'disabled' : '')?> class='edit_product1'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
+		<button <?=(($disabled or $PFI_ID or !$editable) ? 'disabled' : '')?> class='edit_product2'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
+		<button <?=(($disabled or $PFI_ID or !$editable) ? 'disabled' : '')?> class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки/прочее</button>
 	</p>
 
 	<!-- Таблица изделий -->
@@ -617,10 +621,10 @@
 		echo "<td>";
 		
 		if( $row["Del"] == 0 ) {
-			echo "<button ".(($disabled or $PFI_ID) ? 'disabled' : '')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></button>";
+			echo "<button ".(($disabled or $PFI_ID or !$editable) ? 'disabled' : '')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></button>";
 
 			$delmessage = addslashes("Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?");
-			echo "<button ".(($disabled or $PFI_ID or $row["inprogress"]) ? 'disabled' : '')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button>";
+			echo "<button ".(($disabled or $PFI_ID or $row["inprogress"] or !$editable) ? 'disabled' : '')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button>";
 		}
 		echo "</td></tr>";
 
