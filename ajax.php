@@ -1185,7 +1185,7 @@ case "create_shop_select":
 						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 
-					ORDER Shop";
+					ORDER BY Shop";
 	}
 	elseif( $SHP_ID or $ReadyDate ) {
 		if( in_array('order_add_confirm', $Rights) or $SH_ID == 0 ) {
