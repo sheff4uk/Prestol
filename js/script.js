@@ -814,7 +814,7 @@ $(document).ready(function(){
 		});
 
 		$( ".materialtags_1" ).autocomplete({ // Автокомплит тканей
-			source: "autocomplete.php?do=textiletags",
+			source: "autocomplete.php?do=textiletags&etalon=1",
 			minLength: 2,
 			select: function( event, ui ) {
 				$(this).parent('div').find('select[name="Shipper"]').val(ui.item.SH_ID);
@@ -833,9 +833,10 @@ $(document).ready(function(){
 				}
 			}
 		});
+		$( ".materialtags_1.all" ).autocomplete( "option", "source", "autocomplete.php?do=textiletags" );
 
 		$( ".materialtags_2" ).autocomplete({ // Автокомплит пластиков
-			source: "autocomplete.php?do=plastictags",
+			source: "autocomplete.php?do=plastictags&etalon=1",
 			minLength: 2,
 			select: function( event, ui ) {
 				$(this).parent('div').find('select[name="Shipper"]').val(ui.item.SH_ID);
@@ -854,6 +855,7 @@ $(document).ready(function(){
 				}
 			}
 		});
+		$( ".materialtags_2.all" ).autocomplete( "option", "source", "autocomplete.php?do=plastictags" );
 
 		// При очистке поля с материалом - очищаем поставщика
 		$( ".materialtags_1, .materialtags_2" ).on("keyup", function() {

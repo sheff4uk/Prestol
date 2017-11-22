@@ -524,19 +524,18 @@ case "materials":
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			$oldmtid = mysqli_result($res,0,'MT_ID');
 
-			// Меняем в заказах старый id материала на новый
-			$query = "UPDATE OrdersDataDetail SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
-			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-
-			$query = "UPDATE OrdersDataBlank SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
-			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-
 			// У старого материала сохраняем ссылку на новый материал PMT_ID
 			$query = "UPDATE Materials SET PMT_ID = {$mtid} WHERE MT_ID = {$oldmtid}";
 			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query1: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			// Если старый материал был чьим то родителем, то заменяем у его потомков родителя на нового
 			$query = "UPDATE Materials SET PMT_ID = {$mtid} WHERE PMT_ID = {$oldmtid}";
 			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query1: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+
+			// Меняем в заказах старый id материала на новый
+			$query = "UPDATE OrdersDataDetail SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+			$query = "UPDATE OrdersDataBlank SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
+			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 			// Меняем на экране старый id материала на новый
 			echo "$('.mt{$oldmtid}').addClass('mt{$mtid}');";

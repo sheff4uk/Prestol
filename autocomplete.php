@@ -49,6 +49,7 @@ case "textiletags":
 			  FROM Materials MT
 			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 			  WHERE MT.PT_ID = 1 AND MT.Material LIKE '%{$_GET["term"]}%'
+			  ".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
 
 			  UNION
 
@@ -81,6 +82,7 @@ case "plastictags":
 			  FROM Materials MT
 			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 			  WHERE MT.PT_ID = 2 AND MT.Material LIKE '%{$_GET["term"]}%'
+			  ".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
 
 			  UNION
 
