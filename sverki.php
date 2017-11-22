@@ -223,8 +223,8 @@ else {
 }
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
-	$debet = $row["debet"] ? number_format($row["debet"], 0, '', ' ') : '';
-	$kredit = $row["kredit"] ? number_format($row["kredit"], 0, '', ' ') : '';
+	$debet = ($row["debet"] != '') ? number_format($row["debet"], 0, '', ' ') : '';
+	$kredit = ($row["kredit"] != '') ? number_format($row["kredit"], 0, '', ' ') : '';
 //	$number = str_pad($row["count"], 8, '0', STR_PAD_LEFT);
 	echo "<tr ".($row["del"] ? "class='del'" : "").">";
 	echo "<td class='txtright' style='color: #E74C3C;'><b>{$debet}</b></td>";
