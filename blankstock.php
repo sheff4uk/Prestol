@@ -271,7 +271,7 @@
 
 	<?
 			$query = "SELECT BS.BS_ID
-							,DATE_FORMAT(DATE(BS.Date), '%d.%m.%Y') Date
+							,DATE_FORMAT(DATE(BS.Date), '%d.%m.%y') Date
 							,DAY(BS.Date) day
 							,MONTH(BS.Date) month
 							,TIME(BS.Date) Time

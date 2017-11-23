@@ -328,7 +328,7 @@
 			<tbody>
 		<?
 			$query = "SELECT OP.OP_ID
-							,DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
+							,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
 							,ABS(OP.payment_sum) payment_sum
 							,OP.cost_name
 							,SH.Shop
@@ -619,7 +619,7 @@
 		<table style="width: 100%;" class="main_table">
 			<thead class="finance_head">
 				<tr>
-					<th width="55">Дата</th>
+					<th width="60">Дата</th>
 					<th width="60" class="th_filter">
 						<div class="th_name" id="type_label">Тип</div>
 						<i class="fa fa-filter fa-lg"></i>
@@ -746,6 +746,7 @@
 				$query = "SELECT SF.F_ID
 								,SF.date_sort
 								,SF.date
+								,SF.cost_date
 								,SF.type
 								,SF.money
 								,SF.account
@@ -767,7 +768,8 @@
 							FROM (
 								SELECT F.F_ID
 									,F.date date_sort
-									,DATE_FORMAT(F.date, '%d.%m.%Y') date
+									,DATE_FORMAT(F.date, '%d.%m.%y') date
+									,DATE_FORMAT(F.date, '%d.%m.%Y') cost_date
 									,IFNULL(FC.type, 0) type
 									,IFNULL(FC.type, -1) * F.money money
 									,FA.name account
@@ -798,7 +800,8 @@
 
 								SELECT F.F_ID
 									,F.date date_sort
-									,DATE_FORMAT(F.date, '%d.%m.%Y') date
+									,DATE_FORMAT(F.date, '%d.%m.%y') date
+									,DATE_FORMAT(F.date, '%d.%m.%Y') cost_date
 									,0 type
 									,F.money
 									,TFA.name account
@@ -858,7 +861,7 @@
 						echo "<td><span class='nowrap'>{$row["kontragent"]}</span></td>";
 						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
 						if( $row["is_edit"] and $row["receipt"] == 0 ) {
-							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["date"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a></td>";
+							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["cost_date"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a></td>";
 						}
 						else {
 							echo "<td></td>";

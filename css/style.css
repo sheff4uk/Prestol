@@ -95,6 +95,21 @@ tbody tr:nth-child(even){ /* Задаем стили для четных ряд�
 //	background: #e2f6f8;
 }
 
+.code {
+	background: #333;
+	color: #fff;
+	border-radius: 5px;
+	border: 2px solid #333;
+}
+a .code {
+	background: #428bca;
+	border-color: #428bca;
+}
+a:hover .code {
+	background: #D65C4F;
+	border-color: #D65C4F;
+}
+
 pre {
 	margin: 0;
 }

@@ -171,7 +171,7 @@ if( $payer ) {
 					,KA.Naimenovanie
 					,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
 					,PFI.count
-					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date_format
+					,DATE_FORMAT(PFI.date, '%d.%m.%y') date_format
 					,PFI.date
 					,USR.Name
 					,PFI.del
@@ -190,7 +190,7 @@ if( $payer ) {
 					,KA.Naimenovanie
 					,CONCAT('Оплата от покупателя, <b>', F.comment, '</b>') document
 					,NULL
-					,DATE_FORMAT(F.date, '%d.%m.%Y') date_format
+					,DATE_FORMAT(F.date, '%d.%m.%y') date_format
 					,F.date
 					,USR.Name
 					,NULL
@@ -210,7 +210,7 @@ else {
 					,KA.Naimenovanie
 					,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
 					,PFI.count
-					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date_format
+					,DATE_FORMAT(PFI.date, '%d.%m.%y') date_format
 					,PFI.date
 					,USR.Name
 					,PFI.del

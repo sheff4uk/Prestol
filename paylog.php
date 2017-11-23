@@ -357,7 +357,7 @@
 			<tbody>
 <?
 			$query = "SELECT BL.Balance
-							#,DATE_FORMAT(DATE(BL.Date), '%d.%m.%Y') Date
+							#,DATE_FORMAT(DATE(BL.Date), '%d.%m.%y') Date
 							,DAY(BL.Date) day
 							,MONTH(BL.Date) month
 							,TIME(BL.Date) Time
@@ -407,7 +407,7 @@
 	<?
 			$query = "SELECT PL.PL_ID
 							,IFNULL(PL.Link, '') Link
-							#,DATE_FORMAT(PL.ManDate, '%d.%m.%Y') ManDate
+							#,DATE_FORMAT(PL.ManDate, '%d.%m.%y') ManDate
 							,DAY(PL.Date) day
 							,MONTH(PL.Date) month
 							,TIME(PL.Date) Time

@@ -290,11 +290,11 @@
 
 		$query = "SELECT OD.Code
 						,OD.ClientName
-						,DATE_FORMAT(OD.AddDate, '%d.%m.%Y') AddDate
+						,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 						,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
-						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
-						,DATE_FORMAT(OD.DelDate, '%d.%m.%Y') DelDate
+						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
+						,DATE_FORMAT(OD.DelDate, '%d.%m.%y') DelDate
 						,IFNULL(OD.SH_ID, 0) SH_ID
 						,IFNULL(SH.KA_ID, 0) KA_ID
 						,OD.OrderNumber
@@ -376,7 +376,7 @@
 			echo "<td><input type='text' name='StartDate' class='date from' value='{$StartDate}' date='{$StartDate}' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")." readonly ".( (in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable and $StartDate) ? "title='{$title}'" : "" ).">{$invoice}</td>";
 			?>
 
-			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date to' value='{$EndDate}' readonly ".((!$disabled and $editable) ? "" : "disabled").">")) ?></td>
+			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date to' value='{$EndDate}' readonly ".((!$disabled and $editable and $SH_ID) ? "" : "disabled").">")) ?></td>
 			<td>
 			<div class='shop_cell' id='<?=$id?>' style='box-shadow: 0px 0px 10px 10px <?=$CTColor?>;'>
 				<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")?>>
@@ -765,7 +765,7 @@ if( $id != "NULL" ) {
 							,OCL.old_value
 							,OCL.new_value
 							,IFNULL(USR.Name, 'СИСТЕМА') Name
-							,DATE_FORMAT(DATE(OCL.date_time), '%d.%m.%Y') Date
+							,DATE_FORMAT(DATE(OCL.date_time), '%d.%m.%y') Date
 							,DAY(OCL.date_time) day
 							,MONTH(OCL.date_time) month
 							,YEAR(OCL.date_time) year
@@ -810,10 +810,10 @@ if( $id != "NULL" ) {
 							,OM.Message
 							,OM.priority
 							,USR.Name
-							,DATE_FORMAT(DATE(OM.date_time), '%d.%m.%Y') Date
+							,DATE_FORMAT(DATE(OM.date_time), '%d.%m.%y') Date
 							,TIME(OM.date_time) Time
 							,IFNULL(RUSR.Name, '') read_user
-							,DATE_FORMAT(DATE(OM.read_time), '%d.%m.%Y') read_date
+							,DATE_FORMAT(DATE(OM.read_time), '%d.%m.%y') read_date
 							,TIME(OM.read_time) read_time
 							,OM.destination
 						FROM OrdersMessage OM

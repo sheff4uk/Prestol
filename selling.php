@@ -521,7 +521,7 @@
 				while( $row = mysqli_fetch_array($res) ) {
 					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 					$cache_sum = $cache_sum + $row["payment_sum"];
-					$cache_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : "<span>{$row["cost_name"]}</span>";
+					$cache_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></b>" : "<span>{$row["cost_name"]}</span>";
 					echo "<tr>";
 					echo "<td width='49'>{$row["payment_date_short"]}</td>";
 					echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
@@ -567,7 +567,7 @@
 					while( $row = mysqli_fetch_array($res) ) {
 						$sum_cost = $sum_cost + $row["payment_sum"];
 						$format_cost = number_format($row["payment_sum"], 0, '', ' ');
-						$cost_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b>" : "<span>{$row["cost_name"]}</span>";
+						$cost_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></b>" : "<span>{$row["cost_name"]}</span>";
 						echo "<tr>";
 						echo "<td width='49'>{$row["payment_date_short"]}</td>";
 						echo "<td width='70' class='txtright'><b>{$format_cost}</b></td>";
@@ -659,7 +659,7 @@
 						echo "<td width='49'>{$row["payment_date"]}</td>";
 						echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
-						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b></td>";
+						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></b></td>";
 						echo "<td width='140' class='nowrap'>{$row["terminal_payer"]}</td>";
 						echo "</tr>";
 					}
@@ -694,9 +694,9 @@
 						echo "<td width='49'><span class='nowrap'>{$row["reject_date"]}</span></td>";
 						echo "<td width='70' class='txtright'><b>{$format_old_price}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
-						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}#ord{$row["OD_ID"]}'>{$row["Code"]}</a></b></td>";
+						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></b></td>";
 						echo "<td width='120' style='color: #911;'>{$row["comment"]}</td>";
-						echo "<td width='22'><a href='#' onclick='if(confirm(\"Убрать заказ <b>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
+						echo "<td width='22'><a href='#' onclick='if(confirm(\"Убрать заказ <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
 					}
 					?>
@@ -732,8 +732,8 @@
 		<form method="get">
 		<thead>
 			<tr>
-				<th width="55">Дата отгрузки</th>
-				<th width="59">Код</th>
+				<th width="60">Дата отгрузки</th>
+				<th width="60">Код<br>Создан</th>
 				<th width="5%">Заказчик<br>Квитанция</th>
 				<th width="25%">Наименование</th>
 				<th width="15%">Материал</th>
@@ -777,8 +777,8 @@
 	<table class="main_table">
 		<thead>
 			<tr>
-				<th width="55"></th>
-				<th width="59"></th>
+				<th width="60"></th>
+				<th width="60"></th>
 				<th width="5%"></th>
 				<th width="25%"></th>
 				<th width="15%"></th>
@@ -800,9 +800,10 @@
 		<?
 		$query = "SELECT OD.OD_ID
 						,OD.Code
+						,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 						,IFNULL(OD.ClientName, '') ClientName
 						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
-						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%Y') ReadyDate
+						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
 						,OD.sell_comment
 						,OD.ReadyDate RD
 						,SH.SH_ID
@@ -908,7 +909,7 @@
 						<input type='hidden' name='OD_ID[]' form='print_selling' value='{$row["OD_ID"]}'>
 						<span>{$row["ReadyDate"]}</span>
 					</td>
-					<td>{$row["Code"]}</td>
+					<td><span><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>
 					<td><span>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>
 					<td><span class='nowrap'>{$row["Zakaz"]}</span></td>
 					<td><span class='nowrap material'>{$row["Material"]}</span></td>

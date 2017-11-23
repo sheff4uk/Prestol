@@ -13,11 +13,17 @@ session_start();
 
 	foreach ($_POST["tovar_tcena"] as $key => $value) {
 		if( $_POST["pt"][$key] > 0 ) {
-			$query = "UPDATE OrdersDataDetail SET opt_price = {$value}, author = {$_SESSION['id']} WHERE ODD_ID = {$_POST["item"][$key]}";
+			$query = "UPDATE OrdersDataDetail ODD
+						JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+						SET ODD.opt_price = IF(OD.PFI_ID IS NULL, {$value}, ODD.opt_price), ODD.author = {$_SESSION['id']}
+						WHERE ODD.ODD_ID = {$_POST["item"][$key]}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 		elseif( $_POST["pt"][$key] == '0' ) {
-			$query = "UPDATE OrdersDataBlank SET opt_price = {$value}, author = {$_SESSION['id']} WHERE ODB_ID = {$_POST["item"][$key]}";
+			$query = "UPDATE OrdersDataBlank ODB
+						JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
+						SET ODB.opt_price = IF(OD.PFI_ID IS NULL, {$value}, ODB.opt_price), ODB.author = {$_SESSION['id']}
+						WHERE ODB.ODB_ID = {$_POST["item"][$key]}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 

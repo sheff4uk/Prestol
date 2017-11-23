@@ -340,8 +340,8 @@
 					,				CT.City
 									,CT.Color
 									,SHP.title
-									,DATE_FORMAT(SHP.shipping_date, '%d.%m.%Y') shipping_date_format
-									,DATE_FORMAT(SHP.arrival_date, '%d.%m.%Y') arrival_date_format
+									,DATE_FORMAT(SHP.shipping_date, '%d.%m.%y') shipping_date_format
+									,DATE_FORMAT(SHP.arrival_date, '%d.%m.%y') arrival_date_format
 								FROM Shipment SHP
 								JOIN Cities CT ON CT.CT_ID = SHP.CT_ID".(in_array('shipment_view_city', $Rights) ? " AND CT.CT_ID = {$USR_City}" : "")."
 								WHERE SHP.shipping_date IS NULL OR DATEDIFF(NOW(), SHP.shipping_date) <= {$datediff}
@@ -481,10 +481,10 @@
 		<form id="main_filter_form" method='get' action='filter.php'>
 		<thead>
 		<tr>
-			<th width="59"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
+			<th width="60"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_CN' size='8' value='<?= $_SESSION["f_CN"] ?>' class='clienttags <?=($_SESSION["f_CN"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
-			<th width="5%"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>' class='<?=($_SESSION["f_SD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
-			<th width="5%"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>' class='<?=($_SESSION["f_ED"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
+			<th width="60"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>' class='<?=($_SESSION["f_SD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
+			<th width="60"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>' class='<?=($_SESSION["f_ED"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags <?=($_SESSION["f_SH"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_SH"] ?>'></th>
 <!--			<th width="40"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>' class="<?=($_SESSION["f_ON"] != "") ? "filtered" : ""?>"></th>-->
 			<th width="40"></th>
@@ -626,10 +626,10 @@
 		</div>
 		<thead>
 		<tr>
-			<th width="53"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код</label></th>
+			<th width="60"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код<br>Создан</label></th>
 			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик<br>Квитанция</label></th>
-			<th width="5%"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
-			<th width="5%"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br><?=($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))?></label></th>
+			<th width="60"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
+			<th width="60"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br><?=($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))?></label></th>
 			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
 			<th width="40"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">Мест</label></th>
 			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
@@ -656,10 +656,10 @@
 	<table class="main_table">
 		<thead style="">
 		<tr>
-			<th width="59"></th>
+			<th width="60"></th>
 			<th width="5%"></th>
-			<th width="5%"></th>
-			<th width="5%"></th>
+			<th width="60"></th>
+			<th width="60"></th>
 			<th width="5%"></th>
 			<th width="40"></th>
 			<th width="25%"></th>
@@ -759,9 +759,10 @@
 
 	$query = "SELECT OD.OD_ID
 					,OD.Code
+					,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 					,IFNULL(OD.ClientName, '') ClientName
-					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
-					,DATE_FORMAT(IFNULL(OD.DelDate, IFNULL(OD.ReadyDate, OD.EndDate)), '%d.%m.%Y') EndDate
+					,DATE_FORMAT(OD.StartDate, '%d.%m.%y') StartDate
+					,DATE_FORMAT(IFNULL(OD.DelDate, IFNULL(OD.ReadyDate, OD.EndDate)), '%d.%m.%y') EndDate
 					,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
 					,IFNULL(OD.SH_ID, 0) SH_ID
 					,IFNULL(SH.KA_ID, 0) KA_ID
@@ -807,7 +808,7 @@
 							   ,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), ".( $MT_IDs != "" ? "IF(ODD.MT_ID IN ({$MT_IDs}), ' ss', ''), " : "" )."IF(MT.removed=1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
 								CASE ODD.IsExist
 									WHEN 0 THEN 'bg-red'
-									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
+									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%y'))
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
@@ -841,7 +842,7 @@
 							   ,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), ".( $MT_IDs != "" ? "IF(ODB.MT_ID IN ({$MT_IDs}), ' ss', ''), " : "" )."IF(MT.removed=1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
 								CASE ODB.IsExist
 									WHEN 0 THEN 'bg-red'
-									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
+									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%y'))
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
@@ -881,16 +882,16 @@
 					break;
 			  }
 			  if( $_SESSION["f_CD"] != "" ) {
-				  $query .= " AND OD.Code LIKE '%{$_SESSION["f_CD"]}%'";
+				  $query .= " AND (OD.Code LIKE '%{$_SESSION["f_CD"]}%' OR DATE_FORMAT(OD.AddDate, '%d.%m.%y') LIKE '%{$_SESSION["f_CD"]}%')";
 			  }
 			  if( $_SESSION["f_CN"] != "" ) {
 				  $query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%')";
 			  }
 			  if( $_SESSION["f_SD"] != "" ) {
-				  $query .= " AND DATE_FORMAT(OD.StartDate, '%d.%m.%Y') LIKE '%{$_SESSION["f_SD"]}%'";
+				  $query .= " AND DATE_FORMAT(OD.StartDate, '%d.%m.%y') LIKE '%{$_SESSION["f_SD"]}%'";
 			  }
 			  if( $_SESSION["f_ED"] != "" ) {
-			  	$query .= " AND DATE_FORMAT(OD.EndDate, '%d.%m.%Y') LIKE '%{$_SESSION["f_ED"]}%'";
+			  	$query .= " AND DATE_FORMAT(OD.EndDate, '%d.%m.%y') LIKE '%{$_SESSION["f_ED"]}%'";
 			  }
 			  if( $_SESSION["f_SH"] != "" ) {
 				  $query .= " AND (CONCAT(CT.City, '/', SH.Shop) LIKE '%{$_SESSION["f_SH"]}%'";
@@ -974,7 +975,7 @@
 
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
 		echo "<tr id='ord{$row["OD_ID"]}'>";
-		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'>{$row["Code"]}</span></td>";
+		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>";
 		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>";
 
 		// Если заказ в накладной - на дате продажи ссылка на накладную
@@ -987,7 +988,7 @@
 
 		echo "<td><span>{$row["StartDate"]}{$invoice}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$row["Del"] and !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"])) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none;'></select></td>";
+		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$row["Del"] and !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"])) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
 		echo "<td><span></span></td>";
 
 		// Если есть запрет на редактирование или заказ в накладной - изделия не кликабельные

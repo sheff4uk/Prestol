@@ -463,9 +463,9 @@ case "read_message":
 	}
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
-	// Получаем статус статус сообщения
+	// Получаем статус сообщения
 	$query = "SELECT IFNULL(RUSR.Name, '') read_user
-					,DATE_FORMAT(DATE(OM.read_time), '%d.%m.%Y') read_date
+					,DATE_FORMAT(DATE(OM.read_time), '%d.%m.%y') read_date
 					,TIME(OM.read_time) read_time
 				FROM OrdersMessage OM
 				LEFT JOIN Users RUSR ON RUSR.USR_ID = OM.read_user
@@ -593,6 +593,7 @@ case "shipment":
 
 			$query = "SELECT OD.OD_ID
 							,OD.Code
+							,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 							,IFNULL(OD.ClientName, '') ClientName
 							,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
 							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
@@ -617,7 +618,7 @@ case "shipment":
 								,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
 									CASE ODD.IsExist
 										WHEN 0 THEN 'bg-red'
-										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
+										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%y'))
 										WHEN 2 THEN 'bg-green'
 										ELSE 'bg-gray'
 									END,
@@ -644,7 +645,7 @@ case "shipment":
 								,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
 									CASE ODB.IsExist
 										WHEN 0 THEN 'bg-red'
-										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
+										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%y'))
 										WHEN 2 THEN 'bg-green'
 										ELSE 'bg-gray'
 									END,
@@ -676,7 +677,7 @@ case "shipment":
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
 			$html .= "<table class='main_table' id='to_shipment'><thead><tr>";
-			$html .= "<th width='70'>Код</th>";
+			$html .= "<th width='70'>Код<br>Создан</th>";
 			$html .= "<th width='20%'>Заказчик [Продажа]-[Сдача]</th>";
 			$html .= "<th width='10%'>Салон</th>";
 			$html .= "<th width='30%'>Заказ</th>";
@@ -689,7 +690,7 @@ case "shipment":
 			while( $row = mysqli_fetch_array($res) ) {
 				$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
 				$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox hide' value='{$row["OD_ID"]}'>";
-				$html .= "<label for='ord_sh{$row["OD_ID"]}'".($row["checked"] == 'checked' ? "style='color: red;'" : "")."><b>{$row["Code"]}</b></label></td>";
+				$html .= "<label for='ord_sh{$row["OD_ID"]}'".($row["checked"] == 'checked' ? "style='color: red;'" : "")."><b class='code'>{$row["Code"]}</b></label><br><span>{$row["AddDate"]}</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["ClientName"]}<br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["Shop"]}</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
@@ -777,6 +778,7 @@ case "invoice":
 
 			$query = "SELECT OD.OD_ID
 							,OD.Code
+							,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 							,IFNULL(OD.ClientName, '') ClientName
 							,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
 							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
@@ -807,7 +809,7 @@ case "invoice":
 								,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
 									CASE ODD.IsExist
 										WHEN 0 THEN 'bg-red'
-										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
+										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%y'))
 										WHEN 2 THEN 'bg-green'
 										ELSE 'bg-gray'
 									END,
@@ -837,7 +839,7 @@ case "invoice":
 								,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'', IFNULL(MT.PT_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
 									CASE ODB.IsExist
 										WHEN 0 THEN 'bg-red'
-										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
+										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%y'))
 										WHEN 2 THEN 'bg-green'
 										ELSE 'bg-gray'
 									END,
@@ -873,7 +875,7 @@ case "invoice":
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
 			$html .= "<table class='main_table' id='to_invoice'><thead><tr>";
-			$html .= "<th width='70'>Код</th>";
+			$html .= "<th width='70'>Код<br>Создан</th>";
 			$html .= "<th width='20%'>Заказчик [Продажа]-[Сдача]</th>";
 			$html .= "<th width='10%'>Салон</th>";
 			$html .= "<th width='70'>Цена за единицу</th>";
@@ -887,7 +889,7 @@ case "invoice":
 			while( $row = mysqli_fetch_array($res) ) {
 				$html .= "<tr class='shop{$row["SH_ID"]}'>";
 				$html .= "<td><input type='checkbox' name='ord[]' id='ord_{$row["OD_ID"]}' class='chbox' value='{$row["OD_ID"]}'>";
-				$html .= "<label for='ord_{$row["OD_ID"]}'><b>{$row["Code"]}</b></label></td>";
+				$html .= "<label for='ord_{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></label><br><span>{$row["AddDate"]}</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["ClientName"]}<br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["Shop"]}</span></td>";
 				$html .= "<td>{$row["Price"]}</td>";
@@ -971,7 +973,7 @@ case "add_payment":
 
 	// Выводим список ранее внесенных платежей
 	$query = "SELECT OP.OP_ID
-					,DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
+					,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
 					,OP.payment_sum
 					,IF(IFNULL(OP.terminal_payer, '') = '', 0, 1) terminal
 					,OP.terminal_payer
@@ -1465,7 +1467,7 @@ case "material_list":
 
 	$query = "SELECT RPAD(MT.Material, {$length}, ' ') Material
 					,RPAD(CONCAT('- ', ROUND(ODD_ODB.MT_amount, 1), ' м.п.'), 12, ' ') MT_amount
-					,IF(ODD_ODB.MT_amount, DATE_FORMAT(ODD_ODB.order_date, '%d.%m.%Y'), '') order_date
+					,IF(ODD_ODB.MT_amount, DATE_FORMAT(ODD_ODB.order_date, '%d.%m.%y'), '') order_date
 				FROM Materials MT
 				JOIN (
 					SELECT MT_ID, MT_amount, order_date

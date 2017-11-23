@@ -223,8 +223,8 @@
 	$query = "SELECT OD.OD_ID
 					,OD.Code
 					,OD.ClientName
-					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
-					,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
+					,DATE_FORMAT(OD.StartDate, '%d.%m.%y') StartDate
+					,DATE_FORMAT(OD.EndDate, '%d.%m.%y') EndDate
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,OD.OrderNumber
@@ -264,7 +264,7 @@
 								,CONCAT('<div class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'{$product}\' mtid=\'', ODD.MT_ID, '\' class=\'mt', ODD.MT_ID, IF(MT.removed = 1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
 								CASE ODD.IsExist
 									WHEN 0 THEN 'bg-red'
-									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y'))
+									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%y'))
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
@@ -312,7 +312,7 @@
 								,CONCAT('<div class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'{$product}\' mtid=\'', ODB.MT_ID, '\' class=\'mt', ODB.MT_ID, IF(MT.removed = 1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
 								CASE ODB.IsExist
 									WHEN 0 THEN 'bg-red'
-									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%Y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y'))
+									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%y'))
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
@@ -357,7 +357,7 @@
 		echo "<td><span class='nowrap'>{$row["Material"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Shipper"]}</span></td>";
 		if( $product == 1 ) echo "<td>{$row["MT_amount"]}</td>";
-		echo "<td><a href='orderdetail.php?id={$row["OD_ID"]}' class='nowrap'>{$row["Code"]}</a></td>";
+		echo "<td><a href='orderdetail.php?id={$row["OD_ID"]}' class='nowrap'><b class='code'>{$row["Code"]}</b></a></td>";
 		// Если заказ принят
 		if( $row["confirmed"] == 1 ) {
 			$class = 'confirmed';
