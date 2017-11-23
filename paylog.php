@@ -467,7 +467,7 @@
 					$Code = mysqli_result($subres,0,'Code');
 					$OD_ID = mysqli_result($subres,0,'OD_ID');
 					$confirmed = mysqli_result($subres,0,'confirmed');
-					echo "<a href='orderdetail.php?id={$OD_ID}' target='_blank' title='Посмотреть заказ.'><b>|{$Code}|</b></a> ";
+					echo "<a href='orderdetail.php?id={$OD_ID}' target='_blank' title='Посмотреть заказ.'><b class='code'>{$Code}</b></a> ";
 				}
 				echo "{$row["Comment"]}</span></td>";
 				echo "<td>";
