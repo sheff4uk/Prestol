@@ -463,8 +463,8 @@
 			<td><textarea name='Comment' rows='6' cols='15' <?=((!$disabled and $editable) ? "" : "disabled")?>><?=$Comment?></textarea></td>
 			<td style="text-align: center;">
 				<?
-				// Если есть право редактированя - показываем кнопку клонирования
-				if( in_array('order_add', $Rights) ) {
+				// Если есть право редактирования и заказ не чужой - показываем кнопку клонирования
+				if( in_array('order_add', $Rights) and $editable ) {
 					echo "<p><a href='#' onclick='if(confirm(\"<b>Подтвердите клонирование заказа!</b>\", \"clone_order.php?id={$id}&author={$_SESSION['id']}&confirmed=".(in_array('order_add_confirm', $Rights) ? 1 : 0)."\")) return false;' title='Клонировать'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></a></p>";
 				}
 				// Если розничный заказ - показываем кнопку перехода в реализацию
