@@ -471,8 +471,8 @@
 				if( $retail and !$is_lock and !$Del and $editable ) {
 					echo "<p><a href='/selling.php?CT_ID={$CT_ID}#ord{$id}' title='Перейти в реализацию'><i class='fa fa-money fa-2x' aria-hidden='true'></i></a></p>";
 				}
-				// Если заказ в отгрузке - показываем кнопку перехода в отгрузку
-				if( $SHP_ID ) {
+				// Если заказ в отгрузке и заказ не чужой - показываем кнопку перехода в отгрузку
+				if( $SHP_ID and $editable ) {
 					echo "<p><a href='/?shpid={$SHP_ID}#ord{$id}' title='Перейти в отгрузку'><i class='fa fa-truck fa-2x' aria-hidden='true'></i></a></p>";
 				}
 				?>
