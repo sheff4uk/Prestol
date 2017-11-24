@@ -177,8 +177,10 @@
 			<th width="100">Работник</th>
 			<?
 				// Получаем производственный календарь
-				$j = @file_get_contents('http://basicdata.ru/api/json/calend/');
-				$data = json_decode($j, true);
+				if( !isset($_SESSION["calendar"]) ) {
+					$_SESSION["calendar"] = @file_get_contents('http://basicdata.ru/api/json/calend/');
+				}
+				$data = json_decode($_SESSION["calendar"], true);
 
 				$i = 1;
 				$workdays = 0;

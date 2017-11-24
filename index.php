@@ -13,25 +13,6 @@
 	$location = $_SERVER['REQUEST_URI'];
 	$_SESSION["location"] = $location;
 
-//	// Формируем выпадающее меню салонов в таблицу
-//	$query = "SELECT SH.SH_ID
-//					,CONCAT(CT.City, '/', SH.Shop) AS Shop
-//					,CT.Color
-//				FROM Shops SH
-//				JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-//				WHERE CT.CT_ID IN ({$USR_cities})
-//					".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-//				ORDER BY CT.City, SH.Shop";
-//	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//	$select_shops = "<select class='select_shops' style='display: none;'>";
-//	if( in_array('order_add_confirm', $Rights) ) {
-//		$select_shops .= "<option value='0' style='background: #999;'>Свободные</option>";
-//	}
-//	while( $row = mysqli_fetch_array($res) ) {
-//		$select_shops .= "<option value='{$row["SH_ID"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
-//	}
-//	$select_shops .= "</select>";
-
 	// Добавление в базу нового заказа
 	if( isset($_POST["Shop"]) )
 	{
@@ -41,7 +22,7 @@
 		}
 		$AddDate = date("Y-m-d");
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
-		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
+		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : '\''.date( "Y-m-d", strtotime($_SESSION["end_date"]) ).'\'';
 		$ClientName = mysqli_real_escape_string( $mysqli, $_POST["ClientName"] );
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 		$OrderNumber = mysqli_real_escape_string( $mysqli, $_POST["OrderNumber"] );
@@ -363,6 +344,27 @@
 	</div>
 	<?
 	}
+	// Отсчитываем дату сдачи - 30 раб. дней и записываем в сессию
+	if( !isset($_SESSION["end_date"]) or $_SESSION["today"] != date('d.m.Y') ) {
+		$_SESSION["today"] = date('d.m.Y');
+		$end_date = date_create(date('Y-m-d'));
+		$j = @file_get_contents('http://basicdata.ru/api/json/calend/');
+		$data = json_decode($j, true);
+		$working_days = 0;
+		while ($working_days < 30) {
+			date_modify($end_date, '+1 day');
+			$day_of_week = date('N', strtotime(date_format($end_date, 'd.m.Y')));
+			$year = date('Y', strtotime(date_format($end_date, 'd.m.Y')));
+			$month = date('n', strtotime(date_format($end_date, 'd.m.Y')));
+			$day = date('j', strtotime(date_format($end_date, 'd.m.Y')));
+			if( empty($data["data"][$year]) ) --$year;
+			$is_working = $data["data"][$year][$month][$day]["isWorking"];
+			if ( !(($day_of_week >= 6 and $is_working !== 0) or ($is_working === 2)) ) {
+				++$working_days;
+			}
+		}
+		$_SESSION["end_date"] = date_format($end_date, 'd.m.Y');
+	}
 	?>
 
 	<!-- Форма добавления заказа -->
@@ -407,11 +409,12 @@
 				</div>
 				<div id="StartDate">
 					<label>Дата продажи:</label>
-					<input type='text' name='StartDate' class='date from' size='12' value='<?//=date("d.m.Y") ?>' autocomplete='off'>
+					<input type='text' name='StartDate' class='date' size='12' readonly autocomplete='off'>
 				</div>
-				<div>
+				<div id="EndDate">
 					<label>Дата сдачи:</label>
-					<input type='text' name='EndDate' class='date to' size='12' autocomplete='off'>
+					<input type='text' name='EndDate' class='date' size='12' readonly <?=(in_array('order_add_confirm', $Rights) ? "" : "disabled")?> autocomplete='off'>
+					<span style='color: #911;'>+30 рабочих дней</span>
 				</div>
 				<div>
 					<p style='color: #911;'>ВНИМАНИЕ! Патина указывается у каждого изделия персонально в специальной графе "патина".</p>
@@ -1280,7 +1283,15 @@
 
 		// Если выбран розничный салон - показываем доп поля в форме добавления заказа
 		$('#order_form select[name="Shop"]').on("change", function() {
+			var value = $(this).val();
 			var retail = $('#order_form select[name="Shop"] option:selected').attr('retail');
+			if( value > 0 ) {
+				$('#order_form #EndDate').show('fast');
+			}
+			else {
+				$('#order_form #EndDate').hide('fast');
+			}
+
 			if( retail == 1 ) {
 				$('#order_form #ClientName').show('fast');
 					$('#order_form #ClientName input').attr('disabled', false);
@@ -1363,12 +1374,17 @@
 		// Открытие диалога печати
 		$("#toprint").printPage();
 
+		// Ограничение дат продажи и сдачи
+		$( '#order_form fieldset input[name="StartDate"]' ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
+		$( '#order_form fieldset input[name="EndDate"]' ).datepicker( "option", "minDate", "<?=( date('d.m.Y') )?>" );
+
 		// Кнопка добавления заказа
 		$('#add_btn').click( function() {
 			// Очистка формы
 			$('#order_form fieldset select').val('').trigger('change');
 			$('#order_form fieldset input').val('');
 			$('#order_form fieldset textarea').val('');
+			$('#order_form fieldset input[name="EndDate"]').val('<?=$_SESSION["end_date"]?>');
 
 			// Скрытие полей
 			$('#order_form #ClientName').hide('fast');
