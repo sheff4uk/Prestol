@@ -173,11 +173,10 @@ if( $payer ) {
 					,PFI.count
 					,DATE_FORMAT(PFI.date, '%d.%m.%y') date_format
 					,PFI.date
-					,USR.Name
+					,USR_Name(PFI.USR_ID) Name
 					,PFI.del
 					,PFI.rtrn
 				FROM PrintFormsInvoice PFI
-				LEFT JOIN Users USR ON USR.USR_ID = PFI.USR_ID
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
 				WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID = {$payer}
 
@@ -192,11 +191,10 @@ if( $payer ) {
 					,NULL
 					,DATE_FORMAT(F.date, '%d.%m.%y') date_format
 					,F.date
-					,USR.Name
+					,USR_Name(F.author) Name
 					,NULL
 					,1
 				FROM Finance F
-				LEFT JOIN Users USR ON USR.USR_ID = F.author
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
 				WHERE YEAR(F.date) = {$year} AND KA.KA_ID = {$payer}
 
@@ -212,11 +210,10 @@ else {
 					,PFI.count
 					,DATE_FORMAT(PFI.date, '%d.%m.%y') date_format
 					,PFI.date
-					,USR.Name
+					,USR_Name(PFI.USR_ID) Name
 					,PFI.del
 					,PFI.rtrn
 				FROM PrintFormsInvoice PFI
-				LEFT JOIN Users USR ON USR.USR_ID = PFI.USR_ID
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
 				WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID IN ({$KA_IDs})
 				ORDER BY PFI.date DESC, PFI.PFI_ID DESC";

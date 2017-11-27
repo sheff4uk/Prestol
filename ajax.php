@@ -464,12 +464,11 @@ case "read_message":
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 	// Получаем статус сообщения
-	$query = "SELECT IFNULL(RUSR.Name, '') read_user
+	$query = "SELECT IFNULL(USR_Name(OM.read_user), '') read_user
 					,DATE_FORMAT(DATE(OM.read_time), '%d.%m.%y') read_date
 					,TIME(OM.read_time) read_time
 				FROM OrdersMessage OM
-				LEFT JOIN Users RUSR ON RUSR.USR_ID = OM.read_user
-				WHERE OM_ID = {$id}";
+				WHERE OM.OM_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$read_user = mysqli_result($res,0,'read_user');
 	$read_date = mysqli_result($res,0,'read_date');
@@ -978,11 +977,10 @@ case "add_payment":
 					,IF(IFNULL(OP.terminal_payer, '') = '', 0, 1) terminal
 					,OP.terminal_payer
 					,IFNULL(OP.FA_ID, 0) FA_ID
-					,USR.Name
+					,USR_Name(OP.author) Name
 					,IF(OP.FA_ID IS NOT NULL AND OP.terminal_payer IS NULL, FA.name, '') account
 					,SH.Shop
 				FROM OrdersPayment OP
-				LEFT JOIN Users USR ON USR.USR_ID = OP.author
 				LEFT JOIN FinanceAccount FA ON FA.FA_ID = OP.FA_ID
 				LEFT JOIN Shops SH ON SH.SH_ID = OP.SH_ID
 				WHERE OD_ID = {$OD_ID} AND IFNULL(payment_sum, 0) != 0

@@ -283,13 +283,12 @@
 							,WD.WD_ID
 							,BL.BL_ID
 							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
-							,USR.Name
+							,USR_Name(BS.author) Name
 							,PBS.BS_ID is_parent
 							,BS.PBS_ID
 						FROM BlankStock BS
 						LEFT JOIN BlankStock PBS ON PBS.PBS_ID = BS.BS_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
-						LEFT JOIN Users USR ON USR.USR_ID = BS.author
 						LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
 						LEFT JOIN (
 							SELECT BL.BL_ID, BLL.BLL_ID

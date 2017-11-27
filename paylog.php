@@ -419,10 +419,9 @@
 							,IF(PL.Archive = 1, 'pl-archive', '') Archive
 							,FA.bank
 							,FA.FA_ID
-							,USR.Name
+							,USR_Name(PL.author) Name
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
-						LEFT JOIN Users USR ON USR.USR_ID = PL.author
 						LEFT JOIN FinanceAccount FA ON FA.FA_ID = PL.FA_ID
 						WHERE
 							#DATEDIFF(NOW(), PL.Date) <= {$datediff} AND

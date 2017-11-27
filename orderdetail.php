@@ -764,14 +764,13 @@ if( $id != "NULL" ) {
 							,OCL.field_name
 							,OCL.old_value
 							,OCL.new_value
-							,IFNULL(USR.Name, 'СИСТЕМА') Name
+							,IFNULL(USR_Name(OCL.author), 'СИСТЕМА') Name
 							,DATE_FORMAT(DATE(OCL.date_time), '%d.%m.%y') Date
 							,DAY(OCL.date_time) day
 							,MONTH(OCL.date_time) month
 							,YEAR(OCL.date_time) year
 							,TIME(OCL.date_time) Time
 						FROM OrdersChangeLog OCL
-						LEFT JOIN Users USR ON USR.USR_ID = OCL.author
 						WHERE (table_key = 'OD_ID' AND table_value = {$id}) OR (table_key = 'ODD_ID' AND table_value IN (SELECT ODD_ID FROM OrdersDataDetail WHERE OD_ID = {$id})) OR (table_key = 'ODB_ID' AND table_value IN (SELECT ODB_ID FROM OrdersDataBlank WHERE OD_ID = {$id}))
 						ORDER BY OCL.OCL_ID DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -809,16 +808,14 @@ if( $id != "NULL" ) {
 			$query = "SELECT OM.OM_ID
 							,OM.Message
 							,OM.priority
-							,USR.Name
+							,USR_Name(OM.author) Name
 							,DATE_FORMAT(DATE(OM.date_time), '%d.%m.%y') Date
 							,TIME(OM.date_time) Time
-							,IFNULL(RUSR.Name, '') read_user
+							,IFNULL(USR_Name(OM.read_user), '') read_user
 							,DATE_FORMAT(DATE(OM.read_time), '%d.%m.%y') read_date
 							,TIME(OM.read_time) read_time
 							,OM.destination
 						FROM OrdersMessage OM
-						JOIN Users USR ON USR.USR_ID = OM.author
-						LEFT JOIN Users RUSR ON RUSR.USR_ID = OM.read_user
 						WHERE OM.OD_ID = {$id}
 						ORDER BY OM.OM_ID DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

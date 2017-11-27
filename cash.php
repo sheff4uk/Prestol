@@ -786,14 +786,13 @@
 									,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
 									,F.FA_ID account_filter
 									,0 receipt
-									,USR.Name author
-									,USR.USR_ID
+									,USR_Name(F.author) author
+									,F.author USR_ID
 								FROM Finance F
 								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 								LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
 								LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
-								LEFT JOIN Users USR ON USR.USR_ID = F.author
 								WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= STR_TO_DATE('{$cash_to}', '%d.%m.%Y')
 
 								UNION ALL
@@ -818,13 +817,12 @@
 									,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
 									,F.to_account account_filter
 									,1 receipt
-									,USR.Name author
-									,USR.USR_ID
+									,USR_Name(F.author) author
+									,F.author USR_ID
 								FROM Finance F
 								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 								LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
-								LEFT JOIN Users USR ON USR.USR_ID = F.author
 								WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= STR_TO_DATE('{$cash_to}', '%d.%m.%Y') AND F.to_account IS NOT NULL
 							) SF
 							WHERE 1
