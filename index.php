@@ -357,7 +357,7 @@
 			$year = date('Y', strtotime(date_format($end_date, 'd.m.Y')));
 			$month = date('n', strtotime(date_format($end_date, 'd.m.Y')));
 			$day = date('j', strtotime(date_format($end_date, 'd.m.Y')));
-			if( empty($data["data"][$year]) ) {$year = $year - 11};
+			if( empty($data["data"][$year]) ) {$year = $year - 11;}
 			$is_working = $data["data"][$year][$month][$day]["isWorking"];
 			if ( !(($day_of_week >= 6 and $is_working !== 0) or ($is_working === 2)) ) {
 				++$working_days;
