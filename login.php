@@ -53,10 +53,45 @@
 		else {
 			//если существует, то сверяем пароли
 			if ($myrow['Password']==$passwd) {
-				//если пароли совпадают, то запускаем пользователю сессию
+
+				//если у пользователя указан телефон - нужно дождаться с него звонка
+				if($myrow['phone']) {
+					$body = file_get_contents("https://sms.ru/callcheck/add?api_id=AF15C40F-52ED-156A-2013-C33A6A15003E&phone=".($myrow['phone'])."&json=1");
+					$json = json_decode($body);
+					if ($json) { // Получен ответ от сервера
+						if ($json->status == "OK") { // Запрос выполнился
+							// Сохраняем check_id
+							$check_id = $json->check_id;
+							// В цикле опрашиваем SMS.RU чтобы узнать статус звонка
+							for( $i=0; $i<12; $i++ ) {
+								sleep(5);
+								// Проверка статуса звонка
+								$body = file_get_contents("https://sms.ru/callcheck/status?api_id=AF15C40F-52ED-156A-2013-C33A6A15003E&check_id=".($check_id)."&json=1");
+								$json = json_decode($body);
+								if ($json) { // Получен ответ от сервера
+									if ($json->status == "OK") { // Запрос выполнился
+										$check_status = $json->check_status;
+										if( $check_status == 401 ) break;
+									}
+								}
+							}
+							// Если нужный ответ не был получен - останавливаем скрипт
+							if( $check_status != 401 ) {
+								exit ("Время ожидания статуса звонка истекло.");
+							}
+						}
+						else {
+							exit("Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...)<br>Код ошибки: $json->status_code<br>Текст ошибки: $json->status_text");
+						}
+					} else {
+						exit("Запрос не выполнился Не удалось установить связь с сервером.");
+					}
+				}
+
 				$_SESSION['login']=$myrow['Login'];
 				$_SESSION['id']=$myrow['USR_ID'];
 				$_SESSION['name']=$myrow['Name'];
+
 				if( isset($_GET["location"]) ) {
 					exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
 				}
