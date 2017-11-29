@@ -676,7 +676,7 @@ case "shipment":
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
 			$html .= "<table class='main_table' id='to_shipment'><thead><tr>";
-			$html .= "<th width='70'>Код<br>Создан</th>";
+			$html .= "<th width='75'>Код<br>Создан</th>";
 			$html .= "<th width='20%'>Заказчик [Продажа]-[Сдача]</th>";
 			$html .= "<th width='10%'>Салон</th>";
 			$html .= "<th width='30%'>Заказ</th>";
@@ -874,7 +874,7 @@ case "invoice":
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
 			$html .= "<table class='main_table' id='to_invoice'><thead><tr>";
-			$html .= "<th width='70'>Код<br>Создан</th>";
+			$html .= "<th width='75'>Код<br>Создан</th>";
 			$html .= "<th width='20%'>Заказчик [Продажа]-[Сдача]</th>";
 			$html .= "<th width='10%'>Салон</th>";
 			$html .= "<th width='70'>Цена за единицу</th>";
