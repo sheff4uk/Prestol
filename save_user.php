@@ -41,6 +41,7 @@
 		exit ("Пароль должен состоять не менее чем из 3 символов и не более чем из 15.");
 	}
 
+	$hash = password_hash($passwd, PASSWORD_BCRYPT);
 	$passwd = md5($passwd);//шифруем пароль
 	$passwd = strrev($passwd);// для надежности добавим реверс
 	$passwd = $passwd."9di63";
@@ -53,7 +54,7 @@
 		exit ("Извините, введённый вами логин уже зарегистрирован. Введите другой логин.");
 	}
 	// если такого нет, то сохраняем данные
-	$query = "INSERT INTO Users (Login, Password, Name, Email, Date) VALUES('{$login}', '{$passwd}', '{$name}', '{$email}', NOW())";
+	$query = "INSERT INTO Users (Login, Password, password_hash, Name, Email, Date) VALUES('{$login}', '{$passwd}', '{$hash}', '{$name}', '{$email}', NOW())";
 	$result2 = mysqli_query( $mysqli, $query );
 	// Проверяем, есть ли ошибки
 	if ($result2=='TRUE')

@@ -1,4 +1,13 @@
 <?
+//$password = "Leonardo";
+//$hash = password_hash($password, PASSWORD_BCRYPT);
+//echo $hash;
+//echo "<br>";
+//if (password_verify('Leonardo', $hash)) {
+//	echo 'Пароль правильный!';
+//} else {
+//	echo 'Пароль неправильный.';
+//}
 phpinfo();
 //	$from = "admin@fabrikaprestol.ru";
 //	$to = "sheff4uk@gmail.com";

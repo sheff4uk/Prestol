@@ -38,6 +38,7 @@
 			exit("Вы набрали логин или пароль неверно 3 раза. Подождите 15 минут до следующей попытки.");
 		}
 
+		$hash = password_hash($passwd, PASSWORD_BCRYPT);
 		$passwd = md5($passwd);//шифруем пароль
 		$passwd = strrev($passwd);// для надежности добавим реверс
 		$passwd = $passwd."9di63";
@@ -45,7 +46,7 @@
 		$query = "SELECT * FROM Users WHERE Login='{$login}' AND Activation = 1";
 		$result = mysqli_query( $mysqli, $query ); //извлекаем из базы все данные о пользователе с введенным логином
 		$myrow = mysqli_fetch_array($result);
-		if (empty($myrow['Password']))
+		if (empty($myrow['USR_ID']))
 		{
 			//если пользователя с введенным логином не существует
 			exit ("Извините, введённый Вами логин неверный. Или Ваша учетная запись не активирована. <a href='/'>Главная страница</a>");
@@ -53,6 +54,7 @@
 		else {
 			//если существует, то сверяем пароли
 			if ($myrow['Password']==$passwd) {
+				mysqli_query ($mysqli, "UPDATE Users SET password_hash = '{$hash}' WHERE USR_ID = {$myrow['USR_ID']}");
 
 				//если у пользователя указан телефон - нужно дождаться с него звонка
 				if($myrow['phone']) {
