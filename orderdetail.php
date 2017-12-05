@@ -839,7 +839,7 @@ if( $id != "NULL" ) {
 				echo "<tr".($row["priority"] ? " style='font-weight: bold;'" : "").">";
 				echo "<td>{$letter_btn}</td>";
 				echo "<td>".(src_url($row["Message"]))."</td>";
-				echo "<td class='nowrap'>{$row["Date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
+				echo "<td>{$row["Date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
 				echo "</tr>";
 			}
 		?>
