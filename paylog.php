@@ -396,7 +396,7 @@
 				<th width='60'>Время</th>
 				<th width='30%'>Работник</th>
 				<th width='60'>Начислено</th>
-				<th width='60'>Выдано</th>
+				<th width='75'>Выдано</th>
 				<th width='70%'>Примечание</th>
 				<th width='25'></th>
 				<th width='25'></th>
