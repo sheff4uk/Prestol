@@ -596,7 +596,7 @@
 		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
 		echo "<td><span>{$row["Model"]}<br>".($row["Size"] != "" ? "{$row["Size"]}<br>" : "").($row["Form"] != "" ? "{$row["Form"]}<br>" : "").($row["Mechanism"] != "" ? "{$row["Mechanism"]}<br>" : "")."</span></td>";
 		echo "<td>{$row["patina"]}</td>";
-		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".($disabled ? "step_disabled" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps" : "")." nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps" : "")." nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
 			case "0":
@@ -683,7 +683,7 @@
 		echo "<td>{$row["Amount"]}</td>";
 		echo "<td>{$row["Name"]}</td>";
 		echo "<td>{$row["patina"]}</td>";
-		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".($disabled ? "step_disabled" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
+		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
 			case "0":

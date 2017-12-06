@@ -1020,7 +1020,7 @@
 					break;
 			}
 		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 ) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
-		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".($disabled ? "step_disabled" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
+		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		// Если заказ принят
 		if( $row["confirmed"] == 1 ) {

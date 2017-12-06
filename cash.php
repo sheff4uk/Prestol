@@ -917,7 +917,7 @@
 			</div>
 			<br>
 			<div class="field">
-				<label for="account">Счет:</label><br>
+				<label for="account">Счёт:</label><br>
 				<select required name="account" id="account" style="width: 140px;">
 					<option value="">-=Выберите счёт=-</option>
 						<?

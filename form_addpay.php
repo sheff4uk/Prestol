@@ -56,29 +56,38 @@
 				<input required type='number' name='Pay' min='0' style="text-align:right; width: 90px;">
 			</div>
 			<div id="wr_account">
-				<label>Касса:</label>
+				<label>Счёт:</label>
 				<select name="account" id="account">
 					<option value="">-=Выберите счёт=-</option>
-					<optgroup label="Нал">
 						<?
-						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
-						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						while( $row = mysqli_fetch_array($res) )
-						{
-							echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+						if( !in_array('finance_account', $Rights) ) {
+							echo "<optgroup label='Нал'>";
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+							}
+							echo "</optgroup>";
+							echo "<optgroup label='Безнал'>";
+
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+							}
+							echo "</optgroup>";
+						}
+						else {
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]}";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+							}
 						}
 						?>
-					</optgroup>
-					<optgroup label="Безнал">
-						<?
-						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1";
-						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						while( $row = mysqli_fetch_array($res) )
-						{
-							echo "<option value='{$row["FA_ID"]}'>{$row["name"]}</option>";
-						}
-						?>
-					</optgroup>
 				</select>
 			</div>
 			<div>

@@ -24,7 +24,9 @@ case "steps":
 						,IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), '') Size
 						,CONCAT(PF.Form, ' ', PME.Mechanism) Form
 						,ODD.Amount
+						,OD.ReadyDate
 				  FROM OrdersDataDetail ODD
+				  LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 				  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 				  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 				  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
@@ -35,6 +37,7 @@ case "steps":
 		$size = mysqli_result($res,0,'Size');
 		$form = mysqli_result($res,0,'Form');
 		$amount = mysqli_result($res,0,'Amount');
+		$ready_date = mysqli_result($res,0,'ReadyDate');
 		$product = "<h3><b style=\'font-size: 2em; margin-right: 20px;\'>{$amount}</b>{$model}&nbsp;{$size}&nbsp;{$form}</h3>";
 
 		// Получение информации об этапах производства
@@ -50,12 +53,15 @@ case "steps":
 	else {
 		$query = "SELECT IFNULL(BL.Name, ODB.Other) Name
 						,ODB.Amount
+						,OD.ReadyDate
 				  FROM OrdersDataBlank ODB
+				  LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
 				  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 				  WHERE ODB.ODB_ID = $odb_id";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		$model = mysqli_result($res,0,'Name');
 		$amount = mysqli_result($res,0,'Amount');
+		$ready_date = mysqli_result($res,0,'ReadyDate');
 		$product = "<h3><b style=\'font-size: 2em; margin-right: 20px;\'>{$amount}</b>{$model}<h3>";
 
 		// Получение информации об этапах производства
@@ -80,7 +86,7 @@ case "steps":
 	while( $row = mysqli_fetch_array($result) )
 	{
 		// Формирование дропдауна со списком рабочих. Сортировка по релевантности.
-		$selectworker = "<option value=\'\'>-=Выберите работника=-</option>";
+		$selectworker = $ready_date ? "" : "<option value=\'\'>-=Выберите работника=-</option>";
 		if( $other == 0 ) {
 			$query = "SELECT WD.WD_ID, WD.Name, SUM(IFNULL(ODS.Amount, 0)) CNT
 					  FROM WorkersData WD
@@ -130,8 +136,8 @@ case "steps":
 			$text .= "<tr><td class=\'stage\'><b>{$row["Step"]}</b></td>";
 			$text .= "<td><select name=\'WD_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\'>{$selectworker}</select></td>";
 			$text .= "<td><input type=\'number\' min=\'0\' name=\'Tariff{$row["ST_ID"]}\' class=\'tariff\' value=\'{$row["Tariff"]}\'></td>";
-			$text .= "<td><input type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}><label for=\'IsReady{$row["ST_ID"]}\'></label></td>";
-			$text .= "<td><input type=\'checkbox\' name=\'Visible{$row["ST_ID"]}\' value=\'1\' {$row["Visible"]}></td></tr>";
+			$text .= "<td><input ".($ready_date ? "onclick=\'return false;\'" : "")." type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}><label for=\'IsReady{$row["ST_ID"]}\'></label></td>";
+			$text .= "<td><input ".($ready_date ? "onclick=\'return false;\'" : "")." type=\'checkbox\' name=\'Visible{$row["ST_ID"]}\' value=\'1\' {$row["Visible"]}></td></tr>";
 		}
 	}
 	$text .= "</tbody></table>";

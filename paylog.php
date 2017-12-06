@@ -18,10 +18,14 @@
 	$lastyear = $month == 1 ? $year - 1 : $year;
 	$lastmonth = $month == 1 ? 12 : $month - 1;
 
+	//Узнаем дефолтный счет для пользователя
+	$query = "SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION['id']} LIMIT 1";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$account = mysqli_result($res,0,'FA_ID');
 ?>
 	<p>
 		<button class='edit_pay' sign='' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Начислить</button>
-		<button class='edit_pay' sign='-' account <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Выдать</button>
+		<button class='edit_pay' sign='-' account='<?=$account?>' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Выдать</button>
 	</p>
 
 	<? include "form_addpay.php"; ?>
