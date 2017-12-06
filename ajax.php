@@ -1198,7 +1198,7 @@ case "create_shop_select":
 						,CT.Color
 					FROM Shops SH
 					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-					WHERE CT.CT_ID = {$CT_ID}
+					WHERE CT.CT_ID IN (".($CT_ID ? $CT_ID : $USR_cities).")
 						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 
