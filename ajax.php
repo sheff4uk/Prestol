@@ -1016,8 +1016,7 @@ case "add_payment":
 		$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'>";
 		$html .= "<option value=''>{$Shop}</option>";
 		if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
-			$query = "SELECT FA.FA_ID, FA.name, IF(FA.USR_ID = {$_SESSION["id"]}, 'selected', '') selected FROM FinanceAccount FA";
-			$query .= in_array('finance_account', $Rights) ? " WHERE FA.USR_ID = {$_SESSION["id"]}" : "";
+			$query = "SELECT FA.FA_ID, FA.name, IF(FA.USR_ID = {$_SESSION["id"]}, 'selected', '') selected FROM FinanceAccount FA WHERE FA.bank IS NULL AND FA.USR_ID = {$_SESSION["id"]}";
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			while( $row = mysqli_fetch_array($res) ) {
 				// Если на производстве, то по дефолту касса пользователя
