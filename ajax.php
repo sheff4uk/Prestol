@@ -1150,6 +1150,7 @@ case "create_shop_select":
 
 	// Узнаём отгрузку у заказа, дату отгрузки, регион, накладную, плательщика
 	$query = "SELECT IFNULL(OD.SHP_ID, 0) SHP_ID
+					,OD.StartDate
 					,OD.ReadyDate
 					,SH.CT_ID
 					,OD.PFI_ID
@@ -1161,6 +1162,7 @@ case "create_shop_select":
 				WHERE OD_ID = {$OD_ID}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$SHP_ID = mysqli_result($res,0,'SHP_ID');
+	$StartDate = mysqli_result($res,0,'StartDate');
 	$ReadyDate = mysqli_result($res,0,'ReadyDate');
 	$CT_ID = mysqli_result($res,0,'CT_ID');
 	$PFI_ID = mysqli_result($res,0,'PFI_ID');
@@ -1176,7 +1178,7 @@ case "create_shop_select":
 				JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 				WHERE SH.SH_ID = {$SH_ID}";
 
-	if( $PFI_ID ) {
+	if( $PFI_ID and $StartDate ) {
 		$query .= "
 					UNION
 					SELECT SH.SH_ID
