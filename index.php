@@ -974,7 +974,7 @@
 		}
 		$confirmed = $row["confirmed"];		// Заказ принят в работу
 		// Запрет на редактирование
-		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and $is_lock == 0 and $row["Del"] == 0 );
+		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and $is_lock == 0 and $row["Archive"] == 0 and $row["Del"] == 0 );
 
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
 		echo "<tr id='ord{$row["OD_ID"]}'>";

@@ -11,6 +11,7 @@
 						,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
 						,OD.confirmed
 						,OD.Del
+						,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
 					FROM OrdersData OD
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
@@ -20,10 +21,11 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$OD_ID = mysqli_result($res,0,'OD_ID');
 		$Del = mysqli_result($res,0,'Del');
+		$Archive = mysqli_result($res,0,'Archive');
 		$is_lock = mysqli_result($res,0,'is_lock');
 		$confirmed = mysqli_result($res,0,'confirmed');
 		// Запрет на редактирование
-		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$is_lock and !$Del );
+		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$is_lock and !$Archive and !$Del );
 
 		if( !$OD_ID ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
