@@ -30,10 +30,39 @@ else {
 	$payer = "";
 }
 
+// Создание акта сверки
+if( isset($_GET["add_act"]) ) {
+	// Функция проверки уникальности токена
+	function hashExists($hash, $mysqli) {
+		$query = "SELECT * FROM ActSverki WHERE token = '{$hash}'";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		return mysqli_num_rows($res);
+	}
+
+	do {
+		$hash = md5(rand(0, PHP_INT_MAX));
+	} while (hashExists($hash, $mysqli));
+
+	$act_date_from = date( 'Y-m-d', strtotime($_POST["act_date_from"]) );
+	$act_date_to = date( 'Y-m-d', strtotime($_POST["act_date_to"]) );
+
+	$query = "INSERT INTO ActSverki
+				SET token = '{$hash}'
+					,KA_ID = {$_POST["payer"]}
+					,date_from = '{$act_date_from}'
+					,date_to = '{$act_date_to}'";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+	exit ('<meta http-equiv="refresh" content="0; url=?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
+	die;
+}
+
 // Если вернулся только один контрагент - выбираем его в селекте
 if( $KA_num_rows == 1 ) {
 	$payer = $KA_IDs;
 }
+
+$now_date = date('d.m.Y');
 
 // Удаление накладной
 if( isset($_GET["del"]) )
@@ -129,7 +158,22 @@ if( isset($_GET["del"]) )
 		box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
 	}
 
-	#add_invoice_btn:hover, #add_invoice_btn_return:hover {
+	#add_act_sverki_btn {
+		background: url(../img/print_forms.png) no-repeat scroll center center transparent;
+		bottom: 240px;
+		cursor: pointer;
+		width: 56px;
+		height: 56px;
+		opacity: .4;
+		position: fixed;
+		right: 50px;
+		z-index: 9;
+		border-radius: 50%;
+		background-color: #db4437;
+		box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
+	}
+
+	#add_invoice_btn:hover, #add_invoice_btn_return:hover, #add_act_sverki_btn:hover {
 		opacity: 1;
 	}
 
@@ -146,6 +190,41 @@ if( isset($_GET["del"]) )
 if( !in_array('sverki_opt', $Rights) ) {
 	echo "<a id='add_invoice_btn' href='#' title='Создать накладную на ОТГРУЗКУ'></a>";
 	echo "<a id='add_invoice_btn_return' href='#' title='Создать накладную на ВОЗВРАТ'></a>";
+	if( $payer ) {
+		echo "<a id='add_act_sverki_btn' href='#' title='Создать новый акт сверки' now_date='{$now_date}' payer='{$payer}'></a>";
+	}
+}
+
+if( $payer ) {
+	echo "<h1>Акты сверок:</h1>";
+	echo "
+		<table>
+			<thead>
+				<tr>
+					<th>Дата</th>
+					<th>Период</th>
+				</tr>
+			</thead>
+			<tbody>
+	";
+	$query = "SELECT token
+					,DATE_FORMAT(date_from, '%d.%m.%y') date_from
+					,DATE_FORMAT(date_to, '%d.%m.%y') date_to
+				FROM ActSverki
+				WHERE KA_ID = {$payer} AND YEAR(date_to) = {$year}
+				ORDER BY date_to DESC";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) ) {
+		echo "<tr>";
+		echo "<td><b><a href='/toprint/act_sverki.php?t={$row["token"]}' target='_blank'>{$row["date_to"]}</a></b></td>";
+		echo "<td>[{$row["date_from"]} - {$row["date_to"]}]</td>";
+		echo "</tr>";
+	}
+	echo "
+			</tbody>
+		</table>
+	";
+	echo "<h1>Журнал операций:</h1>";
 }
 ?>
 
@@ -182,7 +261,7 @@ if( $payer ) {
 
 				UNION ALL
 
-				SELECT NULL
+				SELECT F.F_ID
 					,NULL debet
 					,F.money kredit
 					,KA.KA_ID
@@ -402,6 +481,26 @@ while( $row = mysqli_fetch_array($res) ) {
 	</form>
 </div>
 
+<!-- Форма подготовки акта сверки -->
+<div id='add_act_sverki_form' style='display:none' title="Акт сверки">
+	<form method='post' action="?add_act=1&year=<?=$year?>&payer=<?=$payer?>">
+		<fieldset>
+			<div>
+				Период:&nbsp;[&nbsp;
+				<input type="text" name="act_date_from" required class="date from" autocomplete="off">
+				&nbsp;-&nbsp;
+				<input type="text" name="act_date_to" required class="date to" autocomplete="off">
+				&nbsp;]
+				<input type="hidden" name="payer">
+			</div>
+			<div>
+				<hr>
+				<input type='submit' value='Создать акт сверки' style='float: right;'>
+			</div>
+		</fieldset>
+	</form>
+</div>
+
 <script>
 	// Выбрать все в форме отгрузки
 	function selectall(ch) {
@@ -476,6 +575,27 @@ while( $row = mysqli_fetch_array($res) ) {
 
 			// Автокомплит поверх диалога
 			$( "#platelshik_name" ).autocomplete( "option", "appendTo", "#add_invoice_form" );
+		});
+
+		// Форма подготовки акта сверки
+		$('#add_act_sverki_btn').click(function() {
+			var now_date = $(this).attr('now_date');
+			var payer = $(this).attr('payer');
+
+			// Очистка диалога
+			$('#add_act_sverki_form input[name="payer"]').val(payer);
+			$('#add_act_sverki_form .from').val('');
+			$('#add_act_sverki_form .to').datepicker( "setDate", now_date );
+			$('#add_act_sverki_form .from').datepicker( "option", "maxDate", now_date );
+			$('#add_act_sverki_form .to').datepicker( "option", "maxDate", now_date );
+
+			$('#add_act_sverki_form').dialog({
+				width: 500,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
 		});
 
 		// Динамическая подгрузка заказов при выборе контрагента (в форме накладной)

@@ -732,9 +732,11 @@ $query = "SELECT COUNT(1) cnt FROM OrdersAttachments WHERE OD_ID = {$id}";
 $result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 if( mysqli_result($result,0,'cnt') ) {
 	$attacments = " (".mysqli_result($result,0,'cnt').")";
+	$attacments_color = "style='background: #911;'";
 }
 else {
 	$attacments = "";
+	$attacments_color = "";
 }
 
 if( $id != "NULL" ) {
@@ -746,7 +748,7 @@ if( $id != "NULL" ) {
 		<ul>
 			<li><a href="#order_message">Сообщения</a></li>
 			<li><a href="#order_log_table">Журнал изменений в заказе</a></li>
-			<li><a href="#attachments">Файлы<?=$attacments?></a></li>
+			<li><a href="#attachments" <?=$attacments_color?>>Файлы<?=$attacments?></a></li>
 		</ul>
 		<div id="order_log_table">
 			<table style="width: 100%;">
