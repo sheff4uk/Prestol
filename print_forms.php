@@ -675,25 +675,13 @@ function deleteRow(r)
 <input name="n" type="hidden" value="1">
 <input name="pfid" type="hidden" value="<?=$id?>">
 	<br>
-	<div align="center" style="width: 49%; display: inline-block;">
-		<input type="submit" value="Печатать накладную" class="button" onclick="set_target('pdf', 'report', 'torg12');">
-		от
-		<input type="text" name="date_torg12" id="date_torg12" value="<?=$nakladnaya_date?>" class="date" style="width: 100px;" readonly>
-	</div>
-	<div align="center" style="width: 49%; display: inline-block;">
+	<div align="center">
 		<strong>Сообщение для клиента.</strong>
 		<textarea name="text" class="comment">Внимание! Оплата данного счета означает согласие с условиями поставки товара. Уведомление об оплате обязательно, в противном случае не гарантируется наличие товара на складе. Товар отпускается по факту прихода денег на р/с Поставщика, самовывозом, при наличии доверенности и паспорта.
 		</textarea>
 		<input type="submit" value="Печатать счет" class="button" onclick="set_target('pdf', 'report', 'schet');">
 		от
 		<input type="text" name="date_schet" id="date_schet" value="<?=$schet_date?>" class="date" style="width: 100px;" readonly>
-	</div>
-	<br>
-	<br>
-	<div align="center">
-		Или<br>
-		<input type="submit" value="Сохранить внесенные изменения" class="button" onclick="set_target('', '', '');">
-		<br>чтобы вернуться к ним позже.
 	</div>
 </form>
 
