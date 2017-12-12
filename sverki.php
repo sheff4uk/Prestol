@@ -275,7 +275,7 @@ if( $payer ) {
 					,1
 				FROM Finance F
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
-				WHERE YEAR(F.date) = {$year} AND KA.KA_ID = {$payer}
+				WHERE YEAR(F.date) = {$year} AND KA.KA_ID = {$payer} AND F.money != 0
 
 				ORDER BY date DESC, PFI_ID DESC";
 }
