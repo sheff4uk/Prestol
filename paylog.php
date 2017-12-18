@@ -424,6 +424,7 @@
 							,FA.bank
 							,FA.FA_ID
 							,USR_Name(PL.author) Name
+							,FA.archive
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
 						LEFT JOIN FinanceAccount FA ON FA.FA_ID = PL.FA_ID
@@ -474,7 +475,7 @@
 				}
 				echo "{$row["Comment"]}</span></td>";
 				echo "<td>";
-				if ( $row["FA_ID"] ) {
+				if ( $row["FA_ID"] and $row["archive"] == 0 ) {
 					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' pay = '{$row["Pay"]}' account='{$row["FA_ID"]}' comment='{$row["Comment"]}' class='edit_pay' location='{$location}' title='Редактировать выдачу.'><i class='fa fa-pencil fa-lg'></i></a>";
 				}
 				echo "</td>";

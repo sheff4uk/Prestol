@@ -62,7 +62,7 @@
 						<?
 						if( !in_array('finance_account', $Rights) ) {
 							echo "<optgroup label='Нал'>";
-							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0 AND archive = 0";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) )
 							{
@@ -71,7 +71,7 @@
 							echo "</optgroup>";
 							echo "<optgroup label='Безнал'>";
 
-							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1";
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1 AND archive = 0";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) )
 							{
@@ -80,7 +80,7 @@
 							echo "</optgroup>";
 						}
 						else {
-							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]}";
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]} AND archive = 0";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) )
 							{

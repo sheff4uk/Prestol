@@ -281,7 +281,8 @@
 						$total = 0;
 						$query = "SELECT FA_ID, name, start_balance, end_balance, USR_ID, bank, color
 									FROM FinanceAccount
-									".(in_array('finance_account', $Rights) ? "WHERE USR_ID = {$_SESSION['id']}" : "")."
+									WHERE archive = 0
+									".(in_array('finance_account', $Rights) ? " AND USR_ID = {$_SESSION['id']}" : "")."
 									ORDER BY IFNULL(bank, 0), FA_ID";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
@@ -656,7 +657,8 @@
 								echo "<input id='account_select_all' class='select_all' type='checkbox' name='all_accounts' value='1' form='filter_form'><label for='account_select_all'>Все счета</label>";
 								$query = "SELECT FA_ID, name
 											FROM FinanceAccount
-											".(in_array('finance_account', $Rights) ? "WHERE USR_ID = {$_SESSION["id"]}" : "")."
+											WHERE archive = 0
+											".(in_array('finance_account', $Rights) ? " AND USR_ID = {$_SESSION["id"]}" : "")."
 											ORDER BY IFNULL(bank, 0), FA_ID";
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 								while( $row = mysqli_fetch_array($res) )
@@ -765,6 +767,7 @@
 								,SF.receipt
 								,SF.author
 								,SF.USR_ID
+								,SF.archive
 							FROM (
 								SELECT F.F_ID
 									,F.date date_sort
@@ -788,6 +791,7 @@
 									,0 receipt
 									,USR_Name(F.author) author
 									,F.author USR_ID
+									,IF(FA.archive = 1 OR IFNULL(TFA.archive, 0) = 1, 1, 0) archive
 								FROM Finance F
 								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
@@ -819,6 +823,7 @@
 									,1 receipt
 									,USR_Name(F.author) author
 									,F.author USR_ID
+									,IF(FA.archive = 1 OR IFNULL(TFA.archive, 0) = 1, 1, 0) archive
 								FROM Finance F
 								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
@@ -858,7 +863,7 @@
 						echo "<td><span class='nowrap'>{$row["author"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["kontragent"]}</span></td>";
 						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
-						if( $row["is_edit"] and $row["receipt"] == 0 ) {
+						if( $row["is_edit"] and $row["receipt"] == 0 and $row["archive"] == 0 ) {
 							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["cost_date"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a></td>";
 						}
 						else {
@@ -923,7 +928,7 @@
 						<?
 						if( !in_array('finance_account', $Rights) ) {
 							echo "<optgroup label='Нал'>";
-							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0 AND archive = 0";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) )
 							{
@@ -932,7 +937,7 @@
 							echo "</optgroup>";
 							echo "<optgroup label='Безнал'>";
 
-							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1";
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1 AND archive = 0";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) )
 							{
@@ -941,7 +946,7 @@
 							echo "</optgroup>";
 						}
 						else {
-							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]}";
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]} AND archive = 0";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) )
 							{
@@ -1003,10 +1008,10 @@
 					<div class='btnset'>
 					<?
 					if( !in_array('finance_account', $Rights) ) {
-						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0";
+						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0 AND archive = 0";
 					}
 					else {
-						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]}";
+						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]} AND archive = 0";
 					}
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) )
