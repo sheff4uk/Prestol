@@ -369,7 +369,7 @@
 		</form>
 		<?
 		if( in_array('finance_all', $Rights) ) {
-			echo "<p style='display: inline-block; margin: 10px;'>Изменение локальное: <b id='cash_change_local'></b></p>";
+//			echo "<p style='display: inline-block; margin: 10px;'>Изменение локальное: <b id='cash_change_local'></b></p>";
 		}
 		?>
 		<p style="display: inline-block; margin: 10px;">Изменение: <b id="cash_change"></b></p>
