@@ -1029,7 +1029,7 @@ case "add_payment":
 		$html .= "</select>";
 		$html .= "<input type='hidden' name='SH_ID_add' value='{$SH_ID}'></td>";
 
-		$html .= "<td><input type='text' class='' style='width: 90px; text-align: center;' name='payment_date_add' value='{$payment_date}' readonly></td>";
+		$html .= "<td><input type='text' class='payment_date' style='width: 90px; text-align: center;' name='payment_date_add' value='{$payment_date}' readonly></td>";
 
 		$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
 
@@ -1053,6 +1053,7 @@ case "add_payment":
 	$html .= "<div class='accordion'>";
 	$html .= "<h3>Памятка по внесению оплаты</h3>";
 	$html .= "<div><ul>";
+	$html .= "<li>Менять дату возможно только у терминальных платежей.</li>";
 	$html .= "<li>Ранее добавленные платежи <b>не редактируются</b>. Если нужно изменить или отменить предыдущую запись, то создайте новую корректирующую операцию с отрицательной суммой.</li>";
 	$html .= "<li>Если нужно совершить возврат денег по заказу, он так же вносится со знаком минус.</li>";
 	$html .= "<li>Для переноса платежа с одного заказа на другой: сначала сделайте возврат платежа на первом заказе, затем внесите эту сумму на второй заказ.</li>";
