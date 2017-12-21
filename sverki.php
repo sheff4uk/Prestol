@@ -261,7 +261,7 @@ if( $payer ) {
 
 				UNION ALL
 
-				SELECT F.F_ID
+				SELECT NULL
 					,NULL debet
 					,F.money kredit
 					,KA.KA_ID
