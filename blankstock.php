@@ -285,7 +285,6 @@
 							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
 							,USR_Name(BS.author) Name
 							,PBS.BS_ID is_parent
-							,BS.PBS_ID
 						FROM BlankStock BS
 						LEFT JOIN BlankStock PBS ON PBS.PBS_ID = BS.BS_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
@@ -296,13 +295,13 @@
 							LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
 							GROUP BY BL.BL_ID
 						) BLL ON BLL.BL_ID = BL.BL_ID
-						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0
+						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0 AND BS.PBS_ID IS NULL
 						ORDER BY BS.Date DESC, BS.BS_ID";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
 				$color = ($row["Amount"] < 0) ? "#E74C3C" : "#16A085";
-				echo "<tr class='".(($row["PBS_ID"]) ? "auto_record" : ($row["is_parent"] ? "is_parent" : ""))."'>";
+				echo "<tr class='".($row["is_parent"] ? "is_parent" : "")."'>";
 				echo "<td>".($row["is_parent"] ? "<i class='fa fa-arrow-right'></i>" : "")."</td>";
 				echo "<td><b class='nowrap'>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></td>";
 				echo "<td>{$row["Time"]}</td>";
@@ -313,6 +312,30 @@
 				echo "<td class='comment'><pre>{$row["Comment"]}</pre></td>";
 				echo "<td>".($row["Name"] ? "<i class='fa fa-lg fa-user' aria-hidden='true' title='{$row["Name"]}' style='cursor: pointer;'></i>" : "")."</td>";
 				echo "</tr>";
+
+				$query = "SELECT GROUP_CONCAT(WD.Name SEPARATOR '<br>') Worker
+								,GROUP_CONCAT(BL.Name SEPARATOR '<br>') Blank
+								,MAX(BS.Amount) Amount
+							FROM BlankStock BS
+							LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
+							LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
+							WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0 AND BS.PBS_ID = {$row["BS_ID"]}";
+				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $subrow = mysqli_fetch_array($subres) )
+				{
+					$color = ($subrow["Amount"] < 0) ? "#E74C3C" : "#16A085";
+					echo "<tr class='auto_record'>";
+					echo "<td></td>";
+					echo "<td></td>";
+					echo "<td></td>";
+					echo "<td class='nowrap'>{$subrow["Worker"]}</td>";
+					echo "<td class='nowrap'>{$subrow["Blank"]}</td>";
+					echo "<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$subrow["Amount"]}</b></td>";
+					echo "<td class='tariff txtright'></td>";
+					echo "<td class='comment'><pre></pre></td>";
+					echo "<td></td>";
+					echo "</tr>";
+				}
 			}
 	?>
 
