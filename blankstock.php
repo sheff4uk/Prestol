@@ -314,9 +314,10 @@
 				echo "<td>".($row["Name"] ? "<i class='fa fa-lg fa-user' aria-hidden='true' title='{$row["Name"]}' style='cursor: pointer;'></i>" : "")."</td>";
 				echo "</tr>";
 
-				$query = "SELECT GROUP_CONCAT(WD.Name SEPARATOR '<br>') Worker
+				$query = "SELECT GROUP_CONCAT(IFNULL(WD.Name, 'Без работника') SEPARATOR '<br>') Worker
 								,GROUP_CONCAT(BL.Name SEPARATOR '<br>') Blank
-								,MAX(BS.Amount) Amount
+								,GROUP_CONCAT(BS.Amount SEPARATOR '<br>') Amount
+								,MAX(BS.Amount) max_amount
 							FROM BlankStock BS
 							LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
 							LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
@@ -324,7 +325,7 @@
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $subrow = mysqli_fetch_array($subres) )
 				{
-					$color = ($subrow["Amount"] < 0) ? "#E74C3C" : "#16A085";
+					$color = ($subrow["max_amount"] < 0) ? "#E74C3C" : "#16A085";
 					echo "<tr class='auto_record'>";
 					echo "<td></td>";
 					echo "<td></td>";
