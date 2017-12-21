@@ -296,8 +296,8 @@
 							GROUP BY BL.BL_ID
 						) BLL ON BLL.BL_ID = BL.BL_ID
 						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0 AND BS.PBS_ID IS NULL
-						ORDER BY BS.Date DESC, BS.BS_ID
-						GROUP BY BS.BS_ID";
+						GROUP BY BS.BS_ID
+						ORDER BY BS.Date DESC, BS.BS_ID";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
