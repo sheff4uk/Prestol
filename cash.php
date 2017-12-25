@@ -861,7 +861,7 @@
 						echo "<td><span class='nowrap' style='background-color: {$row["color"]}; border-radius: 20%;'>{$row["account"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["category"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["author"]}</span></td>";
-						echo "<td><span class='nowrap'>{$row["kontragent"]}</span></td>";
+						echo "<td><span class='nowrap'><a href='sverki.php?payer={$row["KA_ID"]}' target='_blank' title='Перейти в сверки'><b>{$row["kontragent"]}</b></a></span></td>";
 						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
 						if( $row["is_edit"] and $row["receipt"] == 0 and $row["archive"] == 0 ) {
 							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["cost_date"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a></td>";
