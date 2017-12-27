@@ -769,6 +769,7 @@
 					,OD.Code
 					,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 					,IFNULL(OD.ClientName, '') ClientName
+					,OD.ul
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%y') StartDate
 					,DATE_FORMAT(IFNULL(OD.DelDate, IFNULL(OD.ReadyDate, OD.EndDate)), '%d.%m.%y') EndDate
 					,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
@@ -984,7 +985,7 @@
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>";
-		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>";
+		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b></span></td>";
 
 		// Если заказ в накладной - на дате продажи ссылка на накладную
 		if( $row["PFI_ID"] ) {

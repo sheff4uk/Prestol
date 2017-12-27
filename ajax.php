@@ -600,6 +600,7 @@ case "shipment":
 							,OD.Code
 							,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 							,IFNULL(OD.ClientName, '') ClientName
+							,OD.ul
 							,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
 							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
 							,OD.Color
@@ -696,7 +697,7 @@ case "shipment":
 				$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
 				$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox hide' value='{$row["OD_ID"]}'>";
 				$html .= "<label for='ord_sh{$row["OD_ID"]}'".($row["checked"] == 'checked' ? "style='color: red;'" : "")."><b class='code'>{$row["Code"]}</b></label><br><span>{$row["AddDate"]}</span></td>";
-				$html .= "<td><span class='nowrap'>{$row["ClientName"]}<br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
+				$html .= "<td><span class='nowrap'><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["Shop"]}</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 				switch ($row["IsPainting"]) {
@@ -785,6 +786,7 @@ case "invoice":
 							,OD.Code
 							,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 							,IFNULL(OD.ClientName, '') ClientName
+							,OD.ul
 							,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
 							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
 							,OD.Color
@@ -895,7 +897,7 @@ case "invoice":
 				$html .= "<tr class='shop{$row["SH_ID"]}'>";
 				$html .= "<td><input type='checkbox' name='ord[]' id='ord_{$row["OD_ID"]}' class='chbox' value='{$row["OD_ID"]}'>";
 				$html .= "<label for='ord_{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></label><br><span>{$row["AddDate"]}</span></td>";
-				$html .= "<td><span class='nowrap'>{$row["ClientName"]}<br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
+				$html .= "<td><span class='nowrap'><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["Shop"]}</span></td>";
 				$html .= "<td>{$row["Price"]}</td>";
 				$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";

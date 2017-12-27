@@ -101,6 +101,10 @@ tbody tr:nth-child(even){ /* Задаем стили для четных ряд�
 	border-radius: 5px;
 	border: 2px solid #333;
 }
+.ul {
+	background: #333;
+	color: white;
+}
 a .code {
 	background: #428bca;
 	border-color: #428bca;

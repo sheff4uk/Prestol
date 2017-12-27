@@ -802,6 +802,7 @@
 						,OD.Code
 						,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 						,IFNULL(OD.ClientName, '') ClientName
+						,OD.ul
 						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
 						,OD.sell_comment
@@ -910,7 +911,7 @@
 						<span>{$row["ReadyDate"]}</span>
 					</td>
 					<td><span><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>
-					<td><span>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>
+					<td><span><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b></span></td>
 					<td><span class='nowrap'>{$row["Zakaz"]}</span></td>
 					<td><span class='nowrap material'>{$row["Material"]}</span></td>
 					<td>{$row["Color"]}</td>

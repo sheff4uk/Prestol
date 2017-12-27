@@ -223,6 +223,7 @@
 	$query = "SELECT OD.OD_ID
 					,OD.Code
 					,OD.ClientName
+					,OD.ul
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%y') StartDate
 					,DATE_FORMAT(OD.EndDate, '%d.%m.%y') EndDate
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
@@ -398,7 +399,7 @@
 //		echo "<td style='background: {$row["CTColor"]};'>{$row["Shop"]}</td>";
 //		echo "<td>{$row["OrderNumber"]}</td>";
 		echo "<td style='background: {$row["CTColor"]};' class='nowrap'>";
-		echo "{$row["ClientName"]}<br>";
+		echo "<n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br>";
 		echo "{$row["StartDate"]} - <span class='{$row["Deadline"]}'>{$row["EndDate"]}</span><br>";
 		echo "{$row["Shop"]} <b>{$row["OrderNumber"]}</b>";
 		echo "</td>";
