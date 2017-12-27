@@ -869,7 +869,7 @@ case "invoice":
 							GROUP BY OD_ID
 						) OP ON OP.OD_ID = OD.OD_ID
 						WHERE SH.CT_ID = {$CT_ID}
-							".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.KA_ID IS NULL")."
+							".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.KA_ID IS NULL AND OD.ul = 1")."
 							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 							AND OD.Del = 0
 							".($num_rows > 0 ? "AND (OD.StartDate IS NOT NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NOT NULL))" : "AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))")."
