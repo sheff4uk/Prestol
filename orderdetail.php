@@ -366,7 +366,7 @@
 			<td>
 				<input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> placeholder='Заказчик'>
 				<br>
-				<input type="checkbox" id="ul" name='ul' <?=($ul == 1 ? "checked" : "")?> <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> title='Поставьте галочку если требуется накладная.'>
+				<input type="checkbox" id="ul" name='ul' <?=($ul == 1 ? "checked" : "")?> <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> title='Поставьте галочку если требуется накладная.' <?=($PFI_ID ? "onclick='return false;'" : "")?>>
 				<label for="ul">юр. лицо</label>
 				<br>
 				<input type='text' name='OrderNumber' style='width: 90px;' value='<?=$OrderNumber?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> placeholder='Квитанция'>
