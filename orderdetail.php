@@ -55,6 +55,7 @@
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli,$_POST["ClientName"] );
+		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 		$OrderNumber = mysqli_real_escape_string( $mysqli,$_POST["OrderNumber"] );
 		$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
@@ -66,16 +67,17 @@
 		$Color = trim($Color);
 		$Comment = trim($Comment);
 		$query = "UPDATE OrdersData
-				  SET CLientName = ".(isset($_POST["ClientName"]) ? "'{$ClientName}'" : "CLientName")."
-				     ,StartDate = ".(isset($_POST["StartDate"]) ? $StartDate : "StartDate")."
-				     ,EndDate = ".(isset($_POST["EndDate"]) ? $EndDate : "EndDate")."
-				     ,SH_ID = ".(isset($_POST["Shop"]) ? $Shop : "SH_ID")."
-				     ,OrderNumber = ".(isset($_POST["OrderNumber"]) ? "'{$OrderNumber}'" : "OrderNumber")."
-				     ,Color = ".(isset($_POST["Color"]) ? "'{$Color}'" : "Color")."
-				     #,IsPainting = ".( isset($_POST["IsPainting"]) ? $_POST["IsPainting"] : "IsPainting" )."
-				     ,Comment = ".(isset($_POST["Comment"]) ? "'{$Comment}'" : "Comment")."
-					 ,author = {$_SESSION['id']}
-				  WHERE OD_ID = {$id}";
+					SET CLientName = ".(isset($_POST["ClientName"]) ? "'{$ClientName}'" : "CLientName")."
+						,ul = ".(isset($_POST["ClientName"]) ? $ul : "ul")."
+						,StartDate = ".(isset($_POST["StartDate"]) ? $StartDate : "StartDate")."
+						,EndDate = ".(isset($_POST["EndDate"]) ? $EndDate : "EndDate")."
+						,SH_ID = ".(isset($_POST["Shop"]) ? $Shop : "SH_ID")."
+						,OrderNumber = ".(isset($_POST["OrderNumber"]) ? "'{$OrderNumber}'" : "OrderNumber")."
+						,Color = ".(isset($_POST["Color"]) ? "'{$Color}'" : "Color")."
+						#,IsPainting = ".( isset($_POST["IsPainting"]) ? $_POST["IsPainting"] : "IsPainting" )."
+						,Comment = ".(isset($_POST["Comment"]) ? "'{$Comment}'" : "Comment")."
+						,author = {$_SESSION['id']}
+					WHERE OD_ID = {$id}";
 		if( !mysqli_query( $mysqli, $query ) ) {
 			$_SESSION["alert"] = mysqli_error( $mysqli );
 		}
@@ -292,6 +294,7 @@
 
 		$query = "SELECT OD.Code
 						,OD.ClientName
+						,OD.ul
 						,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 						,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
@@ -320,6 +323,7 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$Code = mysqli_result($res,0,'Code');
 		$ClientName = mysqli_result($res,0,'ClientName');
+		$ul = mysqli_result($res,0,'ul');
 		$AddDate = mysqli_result($res,0,'AddDate');
 		$StartDate = mysqli_result($res,0,'StartDate');
 		$EndDate = mysqli_result($res,0,'EndDate');
@@ -361,6 +365,9 @@
 			<td class="nowrap"><h1><?=$Code?></h1><?=$AddDate?></td>
 			<td>
 				<input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> placeholder='Заказчик'>
+				<br>
+				<input type="checkbox" id="ul" name='ul' <?=($ul == 1 ? "checked" : "")?> <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> title='Поставьте галочку если требуется накладная.'>
+				<label for="ul">юр. лицо</label>
 				<br>
 				<input type='text' name='OrderNumber' style='width: 90px;' value='<?=$OrderNumber?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> placeholder='Квитанция'>
 			</td>

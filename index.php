@@ -24,6 +24,7 @@
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
 		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : '\''.date( "Y-m-d", strtotime($_SESSION["end_date"]) ).'\'';
 		$ClientName = mysqli_real_escape_string( $mysqli, $_POST["ClientName"] );
+		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 		$OrderNumber = mysqli_real_escape_string( $mysqli, $_POST["OrderNumber"] );
 		$Color = mysqli_real_escape_string( $mysqli, $_POST["Color"] );
@@ -34,8 +35,8 @@
 		$Color = trim($Color);
 		$Comment = trim($Comment);
 		$confirmed = in_array('order_add_confirm', $Rights) ? 1 : 0;
-		$query = "INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment, creator, confirmed)
-				  VALUES ('{$ClientName}', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}', {$_SESSION['id']}, {$confirmed})";
+		$query = "INSERT INTO OrdersData(CLientName, ul, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment, creator, confirmed)
+				  VALUES ('{$ClientName}', $ul, '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}', {$_SESSION['id']}, {$confirmed})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
 		// Перенаправление на экран деталей заказа
@@ -401,7 +402,11 @@
 				</div>
 				<div id="ClientName">
 					<label>Заказчик:</label>
-					<input type='text' class='clienttags' name='ClientName' autocomplete='off'>
+					<div>
+						<input type='text' class='clienttags' name='ClientName' autocomplete='off'>
+						<input type="checkbox" id="ul" name='ul' title='Поставьте галочку если требуется накладная.'>
+						<label for="ul">юр. лицо</label>
+					</div>
 				</div>
 				<div id="OrderNumber">
 					<label>№ квитанции:</label>
@@ -1385,6 +1390,8 @@
 			$('#order_form fieldset input').val('');
 			$('#order_form fieldset textarea').val('');
 			$('#order_form fieldset input[name="EndDate"]').val('<?=$_SESSION["end_date"]?>');
+			$('#order_form fieldset #ul').val('1');
+			$('#order_form fieldset #ul').prop( "checked", false );
 
 			// Скрытие полей
 			$('#order_form #ClientName').hide('fast');
