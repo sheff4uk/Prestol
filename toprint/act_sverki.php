@@ -28,7 +28,6 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$platelshik_name = mysqli_result($res,0,'Naimenovanie');
 	$saldo = mysqli_result($res,0,'saldo');
-	$debt_format = number_format(abs($saldo), 0, '', '\'').".00";
 
 	// Вычисление оборота за период
 	$query = "SELECT SUM(SUB.debet) debet, SUM(SUB.kredit) kredit
@@ -48,7 +47,27 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$debet_profit = mysqli_result($res,0,'debet'); // Дебетовый оборот
 	$kredit_profit = mysqli_result($res,0,'kredit'); // Кредитовый оборот
-	$start_saldo = $saldo + $debet_profit - $kredit_profit;
+
+	// Вычисление оборота за период
+	$query = "SELECT SUM(SUB.debet) debet, SUM(SUB.kredit) kredit
+				FROM (
+					SELECT IF(PFI.rtrn = 1, NULL, PFI.summa) debet
+						,IF(PFI.rtrn = 1, PFI.summa, NULL) kredit
+					FROM PrintFormsInvoice PFI
+					WHERE PFI.date > STR_TO_DATE('{$date_to}', '%d.%m.%Y') AND PFI.platelshik_id = {$payer} AND PFI.del = 0
+
+					UNION ALL
+
+					SELECT NULL debet
+						,F.money kredit
+					FROM Finance F
+					WHERE F.date > STR_TO_DATE('{$date_to}', '%d.%m.%Y') AND F.KA_ID = {$payer}
+				) SUB";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$debet_profit_now = mysqli_result($res,0,'debet'); // Дебетовый оборот с конечной даты по сегодня
+	$kredit_profit_now = mysqli_result($res,0,'kredit'); // Кредитовый оборот с конечной даты по сегодня
+
+	$start_saldo = $saldo + $debet_profit - $kredit_profit + $debet_profit_now - $kredit_profit_now;
 	$start_saldo_format = number_format(abs($start_saldo), 0, '', '\'').".00";
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -172,6 +191,9 @@ ___________________________ <?=$platelshik_name?> ______________________________
 	$debet_profit = number_format($debet_profit, 0, '', '\'').".00";
 	$kredit_profit = number_format($kredit_profit, 0, '', '\'').".00";
 
+	$end_saldo = $saldo + $debet_profit_now - $kredit_profit_now;
+	$debt_format = number_format(abs($end_saldo), 0, '', '\'').".00";
+
 ?>
 				<tr style="background: #DDD;">
 					<td colspan="3">Обороты за период</td>
@@ -180,8 +202,8 @@ ___________________________ <?=$platelshik_name?> ______________________________
 				</tr>
 				<tr style="background: #DDD;">
 					<td colspan="3">Сальдо на <?=$date_to?></td>
-					<td style="text-align: right;"><?=($saldo < 0 ? $debt_format : "")?></td>
-					<td style="text-align: right;"><?=($saldo > 0 ? $debt_format : "")?></td>
+					<td style="text-align: right;"><?=($end_saldo < 0 ? $debt_format : "")?></td>
+					<td style="text-align: right;"><?=($end_saldo > 0 ? $debt_format : "")?></td>
 				</tr>
 			</tbody>
 		</table>
