@@ -343,7 +343,7 @@
 		$PFI_ID = mysqli_result($res,0,'PFI_ID');
 		$count = mysqli_result($res,0,'count');
 		$platelshik_id = mysqli_result($res,0,'platelshik_id');
-		// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информация заказа.
+		// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информацию заказа.
 		$editable = (!($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and !($SH_ID == 0 and !in_array('order_add_confirm', $Rights)));
 ?>
 	<form method='post' id='order_form' action='<?=$location?>&order_update=1'>
@@ -389,62 +389,6 @@
 			<td>
 			<div class='shop_cell' id='<?=$id?>' style='box-shadow: 0px 0px 10px 10px <?=$CTColor?>;'>
 				<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")?>>
-					<?
-//					if( $SH_ID == "0" or in_array('order_add_confirm', $Rights)) {
-//						echo "<option value='0' selected style='background: #999;'>Свободные</option>";
-//					}
-//					// Если пользователю доступен только один салон в регионе или оптовик, то выводится только текущий салон и нельзя менять его
-//					if( ($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) or ($USR_KA and $SH_ID and $USR_KA != $KA_ID) ) {
-//						$query = "SELECT SH.SH_ID
-//										,CONCAT(CT.City, '/', SH.Shop) AS Shop
-//										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
-//										,CT.Color
-//									FROM Shops SH
-//									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-//									WHERE SH.SH_ID = {$SH_ID}";
-//					}
-//					elseif( $PFI_ID ) {
-//						$query = "SELECT SH.SH_ID
-//										,CONCAT(CT.City, '/', SH.Shop) AS Shop
-//										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
-//										,CT.Color
-//									FROM Shops SH
-//									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-//									WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.KA_ID IS NULL" : "SH.KA_ID = {$platelshik_id}")."
-//										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-//										".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-//									ORDER BY CT.City, SH.Shop";
-//					}
-//					elseif( $SHP_ID or $ReadyDate ) {
-//						$query = "SELECT SH.SH_ID
-//										,CONCAT(CT.City, '/', SH.Shop) AS Shop
-//										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
-//										,CT.Color
-//									FROM Shops SH
-//									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-//									WHERE CT.CT_ID = {$CT_ID}
-//										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-//										".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-//									ORDER BY CT.City, SH.Shop";
-//					}
-//					else {
-//						$query = "SELECT SH.SH_ID
-//										,CONCAT(CT.City, '/', SH.Shop) AS Shop
-//										,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
-//										,CT.Color
-//									FROM Shops SH
-//									JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-//									WHERE CT.CT_ID IN ({$USR_cities})
-//										".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-//										".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-//									ORDER BY CT.City, SH.Shop";
-//					}
-//					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//					while( $row = mysqli_fetch_array($res) )
-//					{
-//						echo "<option value='{$row["SH_ID"]}' {$row["selected"]} style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
-//					}
-					?>
 				</select>
 				</div>
 			</td>
@@ -469,7 +413,7 @@
 			echo " class='painting_cell ".((!$disabled and false) ? "painting" : "")." {$class}' title='{$title}'><div class='painting_workers'>{$Name}</div><input required type='text' class='colortags' name='Color' style='width: 160px;' value='{$Color}' autocomplete='off' ".((!$disabled and $editable) ? "" : "disabled")."></td>";
 			?>
 
-			<td><textarea name='Comment' rows='6' cols='15' <?=((!$disabled and $editable) ? "" : "disabled")?>><?=$Comment?></textarea></td>
+			<td><textarea name='Comment' rows='6' cols='15' <?=( (in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$Del and $editable) ? "" : "disabled" )?>><?=$Comment?></textarea></td>
 			<td style="text-align: center;">
 				<?
 				// Если есть право редактирования и заказ не чужой - показываем кнопку клонирования
