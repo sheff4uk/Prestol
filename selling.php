@@ -932,7 +932,7 @@
 			echo "<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "").">{$invoice}</td>
 					<td class='txtright'><button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}'>{$format_price}</button>{$invoice_price}</td>
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
-					<td><button ".($row["PFI_ID"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>
+					<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>
 					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
 
 					// Если в накладной - не показываем остаток
@@ -945,7 +945,7 @@
 //					echo "<td><span style='color: #911;'>{$otkaz_cell}</span></td>";
 					echo "<td>";
 
-			// Если есть права на редактирование заказа и заказ не закрыт, то показываем карандашь, кнопку разделения и отказа
+			// Если есть права на редактирование заказа и заказ не закрыт, то показываем карандаш, кнопку разделения и отказа
 			if( in_array('order_add', $Rights) and !$is_lock ) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
