@@ -301,7 +301,7 @@
 			<div class="aside-nav-control navbar-brand">
 				<i class="fa fa-bars fa-lg"></i>
 			</div>
-			<a class="navbar-brand" href="/" title="На главную"><img src="http://mvcreative.ru/example/7/girlyanda/1_1.png" style="width: 120px; position: absolute; top: 26px; left: 0px;"><?=$company_name?></a>
+			<a class="navbar-brand" href="/" title="На главную" style="position: relative;"><img src="http://mvcreative.ru/example/7/girlyanda/1_1.png" style="width: 120px; position: absolute; top: 26px; left: 0px;"><?=$company_name?></a>
 			<?
 			if( in_array('order_add', $Rights) ) {
 			?>

@@ -22,7 +22,7 @@
 		}
 		$AddDate = date("Y-m-d");
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
-		$EndDate = $_POST["Shop"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
+		$EndDate = $_POST["Shop"] ? ($_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : '\''.date( "Y-m-d", strtotime($_SESSION["end_date"]) ).'\'') : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli, $_POST["ClientName"] );
 		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
