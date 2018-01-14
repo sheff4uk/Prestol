@@ -1,4 +1,16 @@
 <?
+phpinfo();
+
+//$year = 2018;
+//$xml = simplexml_load_file("http://xmlcalendar.ru/data/ru/".$year."/calendar.xml");
+//$json = json_encode($xml);
+//$data = json_decode($json,TRUE);
+//foreach( $data["days"]["day"] as $key=>$value ) {
+//	if( $value["@attributes"]["d"] == "02.23") {
+//		echo $value["@attributes"]["t"];
+//	}
+//}
+
 //$password = "Leonardo";
 //$hash = password_hash($password, PASSWORD_BCRYPT);
 //echo $hash;
@@ -8,7 +20,7 @@
 //} else {
 //	echo 'Пароль неправильный.';
 //}
-phpinfo();
+
 //	$from = "admin@fabrikaprestol.ru";
 //	$to = "sheff4uk@gmail.com";
 //	$subject = "Подтверждение регистрации Престол";
