@@ -349,18 +349,29 @@
 	if( !isset($_SESSION["end_date"]) or $_SESSION["today"] != date('d.m.Y') ) {
 		$_SESSION["today"] = date('d.m.Y');
 		$end_date = date_create(date('Y-m-d'));
-		$j = @file_get_contents('http://basicdata.ru/api/json/calend/');
-		$data = json_decode($j, true);
 		$working_days = 0;
+		$year = 0;
 		while ($working_days < 30) {
 			date_modify($end_date, '+1 day');
+			// Если при подсчете рабочих дней изменился год, то получаем новый календарь
+			if( $year != date('Y', strtotime(date_format($end_date, 'd.m.Y'))) ) {
+				$year = date('Y', strtotime(date_format($end_date, 'd.m.Y')));
+				$xml = simplexml_load_file("http://xmlcalendar.ru/data/ru/".$year."/calendar.xml");
+				$json = json_encode($xml);
+				$data = json_decode($json,TRUE);
+			}
 			$day_of_week = date('N', strtotime(date_format($end_date, 'd.m.Y')));
-			$year = date('Y', strtotime(date_format($end_date, 'd.m.Y')));
-			$month = date('n', strtotime(date_format($end_date, 'd.m.Y')));
-			$day = date('j', strtotime(date_format($end_date, 'd.m.Y')));
-			if( empty($data["data"][$year]) ) {$year = $year - 11;}
-			$is_working = $data["data"][$year][$month][$day]["isWorking"];
-			if ( !(($day_of_week >= 6 and $is_working !== 0) or ($is_working === 2)) ) {
+			$month = date('m', strtotime(date_format($end_date, 'd.m.Y')));
+			$day = date('d', strtotime(date_format($end_date, 'd.m.Y')));
+			// Перебираем массив и если находим дату то проверяем ее тип (тип дня: 1 - выходной день, 2 - рабочий и сокращенный (может быть использован для любого дня недели), 3 - рабочий день (суббота/воскресенье))
+			$t = 0;
+			foreach( $data["days"]["day"] as $key=>$value ) {
+				if( $value["@attributes"]["d"] == $month.".".$day) {
+					$t = $value["@attributes"]["t"];
+				}
+			}
+			// Если очередной день - рабочий, то увеличиваем счетчик
+			if ( !(($day_of_week >= 6 and $t != "3") or ($t == "1")) ) {
 				++$working_days;
 			}
 		}
@@ -1102,6 +1113,7 @@
 						,ODD.Amount
 						,ODD.Price
 						,IFNULL(ODD.PM_ID, 0) PM_ID
+						,PM.Model
 						,ODD.PF_ID
 						,ODD.PME_ID
 						,ODD.Length
@@ -1112,12 +1124,13 @@
 						,IFNULL(MT.Material, '') Material
 						,IFNULL(MT.SH_ID, '') Shipper
 						,ODD.IsExist
-                        ,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
-                        ,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
+						,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
+						,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
 						,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 						,ODD.patina
 				  FROM OrdersDataDetail ODD
 				  JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.Del = 0
+				  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 				  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 				  WHERE ODD.OD_ID = {$row["OD_ID"]} AND ODD.Del = 0
@@ -1125,7 +1138,7 @@
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $sub_row = mysqli_fetch_array($result) )
 		{
-			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "price"=>$sub_row["Price"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "PieceAmount"=>$sub_row["PieceAmount"], "PieceSize"=>$sub_row["PieceSize"], "color"=>$sub_row["Color"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "shipper"=>$sub_row["Shipper"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"], "patina"=>$sub_row["patina"] );
+			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "price"=>$sub_row["Price"], "model"=>$sub_row["PM_ID"], "model_name"=>$sub_row["Model"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "PieceAmount"=>$sub_row["PieceAmount"], "PieceSize"=>$sub_row["PieceSize"], "color"=>$sub_row["Color"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "shipper"=>$sub_row["Shipper"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"], "patina"=>$sub_row["patina"] );
 		}
 
 		$query = "SELECT ODB.ODB_ID

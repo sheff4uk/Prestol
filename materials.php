@@ -411,6 +411,7 @@
 						,ODD.Amount
 						,ODD.Price
 						,IFNULL(ODD.PM_ID, 0) PM_ID
+						,PM.Model
 						,ODD.PF_ID
 						,ODD.PME_ID
 						,ODD.Length
@@ -421,12 +422,13 @@
 						,IFNULL(MT.Material, '') Material
 						,IFNULL(MT.SH_ID, '') Shipper
 						,ODD.IsExist
-                        ,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
-                        ,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
+						,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
+						,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
 						,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 						,ODD.patina
 				  FROM OrdersDataDetail ODD
 				  JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.Del = 0
+				  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 				  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 				  WHERE ODD.OD_ID ".( $row["OD_ID"] == "" ? "IS NULL" : "= {$row["OD_ID"]}" )."
@@ -435,7 +437,7 @@
 		$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $sub_row = mysqli_fetch_array($result) )
 		{
-			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "price"=>$sub_row["Price"], "model"=>$sub_row["PM_ID"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "PieceAmount"=>$sub_row["PieceAmount"], "PieceSize"=>$sub_row["PieceSize"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "shipper"=>$sub_row["Shipper"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"], "patina"=>$sub_row["patina"] );
+			$ODD[$sub_row["ODD_ID"]] = array( "amount"=>$sub_row["Amount"], "price"=>$sub_row["Price"], "model"=>$sub_row["PM_ID"], "model_name"=>$sub_row["Model"], "form"=>$sub_row["PF_ID"], "mechanism"=>$sub_row["PME_ID"], "length"=>$sub_row["Length"], "width"=>$sub_row["Width"], "PieceAmount"=>$sub_row["PieceAmount"], "PieceSize"=>$sub_row["PieceSize"], "comment"=>$sub_row["Comment"], "material"=>$sub_row["Material"], "shipper"=>$sub_row["Shipper"], "isexist"=>$sub_row["IsExist"], "inprogress"=>$sub_row["inprogress"], "order_date"=>$sub_row["order_date"], "arrival_date"=>$sub_row["arrival_date"], "patina"=>$sub_row["patina"] );
 
 			echo "<script> var odd = ".(json_encode($ODD))."; </script>";
 		}
