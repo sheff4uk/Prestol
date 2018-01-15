@@ -176,19 +176,27 @@
 		<tr>
 			<th width="100">Работник</th>
 			<?
-				// Получаем производственный календарь
-				if( !isset($_SESSION["calendar"]) ) {
-					$_SESSION["calendar"] = @file_get_contents('http://basicdata.ru/api/json/calend/');
-				}
-				$data = json_decode($_SESSION["calendar"], true);
+				// Получаем производственный календарь на выбранный год
+				$xml = simplexml_load_file("http://xmlcalendar.ru/data/ru/".$year."/calendar.xml");
+				$json = json_encode($xml);
+				$data = json_decode($json,TRUE);
 
 				$i = 1;
 				$workdays = 0;
 				while ($i <= $days) {
 					$date = $year.'-'.$month.'-'.$i;
-					$day_of_week = date('N', strtotime($date)); // День недели
-					$is_working = $data["data"][$year][$month][$i]["isWorking"]; // Статус из API календара
-					if ( ($day_of_week >= 6 and $is_working !== 0) or ($is_working === 2) ) { // Выделяем цветом выходные дни
+					$day_of_week = date('N', strtotime($date));	// День недели
+					$day = date('d', strtotime($date));			// День месяца
+
+					// Перебираем массив и если находим дату то проверяем ее тип (тип дня: 1 - выходной день, 2 - рабочий и сокращенный (может быть использован для любого дня недели), 3 - рабочий день (суббота/воскресенье))
+					$t = 0;
+					foreach( $data["days"]["day"] as $key=>$value ) {
+						if( $value["@attributes"]["d"] == $month.".".$day) {
+							$t = $value["@attributes"]["t"];
+						}
+					}
+
+					if ( (($day_of_week >= 6 and $t != "3") or ($t == "1")) ) { // Выделяем цветом выходные дни
 						echo "<th style='background: chocolate;'>".$i++."</th>";
 					}
 					else {
@@ -300,9 +308,18 @@
 				$i = 1;
 				while ($i <= $days) {
 					$date = $year.'-'.$month.'-'.$i;
-					$day_of_week = date('N', strtotime($date)); // День недели
-					$is_working = $data["data"][$year][$month][$i]["isWorking"]; // Статус из API календара
-					if ( ($day_of_week >= 6 and $is_working !== 0) or ($is_working === 2) ) { // Выделяем цветом выходные дни
+					$day_of_week = date('N', strtotime($date));	// День недели
+					$day = date('d', strtotime($date));			// День месяца
+
+					// Перебираем массив и если находим дату то проверяем ее тип (тип дня: 1 - выходной день, 2 - рабочий и сокращенный (может быть использован для любого дня недели), 3 - рабочий день (суббота/воскресенье))
+					$t = 0;
+					foreach( $data["days"]["day"] as $key=>$value ) {
+						if( $value["@attributes"]["d"] == $month.".".$day) {
+							$t = $value["@attributes"]["t"];
+						}
+					}
+
+					if ( (($day_of_week >= 6 and $t != "3") or ($t == "1")) ) { // Выделяем цветом выходные дни
 						echo "<th style='background: chocolate;'>".$i++."</th>";
 					}
 					else {
