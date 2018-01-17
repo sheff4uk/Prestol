@@ -88,7 +88,7 @@ if( isset($_GET["del"]) )
 	<label for="year">Год:</label>
 	<select name="year" id="year" onchange="this.form.submit()">
 <?
-	$query = "SELECT year FROM PrintForms WHERE IFNULL(summa, 0) > 0 GROUP BY year
+	$query = "SELECT YEAR(date) year FROM PrintFormsInvoice GROUP BY YEAR(date)
 				UNION
 				SELECT YEAR(NOW())";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -536,7 +536,7 @@ while( $row = mysqli_fetch_array($res) ) {
 
 		// Форма составления накладной
 		$('#add_invoice_btn, #add_invoice_btn_return').click(function() {
-			// Узнаём какая их 2-х кнопок была нажата
+			// Узнаём какая из 2-х кнопок была нажата
 			var this_id = $(this).attr('id');
 			var title;
 			if( this_id == 'add_invoice_btn' ) {

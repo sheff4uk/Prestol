@@ -36,6 +36,14 @@ elseif( $_GET["PFI_ID"] ) {
 	}
 	$filename = $_GET["type"].'_'.$_GET["PFI_ID"].'_'.$_GET["number"].'.pdf';
 }
+elseif( $_GET["PFD_ID"] ) {
+	// Проверка прав на доступ к экрану
+	if( !in_array('doverennost', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
+	$filename = $_GET["type"].'_'.$_GET["PFD_ID"].'_'.$_GET["number"].'.pdf';
+}
 
 if( $out = file_get_contents('print_forms/'.$filename) ) {
 	header('Content-Type: application/pdf');
