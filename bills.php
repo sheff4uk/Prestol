@@ -363,8 +363,8 @@ while( $row = mysqli_fetch_array($res) ) {
 				$(this).parents('tr').find('#odid').val(ui.item.odid);
 				$(this).parents('tr').find('#item').val(ui.item.id);
 				$(this).parents('tr').find('#pt').val(ui.item.PT);
-				$(this).parents('tr').find('#tovar_tcena').val(ui.item.Price);
-				$(this).parents('tr').find('#tovar_kolvo').val(ui.item.Amount);
+				$(this).parents('tr').find('#tovar_cena').val(ui.item.Price);
+				$(this).parents('tr').find('#tovar_kol').val(ui.item.Amount);
 			}
 		});
 
@@ -374,8 +374,8 @@ while( $row = mysqli_fetch_array($res) ) {
 				$(this).parents('tr').find('#odid').val('');
 				$(this).parents('tr').find('#item').val('');
 				$(this).parents('tr').find('#pt').val('');
-				$(this).parents('tr').find('#tovar_tcena').val('');
-				$(this).parents('tr').find('#tovar_kolvo').val('');
+				$(this).parents('tr').find('#tovar_cena').val('');
+				$(this).parents('tr').find('#tovar_kol').val('');
 			}
 		});
 	}
