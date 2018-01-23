@@ -347,8 +347,8 @@
 			$month = date("n");
 			$menu["Реализация"] = "selling.php?CT_ID={$USR_City}&year={$year}&month={$month}";
 		}
-		if( in_array('print_forms_view_all', $Rights) or in_array('print_forms_view_author', $Rights) ) {
-			$menu["Счета"] = "print_forms_list.php";
+		if( in_array('bills_view_all', $Rights) or in_array('bills_view_author', $Rights) ) {
+			$menu["Счета"] = "bills.php";
 		}
 		if( in_array('doverennost', $Rights) ) {
 			$menu["Доверенность"] = "doverennost.php";

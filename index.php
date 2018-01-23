@@ -477,8 +477,8 @@
 	}
 
 	// Кнопка печати документов
-	if( in_array('print_forms_view_all', $Rights) or in_array('print_forms_view_author', $Rights) ) {
-		echo '<div id="print_forms" title="Печатные формы" style="display: none;">';
+	if( in_array('bills_view_all', $Rights) or in_array('bills_view_author', $Rights) ) {
+		echo '<div id="print_forms" title="Сформировать счёт на оплату" style="display: none;">';
 		echo '<a id="forms" target="_blank"></a>';
 		echo '</div>';
 	}
@@ -1287,7 +1287,7 @@
 		var data = $('#printtable').serialize();
 		$("#toprint").attr('href', '/toprint/main.php?' + data);
 		$("#post-link").val('http://<?=$_SERVER['HTTP_HOST']?>/toprint/main.php?' + data);
-		$("#print_forms > a").attr('href', '/print_forms.php?' + data);
+		$("#print_forms > a").attr('href', '/bills.php?' + data);
 		$("#labelsbox").attr('href', '/labels_box.php?' + data);
 		return false;
 	}
