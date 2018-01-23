@@ -2,7 +2,7 @@
 include "config.php";
 include "checkrights.php";
 
-if( $_GET["PF_ID"] ) {
+if( $_GET["PFB_ID"] ) {
 	// Проверка прав на доступ к экрану
 	if( !in_array('bills_view_all', $Rights) and !in_array('bills_view_author', $Rights) ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
@@ -10,14 +10,14 @@ if( $_GET["PF_ID"] ) {
 	}
 	// Проверка автора если есть соответствующее право
 	if( in_array('bills_view_author', $Rights) ) {
-		$query = "SELECT USR_ID FROM PrintForms WHERE PF_ID = {$_GET["PF_ID"]}";
+		$query = "SELECT USR_ID FROM PrintFormsBill WHERE PFB_ID = {$_GET["PFB_ID"]}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		if( mysqli_result($res,0,'USR_ID') != $_SESSION['id'] ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 			die('Недостаточно прав для совершения операции');
 		}
 	}
-	$filename = $_GET["type"].'_'.$_GET["PF_ID"].'_'.$_GET["number"].'.pdf';
+	$filename = $_GET["type"].'_'.$_GET["PFB_ID"].'_'.$_GET["number"].'.pdf';
 }
 elseif( $_GET["PFI_ID"] ) {
 	// Проверка прав на доступ к экрану

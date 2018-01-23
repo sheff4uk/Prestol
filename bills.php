@@ -229,7 +229,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	echo "<td class='txtright'><b>{$summa}</b></td>";
 	echo "<td><a href='bills.php?year={$year}&payer={$row["KA_ID"]}'>{$row["pokupatel"]}</a></td>";
 	echo "<td><b>{$row["count"]}</b></td>";
-	echo "<td><b><a href='open_print_form.php?type=schet&PF_ID={$row["PFB_ID"]}&number={$number}' target='_blank'>{$row["date_format"]}</a></b></td>";
+	echo "<td><b><a href='open_print_form.php?type=schet&PFB_ID={$row["PFB_ID"]}&number={$number}' target='_blank'>{$row["date_format"]}</a></b></td>";
 	echo "<td>{$row["Name"]}</td>";
 	echo "</tr>";
 }
