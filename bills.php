@@ -472,7 +472,7 @@ while( $row = mysqli_fetch_array($res) ) {
 				  ORDER BY ODD_ODB.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
-			echo "addRow('шт', '{$row["Zakaz"]}', '{$row["Amount"]}', '{$row["Price"]}', '{$row["ItemID"]}', '{$row["PT_ID"]}', '{$row["Code"]}', '{$row["OD_ID"]}');";
+			echo "addRow('шт', escapeHtml('{$row["Zakaz"]}'), '{$row["Amount"]}', '{$row["Price"]}', '{$row["ItemID"]}', '{$row["PT_ID"]}', '{$row["Code"]}', '{$row["OD_ID"]}');";
 		}
 		echo "$('#add_bill_btn').click();";
 	}
