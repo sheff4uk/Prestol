@@ -227,6 +227,7 @@
 					,DATE_FORMAT(OD.StartDate, '%d.%m.%y') StartDate
 					,DATE_FORMAT(OD.EndDate, '%d.%m.%y') EndDate
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
+					,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), '<br><b>Выставка</b>', '') showing
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,OD.OrderNumber
 					,OD.Comment
@@ -358,7 +359,7 @@
 		echo "<td><span class='nowrap'>{$row["Material"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Shipper"]}</span></td>";
 		if( $product == 1 ) echo "<td>{$row["MT_amount"]}</td>";
-		echo "<td><a href='orderdetail.php?id={$row["OD_ID"]}' class='nowrap'><b class='code'>{$row["Code"]}</b></a></td>";
+		echo "<td><a href='orderdetail.php?id={$row["OD_ID"]}' class='nowrap'><b class='code'>{$row["Code"]}</b></a>{$row["showing"]}</td>";
 		// Если заказ принят
 		if( $row["confirmed"] == 1 ) {
 			$class = 'confirmed';
