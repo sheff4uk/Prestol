@@ -60,7 +60,7 @@
 		<tbody>
 	<?
 	$query = "SELECT MT.Material
-					,CONCAT(ROUND(ODD_ODB.MT_amount, 1), ' м.п.') MT_amount
+					,CONCAT('<i style=\'border: 1px solid;\'>', ROUND(ODD_ODB.MT_amount, 1), ' м.п.</i>') MT_amount
 					,ODD_ODB.Amount
 					,ODD_ODB.zakaz
 					,ODD_ODB.Code
@@ -95,7 +95,7 @@
 		echo "<tr>";
 		echo "<td>";
 		echo "<div class='code'>{$row["Code"]}</div>";
-		echo "<div>{$row["Material"]}<br><b style='font-size: 1.3em;'>{$row["Amount"]} {$row["zakaz"]}</b> <i style='border: 1px solid;'>{$row["MT_amount"]}</i></div>";
+		echo "<div>{$row["Material"]}<br><b style='font-size: 1.3em;'>{$row["Amount"]} {$row["zakaz"]}</b> {$row["MT_amount"]}</div>";
 		echo "</td>";
 	}
 ?>
