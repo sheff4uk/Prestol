@@ -16,7 +16,7 @@
 		$isexist = $_GET["isex"];
 	}
 	else {
-		$isexist = "0";
+		$isexist = "NULL";
 	}
 
 	if( isset($_GET["prod"]) ) {
@@ -36,49 +36,51 @@
 	// Применение статуса материала или смена поставщика
 	if( isset($_POST["isex"]) )
 	{
-		foreach( $_POST as $k => $v) 
-		{
-			$val = $_POST["IsExist"];
-			$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
-			$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
-			$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
-			if( strpos($k,"prod") === 0 )
-			{
-				$prodid = (int)str_replace( "prod", "", $k );
-				if( isset($_POST["IsExist"]) ) {
-					$query = "UPDATE OrdersDataDetail
-							  SET IsExist = $val
-								 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
-								 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
-								 ,author = {$_SESSION['id']}
-							  WHERE ODD_ID = {$prodid}";
-					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				}
-				if( $_POST["Shipper"] != '' ) {
-					// Обновляем постовщика у материала
-					$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE MT_ID = (SELECT MT_ID FROM OrdersDataDetail WHERE ODD_ID = {$prodid})";
-					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				}
-			}
-			elseif( strpos($k,"other") === 0 ) {
-				$prodid = (int)str_replace( "other", "", $k );
-				if( isset($_POST["IsExist"]) ) {
-					$query = "UPDATE OrdersDataBlank
-							  SET IsExist = $val
-								 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
-								 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
-								 ,author = {$_SESSION['id']}
-							  WHERE ODB_ID = {$prodid}";
-					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				}
-				if( $_POST["Shipper"] != '' ) {
-					// Обновляем постовщика у материала
-					$query = "UPDATE Materials SET SH_ID = {$Shipper} WHERE MT_ID = (SELECT MT_ID FROM OrdersDataBlank WHERE ODB_ID = {$prodid})";
-					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				}
-			}
+		$OrderDate = $_POST["order_date"] ? date( 'Y-m-d', strtotime($_POST["order_date"]) ) : '';
+		$ArrivalDate = $_POST["arrival_date"] ? date( 'Y-m-d', strtotime($_POST["arrival_date"]) ) : '';
+		$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
+		$ODD_IDs = 0;
+		$ODB_IDs = 0;
+
+		// Собираем идентификаторы изделий и прочего
+		foreach ($_POST["prod"] as $k => $v) {
+			$ODD_IDs .= ",{$v}";
 		}
-		//header( "Location: ".$_SERVER['REQUEST_URI'] );
+		foreach ($_POST["other"] as $k => $v) {
+			$ODB_IDs .= ",{$v}";
+		}
+
+		if( isset($_POST["IsExist"]) ) {
+			// Обновляем статус наличия
+			$query = "UPDATE OrdersDataDetail
+					  SET IsExist = {$_POST["IsExist"]}
+						 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
+						 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
+						 ,author = {$_SESSION['id']}
+					  WHERE ODD_ID IN({$ODD_IDs})";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			$query = "UPDATE OrdersDataBlank
+					  SET IsExist = {$_POST["IsExist"]}
+						 ,order_date = IF('{$OrderDate}' = '', order_date, '{$OrderDate}')
+						 ,arrival_date = IF('{$ArrivalDate}' = '', arrival_date, '{$ArrivalDate}')
+						 ,author = {$_SESSION['id']}
+					  WHERE ODB_ID IN({$ODB_IDs})";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+		if( $_POST["Shipper"] != '' ) {
+			// Обновляем постовщика
+			$query = "UPDATE Materials MT
+						JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD_ID IN({$ODD_IDs})
+						SET MT.SH_ID = {$Shipper}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			$query = "UPDATE Materials MT
+						JOIN OrdersDataBlank ODB ON ODB.MT_ID = MT.MT_ID AND ODB_ID IN({$ODB_IDs})
+						SET MT.SH_ID = {$Shipper}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+
 		exit ('<meta http-equiv="refresh" content="0; url='.$_SERVER['REQUEST_URI'].'">');
 		die;
 	}
@@ -196,8 +198,11 @@
 		<button>Фильтр</button>
 	</form>
 
-	<form method='post' style='position: relative;'>
-		<a id="copy-button" class="button" data-clipboard-target="#materials_name" style="position: absolute; left: 150px;" title="Скопировать список материалов в буфер обмена">Скопировать</a>
+	<div>
+		<button disabled id="copy-button" data-clipboard-target="#materials_name">Скопировать список материалов<br>в буфер обмена</button>
+	</div>
+
+	<form method='post' id="formdiv" style='position: relative;'>
 	<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>
 	<table>
 		<thead>
@@ -276,7 +281,7 @@
 
 								,CONCAT( '<input class=\'footage\' type=\'number\' step=\'0.1\' min=\'0\' style=\'width: 50px; height: 19px;\' value=\'', IFNULL(ODD.MT_amount, ''), '\' oddid=\'', ODD.ODD_ID, '\'>' ) MT_amount
 
-								,CONCAT('<input type=\'checkbox\' value=\'1\' name=\'prod', ODD.ODD_ID, '\' class=\'chbox\'><br>') Checkbox
+								,CONCAT('<input type=\'checkbox\' value=\'', ODD.ODD_ID, '\' name=\'prod[]\' class=\'chbox\'><br>') Checkbox
 
 								,IFNULL(ODS_ST.WD_ID, 0) WD_ID
 								#,IFNULL(ODS_ST.IsReady, 0) IsReady
@@ -324,7 +329,7 @@
 
 								,CONCAT( '<input class=\'footage\' type=\'number\' step=\'0.1\' min=\'0\' style=\'width: 50px; height: 19px;\' value=\'', IFNULL(ODB.MT_amount, ''), '\' odbid=\'', ODB.ODB_ID, '\'>' ) MT_amount
 
-								,CONCAT('<input type=\'checkbox\' value=\'1\' name=\'other', ODB.ODB_ID, '\' class=\'chbox\'><br>') Checkbox
+								,CONCAT('<input type=\'checkbox\' value=\'', ODB.ODB_ID, '\' name=\'other[]\' class=\'chbox\'><br>') Checkbox
 
 								,IFNULL(ODS_ST.WD_ID, 0) WD_ID
 								#,IFNULL(ODS_ST.IsReady, 0) IsReady
@@ -535,7 +540,7 @@
 	</form>
 
 <script>
-	$(document).ready(function(){
+	$(function(){
 		// Расстановка tabindex для метража
 		var tabindex = 0;
 		$('.footage').each(function() {
@@ -557,36 +562,36 @@
 		}
 
 		function material_list() {
-			$.ajax({ url: "ajax.php?do=material_list&oddids=<?=$oddids?>0&odbids=<?=$odbids?>0", dataType: "script", async: false });
+			var data = $('#formdiv').serialize();
+			$.ajax({ url: "ajax.php?do=material_list&" + data, dataType: "script", async: false });
 		}
 
-		material_list();
+		$('#selectalltop').change(function(){
+			ch = $('#selectalltop').prop('checked');
+			selectall(ch);
+			material_list();
+			return false;
+		});
 
-		$(function() {
-			$('#selectalltop').change(function(){
-				ch = $('#selectalltop').prop('checked');
-				selectall(ch);
-				return false;
-			});
+		$('#selectallbottom').change(function(){
+			ch = $('#selectallbottom').prop('checked');
+			selectall(ch);
+			material_list();
+			return false;
+		});
 
-			$('#selectallbottom').change(function(){
-				ch = $('#selectallbottom').prop('checked');
-				selectall(ch);
-				return false;
+		$('.chbox').change(function(){
+			var checked_status = true;
+			$('.chbox').each(function(){
+				if( !$(this).prop('checked') )
+				{
+					checked_status = $(this).prop('checked');
+				}
 			});
-
-			$('.chbox').change(function(){
-				var checked_status = true;
-				$('.chbox').each(function(){
-					if( !$(this).prop('checked') )
-					{
-						checked_status = $(this).prop('checked');
-					}
-				});
-				$('#selectalltop').prop('checked', checked_status);
-				$('#selectallbottom').prop('checked', checked_status);
-				return false;
-			});
+			$('#selectalltop').prop('checked', checked_status);
+			$('#selectallbottom').prop('checked', checked_status);
+			material_list();
+			return false;
 		});
 
 		$('#material input').change(function(){

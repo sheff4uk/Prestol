@@ -1420,9 +1420,17 @@ case "footage":
 
 // Формирование списка материалов для заказа
 case "material_list":
-	$oddids = $_GET["oddids"];
-	$odbids = $_GET["odbids"];
 	$materials_name = "";
+	$ODD_IDs = 0;
+	$ODB_IDs = 0;
+
+	// Собираем идентификаторы изделий и прочего
+	foreach ($_GET["prod"] as $k => $v) {
+		$ODD_IDs .= ",{$v}";
+	}
+	foreach ($_GET["other"] as $k => $v) {
+		$ODB_IDs .= ",{$v}";
+	}
 
 	// Находим строку с максимальной длиной
 	$query = "SELECT MAX(CHAR_LENGTH(MT.Material)) length
@@ -1430,27 +1438,27 @@ case "material_list":
 				JOIN (
 					SELECT MT_ID, MT_amount
 					FROM OrdersDataDetail
-					WHERE ODD_ID IN ($oddids)
+					WHERE ODD_ID IN ($ODD_IDs)
 					UNION ALL
 					SELECT MT_ID, MT_amount
 					FROM OrdersDataBlank
-					WHERE ODB_ID IN ($odbids)
+					WHERE ODB_ID IN ($ODB_IDs)
 				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$length = mysqli_result($res,0,'length') ? mysqli_result($res,0,'length') : 0;
 
 	$query = "SELECT RPAD(MT.Material, {$length}, ' ') Material
 					,RPAD(CONCAT('- ', ROUND(ODD_ODB.MT_amount, 1), ' м.п.'), 12, ' ') MT_amount
-					,IF(ODD_ODB.MT_amount, DATE_FORMAT(ODD_ODB.order_date, '%d.%m.%y'), '') order_date
+					,IF(ODD_ODB.IsExist = 1, DATE_FORMAT(ODD_ODB.order_date, '%d.%m.%y'), '') order_date
 				FROM Materials MT
 				JOIN (
-					SELECT MT_ID, MT_amount, order_date
+					SELECT MT_ID, MT_amount, order_date, IsExist
 					FROM OrdersDataDetail
-					WHERE ODD_ID IN ($oddids)
+					WHERE ODD_ID IN ($ODD_IDs)
 					UNION ALL
-					SELECT MT_ID, MT_amount, order_date
+					SELECT MT_ID, MT_amount, order_date, IsExist
 					FROM OrdersDataBlank
-					WHERE ODB_ID IN ($odbids)
+					WHERE ODB_ID IN ($ODB_IDs)
 				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
 				ORDER BY MT.Material";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
@@ -1458,7 +1466,13 @@ case "material_list":
 		$materials_name .= $row["Material"]."\\t".$row["MT_amount"]."\\t".$row["order_date"]."\\r\\n";
 	}
 	//$materials_name = addslashes( $materials_name );
-	echo "window.top.window.$('#materials_name').html('{$materials_name}');";
+	if( $materials_name ) {
+		echo "$('#copy-button').button('enable');";
+	}
+	else {
+		echo "$('#copy-button').button('disable');";
+	}
+	echo "$('#materials_name').html('{$materials_name}');";
 
 	break;
 ///////////////////////////////////////////////////////////////////
