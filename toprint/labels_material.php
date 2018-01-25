@@ -13,7 +13,7 @@
 			margin: 20px;
 			color: #333;
 			font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
-			font-size: 10pt;
+			font-size: 14pt;
 		}
 		table {
 			table-layout: fixed;
@@ -95,7 +95,7 @@
 		echo "<tr>";
 		echo "<td>";
 		echo "<div class='code'>{$row["Code"]}</div>";
-		echo "<div>{$row["Material"]}<br><b style='font-size: 1.3em;'>{$row["Amount"]} {$row["zakaz"]}</b> {$row["MT_amount"]}</div>";
+		echo "<div>{$row["Material"]}<br><b><b style='font-size: 1.3em;'>{$row["Amount"]}</b> {$row["zakaz"]}</b> {$row["MT_amount"]}</div>";
 		echo "</td>";
 	}
 ?>
