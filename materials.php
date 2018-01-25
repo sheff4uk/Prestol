@@ -198,8 +198,14 @@
 		<button>Фильтр</button>
 	</form>
 
-	<div>
-		<button disabled id="copy-button" data-clipboard-target="#materials_name">Скопировать список материалов<br>в буфер обмена</button>
+	<!--Кнопка печати-->
+	<div id="print_btn" style="display: none;">
+		<a id="toprint" style="display: block;" title="Распечатать бирки"></a>
+	</div>
+
+	<!--Копирование материалов в буфер-->
+	<div id="copy_link" style="display: none;">
+		<a id="copy-button" data-clipboard-target="#materials_name" style="display: block; height: 100%" title="Скопировать список материалов в буфер обмена"></a>
 	</div>
 
 	<form method='post' id="formdiv" style='position: relative;'>
@@ -563,8 +569,12 @@
 
 		function material_list() {
 			var data = $('#formdiv').serialize();
+			$("#toprint").attr('href', '/toprint/labels_material.php?' + data);
 			$.ajax({ url: "ajax.php?do=material_list&" + data, dataType: "script", async: false });
 		}
+
+		// Открытие диалога печати
+		$("#toprint").printPage();
 
 		$('#selectalltop').change(function(){
 			ch = $('#selectalltop').prop('checked');

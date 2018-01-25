@@ -1467,10 +1467,12 @@ case "material_list":
 	}
 	//$materials_name = addslashes( $materials_name );
 	if( $materials_name ) {
-		echo "$('#copy-button').button('enable');";
+		echo "$('#copy_link').show();";
+		echo "$('#print_btn').show();";
 	}
 	else {
-		echo "$('#copy-button').button('disable');";
+		echo "$('#copy_link').hide();";
+		echo "$('#print_btn').hide();";
 	}
 	echo "$('#materials_name').html('{$materials_name}');";
 
