@@ -9,16 +9,12 @@
 		die('Недостаточно прав для совершения операции');
 	}
 
-	// Формируем список строк для печати
+	// Формируем список id выбранных заказов из $_GET
 	$id_list = '0';
-	foreach( $_GET as $k => $v)
-	{
-		if( strpos($k,"order") === 0 )
-		{
-			$orderid = (int)str_replace( "order", "", $k );
-			$id_list .= ','.$orderid;
-		}
+	foreach ($_GET["order"] as $k => $v) {
+		$id_list .= ",{$v}";
 	}
+
 	$product_types = "-1";
 	if(isset($_GET["Tables"])) $product_types .= ",2";
 	if(isset($_GET["Chairs"])) $product_types .= ",1";

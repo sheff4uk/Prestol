@@ -53,21 +53,16 @@
 <body>
 <?
 
-	// Формируем список строк для печати
+	// Формируем список id выбранных заказов из $_GET
 	$id_list = '0';
-	foreach( $_GET as $k => $v) 
-	{
-		if( strpos($k,"order") === 0 ) 
-		{
-			$orderid = (int)str_replace( "order", "", $k );
-			$id_list .= ','.$orderid;
-		}
+	foreach ($_GET["order"] as $k => $v) {
+		$id_list .= ",{$v}";
 	}
+
 	$product_types = "-1";
 	if(isset($_GET["Tables"])) $product_types .= ",2";
 	if(isset($_GET["Chairs"])) $product_types .= ",1";
 	if(isset($_GET["Others"])) $product_types .= ",0";
-//	$product_types = substr($product_types, 1);
 
 	//Получаем статус заказов (В работе, Свободные, Отгруженные, Удаленные)
 	$archive = $_GET["archive"] ? $_GET["archive"] : 0;

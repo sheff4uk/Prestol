@@ -999,7 +999,7 @@
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>";
-		echo "<td><span><input type='checkbox' value='1' checked name='order{$row["OD_ID"]}' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b></span></td>";
+		echo "<td><span><input type='checkbox' value='{$row["OD_ID"]}' checked name='order[]' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b></span></td>";
 
 		// Если заказ в накладной - на дате продажи ссылка на накладную
 		if( $row["PFI_ID"] ) {
