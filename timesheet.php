@@ -57,17 +57,16 @@
 		die;
 	}
 
-	// Обновление/добавление нормы часов за месяц
-	if( isset($_POST["normhours"]) ) {
-		$NormHours = ($_POST["normhours"]) ? $_POST["normhours"] : 'NULL';
-		$query = "REPLACE INTO MonthlyNormHours (Year, Month, Hours)
-				  VALUES ({$year}, {$month}, {$NormHours})";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		//header( "Location: ".$location );
-		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
-		die;
-	}
+//	// Обновление/добавление нормы часов за месяц
+//	if( isset($_POST["normhours"]) ) {
+//		$NormHours = ($_POST["normhours"]) ? $_POST["normhours"] : 'NULL';
+//		$query = "REPLACE INTO MonthlyNormHours (Year, Month, Hours)
+//				  VALUES ({$year}, {$month}, {$NormHours})";
+//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//
+//		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+//		die;
+//	}
 
 	// Сохранение данных из таблицы табеля
 	if( isset($_POST["TYear"]) and isset($_POST["TMonth"]) )
@@ -93,11 +92,11 @@
 		die;
 	}
 
-	// Узнаем норму часов на этот месяц
-	$query = "SELECT IFNULL(Hours, '') Hours FROM MonthlyNormHours WHERE Year = {$year} AND Month = {$month}";
-	($result = mysqli_query( $mysqli, $query )) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$myrow = mysqli_fetch_array($result);
-	$NormHours = $myrow['Hours'];
+//	// Узнаем норму часов на этот месяц
+//	$query = "SELECT IFNULL(Hours, '') Hours FROM MonthlyNormHours WHERE Year = {$year} AND Month = {$month}";
+//	($result = mysqli_query( $mysqli, $query )) or die("Invalid query: " .mysqli_error( $mysqli ));
+//	$myrow = mysqli_fetch_array($result);
+//	$NormHours = $myrow['Hours'];
 
 	// Узнаем кол-во дней в выбранном месяце
 	$strdate = '01.'.$month.'.'.$year;
@@ -114,7 +113,7 @@
 				$("#year option[value='<?=$year?>']").prop('selected', true);
 			});
 		</script>
-		<select name="year" id="year">
+		<select name="year" id="year" onchange="this.form.submit()">
 		<?
 			$query = "SELECT YEAR(Date) year FROM TimeSheet GROUP BY year ORDER BY year";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -142,7 +141,7 @@
 				$("#month option[value='<?=$month?>']").prop('selected', true);
 			});
 		</script>
-		<select name="month" id="month">
+		<select name="month" id="month" onchange="this.form.submit()">
 			<option value="1"><?=$MONTHS[1]?></option>
 			<option value="2"><?=$MONTHS[2]?></option>
 			<option value="3"><?=$MONTHS[3]?></option>
@@ -156,19 +155,19 @@
 			<option value="11"><?=$MONTHS[11]?></option>
 			<option value="12"><?=$MONTHS[12]?></option>
 		</select>
-
-		<div class='spase'></div>
-
-		<button>Применить</button>
 	</form>
-
-	<!-- Форма изменения нормы часов -->
+<!--
 	<form method="post" style="display: flex; float: right;">
 		<label for="normhours">Норма часов за месяц:&nbsp;</label>
 		<input type="number" name="normhours" id="normhours" value="<?=$NormHours?>" min="0" max="300">
 		<div class='spase'></div>
 		<button>Сохранить</button>
 	</form>
+-->
+	<span id="normhours" style="float: right;">
+		Норма часов за месяц:
+		<b style="font-size: 1.5em;"></b>
+	</span>
 </div>
 
 <table id="timesheet" class="main_table">
@@ -204,9 +203,11 @@
 						$workdays++;
 					}
 				}
+
+				$NormHours = $workdays*8;
 			?>
 			<script>
-				$('#normhours').attr('placeholder', '<?=($workdays*8)?>');
+				$('#normhours > b').text('<?=$NormHours?>');
 			</script>
 
 			<th width="45">Часы</th>
