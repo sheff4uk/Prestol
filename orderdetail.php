@@ -541,7 +541,6 @@
 	$query .= " GROUP BY ODD.ODD_ID ORDER BY IFNULL(PM.PT_ID, 2) DESC, PM.Model, ODD.ODD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	$ODD = array();
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
@@ -580,8 +579,6 @@
 			echo "<button ".(($disabled or $PFI_ID or $row["inprogress"] or !$editable) ? 'disabled' : '')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button>";
 		}
 		echo "</td></tr>";
-
-		$ODD[$row["ODD_ID"]] = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "model_name"=>$row["Model"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["SH_ID"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "patina"=>$row["patina"] );
 	}
 ?>
 	<!-- Конец таблицы изделий -->
@@ -628,7 +625,6 @@
 	$query .= " GROUP BY ODB.ODB_ID ORDER BY ODB.ODB_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	$ODB = array();
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
@@ -668,8 +664,6 @@
 			echo "<button ".(($disabled or $row["inprogress"] != 0) ? 'disabled' : '')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button>";
 		}
 		echo "</td></tr>";
-
-		$ODB[$row["ODB_ID"]] = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["SH_ID"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "MPT_ID"=>$row["MPT_ID"], "patina"=>$row["patina"] );
 	}
 ?>
 		</tbody>
@@ -926,9 +920,6 @@ if( $id != "NULL" ) {
 		});
 
 		$('.attention img').show();
-
-		odd = <?= json_encode($ODD); ?>;
-		odb = <?= json_encode($ODB); ?>;
 	});
 </script>
 

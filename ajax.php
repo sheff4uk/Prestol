@@ -145,116 +145,6 @@ case "steps":
 	break;
 ///////////////////////////////////////////////////////////////////
 
-// живой поиск в свободных изделиях
-case "livesearch":
-		
-	$pt = $_GET["type"];
-		
-	// Таблица изделий
-	$query = "SELECT ODD.ODD_ID
-					,PM.PT_ID
-					,ODD.Amount
-					,IFNULL(PM.Model, 'Столешница') Model
-					,CONCAT(PF.Form, ' ', PME.Mechanism) Form
-					,IFNULL(CONCAT(ODD.Length, 'х', ODD.Width), '') Size
-					,CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Material
-					,ODD.IsExist
-					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
-					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
-					,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
-					,IF(ODD.is_check = 1, '', 'attention') is_check
-					,SUM(IF(ODS.WD_ID IS NULL, 0, 1)) progress
-					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
-					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
-					,ODD.Comment
-			  FROM OrdersDataDetail ODD
-			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
-			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID";
-	$query .= " WHERE ODD.OD_ID IS NULL AND ODD.Del = 0 AND IFNULL(PM.PT_ID, 2) = {$pt}";
-//	$query .= ( $pt == 1 ) ? " AND PM.PT_ID = {$pt}" : "";
-//	$query .= ($_GET["model"] and $_GET["model"] <> "undefined") ? " AND (ODD.PM_ID = {$_GET["model"]} OR ODD.PM_ID IS NULL)" : "";
-//	$query .= ($_GET["form"] and $_GET["form"] <> "undefined") ? " AND ODD.PF_ID = {$_GET["form"]}" : "";
-//	$query .= ($_GET["mechanism"] and $_GET["mechanism"] <> "undefined") ? " AND ODD.PME_ID = {$_GET["mechanism"]}" : "";
-//	$query .= ($_GET["length"] and $_GET["length"] <> "undefined") ? " AND ODD.Length = {$_GET["length"]}" : "";
-//	$query .= ($_GET["width"] and $_GET["width"] <> "undefined") ? " AND ODD.Width = {$_GET["width"]}" : "";
-//	$query .= ($_GET["material"]) ? " AND MT.Material LIKE '%{$_GET["material"]}%'" : "";
-	$query .= " GROUP BY ODD.ODD_ID";
-	$query .= " ORDER BY progress DESC";
-	
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-	if( mysqli_num_rows($res) > 0) {
-		$hidden = "<input type='hidden' name='free'>";
-		$table = "<table><thead><tr>";
-		$table .= "<th></th>";
-		$table .= "<th class='nowrap'>Кол-во</th>";
-		$table .= "<th>Модель</th>";
-		if( $pt == 2 ) {
-			$table .= "<th>Форма</th>";
-			$table .= "<th>Размер</th>";
-		}
-		$table .= "<th>Этапы</th>";
-		$table .= ($pt == 1) ? "<th>Ткань</th>" : "<th>Пластик</th>";
-		$table .= "<th>Примечание</th>";
-		$table .= "</tr></thead><tbody>";
-	}
-		
-	$count = 0;
-	while( $row = mysqli_fetch_array($res) )
-	{
-		$count = $count + $row["Amount"];
-		$table .= "<tr class='{$row["is_check"]} nowrap free-amount'>";
-		$table .= "<td><input type='checkbox' value='1' class='chbox'><span><input type='number' disabled min='1' max='{$row["Amount"]}' value='{$row["Amount"]}' name='amount{$row["ODD_ID"]}' autocomplete='off' title='Пожалуйста укажите требуемое количество изделий.'> из</span></td>";
-		$table .= "<td>{$row["Amount"]}</td>";
-		$table .= "<td>{$row["Model"]}</td>";
-		if( $pt == 2 ) {
-			$table .= "<td>{$row["Form"]}</td>";
-			$table .= "<td>{$row["Size"]}</td>";
-		}
-		$table .= "<td><a class='edit_steps nowrap shadow{$row["Attention"]}'>{$row["Steps"]}</a></td>";
-		$table .= "<td>";
-		switch ($row["IsExist"]) {
-			case "0":
-				$table .= "<span class='bg-red'>";
-				break;
-			case "1":
-				$table .= "{$row["clock"]}<span class='bg-yellow' title='Заказано: {$row["order_date"]} Ожидается: {$row["arrival_date"]}'>";
-				break;
-			case "2":
-				$table .= "<span class='bg-green'>";
-				break;
-			default:
-				$table .= "<span class='bg-gray'>";
-		}
-		$table .= "{$row["Material"]}</span></td>";
-		$table .= "<td>{$row["Comment"]}</td></tr>";
-	}
-
-	$table .= "</tbody></table>";
-	$table = addcslashes($table, "'");
-	$hidden = addcslashes($hidden, "'");
-
-	echo "window.top.window.$('#{$_GET["this"]} .accordion div').html('{$hidden}{$table}');";
-	echo "window.top.window.$('#{$_GET["this"]} .accordion h3 span').html('{$count}');";
-	// Скрипт блокировки формы при выборе изделия из списка "Свободных"
-	echo "window.top.window.$('.accordion .chbox, .accordion input[type=\"number\"]').change(function(){";
-	echo "var amount = 0;";
-	echo "$('#{$_GET["this"]} .accordion .chbox').each(function(){";
-	echo "if( $(this).prop('checked') ) { amount += parseInt($('~ span > input', this).val()); $('~ span > input', this).prop( 'disabled', false );}";
-	echo "else { $('~ span > input', this).prop( 'disabled', true ); }});";
-	echo "if( amount ){ $('#{$_GET["this"]} fieldset').prop('disabled', true); $( '#{$_GET["this"]} #forms, #{$_GET["this"]} #mechanisms' ).buttonset( 'option', 'disabled', true ); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(amount); $('#{$_GET["this"]} input[name=free]').val(1); $('select[name=Model]').select2('enable',false);}";
-	echo "else{ $('#{$_GET["this"]} fieldset').prop('disabled', false); $( '#{$_GET["this"]} #forms, #{$_GET["this"]} #mechanisms' ).buttonset( 'option', 'disabled', false ); $('#{$_GET["this"]} fieldset input[name=\"Amount\"]').val(''); $('#{$_GET["this"]} input[name=free]').val(0); $('select[name=Model]').select2('enable');}";
-	echo "materialonoff('#{$_GET["this"]}');";
-	echo "return false;";
-	echo "});";
-	break;
-///////////////////////////////////////////////////////////////////
-
 // Смена статуса лакировки
 case "ispainting":
 
@@ -1794,6 +1684,78 @@ case "order_shp":
 			echo "noty({text: 'Проверить <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b>?', type: 'alert'});";
 		}
 	}
+
+	break;
+/////////////////////////////////////////////////////////////////////
+
+// Получаем информацию по изделию чтобы заполнить форму для редактирования
+case "odd_data":
+	$odd_id = $_GET["id"];
+
+	$query = "SELECT ODD.ODD_ID
+					,ODD.Amount
+					,ODD.Price
+					,IFNULL(ODD.PM_ID, 0) PM_ID
+					,PM.Model
+					,ODD.PF_ID
+					,ODD.PME_ID
+					,ODD.Length
+					,ODD.Width
+					,ODD.PieceAmount
+					,ODD.PieceSize
+					,ODD.Comment
+					,IFNULL(MT.Material, '') Material
+					,IFNULL(MT.SH_ID, '') Shipper
+					,ODD.IsExist
+					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
+					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
+					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
+					,ODD.patina
+				FROM OrdersDataDetail ODD
+				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+				LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
+				LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+				WHERE ODD.ODD_ID = {$odd_id}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) )
+	{
+		$odd_data = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "model_name"=>$row["Model"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "color"=>$row["Color"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["Shipper"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "patina"=>$row["patina"] );
+	}
+
+	echo json_encode($odd_data);
+
+	break;
+/////////////////////////////////////////////////////////////////////
+
+// Получаем информацию по прочему чтобы заполнить форму для редактирования
+case "odb_data":
+	$odb_id = $_GET["id"];
+
+	$query = "SELECT ODB.ODB_ID
+					,ODB.Amount
+					,ODB.Price
+					,ODB.BL_ID
+					,ODB.Other
+					,ODB.Comment
+					,IFNULL(MT.Material, '') Material
+					,IFNULL(MT.SH_ID, '') Shipper
+					,ODB.IsExist
+					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
+					,DATE_FORMAT(ODB.order_date, '%d.%m.%Y') order_date
+					,DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y') arrival_date
+					,IFNULL(MT.PT_ID, 0) MPT_ID
+					,ODB.patina
+			  FROM OrdersDataBlank ODB
+			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1
+			  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+			  WHERE ODB.ODB_ID = {$odb_id}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) )
+	{
+		$odb_data = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["Shipper"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "MPT_ID"=>$row["MPT_ID"], "patina"=>$row["patina"] );
+	}
+
+	echo json_encode($odb_data);
 
 	break;
 }

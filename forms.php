@@ -94,15 +94,6 @@
 			<textarea name='Comment' rows='3' cols='38'></textarea>
 		</div>
 		</fieldset>
-<?
-//	if( in_array('order_add_confirm', $Rights) ) {
-//		echo "<div class=\"accordion\">";
-//		echo "<h3>Найдено <span></span> \"Свободных\"</h3>";
-//		echo "<div>";
-//		echo "</div>";
-//		echo "</div>";
-//	}
-?>
 		<div>
 			<hr>
 			<input type='submit' value='Сохранить' style='float: right;'>
@@ -226,15 +217,6 @@
 			<textarea name='Comment' rows='3' cols='38'></textarea>
 		</div>
 		</fieldset>
-<?
-//	if( in_array('order_add_confirm', $Rights) ) {
-//		echo "<div class=\"accordion\">";
-//		echo "<h3>Найдено <span></span> \"Свободных\"</h3>";
-//		echo "<div>";
-//		echo "</div>";
-//		echo "</div>";
-//	}
-?>
 		<div>
 			<hr>
 			<input type='submit' value='Сохранить' style='float: right;'>
@@ -414,15 +396,9 @@
 			return true;
 		};
 
-//		// Set the value, creating a new option if necessary
-//		if ($('#mySelect2').find("option[value='" + data.id + "']").length) {
-//			$('#mySelect2').val(data.id).trigger('change');
-//		} else {
-//			// Create a DOM Option and pre-select by default
-//			var newOption = new Option(data.text, data.id, true, true);
-//			// Append it to the select
-//			$('#mySelect2').append(newOption).trigger('change');
-//		}
+		// Массив куда будут записыапться данные по изделиям
+		odd_data = new Array();
+		odb_data = new Array();
 
 		// Форма добавления стульев
 		$('.edit_product1').click(function() {
@@ -460,52 +436,49 @@
 			// Прячем картинки-треугольники
 			$('#addchair img[id="Amount"]').hide();
 			$('#addchair img[id="Model"]').hide();
-			// Сворачиваем акордион, очищаем
-			$('#addchair .accordion').accordion( "option", "active", false );
-			$('#addchair .accordion div').html('');
-			$('#addchair .accordion h3 span').html('0');
-			$('#addchair .accordion').hide(); // Прячем акордион
 			// Удаляем из селекта архивный элемент
 			$('#addchair select[name="Model"] option.archive').remove();
 
 			// Заполнение
 			if( id > 0 )
 			{
-				$('#addchair input[name="Amount"]').val(odd[id]['amount']);
-				$('#addchair input[name="Price"]').val(odd[id]['price']);
-//				$('#addchair select[name="Model"]').val(odd[id]['model']).trigger('change');
+				// Через ajax получаем данные об изделии
+				$.ajax({ url: "ajax.php?do=odd_data&id=" + id, success:function(msg){ odd_data = msg; }, dataType: "json", async: false });
+
+				$('#addchair input[name="Amount"]').val(odd_data['amount']);
+				$('#addchair input[name="Price"]').val(odd_data['price']);
 
 				// Задание значение, создав при необходимости новую опцию
-				if ($('#addchair select[name="Model"]').find("option[value='" + odd[id]['model'] + "']").length) {
-					$('#addchair select[name="Model"]').val(odd[id]['model']).trigger('change');
+				if ($('#addchair select[name="Model"]').find("option[value='" + odd_data['model'] + "']").length) {
+					$('#addchair select[name="Model"]').val(odd_data['model']).trigger('change');
 				} else {
 					// Create a DOM Option and pre-select by default
-					var newOption = new Option(odd[id]['model_name'] + " (снят с производства)", odd[id]['model'], true, true);
+					var newOption = new Option(odd_data['model_name'] + " (снят с производства)", odd_data['model'], true, true);
 					newOption.className = "archive";
 					// Append it to the select
 					$('#addchair select[name="Model"]').append(newOption).trigger('change');
 				}
 
-				$('#addchair textarea[name="Comment"]').val(odd[id]['comment']);
-				$('#addchair input[name="patina"]').val(odd[id]['patina']);
-				$('#addchair input[name="Material"]').val(odd[id]['material']);
-				$('#addchair select[name="Shipper"]').val(odd[id]['shipper']);
-				$('#1radio'+odd[id]['isexist']).prop('checked', true);
+				$('#addchair textarea[name="Comment"]').val(odd_data['comment']);
+				$('#addchair input[name="patina"]').val(odd_data['patina']);
+				$('#addchair input[name="Material"]').val(odd_data['material']);
+				$('#addchair select[name="Shipper"]').val(odd_data['shipper']);
+				$('#1radio'+odd_data['isexist']).prop('checked', true);
 				$('#addchair .radiostatus input[type="radio"]').button('refresh');
-				if( odd[id]['isexist'] == 1 ) {
+				if( odd_data['isexist'] == 1 ) {
 					$('#addchair .order_material').show('fast');
 					$('#addchair .order_material input').attr("required", true);
-					$('#addchair .order_material input.from').val( odd[id]['order_date'] );
-					$('#addchair .order_material input.to' ).val( odd[id]['arrival_date'] );
+					$('#addchair .order_material input.from').val( odd_data['order_date'] );
+					$('#addchair .order_material input.to' ).val( odd_data['arrival_date'] );
 				}
 
 				// Если изделие в работе, то выводим предупреждения
-				if( odd[id]['inprogress'] == 1 )
+				if( odd_data['inprogress'] == 1 )
 				{
 					$('#addchair img[id="Amount"]').show();
 					$('#addchair input[name="Amount"]').prop('readonly', true);
 					$('#addchair img[id="Model"]').show();
-					$('#addchair input[name="Amount"]').attr('max', odd[id]['amount']);
+					$('#addchair input[name="Amount"]').attr('max', odd_data['amount']);
 				}
 
 				materialonoff('#addchair');
@@ -515,13 +488,7 @@
 			else // Иначе добавляем новый стул
 			{
 				$('#addchair form').attr('action', 'orderdetail.php?id='+odid+'&add=1');
-				if( id != 0 ) {
-					$('#addchair .accordion').show('fast'); // Показываем акордион
-				}
 			}
-
-	//		$('#addchair select[name="Model"]').change( function() { livesearch(this); });
-			$.ajax({ url: "ajax.php?do=livesearch&this=addchair&type=1", dataType: "script", async: false });
 
 			// Если нет ткани, то кнопка наличия не активна
 			$('#addchair input[name="Material"]').change( function() {
@@ -597,68 +564,59 @@
 			$('#addtable img[id="Model"]').hide();
 			$('#addtable img[id="Mechanism"]').hide();
 			$('#addtable img[id="Length"]').hide();
-			// Сворачиваем акордион, очищаем
-			$('#addtable .accordion').accordion( "option", "active", false );
-			$('#addtable .accordion div').html('');
-			$('#addtable .accordion h3 span').html('0');
-			$('#addtable .accordion').hide(); // Прячем акордион
 			// Удаляем из селекта архивный элемент
 			$('#addtable select[name="Model"] option.archive').remove();
 
 			// Заполнение
 			if( id > 0 )
 			{
-				var model = odd[id]['model'];
-				var form = odd[id]['form'];
-				// Если известна модель, то выводим соответствующий список форм
-	//			if( odd[id]['model'] ) {
-	//				FormModelList(odd[id]['model'], odd[id]['form']);
-	//			}
-				$('#addtable input[name="Amount"]').val(odd[id]['amount']);
-				$('#addtable input[name="Price"]').val(odd[id]['price']);
-//				$('#addtable select[name="Model"]').val(odd[id]['model']).trigger('change');
+				// Через ajax получаем данные об изделии
+				$.ajax({ url: "ajax.php?do=odd_data&id=" + id, success:function(msg){ odd_data = msg; }, dataType: "json", async: false });
+
+				var model = odd_data['model'];
+				var form = odd_data['form'];
+				$('#addtable input[name="Amount"]').val(odd_data['amount']);
+				$('#addtable input[name="Price"]').val(odd_data['price']);
 
 				// Задание значение, создав при необходимости новую опцию
-				if ($('#addtable select[name="Model"]').find("option[value='" + odd[id]['model'] + "']").length) {
-					$('#addtable select[name="Model"]').val(odd[id]['model']).trigger('change');
+				if ($('#addtable select[name="Model"]').find("option[value='" + odd_data['model'] + "']").length) {
+					$('#addtable select[name="Model"]').val(odd_data['model']).trigger('change');
 				} else {
 					// Create a DOM Option and pre-select by default
-					var newOption = new Option(odd[id]['model_name'] + " (снят с производства)", odd[id]['model'], true, true);
+					var newOption = new Option(odd_data['model_name'] + " (снят с производства)", odd_data['model'], true, true);
 					newOption.className = "archive";
 					// Append it to the select
 					$('#addtable select[name="Model"]').append(newOption).trigger('change');
 				}
 
-				//$('#form'+odd[id]['form']).prop('checked', true);
-				//$('#addtable input[name="Form"]').button("refresh");
-				$('#mechanism'+odd[id]['mechanism']).prop('checked', true);
+				$('#mechanism'+odd_data['mechanism']).prop('checked', true);
 				$('#addtable input[name="Mechanism"]').button("refresh");
-				$('#addtable input[name="Length"]').val(odd[id]['length']);
-				$('#addtable input[name="Width"]').val(odd[id]['width']);
-				$('#addtable input[name="PieceAmount"]').val(odd[id]['PieceAmount']);
-				$('#addtable input[name="PieceSize"]').val(odd[id]['PieceSize']);
-				$('#addtable textarea[name="Comment"]').val(odd[id]['comment']);
-				$('#addtable input[name="patina"]').val(odd[id]['patina']);
-				$('#addtable input[name="Material"]').val(odd[id]['material']);
-				$('#addtable select[name="Shipper"]').val(odd[id]['shipper']);
-				$('#2radio'+odd[id]['isexist']).prop('checked', true);
+				$('#addtable input[name="Length"]').val(odd_data['length']);
+				$('#addtable input[name="Width"]').val(odd_data['width']);
+				$('#addtable input[name="PieceAmount"]').val(odd_data['PieceAmount']);
+				$('#addtable input[name="PieceSize"]').val(odd_data['PieceSize']);
+				$('#addtable textarea[name="Comment"]').val(odd_data['comment']);
+				$('#addtable input[name="patina"]').val(odd_data['patina']);
+				$('#addtable input[name="Material"]').val(odd_data['material']);
+				$('#addtable select[name="Shipper"]').val(odd_data['shipper']);
+				$('#2radio'+odd_data['isexist']).prop('checked', true);
 				$('#addtable .radiostatus input[type="radio"]').button('refresh');
-				if( odd[id]['isexist'] == 1 ) {
+				if( odd_data['isexist'] == 1 ) {
 					$('#addtable .order_material').show('fast');
 					$('#addtable .order_material input').attr("required", true);
-					$('#addtable .order_material input.from').val( odd[id]['order_date'] );
-					$('#addtable .order_material input.to' ).val( odd[id]['arrival_date'] );
+					$('#addtable .order_material input.from').val( odd_data['order_date'] );
+					$('#addtable .order_material input.to' ).val( odd_data['arrival_date'] );
 				}
 
 				// Если изделие в работе, то выводятся предупреждения
-				if( odd[id]['inprogress'] == 1 )
+				if( odd_data['inprogress'] == 1 )
 				{
 					$('#addtable img[id="Amount"]').show();
 					$('#addtable input[name="Amount"]').prop('readonly', true);
 					$('#addtable img[id="Model"]').show();
 					$('#addtable img[id="Mechanism"]').show();
 					$('#addtable img[id="Length"]').show();
-					$('#addtable input[name="Amount"]').attr('max', odd[id]['amount']);
+					$('#addtable input[name="Amount"]').attr('max', odd_data['amount']);
 				}
 
 				materialonoff('#addtable');
@@ -670,9 +628,6 @@
 				var model = 0;
 				var form = 0;
 				$("#addtable form").attr("action", "orderdetail.php?id="+odid+"&add=1");
-				if( id != 0 ) {
-					$('#addtable .accordion').show('fast'); // Показываем акордион
-				}
 			}
 
 			FormModelList(model, form);
@@ -694,10 +649,7 @@
 					form = $(this).val();
 				});
 
-	//			livesearch(this);
 			});
-
-			$.ajax({ url: "ajax.php?do=livesearch&this=addtable&type=2", dataType: "script", async: false });
 
 			// Если нет пластика, то кнопка наличия не активна
 			$('#addtable input[name="Material"]').change( function() {
@@ -766,52 +718,55 @@
 			// Заполнение
 			if( id > 0 )
 			{
-				$('#addblank input[name="Amount"]').val(odb[id]['amount']);
-				$('#addblank input[name="Price"]').val(odb[id]['price']);
-				if( odb[id]['blank'] > 0 ) {
-					$('#addblank select[name="Blanks"]').val(odb[id]['blank']).trigger('change');
+				// Через ajax получаем данные об изделии
+				$.ajax({ url: "ajax.php?do=odb_data&id=" + id, success:function(msg){ odb_data = msg; }, dataType: "json", async: false });
+
+				$('#addblank input[name="Amount"]').val(odb_data['amount']);
+				$('#addblank input[name="Price"]').val(odb_data['price']);
+				if( odb_data['blank'] > 0 ) {
+					$('#addblank select[name="Blanks"]').val(odb_data['blank']).trigger('change');
 					$('#addblank input[name="Other"]').prop('disabled', true);
 					$('#addblank input[name="Other"]').prop("required", false);
 				}
 				else {
-					$('#addblank input[name="Other"]').val(odb[id]['other']);
+					$('#addblank input[name="Other"]').val(odb_data['other']);
 					$('#addblank select[name="Blanks"]').prop('disabled', true);
 					$('#addblank select[name="Blanks"]').prop('required', false);
 				}
-				$('#addblank textarea[name="Comment"]').val(odb[id]['comment']);
-				$('#addblank input[name="patina"]').val(odb[id]['patina']);
+				$('#addblank textarea[name="Comment"]').val(odb_data['comment']);
+				$('#addblank input[name="patina"]').val(odb_data['patina']);
 
 				// Заполняем ткань/пластик
-				if( odb[id]['MPT_ID'] == 1 ) {
-					$('#addblank input[name="Material"]:eq(0)').val(odb[id]['material']);
-					$('#addblank select[name="Shipper"]:eq(0)').val(odb[id]['shipper']);
+				if( odb_data['MPT_ID'] == 1 ) {
+					$('#addblank input[name="Material"]:eq(0)').val(odb_data['material']);
+					$('#addblank select[name="Shipper"]:eq(0)').val(odb_data['shipper']);
 					$('#addblank input[name="Material"]:eq(1)').attr('disabled', true);
 					$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', true);
 					$('#addblank input[name="MPT_ID"]').val('1');
 				}
-				else if( odb[id]['MPT_ID'] == 2 ) {
-					$('#addblank input[name="Material"]:eq(1)').val(odb[id]['material']);
-					$('#addblank select[name="Shipper"]:eq(1)').val(odb[id]['shipper']);
+				else if( odb_data['MPT_ID'] == 2 ) {
+					$('#addblank input[name="Material"]:eq(1)').val(odb_data['material']);
+					$('#addblank select[name="Shipper"]:eq(1)').val(odb_data['shipper']);
 					$('#addblank input[name="Material"]:eq(0)').attr('disabled', true);
 					$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', true);
 					$('#addblank input[name="MPT_ID"]').val('2');
 				}
 
-				$('#0radio'+odb[id]['isexist']).prop('checked', true);
+				$('#0radio'+odb_data['isexist']).prop('checked', true);
 				$('#addblank .radiostatus input[type="radio"]').button('refresh');
-				if( odb[id]['isexist'] == 1 ) {
+				if( odb_data['isexist'] == 1 ) {
 					$('#addblank .order_material').show('fast');
 					$('#addblank .order_material input').attr("required", true);
-					$('#addblank .order_material input.from').val( odb[id]['order_date'] );
-					$('#addblank .order_material input.to' ).val( odb[id]['arrival_date'] );
+					$('#addblank .order_material input.from').val( odb_data['order_date'] );
+					$('#addblank .order_material input.to' ).val( odb_data['arrival_date'] );
 				}
 
 				// Если изделие в работе, то выводятся предупреждения
-				if( odb[id]['inprogress'] == 1 )
+				if( odb_data['inprogress'] == 1 )
 				{
 					$('#addblank img[id="Amount"]').show();
 					$('#addblank input[name="Amount"]').prop('readonly', true);
-					$('#addblank input[name="Amount"]').attr('max', odb[id]['amount']);
+					$('#addblank input[name="Amount"]').attr('max', odb_data['amount']);
 				}
 
 				materialonoff('#addblank');
