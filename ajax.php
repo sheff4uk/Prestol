@@ -157,7 +157,7 @@ case "ispainting":
 	$filter = $_GET["filter"];
 
 	// Обновляем статус лакировки
-	$query = "UPDATE OrdersData SET IsPainting = {$val}, WD_ID = NULL, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+	$query = "UPDATE OrdersData SET IsPainting = {$val}, paint_date = IF({$val} = 3, NOW(), NULL), WD_ID = NULL, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 	// Получаем статус лакировки и отгрузку из базы
