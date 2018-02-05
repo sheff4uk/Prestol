@@ -28,7 +28,7 @@
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 		$OrderNumber = mysqli_real_escape_string( $mysqli, $_POST["OrderNumber"] );
 		$Color = mysqli_real_escape_string( $mysqli, $_POST["Color"] );
-		$clear = $_POST["clear"] ? $_POST["clear"] : "NULL";
+		$clear = isset($_POST["clear"]) ? $_POST["clear"] : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli, $_POST["Comment"] );
 		// Удаляем лишние пробелы
 		$ClientName = trim($ClientName);
@@ -1332,11 +1332,12 @@
 		$('#add_btn').click( function() {
 			// Очистка формы
 			$('#order_form fieldset select').val('').trigger('change');
-			$('#order_form fieldset input').val('');
+			$('#order_form fieldset input[type="text"]').val('');
 			$('#order_form fieldset textarea').val('');
 			$('#order_form fieldset input[name="EndDate"]').val('<?=$_SESSION["end_date"]?>');
 			$('#order_form fieldset #ul').val('1');
 			$('#order_form fieldset #ul').prop( "checked", false );
+			$('#order_form .btnset input').prop( "checked", false );
 
 			// Скрытие полей
 			$('#order_form #ClientName').hide('fast');
