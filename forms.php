@@ -380,6 +380,55 @@
 <!-- Конец формы разбитя заказа -->
 
 <script>
+	// Функция активирует/деактивирует кнопки наличия ткани/пластика
+	function materialonoff(element)
+	{
+		var length = $(element+' input[name="Material"]:enabled').val().length;
+		if( length == 0 )
+		{
+			$(element+' .radiostatus input[type="radio"]').prop('disabled', true);
+			// Очистка инпутов дат заказа пластика
+			$('#1radio').prop('checked', true);
+			$('#2radio').prop('checked', true);
+			$('#0radio').prop('checked', true);
+			$(element+' .order_material').hide('fast');
+			$(element+' .order_material input').attr("required", false);
+			$(element+' .order_material input').val('');
+			$(element+' .order_material input.from').datepicker( "option", "maxDate", null );
+			$(element+' .order_material input.to').datepicker( "option", "minDate", null );
+		}
+		else
+		{
+			$(element+' .radiostatus input[type="radio"]').prop('disabled', false);
+		}
+		$(element+' .radiostatus input[type="radio"]').button('refresh');
+		return false;
+	}
+
+	// Функция формирования списка форм в зависимости от модели стола
+	function FormModelList(model, form) {
+		var forms = "";
+		var arr = ModelForm[model];
+		var informs = 0;
+		if( typeof arr !== "undefined" ) {
+			$.each(arr, function(key, val){
+				forms += "<input type='radio' id='form" + key + "' name='Form' value='" + key + "'>";
+				forms += "<label for='form" + key + "'>" + val + "</label>";
+				if( form == key ) { informs = 1; }
+			});
+		}
+		$('#addtable #forms').html(forms);
+		if( forms != "" ) {
+			if( form > 0 && informs ) {
+				$('#addtable input[name="Form"][value="'+form+'"]').prop('checked', true);
+			}
+			else {
+				$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
+			}
+			$('#addtable #forms').buttonset();
+		}
+	}
+	//////////////////////////////////////////////////////////////////////////
 	$(function() {
 		// Select2
 		$('select[name="Model"]').select2({
@@ -490,21 +539,6 @@
 				$('#addchair form').attr('action', 'orderdetail.php?id='+odid+'&add=1');
 			}
 
-			// Если нет ткани, то кнопка наличия не активна
-			$('#addchair input[name="Material"]').change( function() {
-				materialonoff('#addchair');
-			});
-			$('#addchair input[name="Material"]').on( "autocompleteselect", function() {
-				materialonoff('#addchair');
-			});
-			// Костыль для активации кнопок наличия материала при вставке из буфера
-	//		$('#addchair input[name="Material"]').bind('paste', function(e) {
-	//			var pastedData = e.originalEvent.clipboardData.getData('text');
-	//			$(this).val(' ');
-	//			materialonoff('#addchair');
-	//			$(this).val('');
-	//		});
-
 			// Форма добавления/редактирования стульев
 			$('#addchair').dialog({
 				width: 600,
@@ -518,6 +552,11 @@
 			$( ".materialtags_1" ).autocomplete( "option", "appendTo", "#addchair" );
 
 			return false;
+		});
+
+		// Если нет ткани, то кнопка наличия не активна
+		$('#addchair input[name="Material"]').change( function() {
+			materialonoff('#addchair');
 		});
 
 		// Форма добавления столов
@@ -651,21 +690,6 @@
 
 			});
 
-			// Если нет пластика, то кнопка наличия не активна
-			$('#addtable input[name="Material"]').change( function() {
-				materialonoff('#addtable');
-			});
-			$('#addtable input[name="Material"]').on( "autocompleteselect", function() {
-				materialonoff('#addtable');
-			});
-			// Костыль для активации кнопок наличия материала при вставке из буфера
-	//		$('#addtable input[name="Material"]').bind('paste', function(e) {
-	//			var pastedData = e.originalEvent.clipboardData.getData('text');
-	//			$(this).val(' ');
-	//			materialonoff('#addtable');
-	//			$(this).val('');
-	//		});
-
 			$("#addtable").dialog(
 			{
 				width: 850,
@@ -679,6 +703,11 @@
 			$( ".materialtags_2" ).autocomplete( "option", "appendTo", "#addtable" );
 
 			return false;
+		});
+
+		// Если нет пластика, то кнопка наличия не активна
+		$('#addtable input[name="Material"]').change( function() {
+			materialonoff('#addtable');
 		});
 
 		// Форма добавления заготовок
@@ -777,62 +806,6 @@
 				$('#addblank form').attr('action', 'orderdetail.php?id='+odid+'&addblank=1');
 			}
 
-			$('#addblank select[name="Blanks"]').change( function() {
-				if( !(id > 0) ) {
-					val = $(this).val();
-					if( val != '' ) {
-						$('#addblank input[name="Other"]').prop('disabled', true);
-						$('#addblank input[name="Other"]').prop("required", false);
-					}
-					else {
-						$('#addblank input[name="Other"]').prop('disabled', false);
-						$('#addblank input[name="Other"]').prop("required", true);
-					}
-				}
-			});
-
-			$('#addblank input[name="Other"]').change( function() {
-				if( !(id > 0) ) {
-					val = $(this).val();
-					if( val != '' ) {
-						$('#addblank select[name="Blanks"]').prop('disabled', true);
-						$('#addblank select[name="Blanks"]').prop('required', false);
-					}
-					else {
-						$('#addblank select[name="Blanks"]').prop('disabled', false);
-						$('#addblank select[name="Blanks"]').prop('required', true);
-					}
-				}
-			});
-
-			// Если добавлена ткань - то пластик не доступеню. И наоборот.
-			$('#addblank input[name="Material"]:eq(0)').blur(function(){
-				if( $(this).val().length > 0 ) {
-					$('#addblank input[name="Material"]:eq(1)').attr('disabled', true);
-					$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', true);
-					$('#addblank input[name="MPT_ID"]').val('1');
-				}
-				else {
-					$('#addblank input[name="Material"]:eq(1)').attr('disabled', false);
-					$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', false);
-					$('#addblank input[name="MPT_ID"]').val('');
-				}
-				materialonoff('#addblank');
-			});
-			$('#addblank input[name="Material"]:eq(1)').blur(function(){
-				if( $(this).val().length > 0 ) {
-					$('#addblank input[name="Material"]:eq(0)').attr('disabled', true);
-					$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', true);
-					$('#addblank input[name="MPT_ID"]').val('2');
-				}
-				else {
-					$('#addblank input[name="Material"]:eq(0)').attr('disabled', false);
-					$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', false);
-					$('#addblank input[name="MPT_ID"]').val('');
-				}
-				materialonoff('#addblank');
-			});
-
 			// Если нет материала, то кнопка наличия не активна
 			$('#addblank input[name="Material"]:eq(0)').on( "autocompleteselect", function() {
 				$('#addblank input[name="Material"]:eq(0)').blur();
@@ -855,6 +828,62 @@
 			$( ".materialtags_2" ).autocomplete( "option", "appendTo", "#addblank" );
 
 			return false;
+		});
+
+		$('#addblank select[name="Blanks"]').change( function() {
+			if( !(id > 0) ) {
+				val = $(this).val();
+				if( val != '' ) {
+					$('#addblank input[name="Other"]').prop('disabled', true);
+					$('#addblank input[name="Other"]').prop("required", false);
+				}
+				else {
+					$('#addblank input[name="Other"]').prop('disabled', false);
+					$('#addblank input[name="Other"]').prop("required", true);
+				}
+			}
+		});
+
+		$('#addblank input[name="Other"]').change( function() {
+			if( !(id > 0) ) {
+				val = $(this).val();
+				if( val != '' ) {
+					$('#addblank select[name="Blanks"]').prop('disabled', true);
+					$('#addblank select[name="Blanks"]').prop('required', false);
+				}
+				else {
+					$('#addblank select[name="Blanks"]').prop('disabled', false);
+					$('#addblank select[name="Blanks"]').prop('required', true);
+				}
+			}
+		});
+
+		// Если добавлена ткань - то пластик не доступеню. И наоборот.
+		$('#addblank input[name="Material"]:eq(0)').blur(function(){
+			if( $(this).val().length > 0 ) {
+				$('#addblank input[name="Material"]:eq(1)').attr('disabled', true);
+				$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', true);
+				$('#addblank input[name="MPT_ID"]').val('1');
+			}
+			else {
+				$('#addblank input[name="Material"]:eq(1)').attr('disabled', false);
+				$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', false);
+				$('#addblank input[name="MPT_ID"]').val('');
+			}
+			materialonoff('#addblank');
+		});
+		$('#addblank input[name="Material"]:eq(1)').blur(function(){
+			if( $(this).val().length > 0 ) {
+				$('#addblank input[name="Material"]:eq(0)').attr('disabled', true);
+				$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', true);
+				$('#addblank input[name="MPT_ID"]').val('2');
+			}
+			else {
+				$('#addblank input[name="Material"]:eq(0)').attr('disabled', false);
+				$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', false);
+				$('#addblank input[name="MPT_ID"]').val('');
+			}
+			materialonoff('#addblank');
 		});
 	});
 </script>

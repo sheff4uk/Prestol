@@ -92,7 +92,7 @@
 					,OD.OrderNumber
 					,ODD_ODB.Zakaz
 					,ODD_ODB.Amount
-					,OD.Color
+					,Color(OD.CL_ID) Color
 					,ODD_ODB.Material
 					,IFNULL(OD.sell_comment, '') Comment
 					,IF(OD.SH_ID IS NULL, 1, 0) is_free

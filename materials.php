@@ -243,7 +243,7 @@
 					,OD.OrderNumber
 					,OD.Comment
 					,OD.IsPainting
-					,IFNULL(OD.Color, '<a href=\"/orderdetail.php\">Свободные</a>') Color
+					,Color(OD.CL_ID) Color
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 					,GROUP_CONCAT(ODD_ODB.Zakaz_lock SEPARATOR '') Zakaz_lock

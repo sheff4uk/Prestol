@@ -811,7 +811,7 @@
 						,OD.OrderNumber
 						,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 						,GROUP_CONCAT(ODD_ODB.Amount SEPARATOR '') Amount
-						,OD.Color
+						,Color(OD.CL_ID) Color
 						,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
 						,SUM(ODD_ODB.Price) - IFNULL(OD.discount, 0) Price
 						,SUM(ODD_ODB.opt_price) opt_price

@@ -50,7 +50,7 @@
 					,OD.Comment
 					,GROUP_CONCAT(CONCAT('<span class=\'', IF(ODS_WD.IsReady = 1, 'line', ''), '\'>', ODD.Amount, ' ', PM.Model, ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), '')), ''), '</span><br>') ORDER BY PM.PT_ID DESC, ODD.ODD_ID SEPARATOR '') Zakaz
                     
-					,OD.Color
+					,Color(OD.CL_ID) Color
 					
                     ,GROUP_CONCAT(CONCAT(IF(PM.PT_ID = 1, IFNULL(MT.Material, ''), ''),
                         IF(PM.PT_ID = 1,

@@ -28,6 +28,7 @@
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 		$OrderNumber = mysqli_real_escape_string( $mysqli, $_POST["OrderNumber"] );
 		$Color = mysqli_real_escape_string( $mysqli, $_POST["Color"] );
+		$clear = $_POST["clear"] ? $_POST["clear"] : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli, $_POST["Comment"] );
 		// Удаляем лишние пробелы
 		$ClientName = trim($ClientName);
@@ -35,8 +36,26 @@
 		$Color = trim($Color);
 		$Comment = trim($Comment);
 		$confirmed = in_array('order_add_confirm', $Rights) ? 1 : 0;
-		$query = "INSERT INTO OrdersData(CLientName, ul, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Color, Comment, creator, confirmed)
-				  VALUES ('{$ClientName}', $ul, '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Color}', '{$Comment}', {$_SESSION['id']}, {$confirmed})";
+
+		// Сохраняем в таблицу цветов полученный цвет и узнаем его ID
+		if( $Color != '' ) {
+			$query = "INSERT INTO Colors
+						SET
+							color = '{$Color}',
+							clear = {$clear},
+							count = 0
+						ON DUPLICATE KEY UPDATE
+							count = count + 1,
+							clear = {$clear}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$cl_id = mysqli_insert_id( $mysqli );
+		}
+		else {
+			$cl_id = "NULL";
+		}
+
+		$query = "INSERT INTO OrdersData(CLientName, ul, AddDate, StartDate, EndDate, SH_ID, OrderNumber, CL_ID, Comment, creator, confirmed)
+				  VALUES ('{$ClientName}', $ul, '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', $cl_id, '{$Comment}', {$_SESSION['id']}, {$confirmed})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
 		// Перенаправление на экран деталей заказа
@@ -44,47 +63,6 @@
 		exit ('<meta http-equiv="refresh" content="0; url=/orderdetail.php?id='.$id.'">');
 		die;
 	}
-
-//	// Удаление заказа
-//	if( isset($_GET["del"]) )
-//	{
-//		if( !in_array('order_add', $Rights) ) {
-//			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-//			die('Недостаточно прав для совершения операции');
-//		}
-//		$id = (int)$_GET["del"];
-//
-//		$query = "UPDATE OrdersData SET Del = 1, DelDate = NOW(), author = {$_SESSION['id']} WHERE OD_ID={$id}";
-//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//
-//		exit ('<meta http-equiv="refresh" content="0; url=/">');
-//		die;
-//	}
-//
-//	// Подтверждение отгрузки заказа
-//	if( isset($_GET["ready"]) )
-//	{
-//		if( !in_array('order_ready', $Rights) ) {
-//			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-//			die('Недостаточно прав для совершения операции');
-//		}
-//		$id = (int)$_GET["ready"];
-//		$date = date("Y-m-d");
-//		$query = "UPDATE OrdersData SET ReadyDate = '{$date}', IsPainting = 3, author = {$_SESSION['id']} WHERE OD_ID={$id}";
-//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//
-//		// Если это розничный заказ, то предлагаем перейти в реализацию
-//		$query = "SELECT SH.retail, SH.CT_ID FROM OrdersData OD LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD_ID = {$id}";
-//		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//		$retail = mysqli_result($res,0,'retail');
-//		if( $retail == "1" ) {
-//			$CT_ID = mysqli_result($res,0,'CT_ID');
-//			$_SESSION['selling_link'] = "/selling.php?CT_ID={$CT_ID}#ord{$id}";
-//		}
-//
-//		exit ('<meta http-equiv="refresh" content="0; url=/">');
-//		die;
-//	}
 
 	// Добавление отгрузки
 	if( isset($_POST["CT_ID"]) ) {
@@ -435,7 +413,17 @@
 				<div>
 					<p style='color: #911;'>ВНИМАНИЕ! Патина указывается у каждого изделия персонально в специальной графе "патина".</p>
 					<label>Цвет:</label>
-					<input required type='text' class='colortags' name='Color' size='38' autocomplete='off' placeholder='ЗДЕСЬ ПАТИНУ УКАЗЫВАТЬ НЕ НУЖНО'>
+					<div style="display: inline-block;">
+						<input type='text' id='paint_color' class='colortags' name='Color' style='width: 300px;' placeholder='ЗДЕСЬ ПАТИНУ УКАЗЫВАТЬ НЕ НУЖНО'>
+						<div class='btnset'>
+							<input required type='radio' id='clear1' name='clear' value='1'>
+								<label for='clear1'>Прозрачный</label>
+							<input required type='radio' id='clear0' name='clear' value='0'>
+								<label for='clear0'>Эмаль</label>
+						</div>
+						<i class='fa fa-question-circle' style='margin: 5px;' title='Прозрачное поктытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'>Подсказка</i>
+					</div>
+
 				</div>
 				<div>
 					<label>Примечание:</label>
@@ -793,7 +781,7 @@
 					,COUNT(ODD_ODB.itemID) Child
 					,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 					,GROUP_CONCAT(ODD_ODB.Zakaz_lock SEPARATOR '') Zakaz_lock
-					,OD.Color
+					,Color(OD.CL_ID) Color
 					,OD.IsPainting
 					,WD.Name
 					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
@@ -930,7 +918,7 @@
 				  $query .= " AND OD.IsPainting = {$_SESSION["f_IP"]}";
 			  }
 			  if( $_SESSION["f_CR"] != "" ) {
-				  $query .= " AND OD.Color LIKE '%{$_SESSION["f_CR"]}%'";
+				  $query .= " AND Color(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%'";
 			  }
 			  if( $_SESSION["f_CF"] != "" ) {
 				  $query .= " AND OD.confirmed = {$_SESSION["f_CF"]}";
@@ -1357,6 +1345,9 @@
 				$('#order_form #OrderNumber input').attr('disabled', true);
 			$('#order_form #StartDate').hide('fast');
 				$('#order_form #StartDate input').attr('disabled', true);
+
+			// Деактивация кнопок типа покраски
+			clearonoff('#paint_color');
 
 			$('#order_form').dialog({
 				width: 500,

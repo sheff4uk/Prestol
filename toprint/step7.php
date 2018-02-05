@@ -47,7 +47,7 @@
                     ,CONCAT(PF.Form, ' ', PME.Mechanism) Form
                     ,CONCAT(ODD.Length, 'х', ODD.Width) Size
                     ,MT.Material
-                    ,OD.Color
+                    ,Color(OD.CL_ID) Color
                     ,OD.Comment
                     ,SUM(IF(ODS.ST_ID = 7, ODS.WD_ID, 0)) Step7
                     ,GROUP_CONCAT(IF(ODS.ST_ID = 7, WD.Name, '') SEPARATOR '') worker7

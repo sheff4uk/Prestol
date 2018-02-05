@@ -30,11 +30,16 @@ case "shopstags":
 
 case "colortags":
 	// Автокомплит цветов
-	$query = "SELECT Color FROM OrdersData WHERE Color LIKE '%{$_GET["term"]}%' GROUP BY Color ORDER BY COUNT(1) DESC";
+	$query = "SELECT color
+					,clear
+					,Color(CL_ID) label
+				FROM Colors
+				WHERE color LIKE '%{$_GET["term"]}%'
+				ORDER BY count DESC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$ColorTags[] = $row["Color"];
+		$ColorTags[] = array( "label"=>$row["label"], "value"=>$row["color"], "clear"=>$row["clear"] );
 	}
 	echo json_encode($ColorTags);
 	break;

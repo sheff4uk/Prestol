@@ -102,7 +102,7 @@
 					,OD.OrderNumber
 					,ODD_ODB.Zakaz
 					,ODD_ODB.Patina
-					,OD.Color
+					,Color(OD.CL_ID) Color
 					,OD.IsPainting
 					,ODD_ODB.Material
 					,IFNULL(ODD_ODB.Steps, '') Steps

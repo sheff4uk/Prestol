@@ -39,14 +39,6 @@
 	{
 		exit ('<meta http-equiv="refresh" content="0; url=/">');
 		die;
-//		// Проверка прав на доступ к экрану
-//		if( !in_array('screen_free', $Rights) ) {
-//			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-//			die('Недостаточно прав для совершения операции');
-//		}
-//		$id = "NULL";
-//		$location = "orderdetail.php?free=1";
-//		$free = 1;
 	}
 
 	// Обновление основной информации о заказе
@@ -59,6 +51,7 @@
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 		$OrderNumber = mysqli_real_escape_string( $mysqli,$_POST["OrderNumber"] );
 		$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
+		$clear = isset($_POST["clear"]) ? $_POST["clear"] : "NULL";
 		//$IsPainting = $_POST["IsPainting"];
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 		// Удаляем лишние пробелы
@@ -66,6 +59,24 @@
 		$OrderNumber = trim($OrderNumber);
 		$Color = trim($Color);
 		$Comment = trim($Comment);
+
+		// Сохраняем в таблицу цветов полученный цвет и узнаем его ID
+		if( $Color != '' ) {
+			$query = "INSERT INTO Colors
+						SET
+							color = '{$Color}',
+							clear = {$clear},
+							count = 0
+						ON DUPLICATE KEY UPDATE
+							count = count + 1,
+							clear = {$clear}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$cl_id = mysqli_insert_id( $mysqli );
+		}
+		else {
+			$cl_id = "NULL";
+		}
+
 		$query = "UPDATE OrdersData
 					SET CLientName = ".(isset($_POST["ClientName"]) ? "'{$ClientName}'" : "CLientName")."
 						,ul = ".(isset($_POST["ClientName"]) ? $ul : "ul")."
@@ -73,7 +84,7 @@
 						,EndDate = ".(isset($_POST["EndDate"]) ? $EndDate : "EndDate")."
 						,SH_ID = ".(isset($_POST["Shop"]) ? $Shop : "SH_ID")."
 						,OrderNumber = ".(isset($_POST["OrderNumber"]) ? "'{$OrderNumber}'" : "OrderNumber")."
-						,Color = ".(isset($_POST["Color"]) ? "'{$Color}'" : "Color")."
+						,CL_ID = ".(isset($_POST["Color"]) ? $cl_id : "CL_ID")."
 						#,IsPainting = ".( isset($_POST["IsPainting"]) ? $_POST["IsPainting"] : "IsPainting" )."
 						,Comment = ".(isset($_POST["Comment"]) ? "'{$Comment}'" : "Comment")."
 						,author = {$_SESSION['id']}
@@ -303,7 +314,8 @@
 						,IFNULL(OD.SH_ID, 0) SH_ID
 						,IFNULL(SH.KA_ID, 0) KA_ID
 						,OD.OrderNumber
-						,OD.Color
+						,CL.color Color
+						,CL.clear
 						,OD.IsPainting
 						,WD.Name
 						,OD.Comment
@@ -319,6 +331,7 @@
 				  LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
 				  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 				  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+				  LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
 				  WHERE OD_ID = {$id}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$Code = mysqli_result($res,0,'Code');
@@ -333,6 +346,7 @@
 		$KA_ID = mysqli_result($res,0,'KA_ID');
 		$OrderNumber = mysqli_result($res,0,'OrderNumber');
 		$Color = mysqli_result($res,0,'Color');
+		$clear = mysqli_result($res,0,'clear');
 		$IsPainting = mysqli_result($res,0,'IsPainting');
 		$Name = mysqli_result($res,0,'Name');
 		$Comment = mysqli_result($res,0,'Comment');
@@ -394,7 +408,6 @@
 			</td>
 
 			<?
-			echo "<td val='{$IsPainting}'";
 				switch ($IsPainting) {
 					case 1:
 						$class = "notready";
@@ -410,7 +423,21 @@
 						if($Name) $title .= " ({$Name})";
 						break;
 				}
-			echo " class='painting_cell ".((!$disabled and false) ? "painting" : "")." {$class}' title='{$title}'><div class='painting_workers'>{$Name}</div><input required type='text' class='colortags' name='Color' style='width: 160px;' value='{$Color}' autocomplete='off' ".((!$disabled and $editable) ? "" : "disabled")."></td>";
+			echo "
+				<td val='{$IsPainting}' class='painting_cell ".((!$disabled and false) ? "painting" : "")." {$class}'>
+					<div class='painting_workers'>{$Name}</div>
+					<div style='background: white;'>
+						<input type='text' id='paint_color' class='colortags' name='Color' style='width: 160px;' ".((!$disabled and $editable) ? "" : "disabled")." value='{$Color}'>
+						<div class='btnset'>
+							<input type='radio' id='clear1' name='clear' value='1' ".($clear == "1" ? "checked" : "").">
+								<label for='clear1'>Прозрачный</label>
+							<input type='radio' id='clear0' name='clear' value='0' ".($clear == "0" ? "checked" : "").">
+								<label for='clear0'>Эмаль</label>
+						</div>
+						<i class='fa fa-question-circle' style='margin: 5px;' title='Прозрачное поктытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'>Подсказка</i>
+					</div>
+				</td>
+			";
 			?>
 
 			<td><textarea name='Comment' rows='6' cols='15' <?=( (in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$Del and $editable) ? "" : "disabled" )?>><?=$Comment?></textarea></td>
@@ -871,6 +898,10 @@ if( $id != "NULL" ) {
 //			placeholder: "Выберите салон",
 //			language: "ru"
 //		});
+
+		// Деактивация/активация кнопок типа покраски
+		clearonoff('#paint_color');
+
 
 		// Сабмит формы заказа при изменении
 		$('#order_form input, #order_form select, #order_form textarea').change(function(){

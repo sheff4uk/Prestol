@@ -493,7 +493,7 @@ case "shipment":
 							,OD.ul
 							,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
 							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
-							,OD.Color
+							,Color(OD.CL_ID) Color
 							,OD.IsPainting
 							,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 							,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
@@ -679,7 +679,7 @@ case "invoice":
 							,OD.ul
 							,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
 							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
-							,OD.Color
+							,Color(OD.CL_ID) Color
 							,OD.IsPainting
 							,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 							,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material

@@ -197,7 +197,7 @@
 
 $(document).ready(function() {
 <?
-	$query = "SELECT OD.Color
+	$query = "SELECT Color(OD.CL_ID) Color
 					,OD.Code
 					,ODD_ODB.ItemID
 					,ODD_ODB.PT_ID

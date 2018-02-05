@@ -1,11 +1,29 @@
 $.fx.speeds._default = 300;
-//var odid;
 
 // Форматирование числа в денежный формат
 Number.prototype.format = function(n, x) {
 	var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\.' : '$') + ')';
 	return this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$& ');
 };
+
+// Функция активирует/деактивирует кнопки типа покрытия
+function clearonoff(element)
+{
+	var length = $(element).val().length;
+	var disabled = $(element).prop("disabled");
+	if( length == 0 || disabled )
+	{
+		$(element).parent().find('.btnset input[type="radio"]').prop('disabled', true);
+//		$('#clear1').prop('checked', false);
+//		$('#clear0').prop('checked', false);
+	}
+	else
+	{
+		$(element).parent().find('.btnset input[type="radio"]').prop('disabled', false);
+	}
+	$(element).parent().find('.btnset input[type="radio"]').button('refresh');
+	return false;
+}
 
 // Функция генерирует форму с этапами производства
 function makeform(id, other, location, plid)
@@ -69,75 +87,13 @@ function makeform(id, other, location, plid)
 	return false;
 }
 
-// Функция активирует/деактивирует кнопки наличия ткани/пластика
-function materialonoff(element)
-{
-	var length = $(element+' input[name="Material"]:enabled').val().length;
-	if( length == 0 )
-	{
-		$(element+' .radiostatus input[type="radio"]').prop('disabled', true);
-		// Очистка инпутов дат заказа пластика
-		$('#1radio').prop('checked', true);
-		$('#2radio').prop('checked', true);
-		$('#0radio').prop('checked', true);
-		$(element+' .order_material').hide('fast');
-		$(element+' .order_material input').attr("required", false);
-		$(element+' .order_material input').val('');
-		$(element+' .order_material input.from').datepicker( "option", "maxDate", null );
-		$(element+' .order_material input.to').datepicker( "option", "minDate", null );
-	}
-	else
-	{
-		$(element+' .radiostatus input[type="radio"]').prop('disabled', false);
-	}
-	$(element+' .radiostatus input[type="radio"]').button('refresh');
-	return false;
-}
-
-// Функция живого поиска в "Свободных" при вводе параметров в форму
-function livesearch(element) {
-	if ( $(element).parents('form').find('.accordion').is(":visible") ) {
-		var line = "&model="+$(element).parents('form').find('select[name="Model"]').val()
-				 + "&form="+$(element).parents('form').find('input[name="Form"]:checked').val()
-				 + "&mechanism="+$(element).parents('form').find('input[name="Mechanism"]:checked').val()
-				 + "&length="+$(element).parents('form').find('input[name="Length"]').val()
-				 + "&width="+$(element).parents('form').find('input[name="Width"]').val()
-				 + "&material="+$(element).parents('form').find('input[name="Material"]').val()
-				 + "&type="+$(element).parents('form').find('input[name="Type"]').val();
-		$.ajax({
-			url: "ajax.php?do=livesearch&this=" + $(element).parents('form').parent('div').attr('id') + line,
-			dataType: "script",
-			async: false
-		});
-		$('.checkstatus').button();
-	}
-}
-
-// Функция формирования списка форм в зависимости от модели стола
-function FormModelList(model, form) {
-	var forms = "";
-	var arr = ModelForm[model];
-	var informs = 0;
-	if( typeof arr !== "undefined" ) {
-		$.each(arr, function(key, val){
-			forms += "<input type='radio' id='form" + key + "' name='Form' value='" + key + "'>";
-			forms += "<label for='form" + key + "'>" + val + "</label>";
-			if( form == key ) { informs = 1; }
-		});
-	}
-	$('#addtable #forms').html(forms);
-	if( forms != "" ) {
-		if( form > 0 && informs ) {
-			$('#addtable input[name="Form"][value="'+form+'"]').prop('checked', true);
-		}
-		else {
-			$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
-		}
-		$('#addtable #forms').buttonset();
-	}
-}
 ////////////////////////////////////////////////////////////////////////////////
-$(document).ready(function(){
+$(function(){
+	// При очистке информации о цвете деактивируем кнопки прозрачности
+	$('#paint_color').on("change", function(){
+		clearonoff(this);
+	});
+
 	$( '.checkstatus' ).button();
 	$( '.btnset' ).buttonset();
 		// Fix for http://bugs.jqueryui.com/ticket/7856
@@ -159,13 +115,6 @@ $(document).ready(function(){
 	});
 	
 	// Кнопка редактирования этапов
-//	$('.edit_steps').mouseup( function()
-//	{
-//		var id = $(this).attr("id");
-//		var location = $(this).attr("location");
-//		makeform(id, location);
-//		return false;
-//	});
 	$('.edit_steps').click( function()
 	{
 		if( $(this).parents('.td_step').hasClass('step_disabled') ) {
@@ -249,13 +198,6 @@ $(document).ready(function(){
 		}
 		return false;
 	});
-	
-	// Живой поиск в "Свободных" при вводе параметров в форму
-//	$('select[name="Model"]').change( function() { livesearch(this); });
-//	$('input[name="Length"], input[name="Width"]').change( function() { livesearch(this); });
-//	$('#forms, #mechanisms').on("change", function(){ livesearch(this); });
-//	$('input[name="Material"]').keyup( function() { livesearch(this); });
-//	$('input[name="Material"]').on( 'autocompleteselect', function( event, ui ) { $(this).val( ui.item.value ); livesearch(this); } );
 
 	// В форме заготовки при смене заготовки меняем тариф
 	$('#addblank select[name="Blank"]').change(function(){
@@ -355,7 +297,28 @@ $(document).ready(function(){
 		});
 
 		$( ".colortags" ).autocomplete({ // Автокомплит цветов
-			source: "autocomplete.php?do=colortags"
+			source: "autocomplete.php?do=colortags",
+			minLength: 2,
+			autoFocus: true,
+			select: function( event, ui ) {
+				switch (ui.item.clear) {
+					case "1":
+						$('#clear1').prop('checked', true);
+						$('#clear0').prop('checked', false);
+						$('#clear1, #clear0').prop('disabled', false);
+						break;
+					case "0":
+						$('#clear1').prop('checked', false);
+						$('#clear0').prop('checked', true);
+						$('#clear1, #clear0').prop('disabled', false);
+						break;
+					default:
+						$('#clear1').prop('checked', false);
+						$('#clear0').prop('checked', false);
+						$('#clear1, #clear0').prop('disabled', false);
+				}
+				$('#clear1, #clear0').button('refresh');
+			}
 		});
 
 		$( ".clienttags" ).autocomplete({ // Автокомплит заказчиков
