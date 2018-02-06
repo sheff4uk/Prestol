@@ -7,6 +7,28 @@
 		exit ('<meta http-equiv="refresh" content="0; url=/">');
 	}
 
+	// Если введен СМС-код
+	if( isset($_GET["sms"]) ) {
+		// Если код верный - сохраняем в сессию пользователя и покидаем экран
+		if( $_POST["sms_code"] == $_SESSION["sms_code"] ) {
+			$query = "SELECT Login, Name FROM Users WHERE USR_ID={$_SESSION['id']}";
+			$result = mysqli_query( $mysqli, $query );
+			$myrow = mysqli_fetch_array($result);
+			$_SESSION['login'] = $myrow['Login'];
+			$_SESSION['name'] = $myrow['Name'];
+
+			if( $_GET["location"] ) {
+				exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
+			}
+			else {
+				exit ('<meta http-equiv="refresh" content="0; url=/">');
+			}
+		}
+		else {
+			exit ("Вы ввели неверный код.");
+		}
+	}
+
 	if (isset($_POST['login']) and isset($_POST['password'])) {
 		$login = $_POST['login']; if ($login == '') { unset($login);} //заносим введенный пользователем логин в переменную $login, если он пустой, то уничтожаем переменную
 		$passwd = $_POST['password']; if ($passwd =='') { unset($passwd);} //заносим введенный пользователем пароль в переменную $passwd, если он пустой, то уничтожаем переменную
@@ -77,8 +99,26 @@
 									}
 								}
 							}
-							// Если нужный ответ не был получен - останавливаем скрипт
+							// Если нужный ответ не был получен - отправляем код по СМС
 							if( $check_status != 401 ) {
+								$sms_code = rand(100000, 999999);
+								$body = file_get_contents("https://sms.ru/sms/send?api_id=AF15C40F-52ED-156A-2013-C33A6A15003E&to=".($myrow['phone'])."&msg=Пароль:+".($sms_code)."&json=1");
+								$json = json_decode($body);
+								if ($json) { // Получен ответ от сервера
+									if ($json->status == "OK") { // Запрос выполнился
+										// Рисуем форму для принятия СМС-кода
+										echo "
+											<form method='post' action='?sms=1?location={$_GET["location"]}'>
+												<input type='text' name='sms_code'>
+											</form>
+										";
+										$_SESSION['sms_code'] = $sms_code;
+										$_SESSION['id'] = $myrow['USR_ID'];
+									}
+									else {
+										exit("Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...)<br>Код ошибки: $json->status_code<br>Текст ошибки: $json->status_text");
+									}
+								}
 								exit ("Время ожидания статуса звонка истекло.");
 							}
 						}
@@ -90,9 +130,9 @@
 					}
 				}
 
-				$_SESSION['login']=$myrow['Login'];
-				$_SESSION['id']=$myrow['USR_ID'];
-				$_SESSION['name']=$myrow['Name'];
+				$_SESSION['login'] = $myrow['Login'];
+				$_SESSION['id'] = $myrow['USR_ID'];
+				$_SESSION['name'] = $myrow['Name'];
 
 				if( isset($_GET["location"]) ) {
 					exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
