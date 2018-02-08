@@ -21,6 +21,9 @@
 			border-collapse: collapse;
 			border-spacing: 0px;
 		}
+		tr {
+			page-break-inside: avoid;
+		}
 		td, th {
 			padding: 3px;
 			border: 1px solid black;
