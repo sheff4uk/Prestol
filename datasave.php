@@ -132,7 +132,7 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 				 ,patina = IF('{$patina}' = '', NULL, '{$patina}')
 			  WHERE ODD_ID = {$_GET["oddid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
-		$_SESSION["alert"] = mysqli_error( $mysqli );
+		$_SESSION["error"][] = mysqli_error( $mysqli );
 	}
 
 	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#prod'.$_GET["oddid"].'">');
@@ -193,7 +193,7 @@ elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 				 ,patina = IF('{$patina}' = '', NULL, '{$patina}')
 			  WHERE ODB_ID = {$_GET["odbid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
-		$_SESSION["alert"] = mysqli_error( $mysqli );
+		$_SESSION["error"][] = mysqli_error( $mysqli );
 	}
 
 	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#blank'.$_GET["odbid"].'">');

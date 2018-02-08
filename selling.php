@@ -61,12 +61,12 @@
 							,SH_ID = {$SH_ID_add}
 							,FA_ID = ".($terminal ? "(SELECT SH.FA_ID FROM Shops SH JOIN OrdersData OD ON OD.SH_ID = SH.SH_ID AND OD.OD_ID = {$OD_ID})" : $FA_ID_add)."
 							,author = {$_SESSION['id']}";
-			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
+			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 			else {
 				// Записываем дату продажи заказа если ее не было
 				$query = "UPDATE OrdersData SET StartDate = '{$payment_date}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
 				if( !mysqli_query( $mysqli, $query ) ) {
-					$_SESSION["alert"] = mysqli_error( $mysqli );
+					$_SESSION["error"][] = mysqli_error( $mysqli );
 				}
 			}
 		}
@@ -81,7 +81,7 @@
 		$discount = $_POST["discount"] ? $_POST["discount"] : "NULL";
 		// Обновление скидки заказа
 		$query = "UPDATE OrdersData SET discount = {$discount}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
-		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
+		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 
 		foreach ($_POST["PT_ID"] as $key => $value) {
 			$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
@@ -91,7 +91,7 @@
 			else {
 				$query = "UPDATE OrdersDataDetail SET Price = {$price}, author = {$_SESSION['id']} WHERE ODD_ID = {$_POST["itemID"][$key]}";
 			}
-			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
+			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 		}
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
 		die;
@@ -110,12 +110,12 @@
 
 		if( $OP_ID != '' ) { // Редактируем расход
 			$query = "UPDATE OrdersPayment SET SH_ID = {$SH_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']} WHERE OP_ID = {$OP_ID}";
-			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
+			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 		}
 		else { // Добавляем расход
 			if( $cost ) {
 				$query = "INSERT INTO OrdersPayment SET SH_ID = {$SH_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']}";
-				if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
+				if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 			}
 		}
 
@@ -134,7 +134,7 @@
 		else {
 			$query = "UPDATE OstatkiShops SET locking_date = NULL WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month = {$_GET["month"]}";
 		}
-		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["alert"] = mysqli_error( $mysqli ); }
+		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
@@ -158,20 +158,20 @@
 					SET OD_ID = {$OD_ID}, type = {$type}, SH_ID = {$SH_ID}, StartDate = '{$StartDate}', old_sum = {$old_sum}
 					ON DUPLICATE KEY UPDATE type = {$type}, old_sum = {$old_sum}";
 				if( mysqli_query( $mysqli, $query ) ) {
-					$_SESSION["alert"] = "В таблице отказов/замен сделана запись. ";
+					$_SESSION["alert"][] = "В таблице отказов/замен сделана запись.";
 				}
-				else { $_SESSION["alert"] = mysqli_error( $mysqli ); }
+				else { $_SESSION["alert"][] = mysqli_error( $mysqli ); }
 			}
 			$query = "UPDATE OrdersData SET StartDate = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена', ' Отказ')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 			if( mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] .= "Заказ перемещен в \"Свободные\"";
+				$_SESSION["alert"][] = "Заказ перемещен в \"Свободные\"";
 			}
 			else {
-				$_SESSION["alert"] .= mysqli_error( $mysqli );
+				$_SESSION["alert"][] = mysqli_error( $mysqli );
 			}
 		}
 		else {
-			$_SESSION["alert"] = "Заказ не продан! Установите дату продажи и повторите попытку.";
+			$_SESSION["alert"][] = "Заказ не продан! Установите дату продажи и повторите попытку.";
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');

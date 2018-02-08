@@ -47,11 +47,19 @@
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli,$_POST["ClientName"] );
+		if( $_POST["ul"] ) {
+			if( $_POST["ClientName"] ) {
+				$ul = "1";
+			}
+			else {
+				$ul = "0";
+				$_SESSION["alert"][] = "Ведите название юр. лица в поле \"Заказчик\".";
+			}
+		}
 		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 		$OrderNumber = mysqli_real_escape_string( $mysqli,$_POST["OrderNumber"] );
 		$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
-		$clear = isset($_POST["clear"]) ? $_POST["clear"] : "NULL";
 		//$IsPainting = $_POST["IsPainting"];
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 		// Удаляем лишние пробелы
@@ -62,35 +70,44 @@
 
 		// Сохраняем в таблицу цветов полученный цвет и узнаем его ID
 		if( $Color != '' ) {
-			$query = "INSERT INTO Colors
-						SET
-							color = '{$Color}',
-							clear = {$clear},
-							count = 0
-						ON DUPLICATE KEY UPDATE
-							count = count + 1,
-							clear = {$clear}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$cl_id = mysqli_insert_id( $mysqli );
+			// Если с цветом передана прозрачность - обновляем цвет
+			if( isset($_POST["clear"]) ) {
+				$clear = $_POST["clear"];
+				$query = "
+					INSERT INTO Colors
+					SET
+						color = '{$Color}',
+						clear = {$clear},
+						count = 0
+					ON DUPLICATE KEY UPDATE
+						count = count + 1
+				";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$cl_id = mysqli_insert_id( $mysqli );
+			}
+			// Если с цветом не передана прозрачность выводим предупреждение
+			else {
+				$_SESSION["alert"][] = "Укажите тип покрытия \"Прозрачный\" или \"Эмаль\".";
+			}
 		}
 		else {
 			$cl_id = "NULL";
+			$_POST["clear"] = "0"; //Чтобы сработало условие в следующем запросе когда цвет удален
 		}
 
 		$query = "UPDATE OrdersData
-					SET CLientName = ".(isset($_POST["ClientName"]) ? "'{$ClientName}'" : "CLientName")."
-						,ul = ".(isset($_POST["ClientName"]) ? $ul : "ul")."
-						,StartDate = ".(isset($_POST["StartDate"]) ? $StartDate : "StartDate")."
-						,EndDate = ".(isset($_POST["EndDate"]) ? $EndDate : "EndDate")."
-						,SH_ID = ".(isset($_POST["Shop"]) ? $Shop : "SH_ID")."
-						,OrderNumber = ".(isset($_POST["OrderNumber"]) ? "'{$OrderNumber}'" : "OrderNumber")."
-						,CL_ID = ".(isset($_POST["Color"]) ? $cl_id : "CL_ID")."
-						#,IsPainting = ".( isset($_POST["IsPainting"]) ? $_POST["IsPainting"] : "IsPainting" )."
-						,Comment = ".(isset($_POST["Comment"]) ? "'{$Comment}'" : "Comment")."
-						,author = {$_SESSION['id']}
+					SET author = {$_SESSION['id']}
+						".(isset($_POST["ClientName"]) ? ",CLientName = '$ClientName'" : "")."
+						".(isset($_POST["ClientName"]) ? ",ul = $ul" : "")."
+						".(isset($_POST["StartDate"]) ? ",StartDate = $StartDate" : "")."
+						".(isset($_POST["EndDate"]) ? ",EndDate = $EndDate" : "")."
+						".(isset($_POST["Shop"]) ? ",SH_ID = $Shop" : "")."
+						".(isset($_POST["OrderNumber"]) ? ",OrderNumber = '$OrderNumber'" : "")."
+						".((isset($_POST["Color"]) and isset($_POST["clear"])) ? ",CL_ID = $cl_id" : "")."
+						".(isset($_POST["Comment"]) ? ",Comment = '$Comment'" : "")."
 					WHERE OD_ID = {$id}";
 		if( !mysqli_query( $mysqli, $query ) ) {
-			$_SESSION["alert"] = mysqli_error( $mysqli );
+			$_SESSION["error"][] = mysqli_error( $mysqli );
 		}
 		else {
 			// Узнаем есть ли платежи по кассе другого салона
@@ -98,10 +115,10 @@
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			$attention = mysqli_result($res,0,'attention');
 			if( $attention ) {
-				$_SESSION["error"] = "У этого заказа имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.";
+				$_SESSION["alert"][] = "У этого заказа имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.";
 			}
 
-			$_SESSION["success"] = "Данные сохранены.";
+			$_SESSION["success"][] = "Данные сохранены.";
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
@@ -289,7 +306,7 @@
 						,author = {$_SESSION['id']}
 						,destination = ".( in_array('order_add_confirm', $Rights) ? "0" : "1" );
 		if( !mysqli_query( $mysqli, $query ) ) {
-			$_SESSION["alert"] = mysqli_error( $mysqli );
+			$_SESSION["error"][] = mysqli_error( $mysqli );
 		}
 
 		//exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');

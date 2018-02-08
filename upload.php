@@ -45,10 +45,10 @@ if (copy($_FILES['uploadfile']['tmp_name'], $uploadfile))
 	$query = "INSERT INTO OrdersAttachments SET OD_ID = {$_POST["odid"]}, filename = '{$filename}', comment = '{$comment}'";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	$_SESSION["alert"] = "Файл ".$_FILES['uploadfile']['name']." успешно загружен на сервер.";
+	$_SESSION["success"][] = "Файл ".$_FILES['uploadfile']['name']." успешно загружен на сервер.";
 }
 else {
-	$_SESSION["alert"] = "Ошибка! Не удалось загрузить файл на сервер!";
+	$_SESSION["alert"][] = "Ошибка! Не удалось загрузить файл на сервер!";
 }
 
 exit ('<meta http-equiv="refresh" content="0; url=/orderdetail.php?id='.$_POST["odid"].'&tabs=2">');

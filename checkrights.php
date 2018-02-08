@@ -1,7 +1,6 @@
 <?
 	ini_set("session.gc_maxlifetime",10);
 	session_start();
-//	$_SESSION["alert"] = "";
 
 	// Проверяем, пусты ли переменные логина и id пользователя
 	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {

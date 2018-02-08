@@ -54,7 +54,7 @@
 							,author = {$_SESSION['id']}
 						WHERE F_ID = {$F_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = mysqli_error( $mysqli );
+				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 		}
 		else { // Добавляем операцию
@@ -70,7 +70,7 @@
 								,comment = '{$coment}'
 								,author = {$_SESSION['id']}";
 				if( !mysqli_query( $mysqli, $query ) ) {
-					$_SESSION["alert"] = mysqli_error( $mysqli );
+					$_SESSION["error"][] = mysqli_error( $mysqli );
 				}
 			}
 		}
@@ -98,14 +98,14 @@
 				JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 				WHERE OP.OP_ID = {$OP_ID}";
 		if( !mysqli_query( $mysqli, $query ) ) {
-			$_SESSION["alert"] = mysqli_error( $mysqli );
+			$_SESSION["error"][] = mysqli_error( $mysqli );
 		}
 		else {
 			$query = "UPDATE OrdersPayment
 					  SET send = 2
 					  WHERE OP_ID = {$OP_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = mysqli_error( $mysqli );
+				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 		}
 
@@ -132,7 +132,7 @@
 							,color = '{$color}'
 						WHERE FA_ID = {$FA_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = mysqli_error( $mysqli );
+				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 		}
 		else { // Создаем счет
@@ -142,7 +142,7 @@
 							,start_balance = {$start_balance}
 							,USR_ID = {$USR_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = mysqli_error( $mysqli );
+				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 		}
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
@@ -163,11 +163,11 @@
 						SET  name = '{$name}'
 							,type = {$type}";
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = mysqli_error( $mysqli );
+				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 		}
 		else {
-			if( $name != '' or $type != '' ) $_SESSION["alert"] = 'Для добавления новой категории заполнены не все поля!';
+			if( $name != '' or $type != '' ) $_SESSION["alert"][] = 'Для добавления новой категории заполнены не все поля!';
 		}
 
 		foreach ($_POST["FC_ID"] as $key => $value) {
@@ -180,7 +180,7 @@
 							,type = {$type}
 						WHERE FC_ID = {$value}";
 			if( !mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"] = mysqli_error( $mysqli );
+				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 		}
 

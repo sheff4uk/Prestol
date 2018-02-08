@@ -115,7 +115,7 @@
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=42'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=43'>
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
@@ -137,6 +137,7 @@
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/i18n/ru.js" type="text/javascript"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.js"></script>
 
 	<script>
 		$(document).ready(function(){
@@ -254,22 +255,28 @@
 	</script>
 
 <?
-	if( $_SESSION["error"] != '' ) {
-		$_SESSION["error"] = str_replace("\n", "", addslashes(htmlspecialchars($_SESSION["error"])));
-		echo "<script>$(document).ready(function() {noty({timeout: 10000, text: '{$_SESSION["error"]}', type: 'error'});});</script>";
-		$_SESSION["error"] = '';
+	if( isset($_SESSION["error"]) ) {
+		foreach ($_SESSION["error"] as $value) {
+			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
+			echo "<script>$(document).ready(function() {noty({text: '{$value}', type: 'error'});});</script>";
+		}
+		unset($_SESSION["error"]);
 	}
 
-	if( $_SESSION["alert"] != '' ) {
-		$_SESSION["alert"] = str_replace("\n", "", addslashes(htmlspecialchars($_SESSION["alert"])));
-		echo "<script>$(document).ready(function() {noty({timeout: 10000, text: '{$_SESSION["alert"]}', type: 'alert'});});</script>";
-		$_SESSION["alert"] = '';
+	if( isset($_SESSION["alert"]) ) {
+		foreach ($_SESSION["alert"] as $value) {
+			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
+			echo "<script>$(document).ready(function() {noty({timeout: 10000, text: '{$value}', type: 'alert'});});</script>";
+		}
+		unset($_SESSION["alert"]);
 	}
 
-	if( $_SESSION["success"] != '' ) {
-		$_SESSION["success"] = str_replace("\n", "", addslashes(htmlspecialchars($_SESSION["success"])));
-		echo "<script>$(document).ready(function() {noty({timeout: 3000, text: '{$_SESSION["success"]}', type: 'success'});});</script>";
-		$_SESSION["success"] = '';
+	if( isset($_SESSION["success"]) ) {
+		foreach ($_SESSION["alert"] as $value) {
+			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
+			echo "<script>$(document).ready(function() {noty({timeout: 3000, text: '{$value}', type: 'success'});});</script>";
+		}
+		unset($_SESSION["success"]);
 	}
 
 	//Получаем статус заказов (В работе, Свободные, Отгруженные, Удаленные)
@@ -403,3 +410,11 @@
 	$MONTHS_DATE = array(1=>'янв.', 'февр.', 'март', 'апр.', 'май', 'июнь', 'июль', 'авг.', 'сент.', 'окт.', 'нояб.', 'дек.');
 ?>
 	<div id="body_wraper" style="display: none;">
+
+
+<!--<input type="text" id="mtel" value="79091427682">-->
+<script>
+	$(function() {
+		$("#mtel").mask("+7 ?(999) 999 99 99");
+	});
+</script>
