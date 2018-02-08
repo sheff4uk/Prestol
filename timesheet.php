@@ -211,6 +211,7 @@
 			</script>
 
 			<th width="45">Часы</th>
+			<th width="40">К</th>
 			<th width="55">Сумма</th>
 			<th width="40">%</th>
 			<th width="65">Свой %</th>
@@ -290,7 +291,23 @@
 					$green = '';
 				}
 				$total = $sigmamoney + $premium;
+
+				// Получаем кол-во изделий по работнику за месяц
+				$query = "SELECT SUM(ODD_ODB.Amount) amount
+							FROM OrdersData OD
+							JOIN (
+								SELECT OD_ID, Amount
+								FROM OrdersDataDetail
+								UNION ALL
+								SELECT OD_ID, Amount
+								FROM OrdersDataBlank
+							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+							WHERE YEAR(OD.paint_date) = {$year} AND MONTH(OD.paint_date) = {$month} AND OD.WD_ID = {$row["WD_ID"]}";
+				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$sigma_amount = mysqli_result($subres,0,'amount');		// Общее кол-во отлакированных изделий
+
 				echo "<td class='txtright' {$green}>{$sigmahours}</td>";					// Сумма часов
+				echo "<td class='txtright'>".(($sigma_amount and $sigmahours) ? round($sigma_amount/$sigmahours, 2) : '')."</td>";			// Коэффициент
 				echo "<td class='txtright'>{$sigmamoney}</td>";								// Сумма денег
 				echo "<td class='txtright'>{$row["PremiumPercent"]}%</td>";					// Процент
 				echo "<td><input type='number' name='MP{$row["WD_ID"]}' value='{$row["ManPercent"]}' min='0' max='100'></td>";// Свой процент
