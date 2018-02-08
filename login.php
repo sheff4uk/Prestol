@@ -189,7 +189,7 @@
 ?>
 
 	<div id="login">
-		<img src="/img/logo.png" style="width: 160px; margin: auto; display: block;">
+		<img src="/img/logo.png" style="width: 171px; margin: auto; display: block;">
 		<H1>КИС<sup>*</sup> Престол</H1>
 		<h3>Вход в личный кабинет</h3>
 
