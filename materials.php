@@ -253,26 +253,25 @@
 					,GROUP_CONCAT(ODD_ODB.Checkbox SEPARATOR '') Checkbox
 					,GROUP_CONCAT(ODD_ODB.ODD_ID SEPARATOR ',') ODD_ID
 					,GROUP_CONCAT(ODD_ODB.ODB_ID SEPARATOR ',') ODB_ID
-					,WD.Name
-					,IF(ODD_ODB.IsReady = 1, 'ready', 'inwork') ready_status
+					,GROUP_CONCAT(ODD_ODB.worker SEPARATOR '') worker
 					,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
 					,OD.confirmed
-			  FROM OrdersData OD
-			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-			  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-			  RIGHT JOIN (
-						  SELECT ODD.OD_ID
+				FROM OrdersData OD
+				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+				LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+				LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
+				RIGHT JOIN (
+						SELECT ODD.OD_ID
 								,ODD.ODD_ID ItemID
 								,ODD.ODD_ID
 								,0 ODB_ID
 								,IFNULL(PM.PT_ID, 2) PT_ID
 
-							   ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'".(in_array('order_add', $Rights) ? "edit_product', IFNULL(PM.PT_ID, 2), '" : "")."\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a></b><br>') Zakaz
+								,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'".(in_array('order_add', $Rights) ? "edit_product', IFNULL(PM.PT_ID, 2), '" : "")."\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</a></b><br>') Zakaz
 
-							   ,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</i></b><br>') Zakaz_lock
+								,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', '</i></b><br>') Zakaz_lock
 
-							   #,CONCAT('<div', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), '</div>') Zakaz
+								#,CONCAT('<div', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), '</div>') Zakaz
 
 								,CONCAT('<div class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'{$product}\' mtid=\'', ODD.MT_ID, '\' class=\'mt', ODD.MT_ID, IF(MT.removed = 1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
 								CASE ODD.IsExist
@@ -289,28 +288,27 @@
 
 								,CONCAT('<input type=\'checkbox\' value=\'', ODD.ODD_ID, '\' name=\'prod[]\' class=\'chbox\'><br>') Checkbox
 
-								,IFNULL(ODS_ST.WD_ID, 0) WD_ID
-								#,IFNULL(ODS_ST.IsReady, 0) IsReady
-								,IF(ODS_ST.IsReady = 1, 1, IF(ODS_ST.IsReady = 0 AND ODS_ST.WD_ID IS NOT NULL, 0, NULL)) IsReady
+								,CONCAT('<span class=\'', IF(ODS.IsReady = 1, 'ready', 'inwork'), '\'>', WD.Name, '</span><br>') worker
 
-						  FROM OrdersDataDetail ODD
-						  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-						  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-						  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-						  JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-						  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-						  LEFT JOIN (
-							  SELECT ODS.ODD_ID, ODS.WD_ID, ODS.IsReady
-							  FROM OrdersDataSteps ODS
-							  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID AND (ST.Short LIKE '%Ст%' OR ST.Short LIKE '%Об%')
-							  WHERE ODS.Visible = 1 AND ODS.Old != 1 AND ODS.ODD_ID IS NOT NULL
-							  GROUP BY ODS.ODD_ID
-						  ) ODS_ST ON ODS_ST.ODD_ID = ODD.ODD_ID
-						  WHERE ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )." AND IFNULL(PM.PT_ID, 2) = {$product}
-						  AND (ODD.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
-						  AND ODD.Del = 0
-						  UNION ALL
-						  SELECT ODB.OD_ID
+							FROM OrdersDataDetail ODD
+							LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+							LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+							LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
+							JOIN Materials MT ON MT.MT_ID = ODD.MT_ID AND MT.PT_ID = {$product}
+							LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+							LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+										AND ODS.Visible = 1
+										AND ODS.Old != 1
+										AND ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE '%Ст%' OR Short LIKE '%Об%')
+							LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+							WHERE ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
+								AND (ODD.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
+								AND ODD.Del = 0
+								".( isset( $_GET["ready"] ) ? "AND ODS.IsReady = {$_GET["ready"]}" : "" )."
+								".( $_GET["ready"] == "0" ? "AND ODS.WD_ID IS NOT NULL" : "" )."
+								".( isset( $_GET["WD_ID"] ) ? " AND IFNULL(ODS.WD_ID, 0) = {$_GET["WD_ID"]}" : "" )."
+						UNION ALL
+						SELECT ODB.OD_ID
 								,ODB.ODB_ID ItemID
 								,0 ODD_ID
 								,ODB.ODB_ID
@@ -337,29 +335,27 @@
 
 								,CONCAT('<input type=\'checkbox\' value=\'', ODB.ODB_ID, '\' name=\'other[]\' class=\'chbox\'><br>') Checkbox
 
-								,IFNULL(ODS_ST.WD_ID, 0) WD_ID
-								#,IFNULL(ODS_ST.IsReady, 0) IsReady
-								,IF(ODS_ST.IsReady = 1, 1, IF(ODS_ST.IsReady = 0 AND ODS_ST.WD_ID IS NOT NULL, 0, NULL)) IsReady
+								,CONCAT('<span class=\'', IF(ODS.IsReady = 1, 'ready', 'inwork'), '\'>', WD.Name, '</span><br>') worker
 
-						  FROM OrdersDataBlank ODB
-						  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-						  JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-						  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-						  LEFT JOIN (
-							  SELECT ODS.ODB_ID, ODS.WD_ID, ODS.IsReady
-							  FROM OrdersDataSteps ODS
-							  WHERE ODS.Visible = 1 AND ODS.Old != 1 AND ODS.ODB_ID IS NOT NULL
-							  GROUP BY ODS.ODB_ID
-						  ) ODS_ST ON ODS_ST.ODB_ID = ODB.ODB_ID
-						  WHERE ODB.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )." AND MT.PT_ID = {$product}
-						  AND (ODB.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
-						  AND ODB.Del = 0
-						  ORDER BY PT_ID DESC, ItemID
-						  ) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODD_ODB.WD_ID
-			  WHERE OD.Del = 0 AND OD.ReadyDate IS NULL ".( isset( $_GET["ready"] ) ? "AND ODD_ODB.IsReady = {$_GET["ready"]}" : "" ).( isset( $_GET["WD_ID"] ) ? " AND ODD_ODB.WD_ID = {$_GET["WD_ID"]}" : "" )."
-			  GROUP BY OD.OD_ID
-			  ORDER BY OD.OD_ID";
+						FROM OrdersDataBlank ODB
+						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
+						JOIN Materials MT ON MT.MT_ID = ODB.MT_ID AND MT.PT_ID = {$product}
+						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
+										AND ODS.Visible = 1
+										AND ODS.Old != 1
+						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+						WHERE ODB.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
+							AND (ODB.MT_ID IN ({$MT_IDs}) OR '{$MT_IDs}' = '0')
+							AND ODB.Del = 0
+							".( isset( $_GET["ready"] ) ? "AND ODS.IsReady = {$_GET["ready"]}" : "" )."
+							".( $_GET["ready"] == "0" ? "AND ODS.WD_ID IS NOT NULL" : "" )."
+							".( isset( $_GET["WD_ID"] ) ? " AND IFNULL(ODS.WD_ID, 0) = {$_GET["WD_ID"]}" : "" )."
+						ORDER BY PT_ID DESC, ItemID
+				) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+				WHERE OD.Del = 0 AND OD.ReadyDate IS NULL
+				GROUP BY OD.OD_ID
+				ORDER BY OD.OD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
@@ -381,7 +377,7 @@
 			$title = 'Не принят в работу';
 		}
 		echo "<td class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
-		echo "<td><span class='{$row["ready_status"]}'>{$row["Name"]}</td>";
+		echo "<td><span class='nowrap'>{$row["worker"]}</span></td>";
 
 		//if( $row["is_lock"] or ( $row["confirmed"] and !in_array('order_add_confirm', $Rights) ) ) {
 		if( $row["is_lock"] ) {

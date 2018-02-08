@@ -16,7 +16,7 @@
 			font-size: 14pt;
 		}
 		table {
-			table-layout: fixed;
+//			table-layout: fixed;
 			width: 100%;
 			border-collapse: collapse;
 			border-spacing: 0px;
@@ -39,7 +39,7 @@
 		}
 		td > div {
 			display: inline-block;
-			margin-right: 15px;
+//			margin-right: 15px;
 		}
 	</style>
 </head>
@@ -60,7 +60,7 @@
 		<tbody>
 	<?
 	$query = "SELECT MT.Material
-					,CONCAT('<i style=\'border: 1px solid;\'>', ROUND(ODD_ODB.MT_amount, 1), ' м.п.</i>') MT_amount
+					,CONCAT('<i>', IF(MT.PT_ID = 1, CONCAT(ROUND(ODD_ODB.MT_amount, 1), '<br>м.п.'), ODD_ODB.Name), '</i>') MT_amount
 					,ODD_ODB.Amount
 					,ODD_ODB.zakaz
 					,ODD_ODB.Code
@@ -71,32 +71,52 @@
 							,ODD.Amount
 							,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, '')) zakaz
 							,OD.Code
+							,WD.Name
 					FROM OrdersDataDetail ODD
 					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 					LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 					LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-					WHERE ODD_ID IN ($ODD_IDs)
+					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+									AND ODS.Visible = 1
+									AND ODS.Old != 1
+									AND ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE '%Ст%')
+					LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+					WHERE ODD.ODD_ID IN ($ODD_IDs)
 					UNION ALL
 					SELECT ODB.MT_ID
 							,ODB.MT_amount
 							,ODB.Amount
 							,IFNULL(BL.Name, ODB.Other) zakaz
 							,OD.Code
+							,WD.Name
 					FROM OrdersDataBlank ODB
 					JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
 					LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-					WHERE ODB_ID IN ($ODB_IDs)
+					LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
+									AND ODS.Visible = 1
+									AND ODS.Old != 1
+					LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+					WHERE ODB.ODB_ID IN ($ODB_IDs)
 				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
 				ORDER BY MT.Material";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		echo "<tr>";
-		echo "<td>";
-		echo "<div class='code'>{$row["Code"]}</div>";
-		echo "<div>{$row["Material"]}<br><b><b style='font-size: 1.3em;'>{$row["Amount"]}</b> {$row["zakaz"]}</b> {$row["MT_amount"]}</div>";
-		echo "</td>";
+		echo "
+			<tr>
+				<td>
+					<div class='code nowrap'>{$row["Code"]}</div>
+				</td>
+				<td>
+					<div style='font-size: 1.5em;'>{$row["Material"]}</div><br>
+					<b><b style='font-size: 1.3em;'>{$row["Amount"]}</b> {$row["zakaz"]}</b>
+				</td>
+				<td>
+					{$row["MT_amount"]}
+				</td>
+			</tr>
+		";
 	}
 ?>
 		</tbody>
