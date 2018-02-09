@@ -117,6 +117,9 @@ a:hover .code {
 pre {
 	margin: 0;
 }
+.empty {
+	background: #666 !important;
+}
 .notready {
 	background: #fff !important;
 }

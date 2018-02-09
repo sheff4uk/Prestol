@@ -103,7 +103,7 @@
 					,ODD_ODB.Zakaz
 					,ODD_ODB.Patina
 					,Color(OD.CL_ID) Color
-					,OD.IsPainting
+					,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
 					,ODD_ODB.Material
 					,IFNULL(ODD_ODB.Steps, '') Steps
 					,IFNULL(OD.Comment, '') Comment

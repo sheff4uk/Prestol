@@ -209,7 +209,7 @@
 							LEFT JOIN (
 								SELECT PB.BL_ID
 										,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1)) Amount
-										,SUM(IF(OD.IsPainting = 1, 0, ODD.Amount) * PB.Amount * IF(OD.Del, 0, 1)) Painting
+										,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) Painting
 										,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) InPainting
 										,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * OD.Del) PaintingDeleted
 								FROM OrdersDataDetail ODD
@@ -221,7 +221,7 @@
 							LEFT JOIN (
 								SELECT ODB.BL_ID
 										,SUM(ODB.Amount * IF(OD.Del, 0, 1)) Amount
-										,SUM(IF(OD.IsPainting = 1, 0, ODB.Amount) * IF(OD.Del, 0, 1)) Painting
+										,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.Del, 0, 1)) Painting
 										,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0) * IF(OD.Del, 0, 1)) InPainting
 										,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * OD.Del) PaintingDeleted
 								FROM OrdersDataBlank ODB

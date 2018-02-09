@@ -191,7 +191,7 @@ case "ispainting":
 	// Если из отгрузки
 	if( $shpid > 0 ) {
 		// Узнаем все ли этапы завершены
-		$query = "SELECT BIT_AND(IF(OD.IsPainting = 3, 1, 0)) IsPainting, BIT_AND(ODD_ODB.IsReady) IsReady
+		$query = "SELECT BIT_AND(IF(OD.IsPainting = 3 OR OD.CL_ID IS NULL, 1, 0)) IsPainting, BIT_AND(ODD_ODB.IsReady) IsReady
 					FROM OrdersData OD
 					JOIN (
 						SELECT ODD.OD_ID, ODS.IsReady
@@ -494,7 +494,7 @@ case "shipment":
 							,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
 							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
 							,Color(OD.CL_ID) Color
-							,OD.IsPainting
+							,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
 							,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 							,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
 							,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
@@ -591,6 +591,10 @@ case "shipment":
 				$html .= "<td><span class='nowrap'>{$row["Shop"]}</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 				switch ($row["IsPainting"]) {
+					case 0:
+						$class = "empty";
+						$title = "Без покраски";
+						break;
 					case 1:
 						$class = "notready";
 						$title = "Не в работе";
@@ -680,7 +684,7 @@ case "invoice":
 							,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
 							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
 							,Color(OD.CL_ID) Color
-							,OD.IsPainting
+							,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
 							,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 							,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
 							,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
@@ -792,6 +796,10 @@ case "invoice":
 				$html .= "<td>{$row["Price"]}</td>";
 				$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 				switch ($row["IsPainting"]) {
+					case 0:
+						$class = "empty";
+						$title = "Без покраски";
+						break;
 					case 1:
 						$class = "notready";
 						$title = "Не в работе";
@@ -1591,7 +1599,7 @@ case "start_balance_blank":
 				LEFT JOIN (
 					SELECT PB.BL_ID
 							,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1)) Amount
-							,SUM(IF(OD.IsPainting = 1, 0, ODD.Amount) * PB.Amount * IF(OD.Del, 0, 1)) Painting
+							,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) Painting
 							#,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount) InPainting
 							,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * OD.Del) PaintingDeleted
 					FROM OrdersDataDetail ODD
@@ -1603,7 +1611,7 @@ case "start_balance_blank":
 				LEFT JOIN (
 					SELECT ODB.BL_ID
 							,SUM(ODB.Amount * IF(OD.Del, 0, 1)) Amount
-							,SUM(IF(OD.IsPainting = 1, 0, ODB.Amount) * IF(OD.Del, 0, 1)) Painting
+							,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.Del, 0, 1)) Painting
 							#,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0)) InPainting
 							,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * OD.Del) PaintingDeleted
 					FROM OrdersDataBlank ODB

@@ -518,9 +518,10 @@
 				<input type='text' name='f_CR' style='width: calc(100% - 40px);' class='colortags <?=($_SESSION["f_CR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_CR"] ?>'>
 				<select name="f_IP" style='width: 40px;' class="IsPainting <?=($_SESSION["f_IP"] != "") ? "filtered" : ""?>" onchange="this.form.submit()">
 					<option></option>
-					<option value="1" <?= ($_SESSION["f_IP"] == 1) ? 'selected' : '' ?> class="notready">&#xf006 - Не в работе</option>
-					<option value="2" <?= ($_SESSION["f_IP"] == 2) ? 'selected' : '' ?> class="inwork">&#xf123 - В работе</option>
-					<option value="3" <?= ($_SESSION["f_IP"] == 3) ? 'selected' : '' ?> class="ready">&#xf005 - Готово</option>
+					<option value="0" <?= ($_SESSION["f_IP"] == "0") ? 'selected' : '' ?> class="empty">&#xf00d - Без покраски</option>
+					<option value="1" <?= ($_SESSION["f_IP"] == "1") ? 'selected' : '' ?> class="notready">&#xf006 - Не в работе</option>
+					<option value="2" <?= ($_SESSION["f_IP"] == "2") ? 'selected' : '' ?> class="inwork">&#xf123 - В работе</option>
+					<option value="3" <?= ($_SESSION["f_IP"] == "3") ? 'selected' : '' ?> class="ready">&#xf005 - Готово</option>
 				</select>
 			</th>
 			<th width="100" style="font-size: 0;">
@@ -782,7 +783,7 @@
 					,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 					,GROUP_CONCAT(ODD_ODB.Zakaz_lock SEPARATOR '') Zakaz_lock
 					,Color(OD.CL_ID) Color
-					,OD.IsPainting
+					,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
 					,WD.Name
 					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
 					,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
@@ -915,7 +916,7 @@
 				  $query .= " AND OD.Comment LIKE '%{$_SESSION["f_N"]}%'";
 			  }
 			  if( $_SESSION["f_IP"] != "" ) {
-				  $query .= " AND OD.IsPainting = {$_SESSION["f_IP"]}";
+				  $query .= " AND IF(OD.CL_ID IS NULL, 0, OD.IsPainting) = {$_SESSION["f_IP"]}";
 			  }
 			  if( $_SESSION["f_CR"] != "" ) {
 				  $query .= " AND Color(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%'";
@@ -1013,6 +1014,10 @@
 		echo "<td class='nowrap'>{$row["Material"]}</td>";
 		echo "<td val='{$row["IsPainting"]}'";
 			switch ($row["IsPainting"]) {
+				case 0:
+					$class = "empty";
+					$title = "Без покраски";
+					break;
 				case 1:
 					$class = "notready";
 					$title = "Не в работе";
@@ -1027,7 +1032,7 @@
 					if($row["Name"]) $title .= " ({$row["Name"]})";
 					break;
 			}
-		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 ) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
+		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 and $row["IsPainting"] != 0 ) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
 		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		// Если заказ принят
@@ -1091,7 +1096,7 @@
 		}
 		echo "</td></tr>";
 
-		if( !$row["IsReady"] || $row["IsPainting"] != 3 ) {
+		if( !$row["IsReady"] || $row["IsPainting"] == "1" || $row["IsPainting"] == "2" ) {
 			$is_orders_ready = 0;
 		}
 		$orders_count++;

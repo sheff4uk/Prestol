@@ -242,7 +242,7 @@
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,OD.OrderNumber
 					,OD.Comment
-					,OD.IsPainting
+					,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
 					,Color(OD.CL_ID) Color
 					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
@@ -388,6 +388,9 @@
 		}
 
 		switch ($row["IsPainting"]) {
+			case "0":
+				echo "<td class='empty' title='Без покраски'>{$row["Color"]}</td>";
+				break;
 			case "1":
 				echo "<td class='notready' title='Не в работе'>{$row["Color"]}</td>";
 				break;

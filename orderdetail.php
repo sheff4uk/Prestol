@@ -333,7 +333,7 @@
 						,OD.OrderNumber
 						,CL.color Color
 						,CL.clear
-						,OD.IsPainting
+						,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
 						,WD.Name
 						,OD.Comment
 						,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
@@ -426,6 +426,10 @@
 
 			<?
 				switch ($IsPainting) {
+					case 0:
+						$class = "empty";
+						$title = "Без покраски";
+						break;
 					case 1:
 						$class = "notready";
 						$title = "Не в работе";
