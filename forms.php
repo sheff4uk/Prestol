@@ -53,9 +53,8 @@
 			<label>Ткань:</label>
 			<input type='text' class='materialtags_1 all' name='Material' style='width: 200px;'>
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
-				<option value="">-=Другой=-</option>
 				<?
-				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 1";
+				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 1 ORDER BY Shipper";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
 					echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";
@@ -176,9 +175,8 @@
 			<label>Пластик:</label>
 			<input type='text' class="materialtags_2 all" name='Material' style="width: 200px;">
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
-				<option value="">-=Другой=-</option>
 				<?
-				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 2";
+				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 2 ORDER BY Shipper";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
 					echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";
@@ -289,9 +287,8 @@
 				<label>Ткань:</label>
 				<input type='text' class='materialtags_1 all' name='Material' style='width: 200px;'>
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
-					<option value="">-=Другой=-</option>
 					<?
-					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 1";
+					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 1 ORDER BY Shipper";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";
@@ -303,9 +300,8 @@
 				<label>Пластик:</label>
 				<input type='text' class="materialtags_2 all" name='Material' style="width: 200px;">
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
-					<option value="">-=Другой=-</option>
 					<?
-					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 2";
+					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 2 ORDER BY Shipper";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";
@@ -313,7 +309,7 @@
 					?>
 				</select>
 			</div>
-			<input type="hidden" name="MPT_ID">
+			<input type="hidden" name="mtype">
 			<?
 			if( in_array('order_add_confirm', $Rights) ) {
 			?>
@@ -734,7 +730,7 @@
 			$('#addblank select[name="Blanks"]').prop('required', true);
 			$('#addblank input[name="Material"]').attr('disabled', false);
 			$('#addblank select[name="Shipper"]').attr('disabled', false);
-			$('#addblank input[name="MPT_ID"]').val('');
+			$('#addblank input[name="mtype"]').val('');
 			// Очистка инпутов дат заказа пластика
 			$('#addblank .order_material').hide('fast');
 			$('#addblank .order_material input').attr("required", false);
@@ -766,19 +762,19 @@
 				$('#addblank input[name="patina"]').val(odb_data['patina']);
 
 				// Заполняем ткань/пластик
-				if( odb_data['MPT_ID'] == 1 ) {
+				if( odb_data['mtype'] == 1 ) {
 					$('#addblank input[name="Material"]:eq(0)').val(odb_data['material']);
 					$('#addblank select[name="Shipper"]:eq(0)').val(odb_data['shipper']);
 					$('#addblank input[name="Material"]:eq(1)').attr('disabled', true);
 					$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', true);
-					$('#addblank input[name="MPT_ID"]').val('1');
+					$('#addblank input[name="mtype"]').val('1');
 				}
-				else if( odb_data['MPT_ID'] == 2 ) {
+				else if( odb_data['mtype'] == 2 ) {
 					$('#addblank input[name="Material"]:eq(1)').val(odb_data['material']);
 					$('#addblank select[name="Shipper"]:eq(1)').val(odb_data['shipper']);
 					$('#addblank input[name="Material"]:eq(0)').attr('disabled', true);
 					$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', true);
-					$('#addblank input[name="MPT_ID"]').val('2');
+					$('#addblank input[name="mtype"]').val('2');
 				}
 
 				$('#0radio'+odb_data['isexist']).prop('checked', true);
@@ -863,12 +859,12 @@
 			if( $(this).val().length > 0 ) {
 				$('#addblank input[name="Material"]:eq(1)').attr('disabled', true);
 				$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', true);
-				$('#addblank input[name="MPT_ID"]').val('1');
+				$('#addblank input[name="mtype"]').val('1');
 			}
 			else {
 				$('#addblank input[name="Material"]:eq(1)').attr('disabled', false);
 				$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', false);
-				$('#addblank input[name="MPT_ID"]').val('');
+				$('#addblank input[name="mtype"]').val('');
 			}
 			materialonoff('#addblank');
 		});
@@ -876,12 +872,12 @@
 			if( $(this).val().length > 0 ) {
 				$('#addblank input[name="Material"]:eq(0)').attr('disabled', true);
 				$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', true);
-				$('#addblank input[name="MPT_ID"]').val('2');
+				$('#addblank input[name="mtype"]').val('2');
 			}
 			else {
 				$('#addblank input[name="Material"]:eq(0)').attr('disabled', false);
 				$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', false);
-				$('#addblank input[name="MPT_ID"]').val('');
+				$('#addblank input[name="mtype"]').val('');
 			}
 			materialonoff('#addblank');
 		});

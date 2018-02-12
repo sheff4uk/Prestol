@@ -69,16 +69,46 @@
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 		if( $_POST["Shipper"] != '' ) {
-			// Обновляем постовщика
-			$query = "UPDATE Materials MT
-						JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD_ID IN({$ODD_IDs})
-						SET MT.SH_ID = {$Shipper}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			// Обновляем поставщика
+			$query = "SELECT ODD.ODD_ID, MT.Material
+						FROM OrdersDataDetail ODD
+						JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+						WHERE ODD.ODD_ID IN($ODD_IDs)";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) ) {
+				$query = "INSERT INTO Materials
+							SET
+								Material = '{$row["Material"]}',
+								SH_ID = $Shipper,
+								Count = 0
+							ON DUPLICATE KEY UPDATE
+								Count = Count + 1";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$mt_id = mysqli_insert_id( $mysqli );
 
-			$query = "UPDATE Materials MT
-						JOIN OrdersDataBlank ODB ON ODB.MT_ID = MT.MT_ID AND ODB_ID IN({$ODB_IDs})
-						SET MT.SH_ID = {$Shipper}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$query = "UPDATE OrdersDataDetail SET MT_ID = $mt_id, author = {$_SESSION['id']} WHERE ODD_ID = {$row["ODD_ID"]}";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			}
+
+			$query = "SELECT ODB.ODB_ID, MT.Material
+						FROM OrdersDataBlank ODB
+						JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+						WHERE ODB.ODB_ID IN($ODB_IDs)";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) ) {
+				$query = "INSERT INTO Materials
+							SET
+								Material = '{$row["Material"]}',
+								SH_ID = $Shipper,
+								Count = 0
+							ON DUPLICATE KEY UPDATE
+								Count = Count + 1";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$mt_id = mysqli_insert_id( $mysqli );
+
+				$query = "UPDATE OrdersDataBlank SET MT_ID = $mt_id, author = {$_SESSION['id']} WHERE ODB_ID = {$row["ODB_ID"]}";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			}
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$_SERVER['REQUEST_URI'].'">');
@@ -141,7 +171,8 @@
 								SELECT ODS.WD_ID
 								FROM OrdersDataSteps ODS
 								JOIN OrdersDataBlank ODB ON ODB.ODB_ID = ODS.ODB_ID
-								JOIN Materials MT ON MT.MT_ID = ODB.MT_ID AND MT.PT_ID = {$product}
+								JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+								JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = {$product}
 							) ODS ON ODS.WD_ID = WD.WD_ID";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
@@ -155,9 +186,9 @@
 		<div>
 			<select name="MT_ID[]" multiple style="width: 800px; display: none;">
 				<?
-				$query = "SELECT MT.MT_ID, CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Material
+				$query = "SELECT MT.MT_ID, CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
 							FROM Materials MT
-							LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+							JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 							JOIN (
 								SELECT ODD.OD_ID, ODD.MT_ID, ODD.IsExist, IFNULL(ODS_ST.WD_ID, 0) WD_ID, IF(ODS_ST.IsReady = 1, 1, IF(ODS_ST.IsReady = 0 AND ODS_ST.WD_ID IS NOT NULL, 0, NULL)) IsReady
 								FROM OrdersDataDetail ODD
@@ -183,7 +214,7 @@
 								WHERE ODB.Del = 0
 							) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID AND ODD_ODB.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist ).( isset( $_GET["ready"] ) ? " AND ODD_ODB.IsReady = {$_GET["ready"]}" : "" ).( isset( $_GET["WD_ID"] ) ? " AND ODD_ODB.WD_ID = {$_GET["WD_ID"]}" : "" )."
 							LEFT JOIN OrdersData OD ON OD.OD_ID = ODD_ODB.OD_ID
-							WHERE MT.PT_ID = {$product} AND OD.ReadyDate IS NULL
+							WHERE SH.mtype = {$product} AND OD.ReadyDate IS NULL
 							GROUP BY MT.MT_ID
 							ORDER BY MT.Material";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -273,16 +304,16 @@
 
 								#,CONCAT('<div', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODD.Amount, ' ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), '</div>') Zakaz
 
-								,CONCAT('<div class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'{$product}\' mtid=\'', ODD.MT_ID, '\' class=\'mt', ODD.MT_ID, IF(MT.removed = 1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
+								,CONCAT('<div class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span shid=\'', IFNULL(MT.SH_ID, ''), '\' mtid=\'', ODD.MT_ID, '\' class=\'mt', ODD.MT_ID, IF(MT.removed = 1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
 								CASE ODD.IsExist
 									WHEN 0 THEN 'bg-red'
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%y'))
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
-								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
+								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(SH.mtype, ''), '\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
-								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
+								,CONCAT( '<div>', SH.Shipper, '</div>' ) Shipper
 
 								,CONCAT( '<input class=\'footage\' type=\'number\' step=\'0.1\' min=\'0\' style=\'width: 50px; height: 19px;\' value=\'', IFNULL(ODD.MT_amount, ''), '\' oddid=\'', ODD.ODD_ID, '\'>' ) MT_amount
 
@@ -294,8 +325,8 @@
 							LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 							LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 							LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-							JOIN Materials MT ON MT.MT_ID = ODD.MT_ID AND MT.PT_ID = {$product}
-							LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+							JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+							JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = {$product}
 							LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 										AND ODS.Visible = 1
 										AND ODS.Old != 1
@@ -320,16 +351,16 @@
 
 								#,CONCAT('<div', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ODB.Amount, ' ', IFNULL(BL.Name, ODB.Other), '</div>') Zakaz
 
-								,CONCAT('<div class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span ptid=\'{$product}\' mtid=\'', ODB.MT_ID, '\' class=\'mt', ODB.MT_ID, IF(MT.removed = 1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
+								,CONCAT('<div class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span shid=\'', MT.SH_ID, '\' mtid=\'', ODB.MT_ID, '\' class=\'mt', ODB.MT_ID, IF(MT.removed = 1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
 								CASE ODB.IsExist
 									WHEN 0 THEN 'bg-red'
 									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%y'))
 									WHEN 2 THEN 'bg-green'
 									ELSE 'bg-gray'
 								END,
-								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(MT.PT_ID, ''), '\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
+								'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(SH.mtype, ''), '\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></div>') Material
 
-								,CONCAT( '<div>', IFNULL(SH.Shipper, '-=Другой=-'), '</div>' ) Shipper
+								,CONCAT( '<div>', SH.Shipper, '</div>' ) Shipper
 
 								,CONCAT( '<input class=\'footage\' type=\'number\' step=\'0.1\' min=\'0\' style=\'width: 50px; height: 19px;\' value=\'', IFNULL(ODB.MT_amount, ''), '\' odbid=\'', ODB.ODB_ID, '\'>' ) MT_amount
 
@@ -339,8 +370,8 @@
 
 						FROM OrdersDataBlank ODB
 						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-						JOIN Materials MT ON MT.MT_ID = ODB.MT_ID AND MT.PT_ID = {$product}
-						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+						JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+						JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = {$product}
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
 										AND ODS.Visible = 1
 										AND ODS.Old != 1
@@ -447,10 +478,9 @@
 		<label for="Shipper">Поставщик:</label>
 		<select id="Shipper" name="Shipper" style="width: 110px;" title="Поставщик">
 			<option value=""></option>
-			<option value="0">-=Другой=-</option>
 			<?
 			if( $product > 0 ) {
-				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = {$product}";
+				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = {$product} ORDER BY Shipper";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
 					echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";
@@ -458,14 +488,14 @@
 			}
 			else {
 				echo "<optgroup label='Ткань'>";
-					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 1";
+					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 1";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";
 					}
 				echo "</optgroup>";
 				echo "<optgroup label='Пластик'>";
-					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE PT_ID = 2";
+					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 2";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						echo "<option value='{$row["SH_ID"]}'>{$row["Shipper"]}</option>";

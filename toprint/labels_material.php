@@ -63,11 +63,12 @@
 		<tbody>
 	<?
 	$query = "SELECT MT.Material
-					,CONCAT('<i>', IF(MT.PT_ID = 1, CONCAT(ROUND(ODD_ODB.MT_amount, 1), '<br>м.п.'), ODD_ODB.Name), '</i>') MT_amount
+					,CONCAT('<i>', IF(SH.mtype = 1, CONCAT(ROUND(ODD_ODB.MT_amount, 1), '<br>м.п.'), ODD_ODB.Name), '</i>') MT_amount
 					,ODD_ODB.Amount
 					,ODD_ODB.zakaz
 					,ODD_ODB.Code
 				FROM Materials MT
+				JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 				JOIN (
 					SELECT ODD.MT_ID
 							,ODD.MT_amount

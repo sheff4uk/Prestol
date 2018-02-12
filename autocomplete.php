@@ -48,30 +48,29 @@ case "textiletags":
 	// Автокомплит тканей
 	$query = "SELECT MT.Material
 					,MT.SH_ID
-					,CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Label
+					,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
 					,MT.removed
 					,MT.Count
 			  FROM Materials MT
-			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-			  WHERE MT.PT_ID = 1 AND MT.Material LIKE '%{$_GET["term"]}%'
+			  JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 1
+			  WHERE MT.Material LIKE '%{$_GET["term"]}%'
 			  ".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
 
 			  UNION
 
 			  SELECT MT.Material
 					,MT.SH_ID
-					,CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Label
+					,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
 					,MT.removed
 					,MT.Count
 			  FROM Materials MT
-			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-			  WHERE MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE PT_ID = 1 AND Material LIKE '%{$_GET["term"]}%')
+			  JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 1
+			  WHERE MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$_GET["term"]}%')
 
 			  ORDER BY Count DESC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		//$TextileTags[] = $row["Material"];
 		$TextileTags[] = array( "label"=>$row["Label"], "value"=>$row["Material"], "SH_ID"=>$row["SH_ID"], "removed"=>$row["removed"] );
 	}
 	echo json_encode($TextileTags);
@@ -81,30 +80,29 @@ case "plastictags":
 	// Автокомплит пластиков
 	$query = "SELECT MT.Material
 					,MT.SH_ID
-					,CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Label
+					,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
 					,MT.removed
 					,MT.Count
 			  FROM Materials MT
-			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-			  WHERE MT.PT_ID = 2 AND MT.Material LIKE '%{$_GET["term"]}%'
+			  JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 2
+			  WHERE MT.Material LIKE '%{$_GET["term"]}%'
 			  ".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
 
 			  UNION
 
 			  SELECT MT.Material
 					,MT.SH_ID
-					,CONCAT(MT.Material, ' (', IFNULL(SH.Shipper, '-=Другой=-'), ')') Label
+					,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
 					,MT.removed
 					,MT.Count
 			  FROM Materials MT
-			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-			  WHERE MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE PT_ID = 2 AND Material LIKE '%{$_GET["term"]}%')
+			  JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 2
+			  WHERE MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$_GET["term"]}%')
 
 			  ORDER BY Count DESC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		//$PlasticTags[] = $row["Material"];
 		$PlasticTags[] = array( "label"=>$row["Label"], "value"=>$row["Material"], "SH_ID"=>$row["SH_ID"], "removed"=>$row["removed"] );
 	}
 	echo json_encode($PlasticTags);

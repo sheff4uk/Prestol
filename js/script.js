@@ -265,12 +265,12 @@ $(function(){
 				var chbx = $(th).parent('.wr_mt').children('input[type="checkbox"]');
 				var oldt = $(spn).html();
 				var mtid = $(spn).attr('mtid');
-				var ptid = $(spn).attr('ptid');
+				var shid = $(spn).attr('shid');
 				var removed = $(chbx).prop('checked');
 				if( t != '') {
 					$(inpt).hide('fast');
 					$(chbx).hide('fast');
-					$.ajax({ url: "ajax.php?do=materials&val="+t+"&oldval="+oldt+"&removed="+removed+"&ptid="+ptid, dataType: "script", async: true });
+					$.ajax({ url: "ajax.php?do=materials&val="+t+"&oldval="+oldt+"&removed="+removed+"&shid="+shid, dataType: "script", async: true });
 					if( t != oldt || $(spn).hasClass('removed') != removed ) {
 						$('.mt'+mtid).hide('fast');
 						$('.mt'+mtid).html(t);

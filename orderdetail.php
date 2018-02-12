@@ -153,13 +153,11 @@
 		if( $Material != '' ) {
 			$query = "INSERT INTO Materials
 						SET
-							PT_ID = {$_POST["Type"]},
 							Material = '{$Material}',
 							SH_ID = {$Shipper},
 							Count = 0
 						ON DUPLICATE KEY UPDATE
-							Count = Count + 1,
-							SH_ID = {$Shipper}";
+							Count = Count + 1";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$mt_id = mysqli_insert_id( $mysqli );
 		}
@@ -202,13 +200,11 @@
 		if( $Material != '' ) {
 			$query = "INSERT INTO Materials
 						SET
-							PT_ID = {$_POST["MPT_ID"]},
 							Material = '{$Material}',
 							SH_ID = {$Shipper},
 							Count = 0
 						ON DUPLICATE KEY UPDATE
-							Count = Count + 1,
-							SH_ID = {$Shipper}";
+							Count = Count + 1";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$mt_id = mysqli_insert_id( $mysqli );
 		}
@@ -554,8 +550,9 @@
 					,ODD.MT_ID
 					,IFNULL(MT.Material, '') Material
 					,IF(MT.removed=1, 'removed ', '') removed
-					,IF(ODD.MT_ID IS NULL, '', IFNULL(SH.Shipper, '-=Другой=-')) Shipper
+					,IF(ODD.MT_ID IS NULL, '', SH.Shipper) Shipper
 					,IFNULL(MT.SH_ID, '') SH_ID
+					,SH.mtype
 					,ODD.IsExist
 					,ODD.Amount
 					,ODD.Price
@@ -593,11 +590,11 @@
 	{
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
 		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')." {$row["is_check"]}' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
-		echo "<td><img src='/img/product_{$row["PT_ID"]}.png' style='height:16px'>x{$row["Amount"]}</td>";
+		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
 		echo "<td><span>{$row["Model"]}<br>".($row["Size"] != "" ? "{$row["Size"]}<br>" : "").($row["Form"] != "" ? "{$row["Form"]}<br>" : "").($row["Mechanism"] != "" ? "{$row["Mechanism"]}<br>" : "")."</span></td>";
 		echo "<td>{$row["patina"]}</td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps" : "")." nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
-		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
+		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
 			case "0":
 				echo "bg-red'>";
@@ -612,7 +609,7 @@
 				echo "bg-gray'>";
 		}
 		echo "{$row["Material"]}</span>";
-		echo "<input type='text' class='materialtags_{$row["PT_ID"]}' style='display: none;'>";
+		echo "<input type='text' class='materialtags_{$row["mtype"]}' style='display: none;'>";
 		echo "<input type='checkbox' style='display: none;' title='Выведен'>";
 		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";
@@ -641,11 +638,11 @@
 					,ODB.Other
 					,ODB.Comment
 					,ODB.MT_ID
-					,MT.PT_ID
 					,IFNULL(MT.Material, '') Material
 					,IF(MT.removed=1, 'removed ', '') removed
-					,IF(ODB.MT_ID IS NULL, '', IFNULL(SH.Shipper, '-=Другой=-')) Shipper
+					,IF(ODB.MT_ID IS NULL, '', SH.Shipper) Shipper
 					,IFNULL(MT.SH_ID, '') SH_ID
+					,SH.mtype
 					,ODB.IsExist
 					,DATE_FORMAT(ODB.order_date, '%d.%m.%Y') order_date
 					,DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y') arrival_date
@@ -653,7 +650,6 @@
 					,IF(IFNULL(SUM(ODS.WD_ID * ODS.Visible), 0) = 0, 0, 1) inprogress
 					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR '') Steps
 					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
-					,IFNULL(MT.PT_ID, 0) MPT_ID
 					,ODB.patina
 					,ODB.Del
 			  FROM OrdersDataBlank ODB
@@ -677,11 +673,11 @@
 	{
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
 		echo "<tr id='blank{$row["ODB_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODB_ID{$row["ODB_ID"]}*'>";
-		echo "<td>{$row["Amount"]}</td>";
+		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
 		echo "<td>{$row["Name"]}</td>";
 		echo "<td>{$row["patina"]}</td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
-		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span ptid='{$row["PT_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
+		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
 			case "0":
 				echo "bg-red'>";
@@ -696,7 +692,7 @@
 				echo "bg-gray'>";
 		}
 		echo "{$row["Material"]}</span>";
-		echo "<input type='text' class='materialtags_{$row["PT_ID"]}' style='display: none;'>";
+		echo "<input type='text' class='materialtags_{$row["mtype"]}' style='display: none;'>";
 		echo "<input type='checkbox' style='display: none;' title='Выведен'>";
 		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";

@@ -98,13 +98,11 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	if( $Material != '' ) {
 		$query = "INSERT INTO Materials
 					SET
-						PT_ID = {$_POST["Type"]},
 						Material = '{$Material}',
 						SH_ID = {$Shipper},
 						Count = 0
 					ON DUPLICATE KEY UPDATE
-						Count = Count + 1,
-						SH_ID = {$Shipper}";
+						Count = Count + 1";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$mt_id = mysqli_insert_id( $mysqli );
 	}
@@ -165,13 +163,11 @@ elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 	if( $Material != '' ) {
 		$query = "INSERT INTO Materials
 					SET
-						PT_ID = {$_POST["MPT_ID"]},
 						Material = '{$Material}',
 						SH_ID = {$Shipper},
 						Count = 0
 					ON DUPLICATE KEY UPDATE
-						Count = Count + 1,
-						SH_ID = {$Shipper}";
+						Count = Count + 1";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$mt_id = mysqli_insert_id( $mysqli );
 	}
