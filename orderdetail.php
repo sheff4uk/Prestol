@@ -324,6 +324,7 @@
 						,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
 						,DATE_FORMAT(OD.DelDate, '%d.%m.%y') DelDate
+						,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), '<br><b style=\'background-color: silver;\'>Выставка</b>', '') showing
 						,IFNULL(OD.SH_ID, 0) SH_ID
 						,IFNULL(SH.KA_ID, 0) KA_ID
 						,OD.OrderNumber
@@ -355,6 +356,7 @@
 		$EndDate = mysqli_result($res,0,'EndDate');
 		$ReadyDate = mysqli_result($res,0,'ReadyDate');
 		$DelDate = mysqli_result($res,0,'DelDate');
+		$showing = mysqli_result($res,0,'showing');
 		$SH_ID = mysqli_result($res,0,'SH_ID');
 		$KA_ID = mysqli_result($res,0,'KA_ID');
 		$OrderNumber = mysqli_result($res,0,'OrderNumber');
@@ -409,10 +411,10 @@
 				$invoice = "";
 				$title = "Чтобы стереть дату продажи перейдите в реализацию и нажмите на символ ладошки справа.";
 			}
-			echo "<td><input type='text' name='StartDate' class='date from' value='{$StartDate}' date='{$StartDate}' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")." readonly ".( (in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable and $StartDate) ? "title='{$title}'" : "" ).">{$invoice}</td>";
+			echo "<td><input type='text' name='StartDate' class='date' value='{$StartDate}' date='{$StartDate}' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")." readonly ".( (in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable and $StartDate) ? "title='{$title}'" : "" ).">{$invoice}{$showing}</td>";
 			?>
 
-			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date to' value='{$EndDate}' readonly ".((!$disabled and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">")) ?></td>
+			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : ($showing ? "" : "<input type='text' name='EndDate' class='date' value='{$EndDate}' readonly ".((!$disabled and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">"))) ?></td>
 			<td>
 			<div class='shop_cell' id='<?=$id?>' style='box-shadow: 0px 0px 10px 10px <?=$CTColor?>;'>
 				<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")?>>

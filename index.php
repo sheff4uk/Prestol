@@ -404,6 +404,7 @@
 				<div id="StartDate">
 					<label>Дата продажи:</label>
 					<input type='text' name='StartDate' class='date' size='12' readonly autocomplete='off'>
+					<span style='color: #911;'>Оставьте пустым если на выставку.</span>
 				</div>
 				<div id="EndDate">
 					<label>Дата сдачи:</label>
@@ -770,8 +771,21 @@
 					,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 					,IFNULL(OD.ClientName, '') ClientName
 					,OD.ul
-					,DATE_FORMAT(OD.StartDate, '%d.%m.%y') StartDate
-					,DATE_FORMAT(IFNULL(OD.DelDate, IFNULL(OD.ReadyDate, OD.EndDate)), '%d.%m.%y') EndDate
+					,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), '<b style=\'background-color: silver;\'>Выставка</b>', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) StartDate
+					,DATE_FORMAT(
+						IFNULL(
+							OD.DelDate,
+							IFNULL(
+								OD.ReadyDate,
+								IF(
+									(SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL),
+									'',
+									OD.EndDate
+								)
+							)
+						),
+						'%d.%m.%y'
+					) EndDate
 					,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
 					,IFNULL(OD.SH_ID, 0) SH_ID
 					,IFNULL(SH.KA_ID, 0) KA_ID
@@ -897,10 +911,23 @@
 				  $query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%')";
 			  }
 			  if( $_SESSION["f_SD"] != "" ) {
-				  $query .= " AND DATE_FORMAT(OD.StartDate, '%d.%m.%y') LIKE '%{$_SESSION["f_SD"]}%'";
+				  $query .= " AND IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) LIKE '%{$_SESSION["f_SD"]}%'";
 			  }
 			  if( $_SESSION["f_ED"] != "" ) {
-			  	$query .= " AND DATE_FORMAT(OD.EndDate, '%d.%m.%y') LIKE '%{$_SESSION["f_ED"]}%'";
+				$query .= " AND DATE_FORMAT(
+								IFNULL(
+									OD.DelDate,
+									IFNULL(
+										OD.ReadyDate,
+										IF(
+											(SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL),
+											'',
+											OD.EndDate
+										)
+									)
+								),
+								'%d.%m.%y'
+							) LIKE '%{$_SESSION["f_ED"]}%'";
 			  }
 			  if( $_SESSION["f_SH"] != "" ) {
 				  $query .= " AND (CONCAT(CT.City, '/', SH.Shop) LIKE '%{$_SESSION["f_SH"]}%'";
