@@ -138,7 +138,7 @@
 				<th>Корректировка</th>
 				<th title="Фактическое наличие неокрашенных заготовок на производстве.">Наличие<i class="fa fa-question-circle" aria-hidden="true"></i></th>
 				<th>В покраске</th>
-				<th title="Кол-во заготовок, необходимое для выполнения текущих заказов.">Требуется<i class="fa fa-question-circle" aria-hidden="true"></i></th>
+				<th title="Кол-во заготовок, необходимое для выполнения текущих заказов. Через дробь указано сколько нужно заготовок под прозрачное покрытие.">Требуется<i class="fa fa-question-circle" aria-hidden="true"></i></th>
 			</tr>
 			</thead>
 			<tbody id="exist_blank">
@@ -199,6 +199,8 @@
 
 								,IFNULL(SODD.Amount, 0) - IFNULL(SODD.Painting, 0) + IFNULL(SODB.Amount, 0) - IFNULL(SODB.Painting, 0) BeforePainting
 
+								,IFNULL(SODD.ClearAmount, 0) - IFNULL(SODD.ClearPainting, 0) + IFNULL(SODB.ClearAmount, 0) - IFNULL(SODB.ClearPainting, 0) ClearBeforePainting
+
 							FROM BlankList BL
 							JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID AND PB.BL_ID IS NOT NULL
 							LEFT JOIN (
@@ -209,11 +211,14 @@
 							LEFT JOIN (
 								SELECT PB.BL_ID
 										,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1)) Amount
+										,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearAmount
 										,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) Painting
+										,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearPainting
 										,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) InPainting
 										,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * OD.Del) PaintingDeleted
 								FROM OrdersDataDetail ODD
 								JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+								LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
 								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
 								WHERE ODD.Del = 0
 								GROUP BY PB.BL_ID
@@ -221,14 +226,18 @@
 							LEFT JOIN (
 								SELECT ODB.BL_ID
 										,SUM(ODB.Amount * IF(OD.Del, 0, 1)) Amount
+										,SUM(ODB.Amount * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearAmount
 										,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.Del, 0, 1)) Painting
+										,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearPainting
 										,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0) * IF(OD.Del, 0, 1)) InPainting
 										,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * OD.Del) PaintingDeleted
 								FROM OrdersDataBlank ODB
 								JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
+								LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
 								WHERE ODB.BL_ID IS NOT NULL
 								GROUP BY ODB.BL_ID
 							) SODB ON SODB.BL_ID = BL.BL_ID
+							WHERE BL.Name NOT LIKE 'Клей'
 							GROUP BY BL.BL_ID
 							ORDER BY BeforePainting DESC, BL.Name ASC";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -238,9 +247,9 @@
 					echo "<tr class='top_blank'>";
 					echo "<td class='bold'>{$row["Name"]}</td>";
 					echo "<td class='txtright'><input type='number' value='{$row["start_balance"]}' bl_id='{$row["BL_ID"]}' class='amount start_balance_blank'></td>";
-					echo "<td class='txtright' id='blank_{$row["BL_ID"]}'><span><b class='{$color}'>{$row["AmountBeforePainting"]}</b></span></td>";
-					echo "<td class='txtright'><span><b>{$row["AmountInPainting"]}</b></span></td>";
-					echo "<td class='txtright'><span><b>{$row["BeforePainting"]}</b></span></td>";
+					echo "<td class='txtright' id='blank_{$row["BL_ID"]}'><b class='{$color}'>{$row["AmountBeforePainting"]}</b></td>";
+					echo "<td class='txtright'><b>{$row["AmountInPainting"]}</b></td>";
+					echo "<td class='txtright'><b>{$row["BeforePainting"]}</b><span style='font-size: 0.8em'>/{$row["ClearBeforePainting"]}</span></td>";
 					echo "</tr>";
 
 					// Вывод дерева заготовок
