@@ -696,7 +696,7 @@
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
 						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></b></td>";
 						echo "<td width='120' style='color: #911;'>{$row["comment"]}</td>";
-						echo "<td width='22'><a href='#' onclick='if(confirm(\"Убрать заказ <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
+						//echo "<td width='22'><a href='#' onclick='if(confirm(\"Убрать заказ <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
 					}
 					?>
