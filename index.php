@@ -961,7 +961,7 @@
 				  $query .= " AND IF(OD.CL_ID IS NULL, 0, OD.IsPainting) = {$_SESSION["f_IP"]}";
 			  }
 			  if( $_SESSION["f_CR"] != "" ) {
-				  $query .= " AND Color(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%'";
+				  $query .= " AND (Color(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%' OR WD.Name LIKE '%{$_SESSION["f_CR"]}%')";
 			  }
 			  if( $_SESSION["f_CF"] != "" ) {
 				  $query .= " AND OD.confirmed = {$_SESSION["f_CF"]}";
