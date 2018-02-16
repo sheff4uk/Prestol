@@ -483,7 +483,7 @@
 			";
 			?>
 
-			<td><textarea name='Comment' rows='6' cols='15' <?=( (in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$Del and $editable) ? "" : "disabled" )?>><?=$Comment?></textarea></td>
+			<td><textarea name='Comment' rows='6' cols='15' <?=( (in_array('order_add', $Rights) and !$Del and $editable) ? "" : "disabled" )?>><?=$Comment?></textarea></td>
 			<td style="text-align: center;">
 				<?
 				// Если есть право редактирования и заказ не чужой - показываем кнопку клонирования
