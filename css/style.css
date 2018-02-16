@@ -552,6 +552,7 @@ td.tscell > i {
 	position: absolute;
 	top: 0;
 	right: 0;
+	line-height: 8px;
 	white-space: nowrap;
 	font-size: .8em;
 	color: #fff;
