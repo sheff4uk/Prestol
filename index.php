@@ -25,6 +25,9 @@
 		$EndDate = $_POST["Shop"] ? ($_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : '\''.date( "Y-m-d", strtotime($_SESSION["end_date"]) ).'\'') : "NULL";
 		$ClientName = mysqli_real_escape_string( $mysqli, $_POST["ClientName"] );
 		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
+		$chars = array("+", " ", "(", ")"); // Символы, которые трубуется удалить из строки с телефоном
+		$mtel = $_POST["mtel"] ? '\''.str_replace($chars, "", $_POST["mtel"]).'\'' : 'NULL';
+		$address = mysqli_real_escape_string( $mysqli,$_POST["address"] );
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 		$OrderNumber = mysqli_real_escape_string( $mysqli, $_POST["OrderNumber"] );
 		$Color = mysqli_real_escape_string( $mysqli, $_POST["Color"] );
@@ -35,6 +38,8 @@
 		$OrderNumber = trim($OrderNumber);
 		$Color = trim($Color);
 		$Comment = trim($Comment);
+		$address = trim($address);
+
 		$confirmed = in_array('order_add_confirm', $Rights) ? 1 : 0;
 
 		// Сохраняем в таблицу цветов полученный цвет и узнаем его ID
@@ -54,8 +59,8 @@
 			$cl_id = "NULL";
 		}
 
-		$query = "INSERT INTO OrdersData(CLientName, ul, AddDate, StartDate, EndDate, SH_ID, OrderNumber, CL_ID, Comment, creator, confirmed)
-				  VALUES ('{$ClientName}', $ul, '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', $cl_id, '{$Comment}', {$_SESSION['id']}, {$confirmed})";
+		$query = "INSERT INTO OrdersData(CLientName, ul, mtel, address, AddDate, StartDate, EndDate, SH_ID, OrderNumber, CL_ID, Comment, creator, confirmed)
+				  VALUES ('{$ClientName}', $ul, $mtel, '$address', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', $cl_id, '{$Comment}', {$_SESSION['id']}, {$confirmed})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		
 		// Перенаправление на экран деталей заказа
@@ -189,10 +194,10 @@
 
 	<?
 	if($archive == "2") {
-		echo "<div style='position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: #ed362f;'>Внимание! В списке отгруженных заказов отображаются первые 500 записей. Чтобы найти интересующие заказы воспользуйтесь фильтром.</div>";
+		echo "<div style='position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: red;'>Внимание! В списке отгруженных заказов отображаются первые 500 записей. Чтобы найти интересующие заказы воспользуйтесь фильтром.</div>";
 	}
 	elseif($archive == "3") {
-		echo "<div style='position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: #ed362f;'>Внимание! В списке удаленных заказов отображаются первые 500 записей. Чтобы найти интересующие заказы воспользуйтесь фильтром.</div>";
+		echo "<div style='position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: red;'>Внимание! В списке удаленных заказов отображаются первые 500 записей. Чтобы найти интересующие заказы воспользуйтесь фильтром.</div>";
 	}
 	?>
 
@@ -401,6 +406,14 @@
 					<label>№ квитанции:</label>
 					<input type='text' name='OrderNumber' autocomplete='off'>
 				</div>
+				<div id="Phone">
+					<label>Телефон:</label>
+					<input type='text' id='mtel' name='mtel' autocomplete='off'>
+				</div>
+				<div id="Address">
+					<label>Адрес доставки:</label>
+					<textarea name='address' rows='2' cols='38'></textarea>
+				</div>
 				<div id="StartDate">
 					<label>Дата продажи:</label>
 					<input type='text' name='StartDate' class='date' size='12' readonly autocomplete='off'>
@@ -413,7 +426,7 @@
 				</div>
 				<div>
 					<p style='color: #911;'>ВНИМАНИЕ! Патина указывается у каждого изделия персонально в специальной графе "патина".</p>
-					<label>Цвет:</label>
+					<label>Цвет краски:</label>
 					<div style="display: inline-block;">
 						<input type='text' id='paint_color' class='colortags' name='Color' style='width: 300px;' placeholder='ЗДЕСЬ ПАТИНУ УКАЗЫВАТЬ НЕ НУЖНО'>
 						<div class='btnset'>
@@ -771,6 +784,8 @@
 					,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 					,IFNULL(OD.ClientName, '') ClientName
 					,OD.ul
+					,OD.mtel
+					,OD.address
 					,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), '<b style=\'background-color: silver;\'>Выставка</b>', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) StartDate
 					,DATE_FORMAT(
 						IFNULL(
@@ -908,7 +923,7 @@
 				  $query .= " AND (OD.Code LIKE '%{$_SESSION["f_CD"]}%' OR DATE_FORMAT(OD.AddDate, '%d.%m.%y') LIKE '%{$_SESSION["f_CD"]}%')";
 			  }
 			  if( $_SESSION["f_CN"] != "" ) {
-				  $query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%')";
+				  $query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%' OR OD.mtel LIKE '%{$_SESSION["f_CN"]}%' OR OD.address LIKE '%{$_SESSION["f_CN"]}%')";
 			  }
 			  if( $_SESSION["f_SD"] != "" ) {
 				  $query .= " AND IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) LIKE '%{$_SESSION["f_SD"]}%'";
@@ -1015,7 +1030,7 @@
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>";
-		echo "<td><span><input type='checkbox' value='{$row["OD_ID"]}' checked name='order[]' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b></span></td>";
+		echo "<td><span ".($row["address"] ? "title='{$row["address"]}'" : "")."><input type='checkbox' value='{$row["OD_ID"]}' checked name='order[]' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b><br>{$row["mtel"]}</span></td>";
 
 		// Если заказ в накладной - на дате продажи ссылка на накладную
 		if( $row["PFI_ID"] ) {
@@ -1279,6 +1294,10 @@
 					$('#order_form #ClientName input').attr('disabled', false);
 				$('#order_form #OrderNumber').show('fast');
 					$('#order_form #OrderNumber input').attr('disabled', false);
+				$('#order_form #Phone').show('fast');
+					$('#order_form #Phone input').attr('disabled', false);
+				$('#order_form #Address').show('fast');
+					$('#order_form #Address textarea').attr('disabled', false);
 				$('#order_form #StartDate').show('fast');
 					$('#order_form #StartDate input').attr('disabled', false);
 			}
@@ -1287,6 +1306,10 @@
 					$('#order_form #ClientName input').attr('disabled', true);
 				$('#order_form #OrderNumber').hide('fast');
 					$('#order_form #OrderNumber input').attr('disabled', true);
+				$('#order_form #Phone').hide('fast');
+					$('#order_form #Phone input').attr('disabled', true);
+				$('#order_form #Address').hide('fast');
+					$('#order_form #Address textarea').attr('disabled', true);
 				$('#order_form #StartDate').hide('fast');
 					$('#order_form #StartDate input').attr('disabled', true);
 			}
@@ -1376,6 +1399,10 @@
 				$('#order_form #ClientName input').attr('disabled', true);
 			$('#order_form #OrderNumber').hide('fast');
 				$('#order_form #OrderNumber input').attr('disabled', true);
+			$('#order_form #Phone').hide('fast');
+				$('#order_form #Phone input').attr('disabled', true);
+			$('#order_form #Address').hide('fast');
+				$('#order_form #Address textarea').attr('disabled', true);
 			$('#order_form #StartDate').hide('fast');
 				$('#order_form #StartDate input').attr('disabled', true);
 

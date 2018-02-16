@@ -124,14 +124,14 @@ pre {
 	background: #fff !important;
 }
 .inwork {
-	background: #ed362f !important;
+	background: coral !important;
 }
 .ready {
-	background: #3bec00 !important;
+	background: chartreuse !important;
 }
 
 .confirmed {
-	color: #3bec00 !important;
+	color: chartreuse !important;
 }
 .not_confirmed {
 	color: #666 !important;
@@ -312,7 +312,7 @@ input[type="checkbox"].nightshift + label {
 }
 
 .bg-red {
-	background-color: #ff9090;
+	background-color: lightcoral;
 //	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
 	border-radius: 20%;
 }
@@ -324,7 +324,7 @@ input[type="checkbox"].nightshift + label {
 }
 
 .bg-green {
-	background-color: #3bec00;
+	background-color: chartreuse;
 //	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
 	border-radius: 20%;
 }

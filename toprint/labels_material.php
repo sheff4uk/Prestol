@@ -119,6 +119,9 @@
 				<td>
 					{$row["MT_amount"]}
 				</td>
+				<td>
+					<img src='https://chart.googleapis.com/chart?chs=82x82&cht=qr&chl=https://kis.fabrikaprestol.ru/orderdetail.php?id=3409&choe=UTF-8' alt='QR code'>
+				</td>
 			</tr>
 		";
 	}

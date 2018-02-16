@@ -57,6 +57,9 @@
 			}
 		}
 		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
+		$chars = array("+", " ", "(", ")"); // Символы, которые трубуется удалить из строки с телефоном
+		$mtel = $_POST["mtel"] ? '\''.str_replace($chars, "", $_POST["mtel"]).'\'' : 'NULL';
+		$address = mysqli_real_escape_string( $mysqli,$_POST["address"] );
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 		$OrderNumber = mysqli_real_escape_string( $mysqli,$_POST["OrderNumber"] );
 		$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
@@ -67,6 +70,7 @@
 		$OrderNumber = trim($OrderNumber);
 		$Color = trim($Color);
 		$Comment = trim($Comment);
+		$address = trim($address);
 
 		// Сохраняем в таблицу цветов полученный цвет и узнаем его ID
 		if( $Color != '' ) {
@@ -99,6 +103,8 @@
 					SET author = {$_SESSION['id']}
 						".(isset($_POST["ClientName"]) ? ",CLientName = '$ClientName'" : "")."
 						".(isset($_POST["ClientName"]) ? ",ul = $ul" : "")."
+						".(isset($_POST["mtel"]) ? ",mtel = $mtel" : "")."
+						".(isset($_POST["address"]) ? ",address = '$address'" : "")."
 						".(isset($_POST["StartDate"]) ? ",StartDate = $StartDate" : "")."
 						".(isset($_POST["EndDate"]) ? ",EndDate = $EndDate" : "")."
 						".(isset($_POST["Shop"]) ? ",SH_ID = $Shop" : "")."
@@ -319,6 +325,8 @@
 		$query = "SELECT OD.Code
 						,OD.ClientName
 						,OD.ul
+						,OD.mtel
+						,OD.address
 						,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 						,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
@@ -351,6 +359,8 @@
 		$Code = mysqli_result($res,0,'Code');
 		$ClientName = mysqli_result($res,0,'ClientName');
 		$ul = mysqli_result($res,0,'ul');
+		$mtel = mysqli_result($res,0,'mtel');
+		$address = mysqli_result($res,0,'address');
 		$AddDate = mysqli_result($res,0,'AddDate');
 		$StartDate = mysqli_result($res,0,'StartDate');
 		$EndDate = mysqli_result($res,0,'EndDate');
@@ -380,11 +390,16 @@
 		<thead>
 		<tr class='nowrap'>
 			<th>Код<br>Создан</th>
-			<th>Заказчик<br>Квитанция</th>
+			<?
+			if( $retail ) {
+				echo "<th>Заказчик<br>Квитанция<br>Телефон</th>";
+				echo "<th>Адрес доставки</th>";
+			}
+			?>
 			<th>Дата продажи</th>
 			<?= ($ReadyDate ? "<th>Отгружено</th>" : ($DelDate ? "<th>Удалено</th>" : "<th>Дата сдачи</th>")) ?>
 			<th>Салон</th>
-			<th>Цвет</th>
+			<th>Цвет краски</th>
 			<th>Примечание</th>
 			<th>Действие</th>
 		</tr>
@@ -392,16 +407,25 @@
 		<tbody>
 		<tr class='ord_log_row' lnk='*OD_ID<?=$id?>*' id='ord<?=$id?>'>
 			<td class="nowrap"><h1><?=$Code?></h1><?=$AddDate?></td>
-			<td>
-				<input type='text' class='clienttags' name='ClientName' style='width: 90px;' value='<?=$ClientName?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> placeholder='Заказчик'>
-				<br>
-				<input type="checkbox" id="ul" name='ul' <?=($ul == 1 ? "checked" : "")?> <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> title='Поставьте галочку если требуется накладная.' <?=($PFI_ID ? "onclick='return false;'" : "")?>>
-				<label for="ul">юр. лицо</label>
-				<br>
-				<input type='text' name='OrderNumber' style='width: 90px;' value='<?=$OrderNumber?>' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")?> placeholder='Квитанция'>
-			</td>
-
 			<?
+			if( $retail ) {
+				echo "
+					<td>
+						<input type='text' class='clienttags' name='ClientName' style='width: 120px;' value='$ClientName' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." placeholder='Заказчик'>
+						<br>
+						<input type='checkbox' id='ul' name='ul' ".($ul == 1 ? "checked" : "")." ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." title='Поставьте галочку если требуется накладная.' ".($PFI_ID ? "onclick='return false;'" : "").">
+						<label for='ul'>юр. лицо</label>
+						<br>
+						<input type='text' name='OrderNumber' style='width: 120px;' value='$OrderNumber' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." autocomplete='off' placeholder='Квитанция'>
+						<br>
+						<input type='text' name='mtel' id='mtel' style='width: 120px;' value='$mtel' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." autocomplete='off' placeholder='Моб. телефон'>
+					</td>
+					<td>
+						<textarea name='address' rows='6' cols='12' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled").">$address</textarea>
+					</td>
+				";
+			}
+
 			// Если заказ в накладной - под датой продажи ссылка на накладную
 			if( $PFI_ID ) {
 				$invoice = "<br><b><a href='open_print_form.php?type=invoice&PFI_ID={$PFI_ID}&number={$count}' target='_blank'>Накладная</a></b>";
@@ -505,7 +529,7 @@
 			echo "<div style='position: absolute; top: 77px; left: 340px; font-weight: bold; color: green; font-size: 1.2em;'>Месяц в реализации закрыт (изменения ограничены).</div>";
 		}
 		if( $Del == 1 ) {
-			echo "<div style='position: absolute; top: 160px; left: 100px; font-weight: bold; color: #911; font-size: 5em; opacity: .3; border: 5px solid;'>Заказ удалён</div>";
+			echo "<div style='position: absolute; top: 173px; font-weight: bold; color: #911; font-size: 5em; opacity: .3; border: 5px solid;'>Заказ удалён</div>";
 		}
 	}
 	else {
