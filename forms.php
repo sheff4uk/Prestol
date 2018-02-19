@@ -50,11 +50,11 @@
 				<input type='radio' id='1ptn0' name='ptn' value='0'>
 					<label for='1ptn0'>Нет</label>
 				<input type='radio' id='1ptn1' name='ptn' value='1'>
-					<label for='1ptn1'>Золото</label>
+					<label for='1ptn1' style="background: gold;">Золото</label>
 				<input type='radio' id='1ptn2' name='ptn' value='2'>
-					<label for='1ptn2'>Серебро</label>
+					<label for='1ptn2' style="background: silver;">Серебро</label>
 				<input type='radio' id='1ptn3' name='ptn' value='3'>
-					<label for='1ptn3'>Кофе</label>
+					<label for='1ptn3' style="background: chocolate;">Кофе</label>
 			</div>
 			<br>
 		</div>
@@ -147,11 +147,11 @@
 				<input type='radio' id='2ptn0' name='ptn' value='0'>
 					<label for='2ptn0'>Нет</label>
 				<input type='radio' id='2ptn1' name='ptn' value='1'>
-					<label for='2ptn1'>Золото</label>
+					<label for='2ptn1' style="background: gold;">Золото</label>
 				<input type='radio' id='2ptn2' name='ptn' value='2'>
-					<label for='2ptn2'>Серебро</label>
+					<label for='2ptn2' style="background: silver;">Серебро</label>
 				<input type='radio' id='2ptn3' name='ptn' value='3'>
-					<label for='2ptn3'>Кофе</label>
+					<label for='2ptn3' style="background: chocolate;">Кофе</label>
 			</div>
 			<br>
 		</div>
@@ -302,11 +302,11 @@
 					<input type='radio' id='0ptn0' name='ptn' value='0'>
 						<label for='0ptn0'>Нет</label>
 					<input type='radio' id='0ptn1' name='ptn' value='1'>
-						<label for='0ptn1'>Золото</label>
+						<label for='0ptn1' style="background: gold;">Золото</label>
 					<input type='radio' id='0ptn2' name='ptn' value='2'>
-						<label for='0ptn2'>Серебро</label>
+						<label for='0ptn2' style="background: silver;">Серебро</label>
 					<input type='radio' id='0ptn3' name='ptn' value='3'>
-						<label for='0ptn3'>Кофе</label>
+						<label for='0ptn3' style="background: chocolate;">Кофе</label>
 				</div>
 				<br>
 			</div>
