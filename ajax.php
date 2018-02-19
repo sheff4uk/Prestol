@@ -192,16 +192,18 @@ case "ispainting":
 	if( $shpid > 0 ) {
 		// Узнаем все ли этапы завершены
 		$query = "SELECT BIT_AND(IF(OD.IsPainting = 3 OR OD.CL_ID IS NULL, 1, 0)) IsPainting
-						,BIT_AND(ODD_ODB.IsReady) IsReady
+						,BIT_AND(IFNULL(ODD_ODB.IsReady, 1)) IsReady
 					FROM OrdersData OD
 					LEFT JOIN (
-						SELECT ODD.OD_ID, IFNULL(ODS.IsReady, 1) IsReady
+						SELECT ODD.OD_ID, ODS.IsReady
 						FROM OrdersDataDetail ODD
-						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
+						JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
+						WHERE ODD.Del = 0
 						UNION ALL
-						SELECT ODB.OD_ID, IFNULL(ODS.IsReady, 1) IsReady
+						SELECT ODB.OD_ID, ODS.IsReady
 						FROM OrdersDataBlank ODB
-						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1 AND ODS.Old = 0
+						JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1 AND ODS.Old = 0
+						WHERE ODB.Del = 0
 					) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 					WHERE OD.SHP_ID = {$shpid}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
@@ -210,8 +212,6 @@ case "ispainting":
 		$is_orders_ready = ( $painting and $ready ) ? 1 : 0;
 
 		echo "check_shipping({$is_orders_ready}, 1, {$filter});";
-		echo "console.log({$painting});";
-		echo "console.log({$ready});";
 	}
 	else {
 		$html = "";
