@@ -110,7 +110,7 @@ $query = "SELECT ODD_ODB.OD_ID
 					  ,IFNULL(PM.PT_ID, 2) PT_ID
 					  ,ODD.Amount
 					  ,ODD.opt_price Price
-					  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('патина (', ODD.patina, ')'), '')) Zakaz
+					  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('патина (', Patina(ODD.ptn), ')'), '')) Zakaz
 				FROM OrdersDataDetail ODD
 				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 				LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
@@ -122,7 +122,7 @@ $query = "SELECT ODD_ODB.OD_ID
 					  ,0 PT_ID
 					  ,ODB.Amount
 					  ,ODB.opt_price Price
-					  ,CONCAT(IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('патина (', ODB.patina, ')'), '')) Zakaz
+					  ,CONCAT(IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('патина (', Patina(ODB.ptn), ')'), '')) Zakaz
 				FROM OrdersDataBlank ODB
 				LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 				WHERE ODB.Del = 0

@@ -147,11 +147,10 @@
 		$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 		$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
-		$patina = mysqli_real_escape_string( $mysqli,$_POST["patina"] );
+		$ptn = $_POST["ptn"];
 		// Удаляем лишние пробелы
 		$Material = trim($Material);
 		$Comment = trim($Comment);
-		$patina = trim($patina);
 		$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 		$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 
@@ -171,8 +170,8 @@
 			$mt_id = "NULL";
 		}
 
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Price, Comment, order_date, arrival_date, creator, patina)
-				  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Price}, '{$Comment}', {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, IF('{$patina}' = '', NULL, '{$patina}'))";
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Price, Comment, order_date, arrival_date, creator, ptn)
+				  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Price}, '{$Comment}', {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$odd_id = mysqli_insert_id( $mysqli );
 
@@ -198,9 +197,8 @@
 		$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 		$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
-		$patina = mysqli_real_escape_string( $mysqli,$_POST["patina"] );
+		$ptn = $_POST["ptn"];
 		$Comment = trim($Comment);
-		$patina = trim($patina);
 
 		// Сохраняем в таблицу материалов полученный материал и узнаем его ID
 		if( $Material != '' ) {
@@ -218,8 +216,8 @@
 			$mt_id = "NULL";
 		}
 
-		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Amount, Price, Comment, MT_ID, IsExist, order_date, arrival_date, creator, patina)
-				  VALUES ({$id}, {$Blank}, '{$Other}', {$_POST["Amount"]}, {$Price}, '{$Comment}', {$mt_id}, {$IsExist}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, IF('{$patina}' = '', NULL, '{$patina}'))";
+		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Amount, Price, Comment, MT_ID, IsExist, order_date, arrival_date, creator, ptn)
+				  VALUES ({$id}, {$Blank}, '{$Other}', {$_POST["Amount"]}, {$Price}, '{$Comment}', {$mt_id}, {$IsExist}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		$odb_id = mysqli_insert_id( $mysqli );
@@ -590,7 +588,7 @@
 					,IF(IFNULL(SUM(ODS.WD_ID * ODS.Visible), 0) = 0, 0, 1) inprogress
 					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
 					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
-					,ODD.patina
+					,Patina(ODD.ptn) patina
 					,ODD.Del
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
@@ -676,7 +674,7 @@
 					,IF(IFNULL(SUM(ODS.WD_ID * ODS.Visible), 0) = 0, 0, 1) inprogress
 					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR '') Steps
 					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
-					,ODB.patina
+					,Patina(ODB.ptn) patina
 					,ODB.Del
 			  FROM OrdersDataBlank ODB
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID

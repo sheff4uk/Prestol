@@ -114,8 +114,8 @@
 				LEFT JOIN (SELECT ODD.OD_ID
 							   ,ODD.ODD_ID itemID
 							   ,IFNULL(PM.PT_ID, 2) PT_ID
-							   ,CONCAT('<b>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('патина (', ODD.patina, ')'), ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
-							   ,ODD.Patina
+							   ,CONCAT('<b>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('патина (', Patina(ODD.ptn), ')'), ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
+							   ,Patina(ODD.ptn) Patina
 							   ,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
 							   		IF(IFNULL(MT.Material, '') != '',
 										CASE IFNULL(ODD.IsExist, -1)
@@ -142,8 +142,8 @@
 						SELECT ODB.OD_ID
 							  ,ODB.ODB_ID itemID
 							  ,0 PT_ID
-							  ,CONCAT('<b>', ODB.Amount, '</b> ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('патина (', ODB.patina, ')'), ''), IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' <b>(', ODB.Comment, ')</b>'))) Zakaz
-							  ,ODB.Patina
+							  ,CONCAT('<b>', ODB.Amount, '</b> ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('патина (', Patina(ODB.ptn), ')'), ''), IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' <b>(', ODB.Comment, ')</b>'))) Zakaz
+							  ,Patina(ODB.ptn) Patina
 							  ,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
 							  		IF(IFNULL(MT.Material, '') != '',
 										CASE IFNULL(ODB.IsExist, -1)

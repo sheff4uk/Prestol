@@ -85,11 +85,10 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
-	$patina = mysqli_real_escape_string( $mysqli,$_POST["patina"] );
+	$ptn = mysqli_real_escape_string( $mysqli,$_POST["ptn"] );
 	// Удаляем лишние пробелы
 	$Material = trim($Material);
 	$Comment = trim($Comment);
-	$patina = trim($patina);
 
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
@@ -127,7 +126,7 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
 				 ,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 				 ,author = {$_SESSION['id']}
-				 ,patina = IF('{$patina}' = '', NULL, '{$patina}')
+				 ,ptn = $ptn
 			  WHERE ODD_ID = {$_GET["oddid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["error"][] = mysqli_error( $mysqli );
@@ -156,8 +155,7 @@ elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 	$Comment = trim($Comment);
-	$patina = mysqli_real_escape_string( $mysqli,$_POST["patina"] );
-	$patina = trim($patina);
+	$ptn = $_POST["ptn"];
 
 	// Сохраняем в таблицу материалов полученный материал и узнаем его ID
 	if( $Material != '' ) {
@@ -186,7 +184,7 @@ elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
 				 ,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 				 ,author = {$_SESSION['id']}
-				 ,patina = IF('{$patina}' = '', NULL, '{$patina}')
+				 ,ptn = $ptn
 			  WHERE ODB_ID = {$_GET["odbid"]}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["error"][] = mysqli_error( $mysqli );

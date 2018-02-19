@@ -46,8 +46,17 @@
 		</div>
 		<div>
 			<label>Патина:</label>
-			<input type="text" name="patina" placeholder="Цвет патины" style="width: 100px;">
-			<span style="color: #911;">Оставьте пустым, если патина не требуется!</span>
+			<div class='btnset'>
+				<input type='radio' id='1ptn0' name='ptn' value='0'>
+					<label for='1ptn0'>Нет</label>
+				<input type='radio' id='1ptn1' name='ptn' value='1'>
+					<label for='1ptn1'>Золото</label>
+				<input type='radio' id='1ptn2' name='ptn' value='2'>
+					<label for='1ptn2'>Серебро</label>
+				<input type='radio' id='1ptn3' name='ptn' value='3'>
+					<label for='1ptn3'>Кофе</label>
+			</div>
+			<br>
 		</div>
 		<div>
 			<label>Ткань:</label>
@@ -134,8 +143,17 @@
 		</div>
 		<div>
 			<label>Патина:</label>
-			<input type="text" name="patina" placeholder="Цвет патины" style="width: 100px;">
-			<span style="color: #911;">Оставьте пустым, если патина не требуется!</span>
+			<div class='btnset'>
+				<input type='radio' id='2ptn0' name='ptn' value='0'>
+					<label for='2ptn0'>Нет</label>
+				<input type='radio' id='2ptn1' name='ptn' value='1'>
+					<label for='2ptn1'>Золото</label>
+				<input type='radio' id='2ptn2' name='ptn' value='2'>
+					<label for='2ptn2'>Серебро</label>
+				<input type='radio' id='2ptn3' name='ptn' value='3'>
+					<label for='2ptn3'>Кофе</label>
+			</div>
+			<br>
 		</div>
 		<div>
 			<label>Форма:</label>
@@ -280,8 +298,17 @@
 			</div>
 			<div>
 				<label>Патина:</label>
-				<input type="text" name="patina" placeholder="Цвет патины" style="width: 100px;">
-				<span style="color: #911;">Оставьте пустым, если патина не требуется!</span>
+				<div class='btnset'>
+					<input type='radio' id='0ptn0' name='ptn' value='0'>
+						<label for='0ptn0'>Нет</label>
+					<input type='radio' id='0ptn1' name='ptn' value='1'>
+						<label for='0ptn1'>Золото</label>
+					<input type='radio' id='0ptn2' name='ptn' value='2'>
+						<label for='0ptn2'>Серебро</label>
+					<input type='radio' id='0ptn3' name='ptn' value='3'>
+						<label for='0ptn3'>Кофе</label>
+				</div>
+				<br>
 			</div>
 			<div>
 				<label>Ткань:</label>
@@ -469,8 +496,9 @@
 			$('#addchair input[name="Amount"]').prop('readonly', false);
 			$('#addchair input[name="Price"]').val('');
 			$('#1radio').prop('checked', true);
+			$('#1ptn0').prop('checked', true);
 			$('#addchair .radiostatus input[type="radio"]').prop('disabled', true);
-			$('#addchair .radiostatus input[type="radio"]').button('refresh');
+			$('#addchair input[type="radio"]').button('refresh');
 			$('#addchair input[name="Amount"]').removeAttr('max');
 			// Очистка инпутов дат заказа ткани
 			$('#addchair .order_material').hide('fast');
@@ -508,8 +536,9 @@
 				$('#addchair input[name="patina"]').val(odd_data['patina']);
 				$('#addchair input[name="Material"]').val(odd_data['material']);
 				$('#addchair select[name="Shipper"]').val(odd_data['shipper']);
+				$('#1ptn'+odd_data['ptn']).prop('checked', true);
 				$('#1radio'+odd_data['isexist']).prop('checked', true);
-				$('#addchair .radiostatus input[type="radio"]').button('refresh');
+				$('#addchair input[type="radio"]').button('refresh');
 				if( odd_data['isexist'] == 1 ) {
 					$('#addchair .order_material').show('fast');
 					$('#addchair .order_material input').attr("required", true);
@@ -582,8 +611,8 @@
 			$('#addtable input[name="Length"]').val(''); //было 1300
 			$('#addtable input[name="Width"]').val(''); //было 800
 			$('#2radio').prop('checked', true);
+			$('#2ptn0').prop('checked', true);
 			$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
-			$('#addtable .radiostatus input[type="radio"]').button('refresh');
 			$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
 			$('#addtable input[name="Mechanism"]:nth-child(1)').prop('checked', true);
 			$('#addtable input[type="radio"]').button("refresh");
@@ -624,18 +653,17 @@
 					$('#addtable select[name="Model"]').append(newOption).trigger('change');
 				}
 
+				$('#2ptn'+odd_data['ptn']).prop('checked', true);
 				$('#mechanism'+odd_data['mechanism']).prop('checked', true);
-				$('#addtable input[name="Mechanism"]').button("refresh");
 				$('#addtable input[name="Length"]').val(odd_data['length']);
 				$('#addtable input[name="Width"]').val(odd_data['width']);
 				$('#addtable input[name="PieceAmount"]').val(odd_data['PieceAmount']);
 				$('#addtable input[name="PieceSize"]').val(odd_data['PieceSize']);
 				$('#addtable textarea[name="Comment"]').val(odd_data['comment']);
-				$('#addtable input[name="patina"]').val(odd_data['patina']);
 				$('#addtable input[name="Material"]').val(odd_data['material']);
 				$('#addtable select[name="Shipper"]').val(odd_data['shipper']);
 				$('#2radio'+odd_data['isexist']).prop('checked', true);
-				$('#addtable .radiostatus input[type="radio"]').button('refresh');
+				$('#addtable input[type="radio"]').button('refresh');
 				if( odd_data['isexist'] == 1 ) {
 					$('#addtable .order_material').show('fast');
 					$('#addtable .order_material input').attr("required", true);
@@ -722,8 +750,9 @@
 			$('#addblank input[name="Amount"]').prop('readonly', false);
 			$('#addblank input[name="Price"]').val('');
 			$('#0radio').prop('checked', true);
+			$('#0ptn0').prop('checked', true);
 			$('#addblank .radiostatus input[type="radio"]').prop('disabled', true);
-			$('#addblank .radiostatus input[type="radio"]').button('refresh');
+			$('#addblank input[type="radio"]').button('refresh');
 			$('#addblank input[name="Other"]').prop('disabled', false);
 			$('#addblank input[name="Other"]').prop("required", true);
 			$('#addblank select[name="Blanks"]').prop('disabled', false);
@@ -759,7 +788,6 @@
 					$('#addblank select[name="Blanks"]').prop('required', false);
 				}
 				$('#addblank textarea[name="Comment"]').val(odb_data['comment']);
-				$('#addblank input[name="patina"]').val(odb_data['patina']);
 
 				// Заполняем ткань/пластик
 				if( odb_data['mtype'] == 1 ) {
@@ -777,8 +805,9 @@
 					$('#addblank input[name="mtype"]').val('2');
 				}
 
+				$('#0ptn'+odb_data['isexist']).prop('checked', true);
 				$('#0radio'+odb_data['isexist']).prop('checked', true);
-				$('#addblank .radiostatus input[type="radio"]').button('refresh');
+				$('#addblank input[type="radio"]').button('refresh');
 				if( odb_data['isexist'] == 1 ) {
 					$('#addblank .order_material').show('fast');
 					$('#addblank .order_material input').attr("required", true);
