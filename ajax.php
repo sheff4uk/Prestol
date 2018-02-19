@@ -210,6 +210,8 @@ case "ispainting":
 		$is_orders_ready = ( $painting and $ready ) ? 1 : 0;
 
 		echo "check_shipping({$is_orders_ready}, 1, {$filter});";
+		echo "console.log({$painting});";
+		echo "console.log({$ready});";
 	}
 	else {
 		$html = "";
