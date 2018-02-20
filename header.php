@@ -350,6 +350,9 @@
 					  ,"Регистрация" => "reg.php");
 	}
 	else {
+		if( in_array('chart', $Rights) ) {
+			$menu["График"] = "chart.php";
+		}
 		if( in_array('selling_all', $Rights) or in_array('selling_city', $Rights) ) {
 			$year = date("Y");
 			$month = date("n");
