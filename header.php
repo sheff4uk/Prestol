@@ -131,6 +131,7 @@
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
 	<script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript"></script>
+	<script src="js/Chart.min.js" type="text/javascript"></script>
 	<script src="plugins/jReject-master/js/jquery.reject.js" type="text/javascript"></script>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.4.0/clipboard.min.js"></script>
