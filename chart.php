@@ -19,7 +19,7 @@ $query = "
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $average_power = mysqli_result($res,0,'Amount');
-$normal = "$average_power";
+$normal = "$average_power, $average_power";
 
 //Мощность производства за прошедшую неделю
 $query = "
@@ -161,12 +161,53 @@ $query = "
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $outdated_others = mysqli_result($res,0,'Amount');
 
+//Выставочные СТУЛЬЯ
+$query = "
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$show_chairs = mysqli_result($res,0,'Amount');
+
+//Выставочные СТОЛЫ
+$query = "
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$show_tables = mysqli_result($res,0,'Amount');
+
+//Выставочное ПРОЧЕЕ
+$query = "
+	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$show_others = mysqli_result($res,0,'Amount');
+
 ?>
 <h2>Текущая нагрузка на производство: <font color="red"><?=$load?>%</font></h2>
 <canvas id="myChart" width="400" height="130"></canvas>
 <script>
 	var barChartData = {
-		labels: ["Просрок"<?=$weeks_list?>],
+		labels: ["Просрок", "Выставка"<?=$weeks_list?>],
 		datasets: [{
 			type: 'line',
 			label: 'Норма',
@@ -177,18 +218,18 @@ $outdated_others = mysqli_result($res,0,'Amount');
 		}, {
 			type: 'bar',
 			label: 'Стулья',
-			backgroundColor: ['rgba(255, 99, 132, 0.5)'<?=$chairs_color?>],
-			data: [<?=$outdated_chairs?><?=$chairs_plan?>]
+			backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(255, 99, 132, 0.5)'<?=$chairs_color?>],
+			data: [<?=$outdated_chairs?>, <?=$show_chairs?><?=$chairs_plan?>]
 		}, {
 			type: 'bar',
 			label: 'Столы',
-			backgroundColor: ['rgba(54, 162, 235, 0.5)'<?=$tables_color?>],
-			data: [<?=$outdated_tables?><?=$tables_plan?>]
+			backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(54, 162, 235, 0.5)'<?=$tables_color?>],
+			data: [<?=$outdated_tables?>, <?=$show_tables?><?=$tables_plan?>]
 		}, {
 			type: 'bar',
 			label: 'Прочее',
-			backgroundColor: ['rgba(75, 192, 192, 0.5)'<?=$others_color?>],
-			data: [<?=$outdated_others?><?=$others_plan?>]
+			backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 0.5)'<?=$others_color?>],
+			data: [<?=$outdated_others?>, <?=$show_others?><?=$others_plan?>]
 		}]
 	};
 
