@@ -22,7 +22,7 @@ $average_power = mysqli_result($res,0,'Amount');
 $normal = "$average_power";
 
 //Мощность производства за прошедшую неделю
-$queru = "
+$query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
@@ -32,9 +32,8 @@ $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $
 $current_power = mysqli_result($res,0,'Amount');
 
 // Вычисляем текущую на грузку на производство
-$load = (($current_power/$average_power)*100);
-echo $current_power."<br>";
-echo $average_power."<br>";
+$load = round(($current_power/$average_power)*100);
+
 // Получаем последовательность недель для отчета и цвета
 $query = "
 	SELECT WEEK(OD.EndDate, 1) week
