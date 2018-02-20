@@ -32,7 +32,7 @@ $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $
 $current_power = mysqli_result($res,0,'Amount');
 
 // Вычисляем текущую на грузку на производство
-$load = round(($current_power/$average_power)*100);
+$load = (($current_power/$average_power)*100);
 
 // Получаем последовательность недель для отчета и цвета
 $query = "
