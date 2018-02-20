@@ -207,7 +207,7 @@ $show_others = mysqli_result($res,0,'Amount');
 <canvas id="myChart" width="400" height="130"></canvas>
 <script>
 	var barChartData = {
-		labels: ["Просрок", "Выставка"<?=$weeks_list?>],
+		labels: ["Выставка", "Просрок"<?=$weeks_list?>],
 		datasets: [{
 			type: 'line',
 			label: 'Норма',
@@ -219,17 +219,17 @@ $show_others = mysqli_result($res,0,'Amount');
 			type: 'bar',
 			label: 'Стулья',
 			backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(255, 99, 132, 0.5)'<?=$chairs_color?>],
-			data: [<?=$outdated_chairs?>, <?=$show_chairs?><?=$chairs_plan?>]
+			data: [<?=$show_chairs?>, <?=$outdated_chairs?><?=$chairs_plan?>]
 		}, {
 			type: 'bar',
 			label: 'Столы',
 			backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(54, 162, 235, 0.5)'<?=$tables_color?>],
-			data: [<?=$outdated_tables?>, <?=$show_tables?><?=$tables_plan?>]
+			data: [<?=$show_tables?>, <?=$outdated_tables?><?=$tables_plan?>]
 		}, {
 			type: 'bar',
 			label: 'Прочее',
 			backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 0.5)'<?=$others_color?>],
-			data: [<?=$outdated_others?>, <?=$show_others?><?=$others_plan?>]
+			data: [<?=$show_others?>, <?=$outdated_others?><?=$others_plan?>]
 		}]
 	};
 
