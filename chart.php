@@ -197,7 +197,7 @@ $query = "
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
-		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $show_others = mysqli_result($res,0,'Amount');
