@@ -5,7 +5,7 @@
 	include "header.php";
 
 	// Проверка прав на доступ к экрану
-//	if( !in_array('doverennost', $Rights) ) {
+//	if( !in_array('chart', $Rights) ) {
 //		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 //		die('Недостаточно прав для совершения операции');
 //	}
@@ -33,7 +33,8 @@ $current_power = mysqli_result($res,0,'Amount');
 
 // Вычисляем текущую на грузку на производство
 $load = (($current_power/$average_power)*100);
-
+echo $current_power."<br>";
+echo $average_power."<br>";
 // Получаем последовательность недель для отчета и цвета
 $query = "
 	SELECT WEEK(OD.EndDate, 1) week
