@@ -491,6 +491,44 @@
 		echo '<a id="labelsbox" target="_blank"></a>';
 		echo '</div>';
 	}
+
+	// Для экрана "В работе персональный фильтр по дате сдачи"
+	if( $archive == "0" ) {
+		$filter_EndDate = "
+			<input type='hidden' name='f_ED' value='{$_SESSION["f_ED"]}'>
+			<select name='f_EndDate' style='width: 100%;' class='".(($_SESSION["f_EndDate"] != "") ? "filtered" : "")."' onchange='this.form.submit()'>
+			<option></option>
+			<option value='0' ".(($_SESSION["f_EndDate"] == "0") ? "selected" : "").">Дата отсутствует</option>
+		";
+		$query = "
+			SELECT YEARWEEK(OD.EndDate, 1) yearweek
+				,RIGHT(YEARWEEK(OD.EndDate, 1), 2) week
+				,LEFT(YEARWEEK(OD.EndDate, 1), 4) year
+				,RIGHT(YEARWEEK(NOW(), 1), 2) week_now
+				,LEFT(YEARWEEK(NOW(), 1), 4) year_now
+			FROM OrdersData OD
+			JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			WHERE OD.ReadyDate IS NULL
+				AND OD.DelDate IS NULL
+				AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+				AND OD.EndDate IS NOT NULL
+				#AND (YEARWEEK(OD.EndDate, 1) = YEARWEEK(NOW(), 1) OR OD.EndDate > NOW())
+			GROUP BY YEARWEEK(OD.EndDate, 1)
+			ORDER BY YEARWEEK(OD.EndDate, 1)
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) ) {
+			$week_now_style = ($row["week"] == $row["week_now"] and $row["year"] == $row["year_now"]) ? "background: coral;" : "";
+			$filter_EndDate .= "<option value='{$row["yearweek"]}' ".(($_SESSION["f_EndDate"] == $row["yearweek"]) ? "selected" : "")." style='$week_now_style'>$eq{$row["week"]} неделя {$row["year"]}$eq</option>";
+		}
+		$filter_EndDate .=  "</select>";
+	}
+	else {
+		$filter_EndDate = "
+			<input type='hidden' name='f_EndDate' value='{$_SESSION["f_EndDate"]}'>
+			<input type='text' name='f_ED' size='8' value='{$_SESSION["f_ED"]}' class='".(($_SESSION["f_ED"] != "") ? "filtered" : "")."' autocomplete='off'>
+		";
+	}
 ?>
 
 	<!-- ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
@@ -505,7 +543,7 @@
 			<th width="60"><input type='text' name='f_CD' size='8' value='<?= $_SESSION["f_CD"] ?>' class='<?=($_SESSION["f_CD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="5%"><input type='text' name='f_CN' size='8' value='<?= $_SESSION["f_CN"] ?>' class='clienttags <?=($_SESSION["f_CN"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
 			<th width="60"><input type='text' name='f_SD' size='8' value='<?= $_SESSION["f_SD"] ?>' class='<?=($_SESSION["f_SD"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
-			<th width="60"><input type='text' name='f_ED' size='8' value='<?= $_SESSION["f_ED"] ?>' class='<?=($_SESSION["f_ED"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
+			<th width="60"><?=$filter_EndDate?></th>
 			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags <?=($_SESSION["f_SH"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_SH"] ?>'></th>
 <!--			<th width="40"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>' class="<?=($_SESSION["f_ON"] != "") ? "filtered" : ""?>"></th>-->
 			<th width="40"></th>
@@ -903,69 +941,76 @@
 				".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "");
 
 			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
-			  switch ($archive) {
-				case 0:
-					$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL";
-					break;
-				case 1:
-					$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";
-					break;
-				case 2:
-					$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NOT NULL";
-					$limit = " LIMIT 500";
-					break;
-				case 3:
-					$query .= " AND OD.Del = 1";
-					$limit = " LIMIT 500";
-					break;
-			  }
-			  if( $_SESSION["f_CD"] != "" ) {
-				  $query .= " AND (OD.Code LIKE '%{$_SESSION["f_CD"]}%' OR DATE_FORMAT(OD.AddDate, '%d.%m.%y') LIKE '%{$_SESSION["f_CD"]}%')";
-			  }
-			  if( $_SESSION["f_CN"] != "" ) {
-				  $query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%' OR OD.mtel LIKE '%{$_SESSION["f_CN"]}%' OR OD.address LIKE '%{$_SESSION["f_CN"]}%')";
-			  }
-			  if( $_SESSION["f_SD"] != "" ) {
-				  $query .= " AND IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) LIKE '%{$_SESSION["f_SD"]}%'";
-			  }
-			  if( $_SESSION["f_ED"] != "" ) {
-				$query .= " AND DATE_FORMAT(
+				switch ($archive) {
+					case 0:
+						$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL";
+						break;
+					case 1:
+						$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";
+						break;
+					case 2:
+						$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NOT NULL";
+						$limit = " LIMIT 500";
+						break;
+					case 3:
+						$query .= " AND OD.Del = 1";
+						$limit = " LIMIT 500";
+						break;
+				}
+				if( $_SESSION["f_CD"] != "" ) {
+					$query .= " AND (OD.Code LIKE '%{$_SESSION["f_CD"]}%' OR DATE_FORMAT(OD.AddDate, '%d.%m.%y') LIKE '%{$_SESSION["f_CD"]}%')";
+				}
+				if( $_SESSION["f_CN"] != "" ) {
+					$query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%' OR OD.mtel LIKE '%{$_SESSION["f_CN"]}%' OR OD.address LIKE '%{$_SESSION["f_CN"]}%')";
+				}
+				if( $_SESSION["f_SD"] != "" ) {
+					$query .= " AND IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) LIKE '%{$_SESSION["f_SD"]}%'";
+				}
+				if( $_SESSION["f_ED"] != "" and $archive != "0") {
+					$query .= "
+						AND DATE_FORMAT(
+							IFNULL(
+								OD.DelDate,
 								IFNULL(
-									OD.DelDate,
-									IFNULL(
-										OD.ReadyDate,
-										IF(
-											(SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL),
-											'',
-											OD.EndDate
-										)
+									OD.ReadyDate,
+									IF(
+										(SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL),
+										'',
+										OD.EndDate
 									)
-								),
-								'%d.%m.%y'
-							) LIKE '%{$_SESSION["f_ED"]}%'";
-			  }
-			  if( $_SESSION["f_SH"] != "" ) {
-				  $query .= " AND (CONCAT(CT.City, '/', SH.Shop) LIKE '%{$_SESSION["f_SH"]}%'";
-				  if( stripos("Свободные", $_SESSION["f_SH"]) !== false ) {
-					  $query .= " OR OD.SH_ID IS NULL";
-				  }
-				  $query .= ")";
-			  }
-//			  if( $_SESSION["f_ON"] != "" ) {
-//				  $query .= " AND OD.OrderNumber LIKE '%{$_SESSION["f_ON"]}%'";
-//			  }
-			  if( $_SESSION["f_N"] != "" ) {
-				  $query .= " AND OD.Comment LIKE '%{$_SESSION["f_N"]}%'";
-			  }
-			  if( $_SESSION["f_IP"] != "" ) {
-				  $query .= " AND IF(OD.CL_ID IS NULL, 0, OD.IsPainting) = {$_SESSION["f_IP"]}";
-			  }
-			  if( $_SESSION["f_CR"] != "" ) {
-				  $query .= " AND (Color(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%' OR WD.Name LIKE '%{$_SESSION["f_CR"]}%')";
-			  }
-			  if( $_SESSION["f_CF"] != "" ) {
-				  $query .= " AND OD.confirmed = {$_SESSION["f_CF"]}";
-			  }
+								)
+							),
+							'%d.%m.%y'
+						) LIKE '%{$_SESSION["f_ED"]}%'
+					";
+				}
+				if( $_SESSION["f_EndDate"] != "" and $archive == "0") {
+					if( $_SESSION["f_EndDate"] == "0" ) {
+						$query .= " AND IF((SH.KA_ID IS NULL AND OD.StartDate IS NULL), NULL, OD.EndDate) IS NULL";
+					}
+					else {
+						$query .= " AND YEARWEEK(IF((SH.KA_ID IS NULL AND OD.StartDate IS NULL), NULL, OD.EndDate), 1) = '{$_SESSION["f_EndDate"]}'";
+					}
+				}
+				if( $_SESSION["f_SH"] != "" ) {
+					$query .= " AND (CONCAT(CT.City, '/', SH.Shop) LIKE '%{$_SESSION["f_SH"]}%'";
+					if( stripos("Свободные", $_SESSION["f_SH"]) !== false ) {
+						$query .= " OR OD.SH_ID IS NULL";
+					}
+					$query .= ")";
+				}
+				if( $_SESSION["f_N"] != "" ) {
+					$query .= " AND OD.Comment LIKE '%{$_SESSION["f_N"]}%'";
+				}
+				if( $_SESSION["f_IP"] != "" ) {
+					$query .= " AND IF(OD.CL_ID IS NULL, 0, OD.IsPainting) = {$_SESSION["f_IP"]}";
+				}
+				if( $_SESSION["f_CR"] != "" ) {
+					$query .= " AND (Color(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%' OR WD.Name LIKE '%{$_SESSION["f_CR"]}%')";
+				}
+				if( $_SESSION["f_CF"] != "" ) {
+					$query .= " AND OD.confirmed = {$_SESSION["f_CF"]}";
+				}
 			}
 			else {  // Если в отгрузке - показываем список этой отгрузки
 				$query .= " AND OD.SHP_ID = {$_GET["shpid"]}
