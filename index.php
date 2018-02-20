@@ -1107,7 +1107,7 @@
 			echo "<action>";
 			if( $row["SHP_ID"] == 0 ) {
 				if( $row["Archive"] == 0 and $row["Del"] == 0 ) {
-					if( $row["IsReady"] and $row["IsPainting"] == 3 ) {
+					if( $row["IsReady"] and ($row["IsPainting"] == "3" or $row["IsPainting"] == "0") ) {
 						if( in_array('order_ready', $Rights) ) {
 							//echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа.\", \"?ready={$row["OD_ID"]}\")) return false;' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 							echo "<a href='#' class='shipping' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='confirm(\"Пожалуйста, подтвердите <b>отгрузку</b> заказа.\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
