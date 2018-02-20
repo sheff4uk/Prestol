@@ -203,7 +203,7 @@ $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $
 $show_others = mysqli_result($res,0,'Amount');
 
 ?>
-<h2>Текущая нагрузка на производство: <font color="red"><?=$load?>%</font></h2>
+<h2>Загруженность производства: <font color="red"><?=$load?>%</font></h2>
 <canvas id="myChart" width="400" height="130"></canvas>
 <script>
 	var barChartData = {
