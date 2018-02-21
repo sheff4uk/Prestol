@@ -273,8 +273,7 @@ $show_others = mysqli_result($res,0,'Amount');
 		}, {
 			type: 'bar',
 			label: 'Готовые',
-			//backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 0.5)'<?=$others_color?>],
-			data: [0, 0<?=$$already_ready?>]
+			data: [0, 0<?=$already_ready?>]
 		}]
 	};
 
