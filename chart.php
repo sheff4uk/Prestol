@@ -100,6 +100,7 @@ while( $row = mysqli_fetch_array($res) ) {
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		WHERE OD.ReadyDate IS NOT NULL
 			AND OD.DelDate IS NULL
+			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 			AND OD.EndDate IS NOT NULL
 			AND YEARWEEK(OD.EndDate, 1) = '$yearweek'
 	";
