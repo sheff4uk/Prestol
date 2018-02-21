@@ -436,7 +436,7 @@
 			echo "<td><input type='text' name='StartDate' class='date' value='{$StartDate}' date='{$StartDate}' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable) ? "" : "disabled")." readonly ".( (in_array('order_add', $Rights) and !$is_lock and !$Del and $retail and $editable and $StartDate) ? "title='{$title}'" : "" ).">{$invoice}{$showing}</td>";
 			?>
 
-			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : ($showing ? "" : "<input type='text' name='EndDate' class='date' value='{$EndDate}' readonly ".((!$disabled and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">"))) ?></td>
+			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : ($showing ? "" : "<input type='text' name='EndDate' class='date' value='{$EndDate}' ".((!$disabled and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">"))) ?></td>
 			<td>
 			<div class='shop_cell' id='<?=$id?>' style='box-shadow: 0px 0px 10px 10px <?=$CTColor?>;'>
 				<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")?>>

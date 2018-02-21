@@ -421,7 +421,7 @@
 				</div>
 				<div id="EndDate">
 					<label>Дата сдачи:</label>
-					<input type='text' name='EndDate' class='date' size='12' readonly <?=(in_array('order_add_confirm', $Rights) ? "" : "disabled")?> autocomplete='off'>
+					<input type='text' name='EndDate' class='date' size='12' <?=(in_array('order_add_confirm', $Rights) ? "" : "disabled")?> autocomplete='off'>
 					<span style='color: #911;'>+30 рабочих дней</span>
 				</div>
 				<div>
