@@ -53,6 +53,7 @@ $load = round(($current_power/$average_power)*100);
 // Получаем последовательность недель для отчета и цвета
 $query = "
 	SELECT WEEK(OD.EndDate, 1) week
+		,LEFT(YEARWEEK(OD.EndDate, 1), 4) year
 		,YEARWEEK(OD.EndDate, 1) yearweek
 		,'rgba(255, 99, 132, 1)' chairs_color
 		,'rgba(54, 162, 235, 1)' tables_color
@@ -69,7 +70,14 @@ $query = "
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
-	$weeks_list .= ", '{$row["week"]} неделя'";
+	// Получаем диапазон дат для недели
+	$week_number = $row["week"];
+	$year = $row["year"];
+
+	$first_day = date('d.m', ($week_number - 1) * 7 * 86400 + strtotime('1/1/' . $year) - date('w', strtotime('1/1/' . $year)) * 86400 + 86400);
+	$last_day = date('d.m', $week_number * 7 * 86400 + strtotime('1/1/' . $year) - date('w', strtotime('1/1/' . $year)) * 86400);
+
+	$weeks_list .= ", '{$row["week"]} неделя ({$first_day}-{$last_day})'";
 	$yearweek = $row["yearweek"];
 	$chairs_color .= ", '{$row["chairs_color"]}'";
 	$tables_color .= ", '{$row["tables_color"]}'";
