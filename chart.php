@@ -77,7 +77,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$first_day = date('d.m', ($week_number - 1) * 7 * 86400 + strtotime('1/1/' . $year) - date('w', strtotime('1/1/' . $year)) * 86400 + 86400);
 	$last_day = date('d.m', $week_number * 7 * 86400 + strtotime('1/1/' . $year) - date('w', strtotime('1/1/' . $year)) * 86400);
 
-	$weeks_list .= ", '{$row["week"]} неделя ({$first_day}-{$last_day})'";
+	$weeks_list .= ", '{$row["week"]} [{$first_day}-{$last_day}]'";
 	$yearweek = $row["yearweek"];
 	$chairs_color .= ", '{$row["chairs_color"]}'";
 	$tables_color .= ", '{$row["tables_color"]}'";
