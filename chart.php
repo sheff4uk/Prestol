@@ -1,7 +1,7 @@
 <?
 	include "config.php";
 
-	$title = '';
+	$title = 'Понедельный график сдачи заказов';
 	include "header.php";
 
 	// Проверка прав на доступ к экрану
@@ -12,9 +12,17 @@
 
 //Средняя мощность производства за год
 $query = "
-	SELECT ROUND(SUM(ODD.Amount)/52) Amount
+	SELECT ROUND(SUM(ODD_ODB.Amount)/52) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN (
+		SELECT ODD.OD_ID, ODD.Amount
+		FROM OrdersDataDetail ODD
+		WHERE ODD.Del = 0
+		UNION ALL
+		SELECT ODB.OD_ID, ODB.Amount
+		FROM OrdersDataBlank ODB
+		WHERE ODB.Del = 0
+	) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) <= 364
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -23,9 +31,17 @@ $normal = "$average_power, $average_power";
 
 //Мощность производства за прошедшую неделю
 $query = "
-	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	SELECT IFNULL(SUM(ODD_ODB.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN (
+		SELECT ODD.OD_ID, ODD.Amount
+		FROM OrdersDataDetail ODD
+		WHERE ODD.Del = 0
+		UNION ALL
+		SELECT ODB.OD_ID, ODB.Amount
+		FROM OrdersDataBlank ODB
+		WHERE ODB.Del = 0
+	) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) <= 7
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -59,6 +75,30 @@ while( $row = mysqli_fetch_array($res) ) {
 	$tables_color .= ", '{$row["tables_color"]}'";
 	$others_color .= ", '{$row["others_color"]}'";
 	$normal .= ", $average_power";
+
+	// Получаем количество уже выполненных изделий в очередную неделю (из запланированных в эту неделю)
+	$query = "
+		SELECT IFNULL(SUM(ODD_ODB.Amount), 0) Amount
+		FROM OrdersData OD
+		JOIN (
+			SELECT ODD.OD_ID, ODD.Amount
+			FROM OrdersDataDetail ODD
+			WHERE ODD.Del = 0
+			UNION ALL
+			SELECT ODB.OD_ID, ODB.Amount
+			FROM OrdersDataBlank ODB
+			WHERE ODB.Del = 0
+		) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+		JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		WHERE OD.ReadyDate IS NOT NULL
+			AND OD.DelDate IS NULL
+			AND OD.EndDate IS NOT NULL
+			AND YEARWEEK(OD.EndDate, 1) = '$yearweek'
+	";
+	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $subrow = mysqli_fetch_array($subres) ) {
+		$already_ready .= ", {$subrow["Amount"]}";
+	}
 
 	// Получаем план производства по СТУЛЬЯМ в очередную неделю
 	$query = "
@@ -230,6 +270,11 @@ $show_others = mysqli_result($res,0,'Amount');
 			label: 'Прочее',
 			backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 0.5)'<?=$others_color?>],
 			data: [<?=$show_others?>, <?=$outdated_others?><?=$others_plan?>]
+		}, {
+			type: 'bar',
+			label: 'Готовые',
+			//backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 0.5)'<?=$others_color?>],
+			data: [0, 0<?=$$already_ready?>]
 		}]
 	};
 
