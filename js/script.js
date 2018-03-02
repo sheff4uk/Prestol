@@ -299,7 +299,7 @@ $(function(){
 		$( ".colortags" ).autocomplete({ // Автокомплит цветов
 			source: "autocomplete.php?do=colortags",
 			minLength: 2,
-			autoFocus: true,
+			autoFocus: false,
 			select: function( event, ui ) {
 				switch (ui.item.clear) {
 					case "1":

@@ -127,7 +127,7 @@
 	<script src="js/ui/jquery-ui.js"></script>
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
 	<script src="js/modal.js?v=8"></script>
-	<script src="js/script.js?v=28" type="text/javascript"></script>
+	<script src="js/script.js?v=29" type="text/javascript"></script>
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
 	<script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript"></script>
@@ -340,11 +340,6 @@
 			});
 		</script>
 <?
-//	// Узнаем кол-во непроверенных свободных
-//	$query = "SELECT COUNT(1) CNT FROM `OrdersDataDetail` WHERE OD_ID IS NULL AND is_check = 0 AND Del = 0";
-//	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//	$ischeckcount = " (".mysqli_result($result,0,'CNT').")";
-
 	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {
 		$menu = array ("Вход" => "login.php"
 					  ,"Регистрация" => "reg.php");
@@ -370,9 +365,6 @@
 		if( in_array('screen_materials', $Rights) ) {
 			$menu["Материалы"] = "materials.php";
 		}
-//		if( in_array('screen_free', $Rights) ) {
-//			$menu["Корзина".$ischeckcount] = "/orderdetail.php?free=1";
-//		}
 		if( in_array('screen_blanks', $Rights) ) {
 			$menu["Заготовки"] = "blankstock.php";
 		}
@@ -410,7 +402,6 @@
 	// END NAVBAR
 
 	$MONTHS = array(1=>'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь');
-//	$MONTHS_DATE = array(1=>'января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря');
 	$MONTHS_DATE = array(1=>'янв.', 'февр.', 'март', 'апр.', 'май', 'июнь', 'июль', 'авг.', 'сент.', 'окт.', 'нояб.', 'дек.');
 ?>
 	<div id="body_wraper" style="display: none;">

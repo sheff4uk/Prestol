@@ -35,6 +35,8 @@ case "colortags":
 					,Color(CL_ID) label
 				FROM Colors
 				WHERE color LIKE '%{$_GET["term"]}%'
+					AND clear IS NOT NULL
+					AND count > 0
 				ORDER BY count DESC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )

@@ -269,7 +269,7 @@
 		echo "<h3 style='display: inline-block; margin: 10px 20px;'>{$label} {$format_ostatok}</h3>";
 		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='+' CT_ID='{$CT_ID}' title='Внести приход'><i class='fa fa-plus fa-lg' style='color: white; background: green; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
 		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='-' CT_ID='{$CT_ID}' title='Внести расход'><i class='fa fa-minus fa-lg' style='color: white; background: red; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
-		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='' CT_ID='{$CT_ID}' title='Внести отправку денег'><i class='fa fa-exchange fa-lg' style='color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>";
+		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='' CT_ID='{$CT_ID}' title='Сдать выручку'><i class='fa fa-exchange fa-lg' style='color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>";
 	}
 	else {
 		echo "<h3 style='display: inline-block; margin: 10px 20px;'>&nbsp;</h3>";
@@ -621,7 +621,7 @@
 						echo "<td width='180'><span>{$row["cost_name"]}</span></td>";
 						echo "<td width='22'>";
 						if( $locking == 0 and $row["send"] != 2 ) { // Если месяц не закрыт
-							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='' title='Изменить отправку'><i class='fa fa-pencil fa-lg'></i></a>";
+							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a>";
 						}
 						echo "</td>";
 						echo "</tr>";
@@ -712,7 +712,7 @@
 				$('#MT_header').css('margin-top','210px');
 				$('#section1').html('ПРИХОД наличных: {$format_cache_sum}');
 				$('#section2').html('РАСХОД наличных: {$format_sum_cost}');
-				$('#section3').html('ОТПРАВКА наличных: {$format_sum_send}');
+				$('#section3').html('ИНКАССАЦИЯ: {$format_sum_send}');
 				$('#section4').html('Оплата по ТЕРМИНАЛУ: {$format_terminal_sum}');
 				$('#section5').html('Отказы/замены: {$reject_count}');
 			});
@@ -1036,7 +1036,7 @@
 				<input type="text" name="cost_name" id="cost_name" style="width: 100%;">
 				<div id="wr_send" style="display: none">
 					<input type="checkbox" name="send" id="send" value="1">
-					<label for="send">Отправка наличных</label>
+					<label for="send">Инкассация</label>
 				</div>
 			</div>
 		</fieldset>
@@ -1256,7 +1256,7 @@
 				$('#add_cost #sign').val(sign);
 			}
 			else {
-				$('#add_cost').dialog('option', 'title', 'ОТПРАВКА ДЕНЕГ');
+				$('#add_cost').dialog('option', 'title', 'ИНКАССАЦИЯ');
 				$('#add_cost fieldset').css('background', '#99f');
 				$('#wr_send input').prop('checked', true);
 				$('#add_cost #sign').val('-');
