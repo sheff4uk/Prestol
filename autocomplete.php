@@ -143,5 +143,16 @@ case "price":
 		echo json_encode($PriceTags);
 	}
 	break;
+
+case "passport":
+	// Автокомплит паспортных данных для доверенности
+	$query = "SELECT PD_ID, fio, pasport_seriya, pasport_nomer, pasport_vidan_kem, pasport_vidan_data FROM PassportData WHERE fio LIKE '%{$_GET["term"]}%'";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) )
+	{
+		$PassportTags[] = array( "PD_ID"=>$row["PD_ID"], "value"=>$row["fio"], "pasport_seria"=>$row["pasport_seria"], "pasport_nomer"=>$row["pasport_nomer"], "pasport_vidan_kem"=>$row["pasport_vidan_kem"], "pasport_vidan_data"=>$row["pasport_vidan_data"] );
+	}
+	echo json_encode($PassportTags);
+	break;
 }
 ?>

@@ -11,6 +11,33 @@
 	}
 
 	if( $_GET["add_doverennost"] ) {
+		// Обновляем на кого выдана доверенность
+		$fio = trim(mysqli_real_escape_string( $mysqli,$_POST["fio"] ));
+		$pasport_seriya = trim(mysqli_real_escape_string( $mysqli,$_POST["pasport_seriya"] ));
+		$pasport_nomer = trim(mysqli_real_escape_string( $mysqli,$_POST["pasport_nomer"] ));
+		$pasport_vidan_kem = trim(mysqli_real_escape_string( $mysqli,$_POST["pasport_vidan_kem"] ));
+		$pasport_vidan_data = trim(mysqli_real_escape_string( $mysqli,$_POST["pasport_vidan_data"] ));
+		if( $_POST["PD_ID"] ) {
+			$query = "UPDATE PassportData SET
+						 fio = '{$fio}'
+						,pasport_seriya = IF('{$pasport_seriya}' = '', NULL, '{$pasport_seriya}')
+						,pasport_nomer = IF('{$pasport_nomer}' = '', NULL, '{$pasport_nomer}')
+						,pasport_vidan_kem = IF('{$pasport_vidan_kem}' = '', NULL, '{$pasport_vidan_kem}')
+						,pasport_vidan_data = IF('{$pasport_vidan_data}' = '', NULL, '{$pasport_vidan_data}')
+						WHERE KA_ID = {$_POST["PD_ID"]}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$PD_ID = $_POST["PD_ID"];
+		}
+		else {
+			$query = "INSERT INTO PassportData SET
+						 fio = '{$fio}'
+						,pasport_seriya = IF('{$pasport_seriya}' = '', NULL, '{$pasport_seriya}')
+						,pasport_nomer = IF('{$pasport_nomer}' = '', NULL, '{$pasport_nomer}')
+						,pasport_vidan_kem = IF('{$pasport_vidan_kem}' = '', NULL, '{$pasport_vidan_kem}')
+						,pasport_vidan_data = IF('{$pasport_vidan_data}' = '', NULL, '{$pasport_vidan_data}')";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$PD_ID = mysqli_insert_id($mysqli);
+		}
 
 		// Получаем номер очередного документа
 		$year = date('Y');
@@ -20,7 +47,7 @@
 		$count = mysqli_result($res,0,'Cnt');
 
 		// Сохраняем в таблицу информацию по доверенности, узнаем её ID.
-		$query = "INSERT INTO PrintFormsDoverennost SET count = {$count}, date = '{$date}', firma_prodavetc = '{$_POST["firma_prodavetc"]}', fio = '{$_POST["fio"]}', USR_ID = {$_SESSION["id"]}";
+		$query = "INSERT INTO PrintFormsDoverennost SET count = {$count}, date = '{$date}', firma_prodavetc = '{$_POST["firma_prodavetc"]}', PD_ID = {$PD_ID}, USR_ID = {$_SESSION["id"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$id = mysqli_insert_id($mysqli);
 
@@ -144,9 +171,10 @@
 					,PFD.count
 					,DATE_FORMAT(PFD.date, '%d.%m.%y') date_format
 					,PFD.firma_prodavetc
-					,PFD.fio
+					,PD.fio
 					,USR_Name(PFD.USR_ID) Name
 				FROM PrintFormsDoverennost PFD
+				JOIN PassportData PD ON PD.PD_ID = PFD.PD_ID
 				WHERE YEAR(PFD.date) = {$year}
 				ORDER BY PFD.date DESC, PFD.PFD_ID DESC";
 
@@ -194,7 +222,7 @@
 					</tr>
 					<tr class="forms">
 						<td class="left" align="left">По документу:</td>
-						<td valign="top"><input type="text" name="doc" id="doc" class="forminput" placeholder="" value=""></td>
+						<td valign="top"><input type="text" name="doc" id="doc" class="forminput" placeholder="" value="паспорт"></td>
 					</tr>
 				</tbody>
 			</table>
@@ -209,7 +237,8 @@
 					<tr>
 						<td class="left" align="left" valign="top">Должность, Ф.И.О. полностью, в дательном падеже:</td>
 						<td valign="top">
-						<input type="text" name="fio" id="fio" class="forminput" placeholder="водителю Иванову Ивану Ивановичу" value=""></td>
+						<input type="hidden" name="PD_ID" id="PD_ID" class="forminput" value="">
+						<input type="text" required name="fio" id="fio" class="forminput" placeholder="водителю Иванову Ивану Ивановичу" value=""></td>
 					</tr>
 					<tr>
 						<td class="left" align="left" valign="top">Паспорт:</td>
@@ -323,6 +352,30 @@
 				hide: 'explode',
 				closeText: 'Закрыть'
 			});
+		});
+
+		// Автокомплит на чьё имя
+		$( "#fio" ).autocomplete({
+			source: "autocomplete.php?do=passport",
+			minLength: 2,
+			autoFocus: true,
+			select: function( event, ui ) {
+				$('#PD_ID').val(ui.item.PD_ID);
+				$('#pasport_seriya').val(ui.item.pasport_seriya);
+				$('#pasport_nomer').val(ui.item.pasport_nomer);
+				$('#pasport_vidan_kem').val(ui.item.pasport_vidan_kem);
+				$('#pasport_vidan_data').val(ui.item.pasport_vidan_data);
+			}
+		});
+
+		$( "#fio" ).on("keyup", function() {
+			if( $( "#fio" ).val().length < 2 ) {
+				$('#PD_ID').val('');
+				$('#pasport_seriya').val('');
+				$('#pasport_nomer').val('');
+				$('#pasport_vidan_kem').val('');
+				$('#pasport_vidan_data').val('');
+			}
 		});
 	});
 </script>
