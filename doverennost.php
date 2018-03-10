@@ -24,7 +24,7 @@
 						,pasport_nomer = IF('{$pasport_nomer}' = '', NULL, '{$pasport_nomer}')
 						,pasport_vidan_kem = IF('{$pasport_vidan_kem}' = '', NULL, '{$pasport_vidan_kem}')
 						,pasport_vidan_data = IF('{$pasport_vidan_data}' = '', NULL, '{$pasport_vidan_data}')
-						WHERE KA_ID = {$_POST["PD_ID"]}";
+						WHERE PD_ID = {$_POST["PD_ID"]}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$PD_ID = $_POST["PD_ID"];
 		}
