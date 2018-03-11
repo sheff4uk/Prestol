@@ -121,15 +121,15 @@
 
 		if( $left_sum != 0 and $right_sum != 0 ) {
 			// Создание копии заказа
-			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, Progress, IsReady, Del, creator, confirmed)
-			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, Progress, IsReady, Del, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, Progress, IsReady, Del, creator, confirmed)
+			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, Progress, IsReady, Del, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
 			// Записываем в журнал событие разделения заказа
-			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$OD_ID}, field_name = 'Разделение заказа (уменьшенный)', old_value = '', new_value = '', author = {$_SESSION['id']}";
+			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$OD_ID}, field_name = 'Разделение заказа <a href=\'orderdetail.php?id={$newOD_ID}\' class=\'button\' target=\'_blank\'>другая его часть</a>', old_value = '', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, field_name = 'Разделение заказа (вычтенный)', old_value = '', new_value = '', author = {$_SESSION['id']}";
+			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, field_name = 'Разделение заказа (<a href=\'orderdetail.php?id={$OD_ID}\' class=\'button\' target=\'_blank\'>другая его часть</a>)', old_value = '', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			// Цикл по содержимому заказа (используются данные из формы)
