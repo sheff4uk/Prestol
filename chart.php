@@ -311,17 +311,17 @@ $hold_others = mysqli_result($res,0,'Amount');
 		}, {
 			type: 'bar',
 			label: 'Стулья',
-			backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(255, 99, 132, 0.5)'<?=$chairs_color?>],
+			backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(255, 99, 132, 0.5)', 'rgba(255, 99, 132, 0.5)'<?=$chairs_color?>],
 			data: [<?=$hold_chairs?>, <?=$show_chairs?>, <?=$outdated_chairs?><?=$chairs_plan?>]
 		}, {
 			type: 'bar',
 			label: 'Столы',
-			backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(54, 162, 235, 0.5)'<?=$tables_color?>],
+			backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(54, 162, 235, 0.5)', 'rgba(54, 162, 235, 0.5)'<?=$tables_color?>],
 			data: [<?=$hold_tables?>, <?=$show_tables?>, <?=$outdated_tables?><?=$tables_plan?>]
 		}, {
 			type: 'bar',
 			label: 'Прочее',
-			backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 0.5)'<?=$others_color?>],
+			backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 0.5)'<?=$others_color?>],
 			data: [<?=$hold_others?>, <?=$show_others?>, <?=$outdated_others?><?=$others_plan?>]
 		}, {
 			type: 'bar',
