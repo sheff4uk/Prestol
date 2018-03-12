@@ -42,7 +42,7 @@
 		$KA_ID = ( $_POST["kontragent"] and $category == 9 ) ? $_POST["kontragent"] : "NULL";
 		$coment = mysqli_real_escape_string( $mysqli, $_POST["comment"] );
 
-		if( $F_ID != '' ) { // Редактируем операцию
+		if( $F_ID != 'add_operation_btn' ) { // Редактируем операцию
 			$query = "UPDATE Finance
 						SET  money = {$sum}
 							,date = '{$cost_date}'
@@ -259,12 +259,116 @@
 
 <?
 	$now_date = date('d.m.Y');
+
 	//Узнаем дефолтный счет для пользователя
 	$query = "SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION['id']} ORDER BY IFNULL(bank, 0) LIMIT 1";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$account = mysqli_result($res,0,'FA_ID');
 
-	echo "<a id='add_operation_btn' href='#' class='add_operation_btn' type='-1' cost_date='{$now_date}' account='{$account}' title='Добавить в учёт'></a>";
+	// Вычисляем частый тип операции для пользователя
+	$query = "
+		SELECT IFNULL(FFC.type, 0) type, SUM(1) amount
+		FROM (
+			SELECT IFNULL(FC.type, 0) type
+			FROM Finance F
+			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+			WHERE F.author = {$_SESSION['id']} AND F.PL_ID IS NULL AND F.OP_ID IS NULL
+			ORDER BY F.F_ID DESC
+			LIMIT 25
+		) FFC
+		GROUP BY IFNULL(FFC.type, 0)
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$type = -1;
+	$amount = 0;
+	while( $row = mysqli_fetch_array($res) )
+	{
+		if( $row['amount'] > $amount ) {
+			$type = $row['type'];
+			$amount = $row['amount'];
+		}
+	}
+
+// Вычисляем частый счёт и категорию для каждого типа
+	// Расход
+	$query = "
+		SELECT FFC.FA_ID, FFC.FC_ID, SUM(1) amount
+		FROM (
+			SELECT F.FA_ID, F.FC_ID
+			FROM Finance F
+			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+			WHERE F.author = {$_SESSION['id']} AND F.PL_ID IS NULL AND F.OP_ID IS NULL AND IFNULL(FC.type, 0) = -1
+			ORDER BY F.F_ID DESC
+			LIMIT 15
+		) FFC
+		GROUP BY FFC.FA_ID, FFC.FC_ID
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$out_account = $account;
+	$out_category = 0;
+	$amount = 0;
+	while( $row = mysqli_fetch_array($res) )
+	{
+		if( $row['amount'] > $amount ) {
+			$out_account = $row['FA_ID'];
+			$out_category = $row['FC_ID'];
+			$amount = $row['amount'];
+		}
+	}
+
+	// Приход
+	$query = "
+		SELECT FFC.FA_ID, FFC.FC_ID, SUM(1) amount
+		FROM (
+			SELECT F.FA_ID, F.FC_ID
+			FROM Finance F
+			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+			WHERE F.author = {$_SESSION['id']} AND F.PL_ID IS NULL AND F.OP_ID IS NULL AND IFNULL(FC.type, 0) = 1
+			ORDER BY F.F_ID DESC
+			LIMIT 15
+		) FFC
+		GROUP BY FFC.FA_ID, FFC.FC_ID
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$in_account = $account;
+	$in_category = 0;
+	$amount = 0;
+	while( $row = mysqli_fetch_array($res) )
+	{
+		if( $row['amount'] > $amount ) {
+			$in_account = $row['FA_ID'];
+			$in_category = $row['FC_ID'];
+			$amount = $row['amount'];
+		}
+	}
+
+	// Перевод
+	$query = "
+		SELECT FFC.FA_ID, FFC.to_account, SUM(1) amount
+		FROM (
+			SELECT F.FA_ID, F.to_account
+			FROM Finance F
+			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+			WHERE F.author = {$_SESSION['id']} AND F.PL_ID IS NULL AND F.OP_ID IS NULL AND IFNULL(FC.type, 0) = 0
+			ORDER BY F.F_ID DESC
+			LIMIT 15
+		) FFC
+		GROUP BY FFC.FA_ID, FFC.to_account
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$from_account = $account;
+	$to_account = 0;
+	$amount = 0;
+	while( $row = mysqli_fetch_array($res) )
+	{
+		if( $row['amount'] > $amount ) {
+			$from_account = $row['FA_ID'];
+			$to_account = $row['to_account'];
+			$amount = $row['amount'];
+		}
+	}
+
+	echo "<a id='add_operation_btn' href='#' class='add_operation_btn' type='{$type}' cost_date='{$now_date}' account='{$account}' title='Добавить в учёт'></a>";
 ?>
 
 <div style="width: 1000px; margin: auto;">
@@ -914,13 +1018,24 @@
 			<input type="hidden" name="F_ID" id="F_ID">
 			<div class="field">
 				<label for="sum">Сумма:</label><br>
-				<input required type="number" name="sum" min="0" id="sum" autocomplete="off" style="width: 100px; text-align: right;">
+				<input required type="number" name="sum" min="0" id="sum" autocomplete="off" style="width: 100px; text-align: right; font-size: 20px;">
 			</div>
 			<div class="field">
 				<label for="cost_date">Дата:</label><br>
 				<input required readonly type="text" name="cost_date" class="date" id="cost_date" style="width: 90px;">
 			</div>
 			<br>
+			<div class="field">
+				<label for="type">Тип операции:</label>
+				<div class='btnset' id='type'>
+					<input type='radio' id='type-1' name='type' value='-1'>
+						<label for='type-1'><i class="fa fa-minus fa-lg" title="Расход"></i></label>
+					<input required type='radio' id='type1' name='type' value='1'>
+						<label for='type1'><i class="fa fa-plus fa-lg" title="Доход"></i></label>
+					<input type='radio' id='type0' name='type' value='0'>
+						<label for='type0'><i class="fa fa-exchange fa-lg" title="Перевод со счета"></i></label>
+				</div>
+			</div>
 			<div class="field">
 				<label for="account">Счёт:</label><br>
 				<select required name="account" id="account" style="width: 140px;">
@@ -955,17 +1070,6 @@
 						}
 						?>
 				</select>
-			</div>
-			<div class="field">
-				<label for="type">Тип операции:</label>
-				<div class='btnset' id='type'>
-					<input type='radio' id='type-1' name='type' value='-1'>
-						<label for='type-1'><i class="fa fa-minus fa-lg" title="Расход"></i></label>
-					<input required type='radio' id='type1' name='type' value='1'>
-						<label for='type1'><i class="fa fa-plus fa-lg" title="Доход"></i></label>
-					<input type='radio' id='type0' name='type' value='0'>
-						<label for='type0'><i class="fa fa-exchange fa-lg" title="Перевод со счета"></i></label>
-				</div>
 			</div>
 			<br>
 			<div id="wr_category" class="field"></div> <!-- Заполняется аяксом -->
@@ -1165,20 +1269,19 @@
 			var type = $(this).attr('type');
 			var cost_date = $(this).attr('cost_date');
 			var account = $(this).attr('account');
+			var F_ID = $(this).attr('id');
 
 			// Очистка диалога
-			$('#add_operation #F_ID').val('');
+			$('#add_operation #F_ID').val(F_ID);
 			$('#add_operation #sum').val('');
 			$('#add_operation #cost_date').val(cost_date);
 			$('#add_operation #account').val(account);
-			$('#type'+type).prop('checked', true);
+			$('#type'+type).prop('checked', true).button('refresh');
 			$('#type > #type'+type).change();
-			$('#add_operation #category').val('');
-			$('#add_operation #to_account').val('');
-			$('#add_operation #kontragent').val('').trigger('change');
+//			$('#add_operation #category').val('').trigger('change');
+//			$('#add_operation #to_account').val('').trigger('change');
+//			$('#add_operation #kontragent').val('').trigger('change');
 			$('#add_operation #comment').val('');
-
-			var F_ID = $(this).attr('id');
 
 			if( F_ID > 0 ) {
 				var sum = $(this).attr('sum');
@@ -1186,7 +1289,7 @@
 				var to_account = $(this).attr('to_account');
 				var kontragent = $(this).attr('kontragent');
 				var comment = $(this).parents('tr').find('.comment > span').html();
-				$('#add_operation #F_ID').val(F_ID);
+//				$('#add_operation #F_ID').val(F_ID);
 				$('#add_operation #sum').val(sum);
 				$('#add_operation #category').val(category).trigger('change');
 				$('#add_operation #to_account').val(to_account).trigger('change');
@@ -1283,8 +1386,24 @@
 		// При смене типа операции меняется категория
 		$('#type > input').change(function() {
 			type = $(this).val();
+			F_ID = $('#add_operation #F_ID').val();
 			$.ajax({ url: "ajax.php?do=cash_category&type="+type, dataType: "script", async: false });
 			$('#wr_kontragent').hide('fast');
+
+			if( F_ID == 'add_operation_btn' ) { // Если новая операция
+				if( type == -1 ) {
+					$('#add_operation #account').val('<?=$out_account?>');
+					$('#add_operation #category').val('<?=$out_category?>').trigger('change');
+				}
+				else if( type == 1 ) {
+					$('#add_operation #account').val('<?=$in_account?>');
+					$('#add_operation #category').val('<?=$in_category?>').trigger('change');
+				}
+				else {
+					$('#add_operation #account').val('<?=$from_account?>');
+					$('#add_operation #to_account').val('<?=$to_account?>').trigger('change');
+				}
+			}
 			return false;
 		});
 
