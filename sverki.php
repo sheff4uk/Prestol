@@ -454,7 +454,7 @@ while( $row = mysqli_fetch_array($res) ) {
 				</div>
 			</div>
 			<div id="num_rows" style="display: none;">
-				Количество строк:&nbsp;
+				Ниже показаны последние
 				<select style="margin: 10px;">
 					<option value="25">25</option>
 					<option value="50">50</option>
@@ -462,6 +462,7 @@ while( $row = mysqli_fetch_array($res) ) {
 					<option value="250">250</option>
 					<option value="500">500</option>
 				</select>
+				отгруженных заказов.
 				<input type="hidden" name="num_rows">
 			</div>
 			<div class="accordion">
@@ -561,6 +562,7 @@ while( $row = mysqli_fetch_array($res) ) {
 			$('#add_invoice_form .accordion').accordion( "option", "active", 1 );
 			$('#date').val('<?=( date('d.m.Y') )?>');
 			$('#num_rows select').val(25);
+			$('#invoice_total').html('0');
 
 			$('#add_invoice_form').dialog({
 				position: { my: "center top", at: "center top", of: window },
@@ -606,9 +608,16 @@ while( $row = mysqli_fetch_array($res) ) {
 			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows, dataType: "script", async: false });
 			if( KA_ID ) {
 				$('#add_invoice_form .accordion').accordion( "option", "active", 0 );
+				if( num_rows > 0 ) {
+					$('#selectalltop').prop('checked', false).change();
+				}
+				else {
+					$('#selectalltop').prop('checked', true).change();
+				}
 			}
 			else {
 				$('#add_invoice_form .accordion').accordion( "option", "active", 1 );
+				$('#invoice_total').html('0');
 			}
 		});
 
