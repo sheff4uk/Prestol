@@ -272,7 +272,10 @@
 			SELECT IFNULL(FC.type, 0) type
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-			WHERE F.author = {$_SESSION['id']} AND F.PL_ID IS NULL AND F.OP_ID IS NULL
+			WHERE F.author = {$_SESSION['id']}
+				AND F.PL_ID IS NULL
+				AND F.OP_ID IS NULL
+				AND F.money != 0
 			ORDER BY F.F_ID DESC
 			LIMIT 25
 		) FFC
@@ -297,7 +300,11 @@
 			SELECT F.FA_ID, F.FC_ID
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-			WHERE F.author = {$_SESSION['id']} AND F.PL_ID IS NULL AND F.OP_ID IS NULL AND IFNULL(FC.type, 0) = -1
+			WHERE F.author = {$_SESSION['id']}
+				AND F.PL_ID IS NULL
+				AND F.OP_ID IS NULL
+				AND IFNULL(FC.type, 0) = -1
+				AND F.money != 0
 			ORDER BY F.F_ID DESC
 			LIMIT 15
 		) FFC
@@ -323,7 +330,11 @@
 			SELECT F.FA_ID, F.FC_ID
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-			WHERE F.author = {$_SESSION['id']} AND F.PL_ID IS NULL AND F.OP_ID IS NULL AND IFNULL(FC.type, 0) = 1
+			WHERE F.author = {$_SESSION['id']}
+				AND F.PL_ID IS NULL
+				AND F.OP_ID IS NULL
+				AND IFNULL(FC.type, 0) = 1
+				AND F.money != 0
 			ORDER BY F.F_ID DESC
 			LIMIT 15
 		) FFC
@@ -349,7 +360,11 @@
 			SELECT F.FA_ID, F.to_account
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-			WHERE F.author = {$_SESSION['id']} AND F.PL_ID IS NULL AND F.OP_ID IS NULL AND IFNULL(FC.type, 0) = 0
+			WHERE F.author = {$_SESSION['id']}
+			AND F.PL_ID IS NULL
+			AND F.OP_ID IS NULL
+			AND IFNULL(FC.type, 0) = 0
+			AND F.money != 0
 			ORDER BY F.F_ID DESC
 			LIMIT 15
 		) FFC
