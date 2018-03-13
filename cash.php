@@ -212,19 +212,24 @@
 		border: 1px solid #bbb;
 		padding: 10px;
 		border-radius: 10px;
-		width: 680px;
+		width: 100%;
 		white-space: nowrap;
 		display: inline-block;
-		height: 300px;
 		overflow: auto;
 	}
 	#wr_account {
+		position: fixed;
+		background-color: white;
+		left: -280px;
 		border: 1px solid #bbb;
 		padding: 10px;
 		border-radius: 10px;
 		width: 300px;
-		display: inline-block;
-		margin-right: 20px;
+		opacity: .8;
+		transition: .3s;
+	}
+	#wr_account:hover {
+		left: 0px;
 	}
 	#add_operation_btn {
 		background: url(../img/bt_speed_dial_1x.png) no-repeat scroll center center transparent;
@@ -387,81 +392,82 @@
 ?>
 
 <div style="width: 1000px; margin: auto;">
-	<div style="display: flex;">
-		<div id="wr_account">
-			<?
-			if( !in_array('finance_account', $Rights) ) {
-				echo "<a href='#' class='add_account_btn' style='margin: 10px; display: block; text-align: center;'><b><i class='fa fa-plus'></i> Добавить счет</b></a>";
-			}
-			?>
-			<table class="main_table">
-				<tbody>
-					<?
-						$total = 0;
-						$query = "SELECT FA_ID, name, start_balance, end_balance, USR_ID, bank, color
-									FROM FinanceAccount
-									WHERE archive = 0
-									".(in_array('finance_account', $Rights) ? " AND USR_ID = {$_SESSION['id']}" : "")."
-									ORDER BY IFNULL(bank, 0), FA_ID";
-						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						while( $row = mysqli_fetch_array($res) )
-						{
-							$total = $total + $row["end_balance"];
-							$color = $row["end_balance"] < 0 ? '#E74C3C' : '#16A085';
-							$money = number_format($row["end_balance"], 0, '', ' ');
-
-							echo "<tr>";
-							echo "<td class='account_label'><span style='background-color: {$row["color"]}; border-radius: 20%;'>{$row["name"]}</span>";
-							if( !in_array('finance_account', $Rights) ) {
-								echo "<a href='#' class='add_account_btn' FA_ID='{$row["FA_ID"]}' bank='{$row["bank"]}' name='{$row["name"]}' color='{$row["color"]}' start_balance='{$row["start_balance"]}' USR_ID='{$row["USR_ID"]}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a>";
-							}
-							echo "</td>";
-							echo "<td width='120' class='txtright' style='color: {$color};'><b>{$money}</b></td>";
-							echo "</tr>";
-						}
-						if( !in_array('finance_account', $Rights) ) {
-							$color = $total < 0 ? '#E74C3C' : '#16A085';
-							$money = number_format($total, 0, '', ' ');
-
-							echo "<tr>";
-							echo "<td><h3>Капитал:</h3></td>";
-							echo "<td width='120' class='txtright' style='color: {$color};'><h3>{$money}</h3></td>";
-							echo "</tr>";
-						}
-					?>
-				</tbody>
-			</table>
-			<?
-			if( !in_array('finance_account', $Rights) ) {
-				echo "<a href='#' class='add_category_btn' style='margin: 10px; display: block; text-align: center;'><b><i class='fa fa-plus'></i> Добавить категорию</b></a>";
-			}
-			?>
-		</div>
-
-		<div id="wr_send">
-		<table style="width: 100%;">
-			<thead>
-				<tr>
-					<th colspan="4">Отправлено</th>
-				</tr>
-			</thead>
-			<tbody>
+	<div id="wr_account">
 		<?
-			$query = "SELECT OP.OP_ID
-							,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
-							,ABS(OP.payment_sum) payment_sum
-							,OP.cost_name
-							,SH.Shop
-							,CT.City
-					FROM OrdersPayment OP
-					JOIN Shops SH ON SH.SH_ID = OP.SH_ID
-					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-					WHERE send = 1 AND payment_sum < 0
-						".(in_array('finance_account', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
-					ORDER BY OP.payment_date DESC";
+		if( !in_array('finance_account', $Rights) ) {
+			echo "<a href='#' class='add_account_btn' style='margin: 10px; display: block; text-align: center;'><b><i class='fa fa-plus'></i> Добавить счет</b></a>";
+		}
+		?>
+		<table class="main_table">
+			<tbody>
+				<?
+					$total = 0;
+					$query = "SELECT FA_ID, name, start_balance, end_balance, USR_ID, bank, color
+								FROM FinanceAccount
+								WHERE archive = 0
+								".(in_array('finance_account', $Rights) ? " AND USR_ID = {$_SESSION['id']}" : "")."
+								ORDER BY IFNULL(bank, 0), FA_ID";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) )
+					{
+						$total = $total + $row["end_balance"];
+						$color = $row["end_balance"] < 0 ? '#E74C3C' : '#16A085';
+						$money = number_format($row["end_balance"], 0, '', ' ');
 
-			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						echo "<tr>";
+						echo "<td class='account_label'><span style='background-color: {$row["color"]}; border-radius: 20%;'>{$row["name"]}</span>";
+						if( !in_array('finance_account', $Rights) ) {
+							echo "<a href='#' class='add_account_btn' FA_ID='{$row["FA_ID"]}' bank='{$row["bank"]}' name='{$row["name"]}' color='{$row["color"]}' start_balance='{$row["start_balance"]}' USR_ID='{$row["USR_ID"]}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a>";
+						}
+						echo "</td>";
+						echo "<td width='120' class='txtright' style='color: {$color};'><b>{$money}</b></td>";
+						echo "</tr>";
+					}
+					if( !in_array('finance_account', $Rights) ) {
+						$color = $total < 0 ? '#E74C3C' : '#16A085';
+						$money = number_format($total, 0, '', ' ');
 
+						echo "<tr>";
+						echo "<td><h3>Капитал:</h3></td>";
+						echo "<td width='120' class='txtright' style='color: {$color};'><h3>{$money}</h3></td>";
+						echo "</tr>";
+					}
+				?>
+			</tbody>
+		</table>
+		<?
+		if( !in_array('finance_account', $Rights) ) {
+			echo "<a href='#' class='add_category_btn' style='margin: 10px; display: block; text-align: center;'><b><i class='fa fa-plus'></i> Добавить категорию</b></a>";
+		}
+		?>
+	</div>
+
+	<?
+		$query = "SELECT OP.OP_ID
+						,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
+						,ABS(OP.payment_sum) payment_sum
+						,OP.cost_name
+						,SH.Shop
+						,CT.City
+				FROM OrdersPayment OP
+				JOIN Shops SH ON SH.SH_ID = OP.SH_ID
+				JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+				WHERE send = 1 AND payment_sum < 0
+					".(in_array('finance_account', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
+				ORDER BY OP.payment_date DESC";
+
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( mysqli_num_rows($res) ) {
+			echo "
+				<div id='wr_send'>
+					<table style='width: 100%;'>
+						<thead>
+							<tr>
+								<th colspan='4'>Отправлено</th>
+							</tr>
+						</thead>
+						<tbody>
+			";
 			while( $row = mysqli_fetch_array($res) ) {
 				$payment_sum = number_format($row["payment_sum"], 0, '', ' ');
 				echo "<tr>";
@@ -471,11 +477,13 @@
 				echo "<td><a class='button add_send_btn' OP_ID='{$row["OP_ID"]}' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
 				echo "</tr>";
 			}
-		?>
-			</tbody>
-		</table>
-		</div>
-	</div>
+			echo "
+						</tbody>
+					</table>
+				</div>
+			";
+		}
+	?>
 
 	<div style="text-align: center; margin: 10px; position: relative;">
 		<p><b>Период (включительно):</b></p>
