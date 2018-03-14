@@ -457,28 +457,47 @@
 						$shop_price = mysqli_result($subres,0,'Price');
 						$city_price = $city_price + $shop_price;
 						// Получаем сумму выручки по салону по накладным (чтобы получить дебиторку)
-						$query = "SELECT SUM(ODD_ODB.Price) Price
-									FROM OrdersData OD
-									JOIN (
-										SELECT ODD.OD_ID ,ODD.Price * ODD.Amount Price
-										FROM OrdersDataDetail ODD
-										WHERE ODD.Del = 0
-										UNION ALL
-										SELECT ODB.OD_ID ,ODB.Price * ODB.Amount Price
-										FROM OrdersDataBlank ODB
-										WHERE ODB.Del = 0
-									) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-									WHERE OD.PFI_ID IS NOT NULL AND OD.Del = 0 AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}";
+						$query = "
+							SELECT SUM(ODD_ODB.Price) Price
+							FROM OrdersData OD
+							LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
+							JOIN (
+								SELECT ODD.OD_ID ,ODD.Price * ODD.Amount Price
+								FROM OrdersDataDetail ODD
+								WHERE ODD.Del = 0
+								UNION ALL
+								SELECT ODB.OD_ID ,ODB.Price * ODB.Amount Price
+								FROM OrdersDataBlank ODB
+								WHERE ODB.Del = 0
+							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+							WHERE IF(PFI.rtrn = 1, NULL, OD.PFI_ID) IS NOT NULL AND OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}
+						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_price_inv = mysqli_result($subres,0,'Price');
 
 						// Получаем скидку по салону
-						$query = "SELECT SUM(discount) discount FROM OrdersData OD WHERE OD.Del = 0 AND YEAR(StartDate) = {$_GET["year"]} AND MONTH(StartDate) = {$_GET["month"]} AND SH_ID = {$row["SH_ID"]}";
+						$query = "
+							SELECT SUM(discount) discount
+							FROM OrdersData OD
+							WHERE OD.Del = 0
+								AND YEAR(StartDate) = {$_GET["year"]}
+								AND MONTH(StartDate) = {$_GET["month"]}
+								AND SH_ID = {$row["SH_ID"]}
+						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_discount = mysqli_result($subres,0,'discount');
 						$city_discount = $city_discount + $shop_discount;
 						// Получаем скидку по салону по накладным (чтобы получить дебиторку)
-						$query = "SELECT SUM(discount) discount FROM OrdersData OD WHERE OD.PFI_ID IS NOT NULL AND OD.Del = 0 AND YEAR(StartDate) = {$_GET["year"]} AND MONTH(StartDate) = {$_GET["month"]} AND SH_ID = {$row["SH_ID"]}";
+						$query = "
+							SELECT SUM(discount) discount
+							FROM OrdersData OD
+							LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
+							WHERE IF(PFI.rtrn = 1, NULL, OD.PFI_ID) IS NOT NULL
+								AND OD.Del = 0
+								AND YEAR(StartDate) = {$_GET["year"]}
+								AND MONTH(StartDate) = {$_GET["month"]}
+								AND SH_ID = {$row["SH_ID"]}
+						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_discount_inv = mysqli_result($subres,0,'discount');
 
