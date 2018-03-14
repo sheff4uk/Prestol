@@ -374,6 +374,7 @@
 				<thead>
 					<tr>
 						<th>Салон</th>
+						<th></th>
 						<th>Продажи<i class="fa fa-question-circle" aria-hidden="true" title="Не включает суммы отказных заказов."></i></th>
 						<th>Скидки</th>
 						<th>Отказы</th>
@@ -383,6 +384,7 @@
 				</thead>
 				<tbody>
 				<?
+					$city_report = 0;
 					$city_price = 0;
 					$city_discount = 0;
 					$city_otkaz = 0;
@@ -391,19 +393,66 @@
 					$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND KA_ID IS NULL ".($USR_Shop ? "AND SH_ID = {$USR_Shop}" : "")." ORDER BY SH_ID";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
+						// Получаем сумму поступившей налички для отчета
+						$query = "
+							SELECT IFNULL(SUM(SUB.cash_sum), 0) cash_sum
+							FROM (
+								SELECT IFNULL(OP2.cash_sum, 0) cash_sum
+								FROM OrdersData OD
+								JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.FA_ID IS NOT NULL
+								JOIN (
+									SELECT OP.OD_ID
+										,SUM(OP.payment_sum) payment_sum
+										,SUM(IF(OP.terminal_payer IS NOT NULL, OP.payment_sum, 0)) terminal_sum
+									FROM OrdersPayment OP
+									WHERE IFNULL(payment_sum, 0) != 0
+										AND OP.SH_ID = {$row["SH_ID"]}
+									GROUP BY OP.OD_ID
+								) OP1 ON OP1.OD_ID = OD.OD_ID
+								JOIN (
+									SELECT OP.OD_ID
+										,SUM(OP.payment_sum) cash_sum
+									FROM OrdersPayment OP
+									WHERE IFNULL(payment_sum, 0) != 0
+										AND OP.SH_ID = {$row["SH_ID"]}
+										AND YEAR(OP.payment_date) = {$_GET["year"]}
+										AND MONTH(OP.payment_date) = {$_GET["month"]}
+										AND OP.terminal_payer IS NULL
+									GROUP BY OP.OD_ID
+								) OP2 ON OP2.OD_ID = OD.OD_ID
+								JOIN (
+									SELECT ODD.OD_ID, ODD.Price * ODD.Amount Price
+									FROM OrdersDataDetail ODD
+									WHERE ODD.Del = 0
+									UNION ALL
+									SELECT ODB.OD_ID, ODB.Price * ODB.Amount Price
+									FROM OrdersDataBlank ODB
+									WHERE ODB.Del = 0
+								) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+									AND OD.DelDate IS NULL
+								GROUP BY OD.OD_ID
+								HAVING (SUM(ODD_ODB.Price) - MAX(IFNULL(OD.discount, 0))) > MAX(OP1.payment_sum) OR MAX(OP1.terminal_sum) > 0
+							) SUB
+						";
+						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						$sum_cash_report = mysqli_result($subres,0,'cash_sum');
+						$city_report += $sum_cash_report;
+
 						// Получаем сумму выручки по салону
-						$query = "SELECT SUM(ODD_ODB.Price) Price
-									FROM OrdersData OD
-									JOIN (
-										SELECT ODD.OD_ID ,ODD.Price * ODD.Amount Price
-										FROM OrdersDataDetail ODD
-										WHERE ODD.Del = 0
-										UNION ALL
-										SELECT ODB.OD_ID ,ODB.Price * ODB.Amount Price
-										FROM OrdersDataBlank ODB
-										WHERE ODB.Del = 0
-									) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-									WHERE OD.Del = 0 AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}";
+						$query = "
+							SELECT SUM(ODD_ODB.Price) Price
+							FROM OrdersData OD
+							JOIN (
+								SELECT ODD.OD_ID ,ODD.Price * ODD.Amount Price
+								FROM OrdersDataDetail ODD
+								WHERE ODD.Del = 0
+								UNION ALL
+								SELECT ODB.OD_ID ,ODB.Price * ODB.Amount Price
+								FROM OrdersDataBlank ODB
+								WHERE ODB.Del = 0
+							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+							WHERE OD.Del = 0 AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}
+						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_price = mysqli_result($subres,0,'Price');
 						$city_price = $city_price + $shop_price;
@@ -458,6 +507,7 @@
 						$city_cash = $city_cash + $shop_cash;
 
 						$shop_percent = round($shop_discount / ($shop_price - $shop_discount) * 100, 2);
+						$format_shop_report = number_format($sum_cash_report, 0, '', ' ');
 						$format_shop_price = number_format(($shop_price - $shop_discount), 0, '', ' ');
 						$format_shop_discount = number_format($shop_discount, 0, '', ' ');
 						$format_shop_otkaz = number_format($shop_otkaz, 0, '', ' ');
@@ -466,6 +516,7 @@
 
 						echo "<tr>";
 						echo "<td class='nowrap'><a href='{$location}&SH_ID={$row["SH_ID"]}' ".( $SH_ID == $row["SH_ID"] ? "style='color: #D65C4F;'" : "" ).">{$row["Shop"]}:</a></td>";
+						echo "<td class='txtright'>{$format_shop_report}</td>";
 						echo "<td class='txtright'>{$format_shop_price}</td>";
 						echo "<td class='txtright'>{$format_shop_discount}<i class='fa fa-question-circle' aria-hidden='true' title='{$shop_percent}%'></i></td>";
 						echo "<td class='txtright' style='color: #911;'>{$format_shop_otkaz}</td>";
@@ -475,6 +526,7 @@
 					}
 					if( !$USR_Shop ) {
 						$city_percent = round($city_discount / ($city_price - $city_discount) * 100, 2);
+						$format_city_report = number_format($city_report, 0, '', ' ');
 						$format_city_price = number_format($city_price - $city_discount, 0, '', ' ');
 						$format_city_discount = number_format($city_discount, 0, '', ' ');
 						$format_city_otkaz = number_format($city_otkaz, 0, '', ' ');
@@ -482,6 +534,7 @@
 						$format_city_cash = number_format($city_cash, 0, '', ' ');
 						echo "<tr>";
 						echo "<td class='nowrap'><b><a href='{$location}' ".( $SH_ID ? "" : "style='color: #D65C4F;'" ).">ВСЕГО:</a></b></td>";
+						echo "<td class='txtright'><b>{$format_city_report}</b></td>";
 						echo "<td class='txtright'><b>{$format_city_price}</b></td>";
 						echo "<td class='txtright'><b>{$format_city_discount}</b><i class='fa fa-question-circle' aria-hidden='true' title='{$city_percent}%'></td>";
 						echo "<td class='txtright' style='color: #911;'><b>{$format_city_otkaz}</b></td>";
