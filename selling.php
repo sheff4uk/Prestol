@@ -765,7 +765,7 @@
 				<th width="65">Сумма заказа</th>
 				<th width="70">Скидка</th>
 				<th width="65">Оплата</th>
-				<th width="20">Т</th>
+<!--				<th width="20">Т</th>-->
 				<th width="65">Остаток</th>
 <!--				<th width="65">Отказ</th>-->
 				<th width="70">Действие</th>
@@ -790,7 +790,7 @@
 				<th width="65"></th>
 				<th width="70"></th>
 				<th width="65"></th>
-				<th width="22"></th>
+<!--				<th width="20"></th>-->
 				<th width="65"></th>
 <!--				<th width="65"></th>-->
 				<th width="70"></th>
@@ -932,8 +932,8 @@
 			echo "<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "").">{$invoice}</td>
 					<td class='txtright'><button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}'>{$format_price}</button>{$invoice_price}</td>
 					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
-					<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>
-					<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
+					<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
+//					echo "<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
 
 					// Если в накладной - не показываем остаток
 					if( $row["PFI_ID"] ) {
