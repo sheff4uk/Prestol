@@ -710,11 +710,11 @@
 			$(document).ready(function() {
 				$('.wr_main_table_body').css('height', 'calc(100vh - 430px)');
 				$('#MT_header').css('margin-top','210px');
-				$('#section1').html('ПРИХОД наличных: {$format_cache_sum}');
-				$('#section2').html('РАСХОД наличных: {$format_sum_cost}');
-				$('#section3').html('ИНКАССАЦИЯ: {$format_sum_send}');
-				$('#section4').html('Оплата по ТЕРМИНАЛУ: {$format_terminal_sum}');
-				$('#section5').html('Отказы/замены: {$reject_count}');
+				$('#section1').html('<i class=\'fa fa-plus fa-lg\'></i> ПРИХОД наличных: {$format_cache_sum}');
+				$('#section2').html('<i class=\'fa fa-minus fa-lg\'></i> РАСХОД наличных: {$format_sum_cost}');
+				$('#section3').html('<i class=\'fa fa-exchange fa-lg\'></i> ИНКАССАЦИЯ: {$format_sum_send}');
+				$('#section4').html('<i class=\'fa fa-credit-card fa-lg\'></i> Оплата по ТЕРМИНАЛУ: {$format_terminal_sum}');
+				$('#section5').html('<i class=\'fa fa-hand-paper-o fa-lg\'></i> Отказы/замены: {$reject_count}');
 			});
 		</script>";
 	}
