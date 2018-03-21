@@ -547,7 +547,6 @@
 		<tr>
 			<th width="60">Кол-во</th>
 			<th width="120">Изделие</th>
-			<th width="60">Патина</th>
 			<th width="100">Этапы</th>
 			<th width="">Материал</th>
 			<th width="">Поставщик</th>
@@ -559,42 +558,28 @@
 		<tbody>
 <?
 	$query = "SELECT ODD.ODD_ID
+					,ODD.Amount
+					,ODD.Price
 					,IFNULL(PM.PT_ID, 2) PT_ID
-					,IFNULL(PM.Model, 'Столешница') Model
-					,CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')) Size
-					,PF.Form
-					,PME.Mechanism
-					,IFNULL(ODD.PM_ID, 0) PM_ID
-					,ODD.Length
-					,ODD.Width
-					,ODD.PieceAmount
-					,ODD.PieceSize
-					,ODD.PF_ID
-					,ODD.PME_ID
-					,ODD.MT_ID
+					,Zakaz(ODD.ODD_ID) Zakaz
 					,IFNULL(MT.Material, '') Material
+					,ODD.MT_ID
 					,IF(MT.removed=1, 'removed ', '') removed
 					,IF(ODD.MT_ID IS NULL, '', SH.Shipper) Shipper
 					,IFNULL(MT.SH_ID, '') SH_ID
 					,SH.mtype
 					,ODD.IsExist
-					,ODD.Amount
-					,ODD.Price
 					,ODD.Comment
 					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
 					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
 					,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
-					,IF(ODD.is_check = 1, '', 'attention') is_check
 					,IF(IFNULL(SUM(ODS.WD_ID * ODS.Visible), 0) = 0, 0, 1) inprogress
 					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
 					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
-					,Patina(ODD.ptn) patina
 					,ODD.Del
 			  FROM OrdersDataDetail ODD
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-			  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
@@ -613,10 +598,9 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
-		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')." {$row["is_check"]}' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
+		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
 		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
-		echo "<td><span>{$row["Model"]}<br>".($row["Size"] != "" ? "{$row["Size"]}<br>" : "").($row["Form"] != "" ? "{$row["Form"]}<br>" : "").($row["Mechanism"] != "" ? "{$row["Mechanism"]}<br>" : "")."</span></td>";
-		echo "<td>{$row["patina"]}</td>";
+		echo "<td><span>{$row["Zakaz"]}</span></td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><a href='#' id='{$row["ODD_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps" : "")." nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {
@@ -657,9 +641,7 @@
 	$query = "SELECT ODB.ODB_ID
 					,ODB.Amount
 					,ODB.Price
-					,ODB.BL_ID
-					,IFNULL(BL.Name, ODB.Other) Name
-					,ODB.Other
+					,ZakazB(ODB.ODB_ID) Zakaz
 					,ODB.Comment
 					,ODB.MT_ID
 					,IFNULL(MT.Material, '') Material
@@ -674,11 +656,9 @@
 					,IF(IFNULL(SUM(ODS.WD_ID * ODS.Visible), 0) = 0, 0, 1) inprogress
 					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR '') Steps
 					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
-					,Patina(ODB.ptn) patina
 					,ODB.Del
 			  FROM OrdersDataBlank ODB
 			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
-			  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 			  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID";
@@ -698,8 +678,7 @@
 		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
 		echo "<tr id='blank{$row["ODB_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODB_ID{$row["ODB_ID"]}*'>";
 		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
-		echo "<td>{$row["Name"]}</td>";
-		echo "<td>{$row["patina"]}</td>";
+		echo "<td>{$row["Zakaz"]}</td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><a href='#' odbid='{$row["ODB_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."nowrap shadow{$row["Attention"]}' location='{$location}'>{$row["Steps"]}</a></td>";
 		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
 		switch ($row["IsExist"]) {

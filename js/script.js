@@ -224,6 +224,9 @@ $(function(){
 				$(chbx).prop('checked', false);
 			$(chbx).show('fast');
 			$(inpt).focus();
+			// Чтобы автокомплит работал после открытия диалога
+			$( ".materialtags_1" ).autocomplete( "option", "appendTo", ".wr_mt" );
+			$( ".materialtags_2" ).autocomplete( "option", "appendTo", ".wr_mt" );
 		});
 
 		var timeoutID;
