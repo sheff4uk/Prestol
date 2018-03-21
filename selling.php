@@ -583,6 +583,7 @@
 									,OD.OD_ID
 									,OP.SH_ID
 									,SH.Shop
+									,IF(OD.DelDate IS NULL, '', 'del') del
 								FROM OrdersPayment OP
 								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
@@ -593,7 +594,7 @@
 				while( $row = mysqli_fetch_array($res) ) {
 					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 					$cache_sum = $cache_sum + $row["payment_sum"];
-					$cache_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></b>" : "<span>{$row["cost_name"]}</span>";
+					$cache_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>" : "<span>{$row["cost_name"]}</span>";
 					echo "<tr>";
 					echo "<td width='49'>{$row["payment_date_short"]}</td>";
 					echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
@@ -628,6 +629,7 @@
 									,OD.OD_ID
 									,OP.SH_ID
 									,SH.Shop
+									,IF(OD.DelDate IS NULL, '', 'del') del
 								FROM OrdersPayment OP
 								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
@@ -639,7 +641,7 @@
 					while( $row = mysqli_fetch_array($res) ) {
 						$sum_cost = $sum_cost + $row["payment_sum"];
 						$format_cost = number_format($row["payment_sum"], 0, '', ' ');
-						$cost_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></b>" : "<span>{$row["cost_name"]}</span>";
+						$cost_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>" : "<span>{$row["cost_name"]}</span>";
 						echo "<tr>";
 						echo "<td width='49'>{$row["payment_date_short"]}</td>";
 						echo "<td width='70' class='txtright'><b>{$format_cost}</b></td>";
@@ -712,6 +714,7 @@
 									,MONTH(OD.StartDate) month
 									,OD.OD_ID
 									,SH.Shop
+									,IF(OD.DelDate IS NULL, '', 'del') del
 								FROM OrdersPayment OP
 								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
@@ -726,7 +729,7 @@
 						echo "<td width='49'>{$row["payment_date"]}</td>";
 						echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
-						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></b></td>";
+						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
 						echo "<td width='140' class='nowrap'>{$row["terminal_payer"]}</td>";
 						echo "</tr>";
 					}
@@ -748,6 +751,7 @@
 									,IF(OT.type = 1, 'Замена', 'Отказ') comment
 									,OT.StartDate
 									,OT.SH_ID
+									,IF(OD.DelDate IS NULL, '', 'del') del
 								FROM OrdersData OD
 								JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
 								JOIN Shops SH ON SH.SH_ID = OT.SH_ID ".($SH_ID ? "AND SH.SH_ID = {$SH_ID}" : "AND SH.CT_ID = {$CT_ID}")."
@@ -761,7 +765,7 @@
 						echo "<td width='49'><span class='nowrap'>{$row["reject_date"]}</span></td>";
 						echo "<td width='70' class='txtright'><b>{$format_old_price}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
-						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></b></td>";
+						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
 						echo "<td width='120' style='color: #911;'>{$row["comment"]}</td>";
 						//echo "<td width='22'><a href='#' onclick='if(confirm(\"Убрать заказ <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
