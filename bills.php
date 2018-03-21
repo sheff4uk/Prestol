@@ -444,11 +444,9 @@ while( $row = mysqli_fetch_array($res) ) {
 							  ,IFNULL(PM.PT_ID, 2) PT_ID
 							  ,ODD.Amount
 							  ,IFNULL(ODD.opt_price, IFNULL(ODD.Price, 'NULL')) Price
-							  ,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('патина (', Patina(ODD.ptn), ')'), '')) Zakaz
+							  ,Zakaz(ODD.ODD_ID) Zakaz
 						FROM OrdersDataDetail ODD
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 						WHERE ODD.Del = 0
 						UNION ALL
 						SELECT ODB.OD_ID
@@ -456,9 +454,8 @@ while( $row = mysqli_fetch_array($res) ) {
 							  ,0 PT_ID
 							  ,ODB.Amount
 							  ,IFNULL(ODB.opt_price, IFNULL(ODB.Price, 'NULL')) Price
-							  ,CONCAT(IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('патина (', Patina(ODB.ptn), ')'), '')) Zakaz
+							  ,ZakazB(ODB.ODB_ID) Zakaz
 						FROM OrdersDataBlank ODB
-						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 						WHERE ODB.Del = 0
 						) ODD_ODB
 				  JOIN OrdersData OD ON OD.OD_ID = ODD_ODB.OD_ID

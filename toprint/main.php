@@ -79,6 +79,7 @@
 					if(isset($_GET["ED"])) echo "<td width='4%'>Дата ".($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))."</td>";
 					if(isset($_GET["SH"])) echo "<td width='7%'>Салон</td>";
 //					if(isset($_GET["ON"])) echo "<td width='5%'>№ квитанции</td>";
+					if(isset($_GET["Z"])) echo "<td width='20'>Кол-во</td>";
 					if(isset($_GET["Z"])) echo "<td width='20%'>Заказ</td>";
 					if(isset($_GET["M"])) echo "<td width='15%'>Пластик/ткань</td>";
 					if(isset($_GET["CR"])) echo "<td width='10%'>Цвет покраски</td>";
@@ -101,6 +102,7 @@
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
 					,OD.OrderNumber
 					,ODD_ODB.Zakaz
+					,ODD_ODB.Amount
 					,ODD_ODB.Patina
 					,Color(OD.CL_ID) Color
 					,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
@@ -112,26 +114,16 @@
 				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 				LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 				LEFT JOIN (SELECT ODD.OD_ID
-							   ,ODD.ODD_ID itemID
-							   ,IFNULL(PM.PT_ID, 2) PT_ID
-							   ,CONCAT('<b>', ODD.Amount, '</b> ', IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, ''), ' ', IFNULL(CONCAT('патина (', Patina(ODD.ptn), ')'), ''), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
-							   ,Patina(ODD.ptn) Patina
-							   ,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
-							   		IF(IFNULL(MT.Material, '') != '',
-										CASE IFNULL(ODD.IsExist, -1)
-											WHEN -1 THEN ' <b>(неизвестно)</b>'
-											WHEN 0 THEN ' <b>(нет)</b>'
-											WHEN 1 THEN ' <b>(заказано)</b>'
-											WHEN 2 THEN ' <b>(есть)</b>'
-										END,
-									'')
-							   ), '') Material
-			  				   ,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(IF(IFNULL(WD.ShortName, '') = '', WD.Name, WD.ShortName), '---'), '</i>)') ORDER BY ST.Sort SEPARATOR '<br>') Steps
+								,ODD.ODD_ID itemID
+								,IFNULL(PM.PT_ID, 2) PT_ID
+								,CONCAT(Zakaz(ODD.ODD_ID), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
+								,CONCAT('<b>', ODD.Amount, '</b>') Amount
+								,Patina(ODD.ptn) Patina
+								,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), '')), '') Material
+								,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(WD.Name, '---'), '</i>)') ORDER BY ST.Sort SEPARATOR '<br>') Steps
 						FROM OrdersDataDetail ODD
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-						LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-						LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
@@ -140,25 +132,16 @@
 						GROUP BY ODD.ODD_ID
 						UNION ALL
 						SELECT ODB.OD_ID
-							  ,ODB.ODB_ID itemID
-							  ,0 PT_ID
-							  ,CONCAT('<b>', ODB.Amount, '</b> ', IFNULL(BL.Name, ODB.Other), ' ', IFNULL(CONCAT('патина (', Patina(ODB.ptn), ')'), ''), IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' <b>(', ODB.Comment, ')</b>'))) Zakaz
-							  ,Patina(ODB.ptn) Patina
-							  ,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
-							  		IF(IFNULL(MT.Material, '') != '',
-										CASE IFNULL(ODB.IsExist, -1)
-											WHEN -1 THEN ' <b>(неизвестно)</b>'
-											WHEN 0 THEN ' <b>(нет)</b>'
-											WHEN 1 THEN ' <b>(заказано)</b>'
-											WHEN 2 THEN ' <b>(есть)</b>'
-										END,
-									'')
-							  ), '') Material
-			  				  ,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT(IF(ODS.IsReady, '<b>Этап</b>', 'Этап'), '(<i>', IFNULL(IF(IFNULL(WD.ShortName, '') = '', WD.Name, WD.ShortName), '---'), '</i>)')) SEPARATOR '<br>') Steps
+							,ODB.ODB_ID itemID
+							,0 PT_ID
+							,CONCAT(ZakazB(ODB.ODB_ID), IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' <b>(', ODB.Comment, ')</b>'))) Zakaz
+							,CONCAT('<b>', ODB.Amount, '</b>') Amount
+							,Patina(ODB.ptn) Patina
+							,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), '')), '') Material
+							,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT(IF(ODS.IsReady, '<b>Этап</b>', 'Этап'), '(<i>', IFNULL(WD.Name, '---'), '</i>)')) SEPARATOR '<br>') Steps
 						FROM OrdersDataBlank ODB
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1 AND ODS.Old = 0
 						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-						LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
 						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 						WHERE ODB.Del = 0
@@ -237,6 +220,7 @@
 		if(isset($_GET["ED"]) and $span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["EndDate"]}</td>";
 		if(isset($_GET["SH"]) and $span) echo "<td width='7%' style='{$border}' rowspan='{$cnt}'>{$row["Shop"]}</td>";
 //		if(isset($_GET["ON"]) and $span) echo "<td width='5%' style='{$border}' rowspan='{$cnt}'>{$row["OrderNumber"]}</td>";
+		if(isset($_GET["Z"])) echo "<td width='20' style='{$border} font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
 		if(isset($_GET["Z"])) echo "<td width='20%' style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";
 		if(isset($_GET["M"])) echo "<td width='15%' style='{$border}'>{$row["Material"]}</td>";
 		if(isset($_GET["CR"]) and $span) echo "<td width='10%' style='{$border}' rowspan='{$cnt}'>{$row["Color"]}</td>";
