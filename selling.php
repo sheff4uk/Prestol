@@ -668,16 +668,11 @@
 									,DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
 									,OP.cost_name
 									,ABS(OP.payment_sum) payment_sum
-									,OD.Code
-									,YEAR(OD.StartDate) year
-									,MONTH(OD.StartDate) month
-									,OD.OD_ID
 									,OP.SH_ID
 									,SH.Shop
 									,OP.send
 								FROM OrdersPayment OP
 								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
-								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NOT NULL
 								ORDER BY OP.payment_date DESC";
 
@@ -719,7 +714,7 @@
 									,SH.Shop
 								FROM OrdersPayment OP
 								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
-								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID AND OD.Del = 0
+								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NOT NULL
 								ORDER BY OP.payment_date DESC";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
