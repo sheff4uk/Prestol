@@ -466,7 +466,7 @@
 						break;
 				}
 			echo "
-				<td val='{$IsPainting}' class='painting_cell ".((!$disabled) ? "painting" : "")." {$class}'>
+				<td val='{$IsPainting}' class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $Archive == 0 and $Del == 0 and $IsPainting != 0 ) ? "painting " : "")." {$class}'>
 					<div class='painting_workers'>{$Name}</div>
 					<div style='background: lightgrey; cursor: auto;'>
 						<input type='text' id='paint_color' class='colortags' name='Color' style='width: 160px;' ".((!$disabled and $editable) ? "" : "disabled")." value='{$Color}'>
