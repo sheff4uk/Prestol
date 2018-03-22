@@ -330,18 +330,20 @@ case "confirmed":
 	if( $val == 1) {
 		$class = 'confirmed';
 		$status = 'Принят в работу';
-		echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.td_step').addClass('step_confirmed');";
+		echo "$('.main_table tr[id=\"ord{$id}\"] td.td_step').addClass('step_confirmed');";
+		echo "$('#order_in_work_label').show('fast');";
 	}
 	else {
 		$class = 'not_confirmed';
 		$status = 'Не принят в работу';
-		echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.td_step').removeClass('step_confirmed');";
+		echo "$('.main_table tr[id=\"ord{$id}\"] td.td_step').removeClass('step_confirmed');";
+		echo "$('#order_in_work_label').hide('fast');";
 	}
 
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').removeClass('confirmed not_confirmed');";
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').addClass('{$class}');";
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('title', '{$status}');";
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('val', '{$val}');";
+	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').removeClass('confirmed not_confirmed');";
+	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').addClass('{$class}');";
+	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('title', '{$status}');";
+	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('val', '{$val}');";
 	echo "noty({timeout: 3000, text: 'Статус заказа изменен на <b>{$status}</b>', type: 'success'});";
 	break;
 ///////////////////////////////////////////////////////////////////

@@ -382,14 +382,26 @@ $(function(){
 //////////////////////////////////////////
 
 		// Смена статуса лакировки аяксом
-		$('.painting').click(function() {
+		$('.painting').on("click", function(event) {
+			if(event.target == this) {
+				var id = $(this).parents('tr').attr('id');
+				id = id.replace('ord', '');
+				var val = $(this).attr('val');
+				var isready = $(this).attr('isready');
+				var archive = $(this).attr('archive');
+				var shpid = $(this).attr('shpid');
+				var filter = $(this).attr('filter');
+				$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val+"&isready="+isready+"&archive="+archive+"&shpid="+shpid+"&filter="+filter, dataType: "script", async: false });
+			}
+		});
+
+		// Смена статуса принятия аяксом
+		$('.edit_confirmed').click(function() {
 			var id = $(this).parents('tr').attr('id');
 			id = id.replace('ord', '');
 			var val = $(this).attr('val');
-			var isready = $(this).attr('isready');
-			var archive = $(this).attr('archive');
-			var shpid = $(this).attr('shpid');
-			var filter = $(this).attr('filter');
-			$.ajax({ url: "ajax.php?do=ispainting&od_id="+id+"&val="+val+"&isready="+isready+"&archive="+archive+"&shpid="+shpid+"&filter="+filter, dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=confirmed&od_id="+id+"&val="+val, dataType: "script", async: false });
 		});
+
+
 });

@@ -384,22 +384,23 @@
 		$editable = (!($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and !($SH_ID == 0 and !in_array('order_add_confirm', $Rights)));
 ?>
 	<form method='post' id='order_form' action='<?=$location?>&order_update=1'>
-	<table class="">
+	<table class="main_table">
 		<thead>
 		<tr class='nowrap'>
-			<th>Код<br>Создан</th>
+			<th width="90">Код<br>Создан</th>
 			<?
 			if( $retail ) {
-				echo "<th>Заказчик<br>Квитанция<br>Телефон</th>";
-				echo "<th>Адрес доставки</th>";
+				echo "<th width='125'>Заказчик<br>Квитанция<br>Телефон</th>";
+				echo "<th width='20%'>Адрес доставки</th>";
 			}
 			?>
-			<th>Дата продажи</th>
-			<?= ($ReadyDate ? "<th>Отгружено</th>" : ($DelDate ? "<th>Удалено</th>" : "<th>Дата сдачи</th>")) ?>
-			<th>Салон</th>
-			<th>Цвет краски</th>
-			<th>Примечание</th>
-			<th>Действие</th>
+			<th width="95">Дата продажи</th>
+			<?= ($ReadyDate ? "<th width='95'>Отгружено</th>" : ($DelDate ? "<th width='95'>Удалено</th>" : "<th width='95'>Дата сдачи</th>")) ?>
+			<th width="125">Салон</th>
+			<th width="170">Цвет краски</th>
+			<th width="40">Принят</th>
+			<th width="20%">Примечание</th>
+			<th width="70">Действие</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -419,7 +420,7 @@
 						<input type='text' name='mtel' id='mtel' style='width: 120px;' value='$mtel' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." autocomplete='off' placeholder='Моб. телефон'>
 					</td>
 					<td>
-						<textarea name='address' rows='6' cols='12' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled").">$address</textarea>
+						<textarea name='address' rows='6' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." style='width: 100%;'>$address</textarea>
 					</td>
 				";
 			}
@@ -439,7 +440,7 @@
 			<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : ($showing ? "" : "<input type='text' name='EndDate' class='date' value='{$EndDate}' ".((!$disabled and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">"))) ?></td>
 			<td>
 			<div class='shop_cell' id='<?=$id?>' style='box-shadow: 0px 0px 10px 10px <?=$CTColor?>;'>
-				<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")?>>
+				<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")?> style="width: 100%;">
 				</select>
 				</div>
 			</td>
@@ -465,9 +466,9 @@
 						break;
 				}
 			echo "
-				<td val='{$IsPainting}' class='painting_cell ".((!$disabled and false) ? "painting" : "")." {$class}'>
+				<td val='{$IsPainting}' class='painting_cell ".((!$disabled) ? "painting" : "")." {$class}'>
 					<div class='painting_workers'>{$Name}</div>
-					<div style='background: white;'>
+					<div style='background: lightgrey; cursor: auto;'>
 						<input type='text' id='paint_color' class='colortags' name='Color' style='width: 160px;' ".((!$disabled and $editable) ? "" : "disabled")." value='{$Color}'>
 						<div class='btnset'>
 							<input type='radio' id='clear1' name='clear' value='1' ".($clear == "1" ? "checked" : "").">
@@ -479,9 +480,23 @@
 					</div>
 				</td>
 			";
+
+			// Если заказ принят
+			if( $confirmed == 1 ) {
+				$class = 'confirmed';
+				$title = 'Принят в работу';
+			}
+			else {
+				$class = 'not_confirmed';
+				$title = 'Не принят в работу';
+			}
+			if( in_array('order_add_confirm', $Rights) and $Archive == 0 and $Del == 0 ) {
+				$class = $class." edit_confirmed";
+			}
+			echo "<td val='{$confirmed}' class='{$class}' title='{$title}' style='text-align: center;'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 			?>
 
-			<td><textarea name='Comment' rows='6' cols='15' <?=( (in_array('order_add', $Rights) and !$Del and $editable) ? "" : "disabled" )?>><?=$Comment?></textarea></td>
+			<td><textarea name='Comment' rows='6' <?=( (in_array('order_add', $Rights) and !$Del and $editable) ? "" : "disabled" )?> style='width: 100%;'><?=$Comment?></textarea></td>
 			<td style="text-align: center;">
 				<?
 				// Если есть право редактирования и заказ не чужой - показываем кнопку клонирования
@@ -520,9 +535,7 @@
 		});
 	</script>
 <?
-		if( $confirmed == 1 ) {
-			echo "<div style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em;'>Заказ принят в работу.</div>";
-		}
+		echo "<div id='order_in_work_label' style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em; ".(($confirmed == 1) ? "" : "display: none;")."'>Заказ принят в работу.</div>";
 		if( $is_lock == 1 ) {
 			echo "<div style='position: absolute; top: 77px; left: 340px; font-weight: bold; color: green; font-size: 1.2em;'>Месяц в реализации закрыт (изменения ограничены).</div>";
 		}
