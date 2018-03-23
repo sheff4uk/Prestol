@@ -203,6 +203,7 @@
 
 							FROM BlankList BL
 							JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID AND PB.BL_ID IS NOT NULL
+							JOIN ProductModels PM ON PM.PM_ID = PB.PM_ID AND PM.archive = 0
 							LEFT JOIN (
 								SELECT BS.BL_ID, SUM(BS.Amount) Amount
 								FROM BlankStock BS

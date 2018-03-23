@@ -1435,6 +1435,9 @@ case "blank_dropdown":
 		$query = "SELECT BL.BL_ID, BL.Name
 					FROM BlankList BL
 					JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND IFNULL(BS.WD_ID, 0) = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 90
+					LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID AND PB.BL_ID IS NOT NULL
+					LEFT JOIN ProductModels PM ON PM.PM_ID = PB.PM_ID
+					WHERE IFNULL(PM.archive, 0) = 0
 					GROUP BY BL.BL_ID
 					ORDER BY BL.PT_ID, BL.Name";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
@@ -1451,7 +1454,10 @@ case "blank_dropdown":
 		$query = "SELECT BL.BL_ID, BL.Name
 					FROM BlankList BL
 					LEFT JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND IFNULL(BS.WD_ID, 0) = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 90
-					WHERE BS.BL_ID IS NULL
+					LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID AND PB.BL_ID IS NOT NULL
+					LEFT JOIN ProductModels PM ON PM.PM_ID = PB.PM_ID
+					WHERE BS.BL_ID IS NULL AND IFNULL(PM.archive, 0) = 0
+					GROUP BY BL.BL_ID
 					ORDER BY BL.PT_ID, BL.Name";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		while( $row = mysqli_fetch_array($res) )
