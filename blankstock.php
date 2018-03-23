@@ -394,7 +394,7 @@
 //		};
 
 		// Редактирование аяксом начального значения заготовок по рабочим
-		$('.start_balance_worker').on('change', function() {
+		$('.start_balance_worker').on('blur', function() {
 			var val = $(this).val();
 			var wd_id = $(this).attr('wd_id');
 			var bl_id = $(this).attr('bl_id');
@@ -402,7 +402,7 @@
 		});
 
 		// Редактирование аяксом начального значения заготовок верхнего уровня
-		$('.start_balance_blank').on('change', function() {
+		$('.start_balance_blank').on('blur', function() {
 			var val = $(this).val();
 			var bl_id = $(this).attr('bl_id');
 			$.ajax({ url: "ajax.php?do=start_balance_blank&bl_id="+bl_id+"&val="+val, dataType: "script", async: false });

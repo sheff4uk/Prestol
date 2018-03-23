@@ -1558,15 +1558,15 @@ case "start_balance_worker":
 	$sub_html = "<i class='{$sub_color}'>{$worker_amount}</i>";
 	$sub_html = addslashes($sub_html);
 
-	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .start_balance').hide('fast');";
-	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').hide('fast');";
-	echo "window.top.window.$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').hide('fast');";
-	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .start_balance').val('{$start_balance}');";
-	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').html('{$html}');";
-	echo "window.top.window.$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').html('{$sub_html}');";
-	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .start_balance').show('fast');";
-	echo "window.top.window.$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').show('fast');";
-	echo "window.top.window.$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').show('fast');";
+	echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').hide('fast');";
+	echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').hide('fast');";
+	echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').hide('fast');";
+	echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').val('{$start_balance}');";
+	echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').html('{$html}');";
+	echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').html('{$sub_html}');";
+	echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').show('fast');";
+	echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').show('fast');";
+	echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').show('fast');";
 	echo "noty({timeout: 3000, text: 'Начальное значение обновлено на: <b>\"{$val}\"</b>', type: 'success'});";
 
 	break;
@@ -1619,9 +1619,9 @@ case "start_balance_blank":
 	$html = "<b class='{$color}'>{$amount}</b>";
 	$html = addslashes($html);
 
-	echo "window.top.window.$('#exist_blank #blank_{$bl_id} span').hide('fast');";
-	echo "window.top.window.$('#exist_blank #blank_{$bl_id} span').html('{$html}');";
-	echo "window.top.window.$('#exist_blank #blank_{$bl_id} span').show('fast');";
+	echo "$('#exist_blank #blank_{$bl_id} b').hide('fast');";
+	echo "$('#exist_blank #blank_{$bl_id} b').html('{$html}');";
+	echo "$('#exist_blank #blank_{$bl_id} b').show('fast');";
 	echo "noty({timeout: 3000, text: 'Начальное значение обновлено на: <b>\"{$val}\"</b>', type: 'success'});";
 
 	break;
