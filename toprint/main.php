@@ -113,40 +113,59 @@
 				FROM OrdersData OD
 				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 				LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-				LEFT JOIN (SELECT ODD.OD_ID
-								,ODD.ODD_ID itemID
-								,IFNULL(PM.PT_ID, 2) PT_ID
-								,CONCAT(Zakaz(ODD.ODD_ID), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
-								,CONCAT('<b>', ODD.Amount, '</b>') Amount
-								,Patina(ODD.ptn) Patina
-								,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), '')), '') Material
-								,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(WD.Name, '---'), '</i>)') ORDER BY ST.Sort SEPARATOR '<br>') Steps
-						FROM OrdersDataDetail ODD
-						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
-						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-						WHERE ODD.Del = 0
-						GROUP BY ODD.ODD_ID
-						UNION ALL
-						SELECT ODB.OD_ID
-							,ODB.ODB_ID itemID
-							,0 PT_ID
-							,CONCAT(ZakazB(ODB.ODB_ID), IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' <b>(', ODB.Comment, ')</b>'))) Zakaz
-							,CONCAT('<b>', ODB.Amount, '</b>') Amount
-							,Patina(ODB.ptn) Patina
-							,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), '')), '') Material
-							,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT(IF(ODS.IsReady, '<b>Этап</b>', 'Этап'), '(<i>', IFNULL(WD.Name, '---'), '</i>)')) SEPARATOR '<br>') Steps
-						FROM OrdersDataBlank ODB
-						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1 AND ODS.Old = 0
-						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-						WHERE ODB.Del = 0
-						GROUP BY ODB.ODB_ID
-						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+				LEFT JOIN (
+					SELECT ODD.OD_ID
+						,ODD.ODD_ID itemID
+						,IFNULL(PM.PT_ID, 2) PT_ID
+						,CONCAT(Zakaz(ODD.ODD_ID), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
+						,CONCAT('<b>', ODD.Amount, '</b>') Amount
+						,Patina(ODD.ptn) Patina
+						,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
+							IF(IFNULL(MT.Material, '') != '',
+								CASE IFNULL(ODD.IsExist, -1)
+									WHEN -1 THEN ' <b>(неизвестно)</b>'
+									WHEN 0 THEN ' <b>(нет)</b>'
+									WHEN 1 THEN ' <b>(заказано)</b>'
+									WHEN 2 THEN ' <b>(есть)</b>'
+								END,
+							'')
+						), '') Material
+						,GROUP_CONCAT(CONCAT(IF(ODS.IsReady, CONCAT('<b>', ST.Short, '</b>'), ST.Short), '(<i>', IFNULL(WD.Name, '---'), '</i>)') ORDER BY ST.Sort SEPARATOR '<br>') Steps
+					FROM OrdersDataDetail ODD
+					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
+					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+					LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+					LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+					LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+					LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+					WHERE ODD.Del = 0
+					GROUP BY ODD.ODD_ID
+					UNION ALL
+					SELECT ODB.OD_ID
+						,ODB.ODB_ID itemID
+						,0 PT_ID
+						,CONCAT(ZakazB(ODB.ODB_ID), IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' <b>(', ODB.Comment, ')</b>'))) Zakaz
+						,CONCAT('<b>', ODB.Amount, '</b>') Amount
+						,Patina(ODB.ptn) Patina
+						,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), ''),
+							IF(IFNULL(MT.Material, '') != '',
+								CASE IFNULL(ODB.IsExist, -1)
+									WHEN -1 THEN ' <b>(неизвестно)</b>'
+									WHEN 0 THEN ' <b>(нет)</b>'
+									WHEN 1 THEN ' <b>(заказано)</b>'
+									WHEN 2 THEN ' <b>(есть)</b>'
+								END,
+							'')
+						), '') Material
+						,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT(IF(ODS.IsReady, '<b>Этап</b>', 'Этап'), '(<i>', IFNULL(WD.Name, '---'), '</i>)')) SEPARATOR '<br>') Steps
+					FROM OrdersDataBlank ODB
+					LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1 AND ODS.Old = 0
+					LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+					LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+					LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+					WHERE ODB.Del = 0
+					GROUP BY ODB.ODB_ID
+				) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 				WHERE OD.OD_ID IN ({$id_list})
 				AND ODD_ODB.PT_ID IN({$product_types})";
 
