@@ -97,6 +97,8 @@
 	$query = "SELECT OD.OD_ID
 					,IFNULL(OD.Code, '') Code
 					,IFNULL(OD.ClientName, '') ClientName
+					,CONCAT('<br>', OD.mtel) mtel
+					,CONCAT('<br>', OD.address) address
 					,DATE_FORMAT(OD.StartDate, '%d.%m<br>%Y') StartDate
 					,DATE_FORMAT(IFNULL(OD.DelDate, IFNULL(OD.ReadyDate, OD.EndDate)), '%d.%m<br>%Y') EndDate
 					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
@@ -234,7 +236,7 @@
 		}
 
 		if(isset($_GET["CD"]) and $span) echo "<td width='50' style='{$border}' rowspan='{$cnt}' class='nowrap'><b>{$row["Code"]}</b></td>";
-		if(isset($_GET["CN"]) and $span) echo "<td width='9%' style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></td>";
+		if(isset($_GET["CN"]) and $span) echo "<td width='9%' style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b>{$row["mtel"]}{$row["address"]}</td>";
 		if(isset($_GET["SD"]) and $span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["StartDate"]}</td>";
 		if(isset($_GET["ED"]) and $span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["EndDate"]}</td>";
 		if(isset($_GET["SH"]) and $span) echo "<td width='7%' style='{$border}' rowspan='{$cnt}'>{$row["Shop"]}</td>";
