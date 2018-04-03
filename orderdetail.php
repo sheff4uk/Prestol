@@ -33,7 +33,6 @@
 		}
 		$id = (int)$_GET["id"];
 		$location = "orderdetail.php?id=".$id;
-		$free = 0;
 	}
 	else
 	{
@@ -549,9 +548,9 @@
 ?>
 <div class="halfblock">
 	<p>
-		<button <?=(($disabled or $PFI_ID or !$editable) ? 'disabled' : '')?> class='edit_product1'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить стулья</button>
-		<button <?=(($disabled or $PFI_ID or !$editable) ? 'disabled' : '')?> class='edit_product2'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить столы</button>
-		<button <?=(($disabled or $PFI_ID or !$editable) ? 'disabled' : '')?> class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?> free='<?=$free?>'>Добавить заготовки/прочее</button>
+		<button <?=(($disabled or $PFI_ID or !$editable) ? 'disabled' : '')?> class='edit_product1'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?>>Добавить стулья</button>
+		<button <?=(($disabled or $PFI_ID or !$editable) ? 'disabled' : '')?> class='edit_product2'<?=($id == 'NULL')?' id="0"':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?>>Добавить столы</button>
+		<button <?=(($disabled or $PFI_ID or !$editable) ? 'disabled' : '')?> class='edit_order_blank'<?=($id == 'NULL')?' id=\'0\'':''?><?=($id == 'NULL') ? '' : ' odid="'.$id.'"'?>>Добавить заготовки/прочее</button>
 	</p>
 
 	<!-- Таблица изделий -->

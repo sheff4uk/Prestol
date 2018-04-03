@@ -59,7 +59,7 @@
 			<br>
 		</div>
 		<div>
-			<label>Ткань:</label>
+			<label>Ткань и поставщик:</label>
 			<input type='text' class='materialtags_1 all' name='Material' style='width: 200px;'>
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
 				<?
@@ -190,7 +190,7 @@
 			<input type="number" name="PieceSize" min="200" max="550" step="10" style='width: 60px;' autocomplete="off" title="Размер вставки">
 		</div>
 		<div>
-			<label>Пластик:</label>
+			<label>Пластик и поставщик:</label>
 			<input type='text' class="materialtags_2 all" name='Material' style="width: 200px;">
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
 				<?
@@ -311,7 +311,7 @@
 				<br>
 			</div>
 			<div>
-				<label>Ткань:</label>
+				<label>Ткань и поставщик:</label>
 				<input type='text' class='materialtags_1 all' name='Material' style='width: 200px;'>
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
 					<?
@@ -324,7 +324,7 @@
 				</select>
 			</div>
 			<div>
-				<label>Пластик:</label>
+				<label>Пластик и поставщик:</label>
 				<input type='text' class="materialtags_2 all" name='Material' style="width: 200px;">
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
 					<?
@@ -475,22 +475,17 @@
 		// Форма добавления стульев
 		$('.edit_product1').click(function() {
 
-			// Активация формы если была неактивна
-			$('#addchair fieldset').prop('disabled', false);
-			$('#addchair input[name=free]').val(0);
-
 			id = $(this).attr('id');
 			if( typeof id !== "undefined" ) {
 				id = id.replace('prod', '');
 			}
-			var free = $(this).attr('free');
 			var location = $(this).attr("location");
 			var odid = $(this).attr("odid");
 
 			// Очистка диалога
-			$('#addchair input').prop('disabled', false);
-			$('#addchair select[name="Model"]').val('').trigger('change');
-			$('#addchair input[type="text"], #addchair select').val('');
+			$('#addchair select').val('').trigger('change');
+			$('#addchair input[type="text"]').val('');
+			$('#addchair select[name="Shipper"]').attr("required", false);
 			$('#addchair textarea').val('');
 			$('#addchair input[name="Amount"]').val('');
 			$('#addchair input[name="Amount"]').prop('readonly', false);
@@ -587,23 +582,17 @@
 		// Форма добавления столов
 		$('.edit_product2').click(function() {
 
-			// Активация формы если была неактивна
-			$('#addtable fieldset').prop('disabled', false);
-			$('#addtable .btnset').buttonset( 'option', 'disabled', false );
-			$('#addtable input[name=free]').val(0);
-
 			id = $(this).attr('id');
 			if( typeof id !== "undefined" ) {
 				id = id.replace('prod', '');
 			}
-			var free = $(this).attr('free');
 			var location = $(this).attr("location");
 			var odid = $(this).attr("odid");
 
 			// Очистка диалога
-			$('#addtable input, #addtable select').prop('disabled', false);
+			$('#addtable select').val('').trigger('change');
 			$('#addtable input[type="text"]').val('');
-			$('#addtable select[name="Model"]').val('0').trigger('change');
+			$('#addtable select[name="Shipper"]').attr("required", false);
 			$('#addtable textarea').val('');
 			$('#addtable input[name="Amount"]').val('');
 			$('#addtable input[name="Amount"]').prop('readonly', false);
@@ -744,8 +733,10 @@
 			var odid = $(this).attr("odid");
 
 			// Очистка диалога
-			$('#addblank textarea, #addblank input[type="text"]').val('');
 			$('#addblank select').val('').trigger('change');
+			$('#addblank input[type="text"]').val('');
+			$('#addblank select[name="Shipper"]').attr("required", false);
+			$('#addblank textarea').val('');
 			$('#addblank input[name="Amount"]').val('');
 			$('#addblank input[name="Amount"]').prop('readonly', false);
 			$('#addblank input[name="Price"]').val('');
@@ -909,6 +900,19 @@
 				$('#addblank input[name="mtype"]').val('');
 			}
 			materialonoff('#addblank');
+		});
+
+		// При очистке поля с материалом - очищаем поставщика
+		$( ".materialtags_1, .materialtags_2" ).on("keyup", function() {
+			if( $(this).val().length < 2 ) {
+				$(this).parent('div').find('select[name="Shipper"]').val('');
+			}
+			if( $(this).val().length > 0 ) {
+				$(this).parent('div').find('select[name="Shipper"]').attr("required", true);
+			}
+			else {
+				$(this).parent('div').find('select[name="Shipper"]').attr("required", false);
+			}
 		});
 	});
 </script>

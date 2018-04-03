@@ -372,13 +372,6 @@ $(function(){
 		});
 		$( ".materialtags_2.all" ).autocomplete( "option", "source", "autocomplete.php?do=plastictags" );
 
-		// При очистке поля с материалом - очищаем поставщика
-		$( ".materialtags_1, .materialtags_2" ).on("keyup", function() {
-			if( $(this).val().length < 2 ) {
-				$(this).parent('div').find('select[name="Shipper"]').val('');
-			}
-		});
-
 //////////////////////////////////////////
 
 		// Смена статуса лакировки аяксом
