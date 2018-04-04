@@ -19,11 +19,8 @@ case "steps":
 	
 	// Получение информации об изделии
 	if( $other == 0 ) {
-		$query = "SELECT IFNULL(PM.PT_ID, 2) PT_ID
-						,PM.Model
-						,IFNULL(CONCAT(ODD.Length, 'х', ODD.Width, IFNULL(CONCAT('/', ODD.PieceAmount, 'x', ODD.PieceSize), '')), '') Size
-						,CONCAT(PF.Form, ' ', PME.Mechanism) Form
-						,ODD.Amount
+		$query = "SELECT ODD.Amount
+						,Zakaz(ODD.ODD_ID) Zakaz
 						,OD.ReadyDate
 				  FROM OrdersDataDetail ODD
 				  LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
@@ -32,13 +29,10 @@ case "steps":
 				  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 				  WHERE ODD.ODD_ID = $odd_id";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-		$pt = mysqli_result($res,0,'PT_ID');
-		$model = mysqli_result($res,0,'Model');
-		$size = mysqli_result($res,0,'Size');
-		$form = mysqli_result($res,0,'Form');
 		$amount = mysqli_result($res,0,'Amount');
+		$zakaz = mysqli_result($res,0,'Zakaz');
 		$ready_date = mysqli_result($res,0,'ReadyDate');
-		$product = "<h3><b style=\'font-size: 2em; margin-right: 20px;\'>{$amount}</b>{$model}&nbsp;{$size}&nbsp;{$form}</h3>";
+		$product = "<h3><b style=\'font-size: 2em; margin-right: 20px;\'>{$amount}</b>{$zakaz}</h3>";
 
 		// Получение информации об этапах производства
 		$query = "SELECT ST.ST_ID, ST.Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible, ODS.Old
@@ -51,18 +45,18 @@ case "steps":
 		$text = "<input type=\'hidden\' name=\'ODD_ID\' value=\'$odd_id\'>";
 	}
 	else {
-		$query = "SELECT IFNULL(BL.Name, ODB.Other) Name
-						,ODB.Amount
+		$query = "SELECT ODB.Amount
+						,ZakazB(ODB.ODB_ID) Zakaz
 						,OD.ReadyDate
 				  FROM OrdersDataBlank ODB
 				  LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
 				  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
 				  WHERE ODB.ODB_ID = $odb_id";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-		$model = mysqli_result($res,0,'Name');
 		$amount = mysqli_result($res,0,'Amount');
+		$zakaz = mysqli_result($res,0,'Zakaz');
 		$ready_date = mysqli_result($res,0,'ReadyDate');
-		$product = "<h3><b style=\'font-size: 2em; margin-right: 20px;\'>{$amount}</b>{$model}<h3>";
+		$product = "<h3><b style=\'font-size: 2em; margin-right: 20px;\'>{$amount}</b>{$zakaz}<h3>";
 
 		// Получение информации об этапах производства
 		$query = "SELECT 0 ST_ID, '-' Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible, ODS.Old
