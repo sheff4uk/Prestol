@@ -53,9 +53,7 @@
 		BlankTariff = <?= json_encode($BlankTariff); ?>;
 	</script>
 
-	<p>
-		<button class='edit_blank'>Добавить заготовки</button>
-	</p>
+	<div id='add_btn' title='Добавить заготовки'></div>
 
 	<!-- Форма добавления заготовки -->
 	<div id='addblank' title='Заготовки' class="addproduct" style='display:none'>
@@ -351,29 +349,29 @@
 		});
 
 		// Форма добавления заготовок
-		$('.edit_blank').click(function() {
-			var id = $(this).attr('id');
-			var worker = $(this).parents('tr').find('.worker').attr('val');
-			var blank = $(this).parents('tr').find('.blank').attr('val');
-			var amount = $(this).parents('tr').find('.amount').html();
-			var tariff = $(this).parents('tr').find('.tariff').html();
-			var comment = $(this).parents('tr').find('.comment > pre').html();
+		$('#add_btn').click(function() {
+//			var id = $(this).attr('id');
+//			var worker = $(this).parents('tr').find('.worker').attr('val');
+//			var blank = $(this).parents('tr').find('.blank').attr('val');
+//			var amount = $(this).parents('tr').find('.amount').html();
+//			var tariff = $(this).parents('tr').find('.tariff').html();
+//			var comment = $(this).parents('tr').find('.comment > pre').html();
 
 			// Очистка диалога
 			$('#addblank input, #addblank select, #addblank textarea').val('');
 			$('#addblank #worker').val('').trigger('change');
 			$('#addblank #blank').val('').trigger('change');
 
-			// Заполнение
-			if( typeof id !== "undefined" )
-			{
-				$('#addblank select[name="Worker"]').val(worker).trigger('change');
-				$('#addblank select[name="Blank"]').val(blank).trigger('change');
-				$('#addblank input[name="Amount"]').val(amount);
-				$('#addblank input[name="Tariff"]').val(tariff);
-				$('#addblank textarea[name="Comment"]').val(comment);
-				$('#addblank input[name="BS_ID"]').val(id);
-			}
+//			// Заполнение
+//			if( typeof id !== "undefined" )
+//			{
+//				$('#addblank select[name="Worker"]').val(worker).trigger('change');
+//				$('#addblank select[name="Blank"]').val(blank).trigger('change');
+//				$('#addblank input[name="Amount"]').val(amount);
+//				$('#addblank input[name="Tariff"]').val(tariff);
+//				$('#addblank textarea[name="Comment"]').val(comment);
+//				$('#addblank input[name="BS_ID"]').val(id);
+//			}
 
 			// Форма добавления/редактирования заготовок
 			$('#addblank').dialog({
