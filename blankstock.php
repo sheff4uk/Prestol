@@ -10,8 +10,6 @@
 		die('Недостаточно прав для совершения операции');
 	}
 
-	$datediff = 60; // Максимальный период отображения данных
-
 	$location = $_SERVER['REQUEST_URI'];
 
 	// Добавление заготовок
@@ -188,67 +186,72 @@
 
 				// Список заготовок верхнего уровня с остатками.
 				// ToDo: сделать триггеры для подсчета остатков, получаемых этим запросом.
-				$query = "SELECT BL.PT_ID
-								,BL.BL_ID
-								,BL.Name
-								,BL.start_balance
+				$query = "
+					SELECT BL.PT_ID
+						,BL.BL_ID
+						,BL.Name
+						,BL.start_balance
 
-								,IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) AmountBeforePainting
+						,IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) AmountBeforePainting
 
-								,IFNULL(SODD.InPainting, 0) + IFNULL(SODB.InPainting, 0) AmountInPainting
+						,IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) + IFNULL(SODD.InPainting, 0) + IFNULL(SODB.InPainting, 0) total_amount
 
-								,IFNULL(SODD.Amount, 0) - IFNULL(SODD.Painting, 0) + IFNULL(SODB.Amount, 0) - IFNULL(SODB.Painting, 0) BeforePainting
+						,IFNULL(SODD.InPainting, 0) + IFNULL(SODB.InPainting, 0) AmountInPainting
 
-								,IFNULL(SODD.ClearAmount, 0) - IFNULL(SODD.ClearPainting, 0) + IFNULL(SODB.ClearAmount, 0) - IFNULL(SODB.ClearPainting, 0) ClearBeforePainting
+						,IFNULL(SODD.Amount, 0) - IFNULL(SODD.Painting, 0) + IFNULL(SODB.Amount, 0) - IFNULL(SODB.Painting, 0) BeforePainting
 
-							FROM BlankList BL
-							JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID AND PB.BL_ID IS NOT NULL
-							JOIN ProductModels PM ON PM.PM_ID = PB.PM_ID AND PM.archive = 0
-							LEFT JOIN (
-								SELECT BS.BL_ID, SUM(BS.Amount) Amount
-								FROM BlankStock BS
-								GROUP BY BS.BL_ID
-							) SBS ON SBS.BL_ID = BL.BL_ID
-							LEFT JOIN (
-								SELECT PB.BL_ID
-										,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1)) Amount
-										,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearAmount
-										,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) Painting
-										,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearPainting
-										,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) InPainting
-										,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * OD.Del) PaintingDeleted
-								FROM OrdersDataDetail ODD
-								JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
-								LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
-								JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
-								WHERE ODD.Del = 0
-								GROUP BY PB.BL_ID
-							) SODD ON SODD.BL_ID = BL.BL_ID
-							LEFT JOIN (
-								SELECT ODB.BL_ID
-										,SUM(ODB.Amount * IF(OD.Del, 0, 1)) Amount
-										,SUM(ODB.Amount * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearAmount
-										,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.Del, 0, 1)) Painting
-										,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearPainting
-										,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0) * IF(OD.Del, 0, 1)) InPainting
-										,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * OD.Del) PaintingDeleted
-								FROM OrdersDataBlank ODB
-								JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
-								LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
-								WHERE ODB.BL_ID IS NOT NULL
-								GROUP BY ODB.BL_ID
-							) SODB ON SODB.BL_ID = BL.BL_ID
-							WHERE BL.Name NOT LIKE 'Клей'
-							GROUP BY BL.BL_ID
-							ORDER BY BeforePainting DESC, BL.Name ASC";
+						,IFNULL(SODD.ClearAmount, 0) - IFNULL(SODD.ClearPainting, 0) + IFNULL(SODB.ClearAmount, 0) - IFNULL(SODB.ClearPainting, 0) ClearBeforePainting
+
+					FROM BlankList BL
+					JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID AND PB.BL_ID IS NOT NULL
+					JOIN ProductModels PM ON PM.PM_ID = PB.PM_ID AND PM.archive = 0
+					LEFT JOIN (
+						SELECT BS.BL_ID, SUM(BS.Amount) Amount
+						FROM BlankStock BS
+						WHERE BS.adj = 0
+						GROUP BY BS.BL_ID
+					) SBS ON SBS.BL_ID = BL.BL_ID
+					LEFT JOIN (
+						SELECT PB.BL_ID
+								,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1)) Amount
+								,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearAmount
+								,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) Painting
+								,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearPainting
+								,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) InPainting
+								,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * OD.Del) PaintingDeleted
+						FROM OrdersDataDetail ODD
+						JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+						LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
+						JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
+						WHERE ODD.Del = 0
+						GROUP BY PB.BL_ID
+					) SODD ON SODD.BL_ID = BL.BL_ID
+					LEFT JOIN (
+						SELECT ODB.BL_ID
+								,SUM(ODB.Amount * IF(OD.Del, 0, 1)) Amount
+								,SUM(ODB.Amount * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearAmount
+								,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.Del, 0, 1)) Painting
+								,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.Del, 0, 1) * IFNULL(CL.clear, 0)) ClearPainting
+								,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0) * IF(OD.Del, 0, 1)) InPainting
+								,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * OD.Del) PaintingDeleted
+						FROM OrdersDataBlank ODB
+						JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
+						LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
+						WHERE ODB.BL_ID IS NOT NULL
+						GROUP BY ODB.BL_ID
+					) SODB ON SODB.BL_ID = BL.BL_ID
+					WHERE BL.Name NOT LIKE 'Клей'
+					GROUP BY BL.BL_ID
+					ORDER BY BeforePainting DESC, BL.Name ASC
+				";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
 				{
-					$color = ( $row["AmountBeforePainting"] < 0 ) ? ' bg-red' : '';
+					$color = ( $row["total_amount"] < 0 ) ? ' bg-red' : '';
 					echo "<tr class='top_blank'>";
 					echo "<td class='bold'>{$row["Name"]}</td>";
 					echo "<td class='txtright'><input type='number' value='{$row["start_balance"]}' bl_id='{$row["BL_ID"]}' class='amount start_balance_blank'></td>";
-					echo "<td class='txtright' id='blank_{$row["BL_ID"]}'><b class='{$color}'>{$row["AmountBeforePainting"]}</b></td>";
+					echo "<td class='txtright' id='blank_{$row["BL_ID"]}'><b class='{$color}'>{$row["total_amount"]}</b></td>";
 					echo "<td class='txtright'><b>{$row["AmountInPainting"]}</b></td>";
 					echo "<td class='txtright'><b>{$row["BeforePainting"]}</b><span style='font-size: 0.8em'>/{$row["ClearBeforePainting"]}</span></td>";
 					echo "</tr>";
@@ -262,97 +265,7 @@
 	</div>
 
 	<div class="log-blank halfblock">
-		<h1>Журнал сдачи заготовок</h1>
-		<table>
-			<thead>
-			<tr>
-				<th></th>
-				<th>Дата</th>
-				<th>Время</th>
-				<th>Работник</th>
-				<th>Заготовка</th>
-				<th>Кол-во</th>
-				<th>Тариф</th>
-				<th>Примечание</th>
-				<th></th>
-			</tr>
-			</thead>
-			<tbody>
-
-	<?
-			$query = "SELECT BS.BS_ID
-							,DATE_FORMAT(DATE(BS.Date), '%d.%m.%y') Date
-							,DAY(BS.Date) day
-							,MONTH(BS.Date) month
-							,TIME(BS.Date) Time
-							,WD.Name Worker
-							,BL.Name Blank
-							,BS.Amount
-							,BS.Tariff
-							,BS.Comment
-							,WD.WD_ID
-							,BL.BL_ID
-							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
-							,USR_Name(BS.author) Name
-							,PBS.BS_ID is_parent
-						FROM BlankStock BS
-						LEFT JOIN BlankStock PBS ON PBS.PBS_ID = BS.BS_ID
-						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
-						LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
-						LEFT JOIN (
-							SELECT BL.BL_ID, BLL.BLL_ID
-							FROM BlankList BL
-							LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
-							GROUP BY BL.BL_ID
-						) BLL ON BLL.BL_ID = BL.BL_ID
-						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0 AND BS.PBS_ID IS NULL
-						GROUP BY BS.BS_ID
-						ORDER BY BS.Date DESC, BS.BS_ID";
-			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			while( $row = mysqli_fetch_array($res) )
-			{
-				$color = ($row["Amount"] < 0) ? "#E74C3C" : "#16A085";
-				echo "<tr class='".($row["is_parent"] ? "is_parent" : "")."'>";
-				echo "<td>".($row["is_parent"] ? "<i class='fa fa-arrow-right'></i>" : "")."</td>";
-				echo "<td><b class='nowrap'>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></td>";
-				echo "<td>{$row["Time"]}</td>";
-				echo "<td class='worker nowrap' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>";
-				echo "<td class='blank {$row["Bold"]} nowrap' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>";
-				echo "<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$row["Amount"]}</b></td>";
-				echo "<td class='tariff txtright'>{$row["Tariff"]}</td>";
-				echo "<td class='comment'><pre>{$row["Comment"]}</pre></td>";
-				echo "<td>".($row["Name"] ? "<i class='fa fa-lg fa-user' aria-hidden='true' title='{$row["Name"]}' style='cursor: pointer;'></i>" : "")."</td>";
-				echo "</tr>";
-
-				$query = "SELECT GROUP_CONCAT(IFNULL(WD.Name, 'Без работника') SEPARATOR '<br>') Worker
-								,GROUP_CONCAT(BL.Name SEPARATOR '<br>') Blank
-								,GROUP_CONCAT(BS.Amount SEPARATOR '<br>') Amount
-								,MAX(BS.Amount) max_amount
-							FROM BlankStock BS
-							LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
-							LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
-							WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0 AND BS.PBS_ID = {$row["BS_ID"]}";
-				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				while( $subrow = mysqli_fetch_array($subres) )
-				{
-					$color = ($subrow["max_amount"] < 0) ? "#E74C3C" : "#16A085";
-					echo "<tr class='auto_record'>";
-					echo "<td></td>";
-					echo "<td></td>";
-					echo "<td></td>";
-					echo "<td class='nowrap'>{$subrow["Worker"]}</td>";
-					echo "<td class='nowrap'>{$subrow["Blank"]}</td>";
-					echo "<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$subrow["Amount"]}</b></td>";
-					echo "<td class='tariff txtright'></td>";
-					echo "<td class='comment'><pre></pre></td>";
-					echo "<td></td>";
-					echo "</tr>";
-				}
-			}
-	?>
-
-			</tbody>
-		</table>
+		<!--Содержимое формируется аяксом-->
 	</div>
 
 <style>
@@ -385,7 +298,14 @@
 </style>
 
 <script>
-	$(document).ready(function() {
+	// Функция вызывает аякс который выводит журнал сдачи заготовок
+	function blank_log_table() {
+		$.ajax({ url: "ajax.php?do=blank_log_table", dataType: "script", async: true });
+	}
+
+	$(function() {
+		blank_log_table();
+
 //		$('#worker').select2({ placeholder: 'Выберите работника', language: 'ru' });
 //		$('#blank').select2({ placeholder: 'Выберите заготовку', language: 'ru' });
 //

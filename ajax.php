@@ -1538,42 +1538,60 @@ case "start_balance_worker":
 	$bl_id = $_GET["bl_id"];
 	$val = $_GET["val"] ? $_GET["val"] : "0";
 
-	// Обновляем начальное значение заготовки у рабочего
-	$query = "UPDATE BlankCount SET start_balance = {$val}, last_date = NOW() WHERE BL_ID = {$bl_id} AND WD_ID = {$wd_id}";
-	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-
-	// Узнаем общее кол-во заготовки и начальное значение
-	$query = "SELECT SUM(BC.count + BC.start_balance) Amount, SUM(BC.start_balance) start_balance
-				FROM BlankCount BC
-				WHERE BC.BL_ID = {$bl_id}
-				GROUP BY BC.BL_ID";
+	// Узнаем какое было раньше начальное значение у рабочего
+	$query = "SELECT start_balance FROM BlankCount WHERE BL_ID = {$bl_id} AND WD_ID = {$wd_id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$start_balance = mysqli_result($res,0,'start_balance');
-	$blank_amount = mysqli_result($res,0,'Amount');
-	$color = ( $blank_amount < 0 ) ? ' bg-red' : '';
-	$html = "<b class='{$color}'>{$blank_amount}</b>";
-	$html = addslashes($html);
 
-	// Узнаем общее кол-во заготовки у рабочего
-	$query = "SELECT (BC.count + BC.start_balance) Amount
-				FROM BlankCount BC
-				WHERE BC.BL_ID = {$bl_id} AND BC.WD_ID = {$wd_id}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-	$worker_amount = mysqli_result($res,0,'Amount');
-	$sub_color = ( $worker_amount < 0 ) ? ' bg-red' : '';
-	$sub_html = "<i class='{$sub_color}'>{$worker_amount}</i>";
-	$sub_html = addslashes($sub_html);
+	// Если значение изменено
+	if( $start_balance != $val ) {
+		$diff = $val - $start_balance;
 
-	echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').hide('fast');";
-	echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').hide('fast');";
-	echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').hide('fast');";
-	echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').val('{$start_balance}');";
-	echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').html('{$html}');";
-	echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').html('{$sub_html}');";
-	echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').show('fast');";
-	echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').show('fast');";
-	echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').show('fast');";
-	echo "noty({timeout: 3000, text: 'Начальное значение обновлено на: <b>\"{$val}\"</b>', type: 'success'});";
+		// Добавление в журнал сдачи заготовок информацию о корректировке
+		$query = "INSERT INTO BlankStock(BL_ID, WD_ID, Amount, adj, author)
+				  VALUES ({$bl_id}, ".($wd_id == 0 ? "NULL" : $wd_id).", {$diff}, 1, {$_SESSION["id"]})";
+		mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query1: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+
+		// Обновляем начальное значение заготовки у рабочего
+		$query = "UPDATE BlankCount SET start_balance = {$val}, last_date = NOW() WHERE BL_ID = {$bl_id} AND WD_ID = {$wd_id}";
+		mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+
+		// Узнаем общее кол-во заготовки и начальное значение
+		$query = "SELECT SUM(BC.count + BC.start_balance) Amount, SUM(BC.start_balance) start_balance
+					FROM BlankCount BC
+					WHERE BC.BL_ID = {$bl_id}
+					GROUP BY BC.BL_ID";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+		$start_balance = mysqli_result($res,0,'start_balance');
+		$blank_amount = mysqli_result($res,0,'Amount');
+		$color = ( $blank_amount < 0 ) ? ' bg-red' : '';
+		$html = "<b class='{$color}'>{$blank_amount}</b>";
+		$html = addslashes($html);
+
+		// Узнаем общее кол-во заготовки у рабочего
+		$query = "SELECT (BC.count + BC.start_balance) Amount
+					FROM BlankCount BC
+					WHERE BC.BL_ID = {$bl_id} AND BC.WD_ID = {$wd_id}";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+		$worker_amount = mysqli_result($res,0,'Amount');
+		$sub_color = ( $worker_amount < 0 ) ? ' bg-red' : '';
+		$sub_html = "<i class='{$sub_color}'>{$worker_amount}</i>";
+		$sub_html = addslashes($sub_html);
+
+		// Формируем новую строку в таблицу журнала
+
+		echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').hide('fast');";
+		echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').hide('fast');";
+		echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').hide('fast');";
+		echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').val('{$start_balance}');";
+		echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').html('{$html}');";
+		echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').html('{$sub_html}');";
+		echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').show('fast');";
+		echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').show('fast');";
+		echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').show('fast');";
+		echo "noty({timeout: 3000, text: 'Начальное значение обновлено на: <b>\"{$val}\"</b>', type: 'success'});";
+		echo "blank_log_table();";	// Обновляем таблицу сдачи заготовок
+	}
 
 	break;
 ///////////////////////////////////////////////////////////////////
@@ -1581,54 +1599,186 @@ case "start_balance_worker":
 // Обновление начального значения заготовок верхнего уровня
 case "start_balance_blank":
 	$bl_id = $_GET["bl_id"];
-	$val = $_GET["val"] ? $_GET["val"] : "0";
+	$val = $_GET["val"] ? $_GET["val"] : 0;
 
-	// Обновляем начальное значение заготовки верхнего уровня
-	$query = "UPDATE BlankList SET start_balance = {$val} WHERE BL_ID = {$bl_id}";
-	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-
-	// Узнаем кол-во заготовок верхнего уровня
-	$query = "SELECT IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) AmountBeforePainting
-				FROM BlankList BL
-				LEFT JOIN (
-					SELECT BS.BL_ID, SUM(BS.Amount) Amount
-					FROM BlankStock BS
-					GROUP BY BS.BL_ID
-				) SBS ON SBS.BL_ID = BL.BL_ID
-				LEFT JOIN (
-					SELECT PB.BL_ID
-							,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1)) Amount
-							,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) Painting
-							#,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount) InPainting
-							,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * OD.Del) PaintingDeleted
-					FROM OrdersDataDetail ODD
-					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
-					JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
-					WHERE ODD.Del = 0
-					GROUP BY PB.BL_ID
-				) SODD ON SODD.BL_ID = BL.BL_ID
-				LEFT JOIN (
-					SELECT ODB.BL_ID
-							,SUM(ODB.Amount * IF(OD.Del, 0, 1)) Amount
-							,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.Del, 0, 1)) Painting
-							#,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0)) InPainting
-							,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * OD.Del) PaintingDeleted
-					FROM OrdersDataBlank ODB
-					JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
-					WHERE ODB.BL_ID IS NOT NULL
-					GROUP BY ODB.BL_ID
-				) SODB ON SODB.BL_ID = BL.BL_ID
-				WHERE BL.BL_ID = {$bl_id}";
+	// Узнаем какое было раньше начальное значение
+	$query = "SELECT start_balance FROM BlankList WHERE BL_ID = {$bl_id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-	$amount = mysqli_result($res,0,'AmountBeforePainting');
-	$color = ( $amount < 0 ) ? ' bg-red' : '';
-	$html = "<b class='{$color}'>{$amount}</b>";
-	$html = addslashes($html);
+	$start_balance = mysqli_result($res,0,'start_balance');
 
-	echo "$('#exist_blank #blank_{$bl_id} b').hide('fast');";
-	echo "$('#exist_blank #blank_{$bl_id} b').html('{$html}');";
-	echo "$('#exist_blank #blank_{$bl_id} b').show('fast');";
-	echo "noty({timeout: 3000, text: 'Начальное значение обновлено на: <b>\"{$val}\"</b>', type: 'success'});";
+	// Если значение изменено
+	if( $start_balance != $val ) {
+		$diff = $val - $start_balance;
+
+		// Добавление в журнал сдачи заготовок информацию о корректировке
+		$query = "INSERT INTO BlankStock(BL_ID, Amount, adj, author)
+				  VALUES ({$bl_id}, {$diff}, 1, {$_SESSION["id"]})";
+		mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+
+		// Обновляем начальное значение заготовки верхнего уровня
+		$query = "UPDATE BlankList SET start_balance = {$val} WHERE BL_ID = {$bl_id}";
+		mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+
+		// Узнаем кол-во заготовок верхнего уровня
+		$query = "
+			SELECT
+				IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) AmountBeforePainting
+
+				,IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) + IFNULL(SODD.InPainting, 0) + IFNULL(SODB.InPainting, 0) total_amount
+			FROM BlankList BL
+			LEFT JOIN (
+				SELECT BS.BL_ID, SUM(BS.Amount) Amount
+				FROM BlankStock BS
+				WHERE BS.adj = 0
+				GROUP BY BS.BL_ID
+			) SBS ON SBS.BL_ID = BL.BL_ID
+			LEFT JOIN (
+				SELECT PB.BL_ID
+					,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1)) Amount
+					,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) Painting
+					,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) InPainting
+					,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * OD.Del) PaintingDeleted
+			FROM OrdersDataDetail ODD
+				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+				JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
+				WHERE ODD.Del = 0
+				GROUP BY PB.BL_ID
+			) SODD ON SODD.BL_ID = BL.BL_ID
+			LEFT JOIN (
+				SELECT ODB.BL_ID
+					,SUM(ODB.Amount * IF(OD.Del, 0, 1)) Amount
+					,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.Del, 0, 1)) Painting
+					,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0) * IF(OD.Del, 0, 1)) InPainting
+					,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * OD.Del) PaintingDeleted
+				FROM OrdersDataBlank ODB
+				JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
+				WHERE ODB.BL_ID IS NOT NULL
+				GROUP BY ODB.BL_ID
+			) SODB ON SODB.BL_ID = BL.BL_ID
+			WHERE BL.BL_ID = {$bl_id}
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+		$amount = mysqli_result($res,0,'total_amount');
+		$color = ( $amount < 0 ) ? ' bg-red' : '';
+		$html = "<b class='{$color}'>{$amount}</b>";
+		$html = addslashes($html);
+
+		echo "$('#exist_blank #blank_{$bl_id} b').hide('fast');";
+		echo "$('#exist_blank #blank_{$bl_id} b').html('{$html}');";
+		echo "$('#exist_blank #blank_{$bl_id} b').show('fast');";
+		echo "noty({timeout: 3000, text: 'Начальное значение обновлено c <b>\"{$start_balance}\"</b> на <b>\"{$val}\"</b>', type: 'success'});";
+		echo "blank_log_table();";	// Обновляем таблицу сдачи заготовок
+	}
+
+	break;
+/////////////////////////////////////////////////////////////////////
+
+// Вывод таблицы журнала сдачи заготовок
+case "blank_log_table":
+	$datediff = 60; // Максимальный период отображения данных
+
+	$html = "
+		<h1>Журнал сдачи заготовок</h1>
+		<table>
+			<thead>
+			<tr>
+				<th></th>
+				<th>Дата</th>
+				<th>Время</th>
+				<th>Работник</th>
+				<th>Заготовка</th>
+				<th>Кол-во</th>
+				<th>Тариф</th>
+				<th>Примечание</th>
+				<th></th>
+			</tr>
+			</thead>
+			<tbody>
+	";
+
+			$query = "SELECT BS.BS_ID
+							,DATE_FORMAT(DATE(BS.Date), '%d.%m.%y') Date
+							,DAY(BS.Date) day
+							,MONTH(BS.Date) month
+							,TIME(BS.Date) Time
+							,WD.Name Worker
+							,BL.Name Blank
+							,BS.Amount
+							,BS.Tariff
+							,IF(BS.adj = 1, 'Корректировка', BS.Comment) Comment
+							,WD.WD_ID
+							,BL.BL_ID
+							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
+							,USR_Name(BS.author) Name
+							,PBS.BS_ID is_parent
+						FROM BlankStock BS
+						LEFT JOIN BlankStock PBS ON PBS.PBS_ID = BS.BS_ID
+						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
+						LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
+						LEFT JOIN (
+							SELECT BL.BL_ID, BLL.BLL_ID
+							FROM BlankList BL
+							LEFT JOIN BlankLink BLL ON BLL.BLL_ID = BL.BL_ID
+							GROUP BY BL.BL_ID
+						) BLL ON BLL.BL_ID = BL.BL_ID
+						WHERE DATEDIFF(NOW(), BS.Date) <= {$datediff} AND BS.Amount <> 0 AND BS.PBS_ID IS NULL
+						GROUP BY BS.BS_ID
+						ORDER BY BS.Date DESC, BS.BS_ID";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) )
+			{
+				$color = ($row["Amount"] < 0) ? "#E74C3C" : "#16A085";
+				$html .= "
+					<tr class='".($row["is_parent"] ? "is_parent" : "")."'>
+					<td>".($row["is_parent"] ? "<i class='fa fa-arrow-right'></i>" : "")."</td>
+					<td><b class='nowrap'>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></td>
+					<td>{$row["Time"]}</td>
+					<td class='worker nowrap' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>
+					<td class='blank {$row["Bold"]} nowrap' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>
+					<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$row["Amount"]}</b></td>
+					<td class='tariff txtright'>{$row["Tariff"]}</td>
+					<td class='comment'><pre>{$row["Comment"]}</pre></td>
+					<td>".($row["Name"] ? "<i class='fa fa-lg fa-user' aria-hidden='true' title='{$row["Name"]}' style='cursor: pointer;'></i>" : "")."</td>
+					</tr>
+				";
+				if( $row["is_parent"] ) {
+					$query = "SELECT GROUP_CONCAT(IFNULL(WD.Name, 'Без работника') SEPARATOR '<br>') Worker
+									,GROUP_CONCAT(BL.Name SEPARATOR '<br>') Blank
+									,GROUP_CONCAT(BS.Amount SEPARATOR '<br>') Amount
+									,MAX(BS.Amount) max_amount
+								FROM BlankStock BS
+								LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
+								LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
+								WHERE BS.PBS_ID = {$row["BS_ID"]}";
+					$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $subrow = mysqli_fetch_array($subres) )
+					{
+						$color = ($subrow["max_amount"] < 0) ? "#E74C3C" : "#16A085";
+						$html .= "
+							<tr class='auto_record'>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td class='nowrap'>{$subrow["Worker"]}</td>
+							<td class='nowrap'>{$subrow["Blank"]}</td>
+							<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$subrow["Amount"]}</b></td>
+							<td class='tariff txtright'></td>
+							<td class='comment'><pre></pre></td>
+							<td></td>
+							</tr>
+						";
+					}
+				}
+			}
+	$html .= "
+			</tbody>
+		</table>
+	";
+	$html = addslashes($html);					// Экранируем кавычки
+	$html = str_replace(chr(13), '', $html);	// Убираем переносы строк
+	$html = str_replace(chr(10), '', $html);	// Убираем переносы строк
+	echo "$('.log-blank').html('{$html}');";
+	echo "$('.log-blank').hide().fadeIn();";	// Эффект появления
 
 	break;
 /////////////////////////////////////////////////////////////////////
