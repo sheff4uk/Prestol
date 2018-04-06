@@ -773,10 +773,7 @@ if( $id != "NULL" ) {
 							,OCL.old_value
 							,OCL.new_value
 							,IFNULL(USR_Name(OCL.author), 'СИСТЕМА') Name
-							,DATE_FORMAT(DATE(OCL.date_time), '%d.%m.%y') Date
-							,DAY(OCL.date_time) day
-							,MONTH(OCL.date_time) month
-							,YEAR(OCL.date_time) year
+							,Friendly_date(OCL.date_time) friendly_date
 							,TIME(OCL.date_time) Time
 						FROM OrdersChangeLog OCL
 						WHERE (table_key = 'OD_ID' AND table_value = {$id}) OR (table_key = 'ODD_ID' AND table_value IN (SELECT ODD_ID FROM OrdersDataDetail WHERE OD_ID = {$id})) OR (table_key = 'ODB_ID' AND table_value IN (SELECT ODB_ID FROM OrdersDataBlank WHERE OD_ID = {$id}))
@@ -793,7 +790,7 @@ if( $id != "NULL" ) {
 				else {
 					echo "<td colspan='4'><b>{$row["field_name"]}</b></td>";
 				}
-				echo "<td class='nowrap'><b>{$row["day"]}&nbsp;{$MONTHS_DATE[$row["month"]]}&nbsp;{$row["year"]}</b><br>{$row["Time"]}<br>{$row["Name"]}</td>";
+				echo "<td class='nowrap'>{$row["friendly_date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
 				echo "</tr>";
 			}
 		?>
@@ -817,7 +814,7 @@ if( $id != "NULL" ) {
 							,OM.Message
 							,OM.priority
 							,USR_Name(OM.author) Name
-							,DATE_FORMAT(DATE(OM.date_time), '%d.%m.%y') Date
+							,Friendly_date(OM.date_time) friendly_date
 							,TIME(OM.date_time) Time
 							,IFNULL(USR_Name(OM.read_user), '') read_user
 							,DATE_FORMAT(DATE(OM.read_time), '%d.%m.%y') read_date
@@ -847,7 +844,7 @@ if( $id != "NULL" ) {
 				echo "<tr".($row["priority"] ? " style='font-weight: bold;'" : "").">";
 				echo "<td>{$letter_btn}</td>";
 				echo "<td>".(src_url($row["Message"]))."</td>";
-				echo "<td>{$row["Date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
+				echo "<td>{$row["friendly_date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
 				echo "</tr>";
 			}
 		?>
