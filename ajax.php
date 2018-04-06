@@ -1692,6 +1692,7 @@ case "blank_log_table":
 
 			$query = "SELECT BS.BS_ID
 							,DATE_FORMAT(DATE(BS.Date), '%d.%m.%y') Date
+							,Friendly_date(BS.Date) friendly_date
 							,DAY(BS.Date) day
 							,MONTH(BS.Date) month
 							,TIME(BS.Date) Time
@@ -1725,7 +1726,7 @@ case "blank_log_table":
 				$html .= "
 					<tr class='".($row["is_parent"] ? "is_parent" : "")."'>
 					<td>".($row["is_parent"] ? "<i class='fa fa-arrow-right'></i>" : "")."</td>
-					<td><b class='nowrap'>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></td>
+					<td><b class='nowrap'>{$row["friendly_date"]}</b></td>
 					<td>{$row["Time"]}</td>
 					<td class='worker nowrap' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>
 					<td class='blank {$row["Bold"]} nowrap' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>
