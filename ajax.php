@@ -1700,7 +1700,7 @@ case "blank_log_table":
 							,BL.Name Blank
 							,BS.Amount
 							,BS.Tariff
-							,IF(BS.adj = 1, 'Корректировка', BS.Comment) Comment
+							,IF(BS.adj = 1, 'Коррекция', BS.Comment) Comment
 							,WD.WD_ID
 							,BL.BL_ID
 							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
