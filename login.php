@@ -80,7 +80,7 @@
 
 				//если у пользователя указан телефон - нужно дождаться с него звонка
 				if($myrow['phone']) {
-					$body = file_get_contents("https://sms.ru/callcheck/add?api_id=AF15C40F-52ED-156A-2013-C33A6A15003E&phone=".($myrow['phone'])."&json=1");
+					$body = file_get_contents("https://sms.ru/callcheck/add?api_id=".($api_id)."&phone=".($myrow['phone'])."&json=1");
 					$json = json_decode($body);
 					if ($json) { // Получен ответ от сервера
 						if ($json->status == "OK") { // Запрос выполнился
@@ -90,7 +90,7 @@
 							for( $i=0; $i<12; $i++ ) {
 								sleep(5);
 								// Проверка статуса звонка
-								$body = file_get_contents("https://sms.ru/callcheck/status?api_id=AF15C40F-52ED-156A-2013-C33A6A15003E&check_id=".($check_id)."&json=1");
+								$body = file_get_contents("https://sms.ru/callcheck/status?api_id=".($api_id)."&check_id=".($check_id)."&json=1");
 								$json = json_decode($body);
 								if ($json) { // Получен ответ от сервера
 									if ($json->status == "OK") { // Запрос выполнился
@@ -102,7 +102,7 @@
 							// Если нужный ответ не был получен - отправляем код по СМС
 							if( $check_status != 401 ) {
 								$sms_code = rand(100000, 999999);
-								$body = file_get_contents("https://sms.ru/sms/send?api_id=AF15C40F-52ED-156A-2013-C33A6A15003E&to=".($myrow['phone'])."&msg=Пароль:+".($sms_code)."&json=1");
+								$body = file_get_contents("https://sms.ru/sms/send?api_id=".($api_id)."&to=".($myrow['phone'])."&msg=Пароль:+".($sms_code)."&json=1");
 								$json = json_decode($body);
 								if ($json) { // Получен ответ от сервера
 									if ($json->status == "OK") { // Запрос выполнился
