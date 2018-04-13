@@ -50,11 +50,11 @@
 				<input type='radio' id='1ptn0' name='ptn' value='0'>
 					<label for='1ptn0'>Нет</label>
 				<input type='radio' id='1ptn1' name='ptn' value='1'>
-					<label for='1ptn1' style="background: gold;">Золото</label>
+				<label for='1ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
 				<input type='radio' id='1ptn2' name='ptn' value='2'>
-					<label for='1ptn2' style="background: silver;">Серебро</label>
+				<label for='1ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
 				<input type='radio' id='1ptn3' name='ptn' value='3'>
-					<label for='1ptn3' style="background: chocolate;">Кофе</label>
+				<label for='1ptn3'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Кофе</label>
 			</div>
 			<br>
 		</div>
@@ -147,11 +147,11 @@
 				<input type='radio' id='2ptn0' name='ptn' value='0'>
 					<label for='2ptn0'>Нет</label>
 				<input type='radio' id='2ptn1' name='ptn' value='1'>
-					<label for='2ptn1' style="background: gold;">Золото</label>
+					<label for='2ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
 				<input type='radio' id='2ptn2' name='ptn' value='2'>
-					<label for='2ptn2' style="background: silver;">Серебро</label>
+					<label for='2ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
 				<input type='radio' id='2ptn3' name='ptn' value='3'>
-					<label for='2ptn3' style="background: chocolate;">Кофе</label>
+					<label for='2ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
 			</div>
 			<br>
 		</div>
@@ -180,14 +180,16 @@
 		</div>
 		<div>
 			<label>Размер:</label>
-			<input required type='number' min='0' step='10' name='Length' style='width: 80px;' autocomplete='off' title="Длина">
+			<input id="length" required type='number' min='500' max='3000' step='10' name='Length' style='width: 60px;' autocomplete='off' title="Длина">
 			<img src='/img/attention.png' class='attention' id='Length' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
-			<span>&nbsp;х&nbsp;</span>
-			<input required type='number' min='0' step='10' name='Width' style='width: 80px;' autocomplete='off' title="Ширина">
-			<span>&nbsp;/&nbsp;</span>
+			<span id="open_br">(</span>
+			<span id="plus">+</span>
 			<input type="number" name="PieceAmount" min="1" max="3" style='width: 50px;' autocomplete="off" title="Кол-во вставок">
-			<span>&nbsp;х&nbsp;</span>
+			<span id="first_x">x</span>
 			<input type="number" name="PieceSize" min="200" max="550" step="10" style='width: 60px;' autocomplete="off" title="Размер вставки">
+			<span id="close_br">)</span>
+			<span id="second_x">x</span>
+			<input id='width' required type='number' min='500' max='1500' step='10' name='Width' style='width: 60px;' autocomplete='off' title="Ширина">
 		</div>
 		<div>
 			<label>Пластик и поставщик:</label>
@@ -302,11 +304,11 @@
 					<input type='radio' id='0ptn0' name='ptn' value='0'>
 						<label for='0ptn0'>Нет</label>
 					<input type='radio' id='0ptn1' name='ptn' value='1'>
-						<label for='0ptn1' style="background: gold;">Золото</label>
+						<label for='0ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
 					<input type='radio' id='0ptn2' name='ptn' value='2'>
-						<label for='0ptn2' style="background: silver;">Серебро</label>
+						<label for='0ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
 					<input type='radio' id='0ptn3' name='ptn' value='3'>
-						<label for='0ptn3' style="background: chocolate;">Кофе</label>
+						<label for='0ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
 				</div>
 				<br>
 			</div>
@@ -428,8 +430,24 @@
 		return false;
 	}
 
+	// Функция скрывает поле ширины для круглых форм
+	function size_from_form(form) {
+		if( form == 4 ) {
+			$('#addtable #length').attr('title', 'Диаметр');
+			$('#addtable #second_x').hide('fast');
+			$('#addtable #width').hide('fast');
+			$('#addtable #width').attr('required', false);
+		}
+		else {
+			$('#addtable #length').attr('title', 'Длина');
+			$('#addtable #second_x').show('fast');
+			$('#addtable #width').show('fast');
+			$('#addtable #width').attr('required', true);
+		}
+	}
+
 	// Функция формирования списка форм в зависимости от модели стола
-	function FormModelList(model, form) {
+	function form_model_list(model, form) {
 		var forms = "";
 		var arr = ModelForm[model];
 		var informs = 0;
@@ -450,6 +468,7 @@
 			}
 			$('#addtable #forms').buttonset();
 		}
+		size_from_form($('#addtable input[name="Form"]').val());
 	}
 	//////////////////////////////////////////////////////////////////////////
 	$(function() {
@@ -471,6 +490,10 @@
 		// Массив куда будут записыапться данные по изделиям
 		odd_data = new Array();
 		odb_data = new Array();
+
+		// Глобальные переменные для хранения выбранных модели и формы
+		var model;
+		var form;
 
 		// Форма добавления стульев
 		$('.edit_product1').click(function() {
@@ -626,8 +649,8 @@
 				// Через ajax получаем данные об изделии
 				$.ajax({ url: "ajax.php?do=odd_data&id=" + id, success:function(msg){ odd_data = msg; }, dataType: "json", async: false });
 
-				var model = odd_data['model'];
-				var form = odd_data['form'];
+				model = odd_data['model'];
+				form = odd_data['form'];
 				$('#addtable input[name="Amount"]').val(odd_data['amount']);
 				$('#addtable input[name="Price"]').val(odd_data['price']);
 
@@ -677,31 +700,12 @@
 			}
 			else // Иначе добавляем новый стол
 			{
-				var model = 0;
-				var form = 0;
+				model = 0;
+				form = 0;
 				$("#addtable form").attr("action", "orderdetail.php?id="+odid+"&add=1");
 			}
 
-			FormModelList(model, form);
-
-			$('#addtable input[name="Form"]').change( function() {
-				form = $(this).val();
-			});
-
-			// Список форм столешниц в зависимости от модели
-			$('#addtable select[name="Model"]').change( function() {
-				if( $(this).val() == "" ) {
-					FormModelList(0, form);
-				}
-				else {
-					FormModelList($(this).val(), form);
-				}
-
-				$('#addtable input[name="Form"]').change( function() {
-					form = $(this).val();
-				});
-
-			});
+			form_model_list(model, form);
 
 			$("#addtable").dialog(
 			{
@@ -716,6 +720,21 @@
 			$( ".materialtags_2" ).autocomplete( "option", "appendTo", "#addtable" );
 
 			return false;
+		});
+
+		// При выборе модели стола предлагаются формы столешниц
+		$('#addtable select[name="Model"]').change( function() {
+			if( $(this).val() == "" ) {
+				form_model_list(0, form);
+			}
+			else {
+				form_model_list($(this).val(), form);
+			}
+		});
+		// При смене формы - записываем значение в переменную form
+		$('#addtable').on('change', 'input[name="Form"]', function() {
+			form = $(this).val();
+			size_from_form(form);
 		});
 
 		// Если нет пластика, то кнопка наличия не активна
@@ -846,6 +865,7 @@
 			return false;
 		});
 
+		// Если выбрана заготовка, то прочее недоступно
 		$('#addblank select[name="Blanks"]').change( function() {
 			if( !(id > 0) ) {
 				val = $(this).val();
@@ -860,6 +880,7 @@
 			}
 		});
 
+		// Если указано прочее, то выбор заготовок недоступен
 		$('#addblank input[name="Other"]').change( function() {
 			if( !(id > 0) ) {
 				val = $(this).val();
