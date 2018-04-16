@@ -139,7 +139,7 @@
 		$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
 		$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
 		$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
-		$Width = $_POST["Type"] == 2 ? "{$_POST["Width"]}" : "NULL";
+		$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 		$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
 		$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
 		$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : "NULL";
