@@ -182,12 +182,20 @@
 			<label>Размер:</label>
 			<input id="length" required type='number' min='500' max='3000' step='10' name='Length' style='width: 60px;' autocomplete='off' title="Длина">
 			<img src='/img/attention.png' class='attention' id='Length' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
-			<span id="open_br">(</span>
-			<span id="plus">+</span>
-			<input type="number" name="PieceAmount" min="1" max="3" style='width: 50px;' autocomplete="off" title="Кол-во вставок">
-			<span id="first_x">x</span>
-			<input type="number" name="PieceSize" min="200" max="550" step="10" style='width: 60px;' autocomplete="off" title="Размер вставки">
-			<span id="close_br">)</span>
+			<div id="sliding" style="display: inline-block;">
+				<span>(</span>
+				<span>+</span>
+				<div id="piece_amount" style="display: inline-block;">
+					<select name="PieceAmount" style="width: 30px;" title="Кол-во вставок">
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+					</select>
+					<span>x</span>
+				</div>
+				<input type="number" name="PieceSize" required min="200" max="550" step="10" style='width: 50px;' autocomplete="off" title="Размер вставки">
+				<span>)</span>
+			</div>
 			<span id="second_x">x</span>
 			<input id='width' required type='number' min='500' max='1500' step='10' name='Width' style='width: 60px;' autocomplete='off' title="Ширина">
 		</div>
@@ -446,6 +454,25 @@
 		}
 	}
 
+	// Функция скрывает поля вставок при выборе механизма
+	function piece_from_mechanism(mech) {
+		if( mech == 1 || mech == 2 || mech == 5 ) {
+			$('#addtable #sliding').show('fast');
+			$('#addtable #sliding input').attr('required', true);
+		}
+		else {
+			$('#addtable #sliding').hide('fast');
+			$('#addtable #sliding input').attr('required', false);
+		}
+
+		if( mech == 2 || mech == 5 ) {
+			$('#addtable #piece_amount').show('fast');
+		}
+		else {
+			$('#addtable #piece_amount').hide('fast');
+		}
+	}
+
 	// Функция формирования списка форм в зависимости от модели стола
 	function form_model_list(model, form) {
 		var forms = "";
@@ -620,13 +647,16 @@
 			$('#addtable input[name="Amount"]').val('');
 			$('#addtable input[name="Amount"]').prop('readonly', false);
 			$('#addtable input[name="Price"]').val('');
-			$('#addtable input[name="Length"]').val(''); //было 1300
-			$('#addtable input[name="Width"]').val(''); //было 800
+			$('#addtable input[name="Length"]').val('');
+			$('#addtable input[name="Width"]').val('');
 			$('#2radio').prop('checked', true);
 			$('#2ptn0').prop('checked', true);
 			$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
 			$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
+			// Выбираем механизм первый по списку
 			$('#addtable input[name="Mechanism"]:nth-child(1)').prop('checked', true);
+			piece_from_mechanism($('#addtable input[name="Mechanism"]').val());
+
 			$('#addtable input[type="radio"]').button("refresh");
 			$('#addtable input[name="Amount"]').removeAttr('max');
 			// Очистка инпутов дат заказа пластика
@@ -635,6 +665,8 @@
 			$('#addtable .order_material input').val('');
 			$('#addtable .order_material input.from').datepicker( "option", "maxDate", null );
 			$('#addtable .order_material input.to').datepicker( "option", "minDate", null );
+			// Устанавливаем дефолтное значение кол-ва вставок
+			$('#addtable select[name=PieceAmount]').val('2');
 			// Прячем картинки-треугольники
 			$('#addtable img[id="Amount"]').hide();
 			$('#addtable img[id="Model"]').hide();
@@ -667,6 +699,7 @@
 
 				$('#2ptn'+odd_data['ptn']).prop('checked', true);
 				$('#mechanism'+odd_data['mechanism']).prop('checked', true);
+					piece_from_mechanism(odd_data['mechanism']);
 				$('#addtable input[name="Length"]').val(odd_data['length']);
 				$('#addtable input[name="Width"]').val(odd_data['width']);
 				$('#addtable input[name="PieceAmount"]').val(odd_data['PieceAmount']);
@@ -731,10 +764,16 @@
 				form_model_list($(this).val(), form);
 			}
 		});
+
 		// При смене формы - записываем значение в переменную form
 		$('#addtable').on('change', 'input[name="Form"]', function() {
 			form = $(this).val();
 			size_from_form(form);
+		});
+
+		// При выборе механизма - задействуются инпуты для вставок
+		$('#addtable').on('change', 'input[name="Mechanism"]', function() {
+			piece_from_mechanism($(this).val());
 		});
 
 		// Если нет пластика, то кнопка наличия не активна
