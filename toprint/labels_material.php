@@ -73,7 +73,7 @@
 					SELECT ODD.MT_ID
 							,ODD.MT_amount
 							,ODD.Amount
-							,CONCAT(IFNULL(PM.Model, 'Столешница'), ' ', IFNULL(CONCAT(ODD.Length, IF(ODD.Width > 0, CONCAT('х', ODD.Width), ''), IFNULL(CONCAT('/', IFNULL(ODD.PieceAmount, 1), 'x', ODD.PieceSize), '')), ''), ' ', IFNULL(PF.Form, ''), ' ', IFNULL(PME.Mechanism, '')) zakaz
+							,Zakaz(ODD.ODD_ID) Zakaz
 							,OD.Code
 							,WD.Name
 					FROM OrdersDataDetail ODD
@@ -91,7 +91,7 @@
 					SELECT ODB.MT_ID
 							,ODB.MT_amount
 							,ODB.Amount
-							,IFNULL(BL.Name, ODB.Other) zakaz
+							,ZakazB(ODB.ODB_ID) Zakaz
 							,OD.Code
 							,WD.Name
 					FROM OrdersDataBlank ODB

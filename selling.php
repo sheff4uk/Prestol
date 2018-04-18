@@ -798,9 +798,14 @@
 		<a id="toprint" style="display: block;"></a>
 	</div>
 
+	<!--Кнопка печати ценников-->
+	<div id="print_price_btn" style="display: none;" title="Распечатать ценники">
+		<a id="print_price" style="display: block; height: 100%;"></a>
+	</div>
+
 	<br>
+	<form method="get">
 	<table class="main_table" id="MT_header">
-		<form method="get">
 		<thead>
 			<tr>
 				<th width="60">Дата отгрузки</th>
@@ -842,9 +847,10 @@
 				<th width="70">Действие</th>
 			</tr>
 		</thead>
-		</form>
 	</table>
-<div class="wr_main_table_body" style="display: none;">
+	</form>
+<div class="wr_main_table_body">
+	<form method='post' id="formdiv">
 	<table class="main_table">
 		<thead>
 			<tr>
@@ -922,7 +928,9 @@
 								,ODD.Price * ODD.Amount Price
 								,ODD.opt_price * ODD.Amount opt_price
 
-								,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', Zakaz(ODD.ODD_ID), '</i></b><br>') Zakaz
+								,CONCAT('
+								".(($year > 0 and $month > 0) ? '' : '<input type="checkbox" value="\', ODD.ODD_ID, \'" name="odd[]" class="chbox">')."
+								<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', Zakaz(ODD.ODD_ID), '</i></b><br>') Zakaz
 
 								,CONCAT(IFNULL(CONCAT(MT.Material, ' (', SH.Shipper, ')'), ''), '<br>') Material
 								,CONCAT(ODD.Amount, '<br>') Amount
@@ -940,7 +948,9 @@
 								,ODB.Price * ODB.Amount Price
 								,ODB.opt_price * ODB.Amount opt_price
 
-								,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ZakazB(ODB.ODB_ID), '</i></b><br>') Zakaz
+								,CONCAT('
+								".(($year > 0 and $month > 0) ? '' : '<input type="checkbox" value="\', ODB.ODB_ID, \'" name="odb[]" class="chbox">')."
+								<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ZakazB(ODB.ODB_ID), '</i></b><br>') Zakaz
 
 								,CONCAT(IFNULL(CONCAT(MT.Material, ' (', SH.Shipper, ')'), ''), '<br>') Material
 								,CONCAT(ODB.Amount, '<br>') Amount
@@ -1031,6 +1041,7 @@
 		?>
 		</tbody>
 	</table>
+	</form>
 </div>
 
 <!-- Форма добавления оплаты -->
@@ -1149,6 +1160,7 @@
 
 		// Открытие диалога печати
 		$("#toprint").printPage();
+		$("#print_price").printPage();
 
 		$( "#accordion" ).accordion({
 			active: false,
@@ -1156,10 +1168,28 @@
 			heightStyle: "content"
 		});
 
-		//$('.wr_main_table_body').show('slow');
-		$('.wr_main_table_body').css('display', 'block');
-
 		$( ".button" ).button( "option", "classes.ui-button", "highlight" );
+
+		// Если выбраны товары - показываем кнопку печати ценников
+		$('.chbox').change(function(){
+			var checked_status = false;
+			$('.chbox').each(function(){
+				if( $(this).prop('checked') )
+				{
+					checked_status = $(this).prop('checked');
+				}
+			});
+			if( checked_status ) {
+				$('#print_price_btn').show();
+			}
+			else {
+				$('#print_price_btn').hide();
+			}
+
+			var data = $('#formdiv').serialize();
+			$("#print_price").attr('href', '/toprint/print_price.php?' + data);
+			return false;
+		});
 
 		// При включении галки "терминал" активируется инпут для фамилии
 		$('#add_payment').on("change", ".terminal", function() {

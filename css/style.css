@@ -307,7 +307,7 @@ input[type="checkbox"].nightshift + label {
 	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
 }
 
-#add_btn:hover, #print_btn:hover, #add_shipment:hover, #copy_link:hover, #print_forms:hover, #print_labelsbox:hover {
+#add_btn:hover, #print_btn:hover, #add_shipment:hover, #copy_link:hover, #print_forms:hover, #print_labelsbox:hover, #print_price_btn:hover {
 	opacity: .8;
 }
 
@@ -707,6 +707,20 @@ td.tscell > i {
 #print_forms > a {
 	height: 100%;
 	display: block;
+}
+#print_price_btn {
+	background: url(../img/price.png) no-repeat scroll center center transparent;
+	bottom: 100px;
+	cursor: pointer;
+	width: 56px;
+	height: 56px;
+	opacity: .4;
+	position: fixed;
+	right: 100px;
+	z-index: 13;
+	border-radius: 50%;
+	background-color: #db4437;
+	box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
 }
 
 #MTfilter > div {
