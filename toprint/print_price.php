@@ -134,13 +134,13 @@
 					<?=($row["PieceAmount"] == 3 ? "<br>ТРИ<br>ВСТАВКИ" : "")?>
 				</div>
 				<div style="width: 25%; text-align: right; padding: 5px;">
-					<?=($row["size"] ? "<i>Механизм</i><br>" : "")?>
+					<?=($row["mechanism"] ? "<i>Механизм</i><br>" : "")?>
 					<?=($row["size"] ? "<i>Размер</i><br>" : "")?>
 					<?=($row["materials"] ? "<i>Материалы</i><br>" : "")?>
 					<?=($row["size"] ? "<i>Поверхность</i><br>" : "")?>
 				</div>
 				<div style="width: 50%; text-align: left; border: 2px dotted #edc248; background: #f9da90; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
-					<?=($row["size"] ? "<i>{$row["mechanism"]}</i><br>" : "")?>
+					<?=($row["mechanism"] ? "<i>{$row["mechanism"]}</i><br>" : "")?>
 					<?=($row["size"] ? "<i>{$row["size"]}</i><br>" : "")?>
 					<?=($row["materials"] ? "<i>{$row["materials"]}</i><br>" : "")?>
 					<?=($row["size"] ? "<i style='color: #C00000;'>ПЛАСТИК (ТЕРМОСТОЙКИЙ)</i><br>" : "")?>
