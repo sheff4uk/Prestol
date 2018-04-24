@@ -4,7 +4,7 @@ include "checkrights.php";
 
 if( $_GET["PFB_ID"] ) {
 	// Проверка прав на доступ к экрану
-	if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
+	if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !in_array('sverki_opt', $Rights) ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 		die('Недостаточно прав для совершения операции');
 	}
