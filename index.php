@@ -478,8 +478,8 @@
 		echo '</div>';
 	}
 
-	// Кнопка печати документов
-	if( in_array('bills_view_all', $Rights) or in_array('bills_view_author', $Rights) ) {
+	// Кнопка печати счета
+	if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) ) {
 		echo '<div id="print_forms" title="Сформировать счёт на оплату" style="display: none;">';
 		echo '<a id="forms" target="_blank"></a>';
 		echo '</div>';

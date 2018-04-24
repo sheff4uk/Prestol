@@ -70,26 +70,35 @@
 		}
 		elseif( in_array('sverki_city', $Rights) ) {
 			if( $USR_Shop ) {
-				$query .= " WHERE KA_ID IN (
-								SELECT KA.KA_ID
-								FROM PrintFormsInvoice PFI
-								JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID AND OD.SH_ID = {$USR_Shop}
-								JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
-							)";
+				$query .= "
+					WHERE KA_ID IN (
+						SELECT PFI.platelshik_id
+						FROM PrintFormsInvoice PFI
+						JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID AND OD.SH_ID = {$USR_Shop}
+						UNION
+						SELECT PFB.pokupatel_id
+						FROM PrintFormsBill PFB
+						WHERE PFB.USR_ID = {$_SESSION['id']}
+					)
+				";
 			}
 			else {
-				$query .= " WHERE KA_ID IN (
-								SELECT KA.KA_ID
-								FROM Kontragenty KA
-								JOIN Shops SH ON SH.KA_ID = KA.KA_ID
-								WHERE SH.CT_ID = {$USR_City}
-								UNION
-								SELECT KA.KA_ID
-								FROM PrintFormsInvoice PFI
-								JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID
-								JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$USR_City}
-								JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
-							)";
+				$query .= "
+					WHERE KA_ID IN (
+						SELECT SH.KA_ID
+						FROM Shops SH
+						WHERE SH.CT_ID = {$USR_City}
+						UNION
+						SELECT PFI.platelshik_id
+						FROM PrintFormsInvoice PFI
+						JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID
+						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$USR_City}
+						UNION
+						SELECT PFB.pokupatel_id
+						FROM PrintFormsBill PFB
+						WHERE PFB.USR_ID = {$_SESSION['id']}
+					)
+				";
 			}
 		}
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

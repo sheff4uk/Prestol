@@ -1108,7 +1108,8 @@
 								ORDER BY count DESC";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
-						echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$row["saldo"]})</option>";
+						$saldo_format = number_format($row["saldo"], 0, '', ' ');
+						echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo_format})</option>";
 					}
 					?>
 				</select>

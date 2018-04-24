@@ -353,13 +353,13 @@
 			$month = date("n");
 			$menu["Реализация"] = "selling.php?CT_ID={$USR_City}&year={$year}&month={$month}";
 		}
-		if( in_array('bills_view_all', $Rights) or in_array('bills_view_author', $Rights) ) {
+		if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
 			$menu["Счета"] = "bills.php";
 		}
 		if( in_array('doverennost', $Rights) ) {
 			$menu["Доверенность"] = "doverennost.php";
 		}
-		if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_shop', $Rights) or in_array('sverki_opt', $Rights) ) {
+		if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
 			$menu["Сверки"] = "sverki.php";
 		}
 		if( in_array('screen_materials', $Rights) ) {

@@ -5,7 +5,7 @@ $title = 'Счета на оплату';
 include "header.php";
 
 // Проверка прав на доступ к экрану
-if( !in_array('bills_view_all', $Rights) and !in_array('bills_view_author', $Rights) ) {
+if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !in_array('sverki_opt', $Rights) ) {
 	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 	die('Недостаточно прав для совершения операции');
 }
@@ -117,8 +117,15 @@ if( isset($_GET["year"]) ) {
 else {
 	$year = date('Y');
 }
-if( isset($_GET["payer"]) and (int)$_GET["payer"] > 0 ) {
-	$payer = $_GET["payer"];
+if( $_GET["payer"] and (int)$_GET["payer"] > 0 ) {
+	$query = "SELECT 1 FROM Kontragenty WHERE KA_ID IN ({$KA_IDs}) AND KA_ID = {$_GET["payer"]}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	if( mysqli_num_rows($res) ) {
+		$payer = $_GET["payer"];
+	}
+	else {
+		die('Недостаточно прав для совершения операции');
+	}
 }
 else {
 	$payer = "";
@@ -144,14 +151,81 @@ else {
 ?>
 	</select>
 	&nbsp;&nbsp;
-	<label for="payer">Плательщик:</label>
+	<label for="payer">Контрагент:</label>
 	<select name="payer" id="payer" onchange="this.form.submit()">
-		<option value="0">-=Все контрагенты=-</option>
 <?
-	$query = "SELECT KA_ID, Naimenovanie FROM Kontragenty ORDER BY count DESC";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	while( $row = mysqli_fetch_array($res) ) {
-		echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]}</option>";
+	if( in_array('sverki_opt', $Rights) ) {
+		// Выводим контрагентов для оптовиков
+		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
+					FROM Kontragenty
+					WHERE KA_ID IN ({$KA_IDs})";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) ) {
+			$saldo_format = number_format($row["saldo"], 0, '', ' ');
+			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo})</option>";
+			if( $payer == $row["KA_ID"] ) {
+				$saldo = $row["saldo"];
+			}
+		}
+	}
+	else {
+		// Выводим контрагентов для остальных категорий пользователей
+		echo "<option value='0''>-=Все контрагенты=-</option>";
+
+		// Выводим должников
+		$total = 0; // Сумма дебета
+		echo "<optgroup id='debt' label='Должники'>";
+		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
+					FROM Kontragenty
+					WHERE KA_ID IN ({$KA_IDs}) AND IFNULL(saldo, 0) < 0
+					ORDER BY IFNULL(saldo, 0)";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) ) {
+			$saldo_format = number_format($row["saldo"], 0, '', ' ');
+			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo_format})</option>";
+			if( $payer == $row["KA_ID"] ) {
+				$saldo = $row["saldo"];
+			}
+			$total += $row["saldo"];
+		}
+		echo "</optgroup>";
+		$saldo_format = number_format($total, 0, '', ' ');
+		echo "<script>$('#debt').attr('label', 'Должники ({$saldo_format})');</script>";
+
+		// Выводим кредиторов
+		echo "<optgroup id='credit' label='Кредиторы'>";
+		$total = 0; // Сумма кредита
+		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
+					FROM Kontragenty
+					WHERE KA_ID IN ({$KA_IDs}) AND IFNULL(saldo, 0) > 0
+					ORDER BY IFNULL(saldo, 0) DESC";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) ) {
+			$saldo_format = number_format($row["saldo"], 0, '', ' ');
+			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo_format})</option>";
+			if( $payer == $row["KA_ID"] ) {
+				$saldo = $row["saldo"];
+			}
+			$total += $row["saldo"];
+		}
+		echo "</optgroup>";
+		$saldo_format = number_format($total, 0, '', ' ');
+		echo "<script>$('#credit').attr('label', 'Кредиторы ({$saldo_format})');</script>";
+
+		// Выводим нейтральных
+		echo "<optgroup label='Нейтральные'>";
+		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
+					FROM Kontragenty
+					WHERE KA_ID IN ({$KA_IDs}) AND IFNULL(saldo, 0) = 0
+					ORDER BY count DESC";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) ) {
+			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]}</option>";
+			if( $payer == $row["KA_ID"] ) {
+				$saldo = $row["saldo"];
+			}
+		}
+		echo "</optgroup>";
 	}
 ?>
 	</select>
@@ -196,7 +270,11 @@ else {
 	}
 </style>
 
-<a id='add_bill_btn' href='#' title='Создать счёт'></a>
+<?
+if( !in_array('sverki_opt', $Rights) ) {
+	echo "<a id='add_bill_btn' href='#' title='Создать счёт'></a>";
+}
+?>
 
 <table>
 	<thead>
@@ -219,7 +297,9 @@ $query = "SELECT PFB.PFB_ID
 				,USR_Name(PFB.USR_ID) Name
 			FROM PrintFormsBill PFB
 			LEFT JOIN Kontragenty KA ON KA.KA_ID = PFB.pokupatel_id
-			WHERE YEAR(PFB.date) = {$year}".(in_array('bills_view_author', $Rights) ? " AND PFB.USR_ID = {$_SESSION['id']}" : "").($payer ? " AND KA.KA_ID = {$payer}" : "")."
+			WHERE YEAR(PFB.date) = {$year}
+				AND KA.KA_ID IN ({$KA_IDs})
+				".($payer ? "AND KA.KA_ID = {$payer}" : "")."
 			ORDER BY PFB.PFB_ID DESC";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
