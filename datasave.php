@@ -73,23 +73,23 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	}
 
 	// Обновляем информацию об изделии
-//	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
+	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 	$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
+	$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
 	$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
 	$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
-	$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
-	$Width = $_POST["Type"] == 2 ? "{$_POST["Width"]}" : "NULL";
+	$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 	$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
 	$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
-	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
+	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : "NULL";
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
-	$ptn = mysqli_real_escape_string( $mysqli,$_POST["ptn"] );
+	$ptn = $_POST["ptn"];
+
 	// Удаляем лишние пробелы
 	$Material = trim($Material);
 	$Comment = trim($Comment);
-
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 
@@ -122,7 +122,6 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 				 ,Amount = {$_POST["Amount"]}
 				 #,Price = {$Price}
 				 ,Comment = '{$Comment}'
-				 ,is_check = 1
 				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
 				 ,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 				 ,author = {$_SESSION['id']}
