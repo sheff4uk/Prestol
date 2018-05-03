@@ -141,7 +141,7 @@ else {
 	<label for="year">Год:</label>
 	<select name="year" id="year" onchange="this.form.submit()">
 <?
-	$query = "SELECT year FROM PrintForms WHERE IFNULL(summa, 0) > 0 GROUP BY year
+	$query = "SELECT YEAR(date) year FROM PrintFormsBill GROUP BY YEAR(date)
 				UNION
 				SELECT YEAR(NOW())";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
