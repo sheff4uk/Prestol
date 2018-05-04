@@ -338,7 +338,7 @@
 						}
 					}
 
-					if ( (($day_of_week >= 6 and $t != "3") or ($t == "1")) ) { // Выделяем цветом выходные дни
+					if ( (($day_of_week >= 6 and $t != "3" and $t != "2") or ($t == "1")) ) { // Выделяем цветом выходные дни
 						echo "<th style='background: chocolate;'>".$i++."</th>";
 					}
 					else {
