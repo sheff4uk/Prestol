@@ -268,7 +268,7 @@ if( $payer ) {
 	";
 	$query = "
 		SELECT token
-			,DATE_FORMAT(date_from, '%d.%m.%y') date_from_fomat
+			,DATE_FORMAT(date_from, '%d.%m.%y') date_from_format
 			,DATE_FORMAT(date_to, '%d.%m.%y') date_to_format
 		FROM ActSverki
 		WHERE KA_ID = {$payer} AND YEAR(date_to) = {$year}
