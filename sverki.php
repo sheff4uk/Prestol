@@ -277,7 +277,7 @@ if( $payer ) {
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
 		echo "<tr>";
-		echo "<td><b><a href='/toprint/act_sverki.php?t={$row["token"]}' target='_blank'>{$row["date_to"]}</a></b></td>";
+		echo "<td><b><a href='/toprint/act_sverki.php?t={$row["token"]}' target='_blank'>{$row["date_to_format"]}</a></b></td>";
 		echo "<td>[{$row["date_from_format"]} - {$row["date_to_format"]}]</td>";
 		echo "</tr>";
 	}
