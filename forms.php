@@ -854,7 +854,7 @@
 					$('#addblank input[name="mtype"]').val('2');
 				}
 
-				$('#0ptn'+odb_data['isexist']).prop('checked', true);
+				$('#0ptn'+odb_data['ptn']).prop('checked', true);
 				$('#0radio'+odb_data['isexist']).prop('checked', true);
 				$('#addblank input[type="radio"]').button('refresh');
 				if( odb_data['isexist'] == 1 ) {

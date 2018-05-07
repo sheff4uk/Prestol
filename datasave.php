@@ -73,7 +73,7 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	}
 
 	// Обновляем информацию об изделии
-	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
+//	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 	$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 	$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
 	$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
@@ -81,7 +81,7 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 	$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
 	$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
-	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : "NULL";
+	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
@@ -109,24 +109,26 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 		$mt_id = "NULL";
 	}
 
-	$query = "UPDATE OrdersDataDetail
-			  SET PM_ID = {$Model}
-				 ,Length = {$Length}
-				 ,Width = {$Width}
-				 ,PieceAmount = {$PieceAmount}
-				 ,PieceSize = {$PieceSize}
-				 ,PF_ID = {$Form}
-				 ,PME_ID = {$Mechanism}
-				 ,MT_ID = {$mt_id}
-				 ,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
-				 ,Amount = {$_POST["Amount"]}
-				 #,Price = {$Price}
-				 ,Comment = '{$Comment}'
-				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
-				 ,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
-				 ,author = {$_SESSION['id']}
-				 ,ptn = $ptn
-			  WHERE ODD_ID = {$_GET["oddid"]}";
+	$query = "
+		UPDATE OrdersDataDetail
+		SET PM_ID = {$Model}
+			,Length = {$Length}
+			,Width = {$Width}
+			,PieceAmount = {$PieceAmount}
+			,PieceSize = {$PieceSize}
+			,PF_ID = {$Form}
+			,PME_ID = {$Mechanism}
+			,MT_ID = {$mt_id}
+			,IsExist = {$IsExist}
+			,Amount = {$_POST["Amount"]}
+			#,Price = {$Price}
+			,Comment = '{$Comment}'
+			,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
+			,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
+			,author = {$_SESSION['id']}
+			,ptn = $ptn
+		WHERE ODD_ID = {$_GET["oddid"]}
+	";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["error"][] = mysqli_error( $mysqli );
 	}
@@ -172,19 +174,21 @@ elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 		$mt_id = "NULL";
 	}
 
-	$query = "UPDATE OrdersDataBlank
-			  SET BL_ID = {$Blank}
-				 ,Other = '{$Other}'
-				 ,Amount = {$_POST["Amount"]}
-				 #,Price = {$Price}
-				 ,Comment = '{$Comment}'
-				 ,MT_ID = {$mt_id}
-				 ,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
-				 ,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
-				 ,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
-				 ,author = {$_SESSION['id']}
-				 ,ptn = $ptn
-			  WHERE ODB_ID = {$_GET["odbid"]}";
+	$query = "
+		UPDATE OrdersDataBlank
+		SET BL_ID = {$Blank}
+			,Other = '{$Other}'
+			,Amount = {$_POST["Amount"]}
+			#,Price = {$Price}
+			,Comment = '{$Comment}'
+			,MT_ID = {$mt_id}
+			,IsExist = {$IsExist}
+			,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
+			,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
+			,author = {$_SESSION['id']}
+			,ptn = $ptn
+		WHERE ODB_ID = {$_GET["odbid"]}
+	";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["error"][] = mysqli_error( $mysqli );
 	}
