@@ -681,6 +681,7 @@
 			$('#addtable input[name="Price"]').val('');
 			$('#addtable input[name="Length"]').val('');
 			$('#addtable input[name="Width"]').val('');
+			$('#addtable input[name="PieceSize"]').val('');
 			$('#2radio').prop('checked', true);
 			$('#2ptn0').prop('checked', true);
 			$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
