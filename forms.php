@@ -6,10 +6,19 @@
 	while( $row = mysqli_fetch_array($result) ) {
 		$ModelForm[$row["PM_ID"]][$row["PF_ID"]] = [$row["Form"]];
 	}
+
+	// Массив наличия патины в зависимости от модели
+	$ModelPatina = array();
+	$query = "(SELECT 0 PM_ID, 0 ptn) UNION (SELECT PM_ID, ptn FROM ProductModels)";
+	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($result) ) {
+		$ModelPatina[$row["PM_ID"]] = [$row["ptn"]];
+	}
 ?>
 	<script>
-		// Передаем в JavaScript массив форм столешниц
+		// Передаем в JavaScript массивы
 		ModelForm = <?= json_encode($ModelForm); ?>;
+		ModelPatina = <?= json_encode($ModelPatina); ?>;
 	</script>
 
 <!-- Форма добавления стула -->
@@ -497,6 +506,17 @@
 		}
 		size_from_form($('#addtable input[name="Form"]').val());
 	}
+
+	// Функция включения золотой патины для моделей с патиной
+	function patina_model_list(model, type) {
+		$('#'+type+'ptn'+ModelPatina[model]).prop('checked', true);
+		if( type == 1 ) {
+			$('#addchair input[type="radio"]').button('refresh');
+		}
+		else {
+			$('#addtable input[type="radio"]').button('refresh');
+		}
+	}
 	//////////////////////////////////////////////////////////////////////////
 	$(function() {
 		// Select2
@@ -607,7 +627,9 @@
 			else // Иначе добавляем новый стул
 			{
 				$('#addchair form').attr('action', 'orderdetail.php?id='+odid+'&add=1');
+				patina_model_list(0, 1);
 			}
+
 
 			// Форма добавления/редактирования стульев
 			$('#addchair').dialog({
@@ -622,6 +644,16 @@
 			$( ".materialtags_1" ).autocomplete( "option", "appendTo", "#addchair" );
 
 			return false;
+		});
+
+		// При выборе модели стула включается патина
+		$('#addchair select[name="Model"]').change( function() {
+			if( $(this).val() == "" ) {
+				patina_model_list(0, 1);
+			}
+			else {
+				patina_model_list($(this).val(), 1);
+			}
 		});
 
 		// Если нет ткани, то кнопка наличия не активна
@@ -736,6 +768,7 @@
 				model = 0;
 				form = 0;
 				$("#addtable form").attr("action", "orderdetail.php?id="+odid+"&add=1");
+				patina_model_list(0, 2);
 			}
 
 			form_model_list(model, form);
@@ -755,13 +788,15 @@
 			return false;
 		});
 
-		// При выборе модели стола предлагаются формы столешниц
+		// При выборе модели стола предлагаются формы столешниц и включается патина
 		$('#addtable select[name="Model"]').change( function() {
 			if( $(this).val() == "" ) {
 				form_model_list(0, form);
+				patina_model_list(0, 2);
 			}
 			else {
 				form_model_list($(this).val(), form);
+				patina_model_list($(this).val(), 2);
 			}
 		});
 
