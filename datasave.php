@@ -81,7 +81,7 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 	$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
 	$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
-	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
+	$IsExist = $_POST["IsExist"];
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 	$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
@@ -119,7 +119,7 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 			,PF_ID = {$Form}
 			,PME_ID = {$Mechanism}
 			,MT_ID = {$mt_id}
-			,IsExist = {$IsExist}
+			,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
 			,Amount = {$_POST["Amount"]}
 			#,Price = {$Price}
 			,Comment = '{$Comment}'
@@ -148,7 +148,7 @@ elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 	$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
 	$Other = trim($_POST["Other"]);
 	$Other = mysqli_real_escape_string( $mysqli, $Other );
-	$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
+	$IsExist = $_POST["IsExist"];
 	$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 	$Material = trim($Material);
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
@@ -182,7 +182,7 @@ elseif( $_GET["odbid"] and isset($_POST["Amount"]) )
 			#,Price = {$Price}
 			,Comment = '{$Comment}'
 			,MT_ID = {$mt_id}
-			,IsExist = {$IsExist}
+			,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
 			,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
 			,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 			,author = {$_SESSION['id']}

@@ -142,7 +142,7 @@
 		$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 		$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
 		$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
-		$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
+		$IsExist = isset($_POST["IsExist"]) ? "{$_POST["IsExist"]}" : "NULL";
 		$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 		$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
@@ -189,7 +189,7 @@
 		$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
 		$Other = trim($_POST["Other"]);
 		$Other = mysqli_real_escape_string( $mysqli, $Other );
-		$IsExist = $_POST["IsExist"] ? "{$_POST["IsExist"]}" : 0;
+		$IsExist = isset($_POST["IsExist"]) ? "{$_POST["IsExist"]}" : "NULL";
 		$Material = mysqli_real_escape_string( $mysqli,$_POST["Material"] );
 		$Material = trim($Material);
 		$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
