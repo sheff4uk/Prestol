@@ -485,13 +485,22 @@
 	// Функция формирования списка форм в зависимости от модели стола
 	function form_model_list(model, form) {
 		var forms = "";
-		var arr = ModelForm[model];
+		var arr_model = ModelForm[model];	// Список форм для модели
+		var arr_all = ModelForm[0];			// Список всех форм
 		var informs = 0;
-		if( typeof arr !== "undefined" ) {
-			$.each(arr, function(key, val){
-				forms += "<input type='radio' id='form" + key + "' name='Form' value='" + key + "'>";
-				forms += "<label for='form" + key + "'>" + val + "</label>";
-				if( form == key ) { informs = 1; }
+		if( typeof arr_model !== "undefined" ) {
+			// Перебираем все формы
+			$.each(arr_all, function(key, val){
+				// Ищем очередную форму среди доступных для нашей модели
+				var in_list = 0;
+				$.each(arr_model, function(mkey, mval){
+					if( mkey == key || form == key ) { in_list = 1; }
+				});
+				if( in_list == 1 ) {
+					forms += "<input type='radio' id='form" + key + "' name='Form' value='" + key + "'>";
+					forms += "<label for='form" + key + "'>" + val + "</label>";
+					if( form == key ) { informs = 1; }
+				}
 			});
 		}
 		$('#addtable #forms').html(forms);
