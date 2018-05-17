@@ -102,8 +102,23 @@ $(function(){
 			$(this).parent().buttonset();
 		});
 
-
-	$( document ).tooltip({ track: true	});
+	// Всплывающая подсказка
+	$( document ).tooltip({
+		track: true,
+		items: "img, [html], [title]",
+		content: function() {
+			var element = $( this );
+			if ( element.is( "[html]" ) ) {
+				return element.attr( "html" );
+			}
+			if ( element.is( "[title]" ) ) {
+				return element.attr( "title" );
+			}
+			if ( element.is( "img" ) ) {
+				return element.attr( "alt" );
+			}
+		}
+	});
 
 	// Убираем title select2 в фильтрах таблиц
 	$('.select2_filter select').select2().on("select2:select", function() { $('.select2-selection li').attr('title', ''); });
