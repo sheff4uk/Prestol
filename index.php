@@ -561,14 +561,9 @@
 						border: solid 1px #bbb;
 						z-index: 11;
 					}
-
-					.IsPainting {
-						width: 100%;
-						font-family: FontAwesome;
-					}
 				</style>
 				<input type='text' name='f_CR' style='width: calc(100% - 40px);' class='colortags <?=($_SESSION["f_CR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_CR"] ?>'>
-				<select name="f_IP" style='width: 40px;' class="IsPainting <?=($_SESSION["f_IP"] != "") ? "filtered" : ""?>" onchange="this.form.submit()">
+				<select name="f_IP" style='width: 40px;' class="<?=($_SESSION["f_IP"] != "") ? "filtered" : ""?>" onchange="this.form.submit()">
 					<option></option>
 					<option value="0" <?= ($_SESSION["f_IP"] == "0") ? 'selected' : '' ?> class="empty">Без покраски</option>
 					<option value="1" <?= ($_SESSION["f_IP"] == "1") ? 'selected' : '' ?> class="notready">Не в работе</option>
