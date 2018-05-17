@@ -394,13 +394,13 @@
 		// Если заказ принят
 		if( $row["confirmed"] == 1 ) {
 			$class = 'confirmed';
-			$title = 'Принят в работу';
+			//$title = 'Принят в работу';
 		}
 		else {
 			$class = 'not_confirmed';
-			$title = 'Не принят в работу';
+			//$title = 'Не принят в работу';
 		}
-		echo "<td class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
+		echo "<td class='{$class}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td><span class='nowrap'>{$row["worker"]}</span></td>";
 
 		//if( $row["is_lock"] or ( $row["confirmed"] and !in_array('order_add_confirm', $Rights) ) ) {
@@ -413,16 +413,16 @@
 
 		switch ($row["IsPainting"]) {
 			case "0":
-				echo "<td class='empty' title='Без покраски'>{$row["Color"]}</td>";
+				echo "<td class='empty'>{$row["Color"]}</td>";
 				break;
 			case "1":
-				echo "<td class='notready' title='Не в работе'>{$row["Color"]}</td>";
+				echo "<td class='notready'>{$row["Color"]}</td>";
 				break;
 			case "2":
-				echo "<td class='inwork' title='В работе'>{$row["Color"]}</td>";
+				echo "<td class='inwork'>{$row["Color"]}</td>";
 				break;
 			case "3":
-				echo "<td class='ready' title='Готово'>{$row["Color"]}</td>";
+				echo "<td class='ready'>{$row["Color"]}</td>";
 				break;
 			default:
 				echo "<td></td>";

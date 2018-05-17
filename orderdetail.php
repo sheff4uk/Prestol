@@ -448,20 +448,20 @@
 				switch ($IsPainting) {
 					case 0:
 						$class = "empty";
-						$title = "Без покраски";
+						//$title = "Без покраски";
 						break;
 					case 1:
 						$class = "notready";
-						$title = "Не в работе";
+						//$title = "Не в работе";
 						break;
 					case 2:
 						$class = "inwork";
-						$title = "В работе";
+						//$title = "В работе";
 						break;
 					case 3:
 						$class = "ready";
-						$title = "Готово";
-						if($Name) $title .= " ({$Name})";
+						//$title = "Готово";
+						//if($Name) $title .= " ({$Name})";
 						break;
 				}
 			echo "
@@ -483,16 +483,16 @@
 			// Если заказ принят
 			if( $confirmed == 1 ) {
 				$class = 'confirmed';
-				$title = 'Принят в работу';
+				//$title = 'Принят в работу';
 			}
 			else {
 				$class = 'not_confirmed';
-				$title = 'Не принят в работу';
+				//$title = 'Не принят в работу';
 			}
 			if( in_array('order_add_confirm', $Rights) and $Archive == 0 and $Del == 0 ) {
 				$class = $class." edit_confirmed";
 			}
-			echo "<td val='{$confirmed}' class='{$class}' title='{$title}' style='text-align: center;'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
+			echo "<td val='{$confirmed}' class='{$class}' style='text-align: center;'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 			?>
 
 			<td><textarea name='Comment' rows='6' <?=( (in_array('order_add', $Rights) and !$Del and $editable) ? "" : "disabled" )?> style='width: 100%;'><?=$Comment?></textarea></td>

@@ -570,10 +570,10 @@
 				<input type='text' name='f_CR' style='width: calc(100% - 40px);' class='colortags <?=($_SESSION["f_CR"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_CR"] ?>'>
 				<select name="f_IP" style='width: 40px;' class="IsPainting <?=($_SESSION["f_IP"] != "") ? "filtered" : ""?>" onchange="this.form.submit()">
 					<option></option>
-					<option value="0" <?= ($_SESSION["f_IP"] == "0") ? 'selected' : '' ?> class="empty">&#xf00d - Без покраски</option>
-					<option value="1" <?= ($_SESSION["f_IP"] == "1") ? 'selected' : '' ?> class="notready">&#xf006 - Не в работе</option>
-					<option value="2" <?= ($_SESSION["f_IP"] == "2") ? 'selected' : '' ?> class="inwork">&#xf123 - В работе</option>
-					<option value="3" <?= ($_SESSION["f_IP"] == "3") ? 'selected' : '' ?> class="ready">&#xf005 - Готово</option>
+					<option value="0" <?= ($_SESSION["f_IP"] == "0") ? 'selected' : '' ?> class="empty">Без покраски</option>
+					<option value="1" <?= ($_SESSION["f_IP"] == "1") ? 'selected' : '' ?> class="notready">Не в работе</option>
+					<option value="2" <?= ($_SESSION["f_IP"] == "2") ? 'selected' : '' ?> class="inwork">В работе</option>
+					<option value="3" <?= ($_SESSION["f_IP"] == "3") ? 'selected' : '' ?> class="ready">Готово</option>
 				</select>
 			</th>
 			<th width="100" style="font-size: 0;">
@@ -694,8 +694,8 @@
 			<th width="40"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">Мест</label></th>
 			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
 			<th width="15%"><input type="checkbox" disabled value="8" checked name="M" class="print_col" id="M"><label for="M">Материал <i class="fa fa-question-circle" html="<b>Цветовой статус наличия:</b><br><span class='bg-gray'>Неизвестно</span><br><span class='bg-red'>Нет</span><br><span class='bg-yellow'>Заказано</span><br><span class='bg-green'>В наличии</span>"></i></label></th>
-			<th width="10%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет краски <i class="fa fa-question-circle" html="<b>Цветовой статус лакировки:</b><br><span class='notready'>Не дано в покраску</span><br><span class='inwork'>Дано в покраску</span><br><span class='ready'>Покрашено</span>"></i></label></th>
-			<th width="100"><input type="checkbox" disabled value="10" name="PR" class="print_col" id="PR"><label for="PR">Этапы <i class="fa fa-question-circle" html="<b>Цветовой статус изготовления:</b><br><span class='notready'>Не дано в работу</span><br><span class='inwork'>Дано в работу</span><br><span class='ready'>Выполнено</span><br><span class='notready unvisible'>Выполнение не требуется</span>"></i></label></th>
+			<th width="10%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет краски <i class="fa fa-question-circle" html="<b>Цветовой статус лакировки:</b><br><span class='empty'>Покраска не требуется</span><br><span class='notready'>Не дано в покраску</span><br><span class='inwork'>Дано в покраску</span><br><span class='ready'>Покрашено</span>"></i></label></th>
+			<th width="100"><input type="checkbox" disabled value="10" name="PR" class="print_col" id="PR"><label for="PR">Этапы <i class="fa fa-question-circle" html="<b>Цветовой статус изготовления:</b><br><span class='notready unvisible'>Выполнение не требуется</span><br><span class='notready'>Не дано в работу</span><br><span class='inwork'>Дано в работу</span><br><span class='ready'>Выполнено</span>"></i></label></th>
 			<th width="40"><input type="checkbox" disabled value="11" name="CF" class="print_col" id="CF"><label for="CF">Принят <i class="fa fa-question-circle" html="<b>Статус принятия заказа:</b><br><i class='fa fa-check-circle fa-2x not_confirmed'></i> - Не принят в работу<br><i class='fa fa-check-circle fa-2x confirmed'></i> - Принят в работу (изменение заказа может быть ограничено)"></i></label></th>
 			<th width="40"><input type="checkbox" disabled value="12" name="X" class="print_col" id="X"><label for="X">X</label>
 			<?
@@ -1100,38 +1100,38 @@
 			switch ($row["IsPainting"]) {
 				case 0:
 					$class = "empty";
-					$title = "Без покраски";
+					//$title = "Без покраски";
 					break;
 				case 1:
 					$class = "notready";
-					$title = "Не в работе";
+					//$title = "Не в работе";
 					break;
 				case 2:
 					$class = "inwork";
-					$title = "В работе";
+					//$title = "В работе";
 					break;
 				case 3:
 					$class = "ready";
-					$title = "Готово";
-					if($row["Name"]) $title .= " ({$row["Name"]})";
+					//$title = "Готово";
+					//if($row["Name"]) $title .= " ({$row["Name"]})";
 					break;
 			}
-		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 and $row["IsPainting"] != 0 ) ? "painting " : "")."{$class}' title='{$title}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
+		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 and $row["IsPainting"] != 0 ) ? "painting " : "")."{$class}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
 		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		// Если заказ принят
 		if( $row["confirmed"] == 1 ) {
 			$class = 'confirmed';
-			$title = 'Принят в работу';
+			//$title = 'Принят в работу';
 		}
 		else {
 			$class = 'not_confirmed';
-			$title = 'Не принят в работу';
+			//$title = 'Не принят в работу';
 		}
 		if( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 ) {
 			$class = $class." edit_confirmed";
 		}
-		echo "<td val='{$row["confirmed"]}' class='{$class}' title='{$title}' style='text-align: center;'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
+		echo "<td val='{$row["confirmed"]}' class='{$class}' style='text-align: center;'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td class='X' style='text-align: center;'><input type='checkbox' {$checkedX} value='1'></td>";
 		echo "<td class='".( (in_array('order_add', $Rights) and $row["Del"] == 0 and $editable) ? "comment_cell" : "" )."' id='{$row["OD_ID"]}'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
 		echo "<td>";

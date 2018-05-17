@@ -323,14 +323,14 @@ case "confirmed":
 
 	if( $val == 1) {
 		$class = 'confirmed';
-		$status = 'Принят в работу';
+		//$status = 'Принят в работу';
 		echo "$('.main_table tr[id=\"ord{$id}\"] td.td_step').addClass('step_confirmed');";
 		echo "$('.main_table tr.ord_log_row td.td_step').addClass('step_confirmed');";
 		echo "$('#order_in_work_label').show('fast');";
 	}
 	else {
 		$class = 'not_confirmed';
-		$status = 'Не принят в работу';
+		//$status = 'Не принят в работу';
 		echo "$('.main_table tr[id=\"ord{$id}\"] td.td_step').removeClass('step_confirmed');";
 		echo "$('.main_table tr.ord_log_row td.td_step').removeClass('step_confirmed');";
 		echo "$('#order_in_work_label').hide('fast');";
@@ -338,7 +338,7 @@ case "confirmed":
 
 	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').removeClass('confirmed not_confirmed');";
 	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').addClass('{$class}');";
-	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('title', '{$status}');";
+	//echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('title', '{$status}');";
 	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('val', '{$val}');";
 	echo "noty({timeout: 3000, text: 'Статус заказа изменен на <b>{$status}</b>', type: 'success'});";
 	break;
@@ -591,34 +591,34 @@ case "shipment":
 				switch ($row["IsPainting"]) {
 					case 0:
 						$class = "empty";
-						$title = "Без покраски";
+						//$title = "Без покраски";
 						break;
 					case 1:
 						$class = "notready";
-						$title = "Не в работе";
+						//$title = "Не в работе";
 						break;
 					case 2:
 						$class = "inwork";
-						$title = "В работе";
+						//$title = "В работе";
 						break;
 					case 3:
 						$class = "ready";
-						$title = "Готово";
+						//$title = "Готово";
 						break;
 				}
 				$html .= "<td><span class='nowrap'>{$row["Material"]}</span></td>";
-				$html .= "<td class='{$class}' title='{$title}'>{$row["Color"]}</td>";
+				$html .= "<td class='{$class}'>{$row["Color"]}</td>";
 				$html .= "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
 					// Если заказ принят
 					if( $row["confirmed"] == 1 ) {
 						$class = 'confirmed';
-						$title = 'Принят в работу';
+						//$title = 'Принят в работу';
 					}
 					else {
 						$class = 'not_confirmed';
-						$title = 'Не принят в работу';
+						//$title = 'Не принят в работу';
 					}
-				$html .= "<td class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
+				$html .= "<td class='{$class}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 				$html .= "<td>{$row["Comment"]}</td>";
 				$html .= "</tr>";
 			}
@@ -793,34 +793,34 @@ case "invoice":
 				switch ($row["IsPainting"]) {
 					case 0:
 						$class = "empty";
-						$title = "Без покраски";
+						//$title = "Без покраски";
 						break;
 					case 1:
 						$class = "notready";
-						$title = "Не в работе";
+						//$title = "Не в работе";
 						break;
 					case 2:
 						$class = "inwork";
-						$title = "В работе";
+						//$title = "В работе";
 						break;
 					case 3:
 						$class = "ready";
-						$title = "Готово";
+						//$title = "Готово";
 						break;
 				}
 				$html .= "<td><span class='nowrap'>{$row["Material"]}</span></td>";
-				$html .= "<td class='{$class}' title='{$title}'>{$row["Color"]}</td>";
+				$html .= "<td class='{$class}'>{$row["Color"]}</td>";
 				$html .= "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
 					// Если заказ принят
 					if( $row["confirmed"] == 1 ) {
 						$class = 'confirmed';
-						$title = 'Принят в работу';
+						//$title = 'Принят в работу';
 					}
 					else {
 						$class = 'not_confirmed';
-						$title = 'Не принят в работу';
+						//$title = 'Не принят в работу';
 					}
-				$html .= "<td class='{$class}' title='{$title}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
+				$html .= "<td class='{$class}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 				$html .= "<td>{$row["Comment"]}</td>";
 				$html .= "</tr>";
 			}
