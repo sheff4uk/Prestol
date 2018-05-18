@@ -7,18 +7,21 @@
 		$ModelForm[$row["PM_ID"]][$row["PF_ID"]] = [$row["Form"]];
 	}
 
-	// Массив наличия патины в зависимости от модели
+	// Массив наличия патины и дефолтная форма в зависимости от модели
 	$ModelPatina = array();
-	$query = "(SELECT 0 PM_ID, 0 ptn) UNION (SELECT PM_ID, ptn FROM ProductModels)";
+	$ModelDefForm = array();
+	$query = "(SELECT 0 PM_ID, 0 ptn, 1 PF_ID) UNION (SELECT PM_ID, ptn, PF_ID FROM ProductModels)";
 	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($result) ) {
 		$ModelPatina[$row["PM_ID"]] = [$row["ptn"]];
+		$ModelDefForm[$row["PM_ID"]] = [$row["PF_ID"]];
 	}
 ?>
 	<script>
 		// Передаем в JavaScript массивы
 		ModelForm = <?= json_encode($ModelForm); ?>;
 		ModelPatina = <?= json_encode($ModelPatina); ?>;
+		ModelDefForm = <?= json_encode($ModelDefForm); ?>;
 	</script>
 
 <!-- Форма добавления стула -->
@@ -509,7 +512,8 @@
 				$('#addtable input[name="Form"][value="'+form+'"]').prop('checked', true);
 			}
 			else {
-				$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
+				$('#addtable input[name="Form"][value="'+ModelDefForm[model]+'"]').prop('checked', true);
+				//$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
 			}
 			$('#addtable #forms').buttonset();
 		}
