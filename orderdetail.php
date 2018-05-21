@@ -638,10 +638,10 @@
 		echo "<td>";
 		
 		if( $row["Del"] == 0 ) {
-			echo "<button ".(($disabled or $PFI_ID or !$editable) ? 'disabled' : '')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}' title='Редактировать изделие'><i class='fa fa-pencil fa-lg'></i></button>";
+			echo "<button ".(($disabled or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Редактировать изделие\'')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}'><i class='fa fa-pencil fa-lg'></i></button>";
 
 			$delmessage = addslashes("Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?");
-			echo "<button ".(($disabled or $PFI_ID or $row["inprogress"] or !$editable) ? 'disabled' : '')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button>";
+			echo "<button ".(($disabled or $PFI_ID or $row["inprogress"] or !$editable) ? 'disabled' : 'title=\'Удалить\'')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;'><i class='fa fa-times fa-lg'></i></button>";
 		}
 		echo "</td></tr>";
 	}
@@ -716,11 +716,11 @@
 		echo "<td>";
 
 		if( $row["Del"] == 0 ) {
-			echo "<button ".($disabled ? 'disabled' : '')." id='{$row["ODB_ID"]}' class='edit_order_blank' location='{$location}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
+			echo "<button ".($disabled ? 'disabled' : 'title=\'Редактировать\'')." id='{$row["ODB_ID"]}' class='edit_order_blank' location='{$location}'><i class='fa fa-pencil fa-lg'></i></a> ";
 
 			$name = addslashes($row["Name"]);
 			$delmessage = addslashes("Удалить {$name} ({$row["Amount"]} шт.)?");
-			echo "<button ".(($disabled or $row["inprogress"] != 0) ? 'disabled' : '')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button>";
+			echo "<button ".(($disabled or $row["inprogress"] != 0) ? 'disabled' : 'title=\'Удалить\'')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&delblank={$row["ODB_ID"]}\")) return false;'><i class='fa fa-times fa-lg'></i></button>";
 		}
 		echo "</td></tr>";
 	}
