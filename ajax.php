@@ -1846,30 +1846,32 @@ case "order_shp":
 case "odd_data":
 	$odd_id = $_GET["id"];
 
-	$query = "SELECT ODD.ODD_ID
-					,ODD.Amount
-					,ODD.Price
-					,IFNULL(ODD.PM_ID, 0) PM_ID
-					,PM.Model
-					,ODD.PF_ID
-					,ODD.PME_ID
-					,ODD.Length
-					,ODD.Width
-					,ODD.PieceAmount
-					,ODD.PieceSize
-					,ODD.Comment
-					,IFNULL(MT.Material, '') Material
-					,IFNULL(MT.SH_ID, '') Shipper
-					,ODD.IsExist
-					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
-					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
-					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
-					,ODD.ptn
-				FROM OrdersDataDetail ODD
-				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-				LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
-				LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-				WHERE ODD.ODD_ID = {$odd_id}";
+	$query = "
+		SELECT ODD.ODD_ID
+			,ODD.Amount
+			,ODD.Price
+			,IFNULL(ODD.PM_ID, 0) PM_ID
+			,PM.Model
+			,ODD.PF_ID
+			,ODD.PME_ID
+			,ODD.Length
+			,ODD.Width
+			,ODD.PieceAmount
+			,ODD.PieceSize
+			,ODD.Comment
+			,IFNULL(MT.Material, '') Material
+			,IFNULL(MT.SH_ID, '') Shipper
+			,ODD.IsExist
+			,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
+			,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
+			,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
+			,ODD.ptn
+		FROM OrdersDataDetail ODD
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+		LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
+		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+		WHERE ODD.ODD_ID = {$odd_id}
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{

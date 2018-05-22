@@ -7,6 +7,10 @@
 		$ModelForm[$row["PM_ID"]][$row["PF_ID"]] = [$row["Form"]];
 	}
 
+	// Массив механизмов в зависимости от модели
+	$ModelMech = array();
+	$query = "";
+
 	// Массив наличия патины и дефолтная форма в зависимости от модели
 	$ModelPatina = array();
 	$ModelDefForm = array();
@@ -205,7 +209,7 @@
 					</select>
 					<span>x</span>
 				</div>
-				<input type="number" name="PieceSize" required min="200" max="550" step="10" style='width: 50px;' autocomplete="off" title="Размер вставки">
+				<input type="number" name="PieceSize" required min="200" max="650" step="10" style='width: 50px;' autocomplete="off" title="Размер вставки">
 				<span>)</span>
 			</div>
 			<span id="second_x">x</span>
@@ -685,6 +689,9 @@
 			var odid = $(this).attr("odid");
 
 			// Очистка диалога
+			$('#addtable select[name="Model"] option').attr('disabled', false);
+			$('#addtable select[name="Model"]').select2();
+
 			$('#addtable select').val('').trigger('change');
 			$('#addtable input[type="text"]').val('');
 			$('#addtable select[name="Shipper"]').attr("required", false);
@@ -729,23 +736,33 @@
 
 				model = odd_data['model'];
 				form = odd_data['form'];
+				mechanism = odd_data['mechanism'];
+
+				if( model > 0 ) { // Если не столешница
+					// Деактивируем список моделей в дропдауне
+					$('#addtable select[name="Model"] option').attr('disabled', true);
+					$('#addtable select[name="Model"] option[value="0"]').attr('disabled', false);		// Включаем столешницу
+					$('#addtable select[name=Model] option[value='+model+']').attr('disabled', false);	// Включаем эту модель
+					$('#addtable select[name="Model"]').select2();
+				}
+
 				$('#addtable input[name="Amount"]').val(odd_data['amount']);
 				$('#addtable input[name="Price"]').val(odd_data['price']);
 
 				// Задание значение, создав при необходимости новую опцию
-				if ($('#addtable select[name="Model"]').find("option[value='" + odd_data['model'] + "']").length) {
-					$('#addtable select[name="Model"]').val(odd_data['model']).trigger('change');
+				if ($('#addtable select[name="Model"]').find("option[value='" + model + "']").length) {
+					$('#addtable select[name="Model"]').val(model).trigger('change');
 				} else {
 					// Create a DOM Option and pre-select by default
-					var newOption = new Option(odd_data['model_name'] + " (снят с производства)", odd_data['model'], true, true);
+					var newOption = new Option(odd_data['model_name'] + " (снят с производства)", model, true, true);
 					newOption.className = "archive";
 					// Append it to the select
 					$('#addtable select[name="Model"]').append(newOption).trigger('change');
 				}
 
 				$('#2ptn'+odd_data['ptn']).prop('checked', true);
-				$('#mechanism'+odd_data['mechanism']).prop('checked', true);
-					piece_from_mechanism(odd_data['mechanism']);
+				$('#mechanism'+mechanism).prop('checked', true);
+					piece_from_mechanism(mechanism);
 				$('#addtable input[name="Length"]').val(odd_data['length']);
 				$('#addtable input[name="Width"]').val(odd_data['width']);
 				$('#addtable input[name="PieceAmount"]').val(odd_data['PieceAmount']);
