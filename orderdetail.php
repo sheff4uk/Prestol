@@ -134,21 +134,12 @@
 	if ( isset($_GET["add"]) and $_GET["add"] == 1 and !$disabled )
 	{
 		// Узнаем возможен ли ящик для этой модели с таким механизмом
-		if( $_POST["Mechanism"] ) {
-			if( $_POST["Model"] ) { // Это стол
-				$query = "
-					SELECT box
-					FROM ProductModelsMechanism
-					WHERE PM_ID = {$_POST["Model"]} AND PME_ID = {$_POST["Mechanism"]}
-				";
-			}
-			else { // Это столешница
-				$query = "
-					SELECT box
-					FROM ProductMechanism
-					WHERE PME_ID = {$_POST["Mechanism"]}
-				";
-			}
+		if( $_POST["Mechanism"] and $_POST["Model"] ) {
+			$query = "
+				SELECT box
+				FROM ProductModelsMechanism
+				WHERE PM_ID = {$_POST["Model"]} AND PME_ID = {$_POST["Mechanism"]}
+			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$box_aval = mysqli_result($res,0,'box');
 		}

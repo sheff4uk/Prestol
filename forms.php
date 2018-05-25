@@ -11,7 +11,7 @@
 	$ModelMech = array();
 	$ModelMech_box = array();
 	$query = "
-		SELECT 0 PM_ID, PME_ID, Mechanism, box
+		SELECT 0 PM_ID, PME_ID, Mechanism, 0 box
 		FROM ProductMechanism
 		UNION
 		SELECT PMM.PM_ID, PMM.PME_ID, PM.Mechanism, PMM.box
