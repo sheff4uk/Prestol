@@ -133,11 +133,32 @@
 	// Добавление в базу нового изделия. Заполнение этапов.
 	if ( isset($_GET["add"]) and $_GET["add"] == 1 and !$disabled )
 	{
+		// Узнаем возможен ли ящик для этой модели с таким механизмом
+		if( $_POST["Mechanism"] ) {
+			if( $_POST["Model"] ) { // Это стол
+				$query = "
+					SELECT box
+					FROM ProductModelsMechanism
+					WHERE PM_ID = {$_POST["Model"]} AND PME_ID = {$_POST["Mechanism"]}
+				";
+			}
+			else { // Это столешница
+				$query = "
+					SELECT box
+					FROM ProductMechanism
+					WHERE PME_ID = {$_POST["Mechanism"]}
+				";
+			}
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$box_aval = mysqli_result($res,0,'box');
+		}
+
 		// Добавление в базу нового изделия
-		$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
+//		$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 		$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 		$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
 		$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
+		$box = ($box_aval == 1 and $_POST["box"] == 1) ? 1 : 0;
 		$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
 		$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 		$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
@@ -169,8 +190,8 @@
 			$mt_id = "NULL";
 		}
 
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, MT_ID, IsExist, Amount, Price, Comment, order_date, arrival_date, author, ptn)
-				  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Price}, '{$Comment}', {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, box, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, author, ptn)
+				  VALUES ({$id}, {$Model}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, '{$Comment}', {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$odd_id = mysqli_insert_id( $mysqli );
 

@@ -323,14 +323,14 @@ case "confirmed":
 
 	if( $val == 1) {
 		$class = 'confirmed';
-		//$status = 'Принят в работу';
+		$status = 'Принят в работу';
 		echo "$('.main_table tr[id=\"ord{$id}\"] td.td_step').addClass('step_confirmed');";
 		echo "$('.main_table tr.ord_log_row td.td_step').addClass('step_confirmed');";
 		echo "$('#order_in_work_label').show('fast');";
 	}
 	else {
 		$class = 'not_confirmed';
-		//$status = 'Не принят в работу';
+		$status = 'Не принят в работу';
 		echo "$('.main_table tr[id=\"ord{$id}\"] td.td_step').removeClass('step_confirmed');";
 		echo "$('.main_table tr.ord_log_row td.td_step').removeClass('step_confirmed');";
 		echo "$('#order_in_work_label').hide('fast');";
@@ -1854,6 +1854,7 @@ case "odd_data":
 			,PM.Model
 			,ODD.PF_ID
 			,ODD.PME_ID
+			,ODD.box
 			,ODD.Length
 			,ODD.Width
 			,ODD.PieceAmount
@@ -1875,7 +1876,7 @@ case "odd_data":
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$odd_data = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "model_name"=>$row["Model"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "color"=>$row["Color"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["Shipper"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "ptn"=>$row["ptn"] );
+		$odd_data = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "model_name"=>$row["Model"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "box"=>$row["box"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "color"=>$row["Color"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["Shipper"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "ptn"=>$row["ptn"] );
 	}
 
 	echo json_encode($odd_data);

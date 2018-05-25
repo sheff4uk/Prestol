@@ -89,7 +89,7 @@
 		SELECT CONCAT('odd', ODD.ODD_ID) id
 				,OD.Code
 				,IFNULL(PM.Model, 'Столешница') product
-				,IFNULL(PME.full_mech, '') mechanism
+				,IFNULL(CONCAT(' ', PME.full_mech, IF(ODD.box = 1, '+ящик', '')), '') mechanism
 				,IFNULL(CONCAT(IF(ODD.Width > 0, '', 'Ø'), ODD.Length, IFNULL(CONCAT('(+', IFNULL(CONCAT(ODD.PieceAmount, 'x'), ''), ODD.PieceSize, ')'), ''), IFNULL(CONCAT('х', ODD.Width), ''), ' мм'), '') size
 				,IFNULL(PM.materials, '') materials
 				,ODD.PieceAmount

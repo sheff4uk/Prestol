@@ -9,7 +9,20 @@
 
 	// Массив механизмов в зависимости от модели
 	$ModelMech = array();
-	$query = "";
+	$ModelMech_box = array();
+	$query = "
+		SELECT 0 PM_ID, PME_ID, Mechanism, box
+		FROM ProductMechanism
+		UNION
+		SELECT PMM.PM_ID, PMM.PME_ID, PM.Mechanism, PMM.box
+		FROM ProductModelsMechanism PMM
+		JOIN ProductMechanism PM ON PM.PME_ID = PMM.PME_ID
+	";
+	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($result) ) {
+		$ModelMech[$row["PM_ID"]][$row["PME_ID"]] = [$row["Mechanism"]];
+		$ModelMech_box[$row["PM_ID"]][$row["PME_ID"]] = [$row["box"]];
+	}
 
 	// Массив наличия патины и дефолтная форма в зависимости от модели
 	$ModelPatina = array();
@@ -26,6 +39,8 @@
 		ModelForm = <?= json_encode($ModelForm); ?>;
 		ModelPatina = <?= json_encode($ModelPatina); ?>;
 		ModelDefForm = <?= json_encode($ModelDefForm); ?>;
+		ModelMech = <?= json_encode($ModelMech); ?>;
+		ModelMech_box = <?= json_encode($ModelMech_box); ?>;
 	</script>
 
 <!-- Форма добавления стула -->
@@ -181,17 +196,32 @@
 		<div>
 			<label>Механизм:</label>
 			<div class="btnset" id="mechanisms">
+				<!--Список формируется в js-->
 			<?
-				$query = "SELECT PME_ID, Mechanism FROM ProductMechanism";
-				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				while( $row = mysqli_fetch_array($result) ) {
-					echo "<input type='radio' id='mechanism{$row["PME_ID"]}' name='Mechanism' value='{$row["PME_ID"]}'>";
-					echo "<label for='mechanism{$row["PME_ID"]}'>{$row["Mechanism"]}</label>";
-				}
+//				$query = "SELECT PME_ID, Mechanism FROM ProductMechanism";
+//				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//				while( $row = mysqli_fetch_array($result) ) {
+//					echo "<input type='radio' id='mechanism{$row["PME_ID"]}' name='Mechanism' value='{$row["PME_ID"]}'>";
+//					echo "<label for='mechanism{$row["PME_ID"]}'>{$row["Mechanism"]}</label>";
+//				}
 			?>
 			</div>
 			&nbsp;&nbsp;&nbsp;
 			<img src='/img/attention.png' class='attention' id='Mechanism' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
+			<br>
+		</div>
+		<style>
+			#box:checked + label:before {
+				content: "Да";
+			}
+			#box + label:before {
+				content: "Нет";
+			}
+		</style>
+		<div id="wr_box">
+			<label>Ящик:</label>
+			<input type="checkbox" name="box" id="box" class="button" value="1">
+			<label for="box"></label>
 			<br>
 		</div>
 		<div>
@@ -511,7 +541,45 @@
 			}
 			$('#addtable #forms').buttonset();
 		}
-		size_from_form($('#addtable input[name="Form"]').val());
+		var val = $('#addtable input[name="Form"]:checked').val();
+		size_from_form(val);
+	}
+
+	// Функция формирования списка механизмов в зависимости от модели стола
+	function mech_model_list(model, mech) {
+		var mechs = "";
+		var arr_model = ModelMech[model];	// Список механизмов для модели
+		var inmechs = 0;
+		if( typeof arr_model !== "undefined" ) {
+			$.each(arr_model, function(key, val){
+				mechs += "<input type='radio' id='mechanism" + key + "' name='Mechanism' value='" + key + "'>";
+				mechs += "<label for='mechanism" + key + "'>" + val + "</label>";
+				if( mech == key ) { inmechs = 1; }
+			});
+		}
+		$('#addtable #mechanisms').html(mechs);
+		if( mechs != "" ) {
+			if( mech > 0 && inmechs ) {
+				$('#addtable input[name="Mechanism"][value="'+mech+'"]').prop('checked', true);
+			}
+			else {
+				$('#addtable input[name="Mechanism"]:nth-child(1)').prop('checked', true);
+			}
+			$('#addtable #mechanisms').buttonset();
+			var val = $('#addtable input[name="Mechanism"]:checked').val();
+			mech_model_box(model, val);
+			piece_from_mechanism(val);
+		}
+	}
+
+	// Функция включения/выключения чекбокса ящика в зависимости от модели стола и механизма
+	function mech_model_box(model, mech) {
+		if( ModelMech_box[model][mech] == 1 ) {
+			$('#addtable #wr_box').show('fast');
+		}
+		else {
+			$('#addtable #wr_box').hide('fast');
+		}
 	}
 
 	// Функция включения золотой патины для моделей с патиной
@@ -548,6 +616,7 @@
 		// Глобальные переменные для хранения выбранных модели и формы
 		var model;
 		var form;
+		var mechanism;
 
 		// Форма добавления стульев
 		$('.edit_product1').click(function() {
@@ -695,12 +764,18 @@
 			$('#2radio').prop('checked', true);
 			$('#2ptn0').prop('checked', true);
 			$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
-			$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
-			// Выбираем механизм первый по списку
-			$('#addtable input[name="Mechanism"]:nth-child(1)').prop('checked', true);
-			piece_from_mechanism($('#addtable input[name="Mechanism"]').val());
+//			$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
+//			// Выбираем механизм первый по списку
+//			$('#addtable input[name="Mechanism"]:nth-child(1)').prop('checked', true);
+//			piece_from_mechanism($('#addtable input[name="Mechanism"]').val());
+
+			// Выключается ящик
+			$('#addtable #box').prop('checked', false);
+			$('#addtable #box').button('refresh');
+
 
 			$('#addtable input[type="radio"]').button("refresh");
+			//$('#addtable input[type="checkbox"]').button("refresh");
 			$('#addtable input[name="Amount"]').removeAttr('max');
 			// Очистка инпутов дат заказа пластика
 			$('#addtable .order_material').hide('fast');
@@ -753,6 +828,13 @@
 				$('#2ptn'+odd_data['ptn']).prop('checked', true);
 				$('#mechanism'+mechanism).prop('checked', true);
 					piece_from_mechanism(mechanism);
+
+				// Если есть ящик
+				if( odd_data['box'] == 1 ) {
+					$('#addtable #box').prop('checked', true);
+					$('#addtable #box').button('refresh');
+				}
+
 				$('#addtable input[name="Length"]').val(odd_data['length']);
 				$('#addtable input[name="Width"]').val(odd_data['width']);
 				$('#addtable input[name="PieceAmount"]').val(odd_data['PieceAmount']);
@@ -788,11 +870,13 @@
 			{
 				model = 0;
 				form = 0;
+				mechanism = 0;
 				$("#addtable form").attr("action", "orderdetail.php?id="+odid+"&add=1");
 				patina_model_list(0, 2);
 			}
 
 			form_model_list(model, form);
+			mech_model_list(model, mechanism);
 
 			$("#addtable").dialog(
 			{
@@ -810,13 +894,16 @@
 		});
 
 		// При выборе модели стола предлагаются формы столешниц и включается патина
-		$('#addtable select[name="Model"]').change( function() {
-			if( $(this).val() == "" ) {
+		$('#addtable select[name="Model"]').on('change', function() {
+			model = $(this).val();
+			if( model == "" ) {
 				form_model_list(0, form);
+				mech_model_list(0, mechanism);
 				patina_model_list(0, 2);
 			}
 			else {
 				form_model_list($(this).val(), form);
+				mech_model_list($(this).val(), mechanism);
 				patina_model_list($(this).val(), 2);
 			}
 		});
@@ -827,9 +914,11 @@
 			size_from_form(form);
 		});
 
-		// При выборе механизма - задействуются инпуты для вставок
+		// При выборе механизма - задействуются инпуты для вставок, показывается или прячется чекбокс ящика
 		$('#addtable').on('change', 'input[name="Mechanism"]', function() {
-			piece_from_mechanism($(this).val());
+			mechanism = $(this).val();
+			piece_from_mechanism(mechanism);
+			mech_model_box(model, mechanism);
 		});
 
 		// Если нет пластика, то кнопка наличия не активна

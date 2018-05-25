@@ -72,11 +72,32 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 
+	// Узнаем возможен ли ящик для этой модели с таким механизмом
+	if( $_POST["Mechanism"] ) {
+		if( $_POST["Model"] ) { // Это стол
+			$query = "
+				SELECT box
+				FROM ProductModelsMechanism
+				WHERE PM_ID = {$_POST["Model"]} AND PME_ID = {$_POST["Mechanism"]}
+			";
+		}
+		else { // Это столешница
+			$query = "
+				SELECT box
+				FROM ProductMechanism
+				WHERE PME_ID = {$_POST["Mechanism"]}
+			";
+		}
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$box_aval = mysqli_result($res,0,'box');
+	}
+
 	// Обновляем информацию об изделии
 //	$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 	$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 	$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
 	$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
+	$box = ($box_aval == 1 and $_POST["box"] == 1) ? 1 : 0;
 	$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
 	$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 	$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
@@ -118,6 +139,7 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 			,PieceSize = {$PieceSize}
 			,PF_ID = {$Form}
 			,PME_ID = {$Mechanism}
+			,box = {$box}
 			,MT_ID = {$mt_id}
 			,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
 			,Amount = {$_POST["Amount"]}
