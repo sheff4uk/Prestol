@@ -32,45 +32,46 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	$Mechanism = mysqli_result($res,0,'PME_ID');
 	$Length = mysqli_result($res,0,'Length');
 
-	// Если изменения затрагивают этапы то создаем новые этапы, а старые помечаем
-	if( $Model != ($_POST["Model"] == "0" ? "" : $_POST["Model"]) or $Mechanism != $_POST["Mechanism"] or $Length != $_POST["Length"] ) {
-		// Удаляем видимые этапы без работника
-		$query = "DELETE FROM OrdersDataSteps WHERE ODD_ID = {$_GET["oddid"]} AND WD_ID IS NULL AND Visible = 1";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		// Оставшиеся этапы помечаются архивом (Old)
-		$query = "UPDATE OrdersDataSteps SET Old = 1, author = {$_SESSION['id']} WHERE ODD_ID = {$_GET["oddid"]}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		// Добавляем заново все этапы
-		$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
-		$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
-		$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
-		if( $Model != "NULL" ) {
-			$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
-					SELECT {$_GET["oddid"]}
-						  ,ST.ST_ID
-						  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
-					FROM StepsTariffs ST
-					JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
-					LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
-					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
-					# Заглушка для обивки
-					#WHERE ST.ST_ID != 4";
-		}
-		else {
-			$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
-					SELECT {$_GET["oddid"]}
-						  ,ST.ST_ID
-						  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
-					FROM StepsTariffs ST
-					LEFT JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
-					LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
-					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
-					WHERE ST.Default = 1";
-		}
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	}
+// СОЗДАН ТРИГГЕР AddStepsAfterUpdate
+//	// Если изменения затрагивают этапы то создаем новые этапы, а старые помечаем
+//	if( $Model != ($_POST["Model"] == "0" ? "" : $_POST["Model"]) or $Mechanism != $_POST["Mechanism"] or $Length != $_POST["Length"] ) {
+//		// Удаляем видимые этапы без работника
+//		$query = "DELETE FROM OrdersDataSteps WHERE ODD_ID = {$_GET["oddid"]} AND WD_ID IS NULL AND Visible = 1";
+//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//
+//		// Оставшиеся этапы помечаются архивом (Old)
+//		$query = "UPDATE OrdersDataSteps SET Old = 1, author = {$_SESSION['id']} WHERE ODD_ID = {$_GET["oddid"]}";
+//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//
+//		// Добавляем заново все этапы
+//		$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
+//		$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
+//		$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
+//		if( $Model != "NULL" ) {
+//			$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
+//					SELECT {$_GET["oddid"]}
+//						  ,ST.ST_ID
+//						  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
+//					FROM StepsTariffs ST
+//					JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
+//					LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
+//					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
+//					# Заглушка для обивки
+//					#WHERE ST.ST_ID != 4";
+//		}
+//		else {
+//			$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
+//					SELECT {$_GET["oddid"]}
+//						  ,ST.ST_ID
+//						  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
+//					FROM StepsTariffs ST
+//					LEFT JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
+//					LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
+//					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
+//					WHERE ST.Default = 1";
+//		}
+//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//	}
 
 	// Узнаем возможен ли ящик для этой модели с таким механизмом
 	if( $_POST["Mechanism"] and $_POST["Model"] ) {
