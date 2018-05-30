@@ -125,7 +125,7 @@ case "price":
 	// Автокомплит цены изделий
 	if( $_GET["PM_ID"] != '' ) {
 		$mechanism = $_GET["PME_ID"] != '' ? '= '.$_GET["PME_ID"] : 'IS NULL';
-		$query = "SELECT ODD.Price, CONCAT(ODD.Price, IFNULL(CONCAT(IF(ODD.Width > 0, '', 'Ø'), ODD.Length, IFNULL(CONCAT('(+', IFNULL(CONCAT(ODD.PieceAmount, 'x'), ''), ODD.PieceSize, ')'), ''), IFNULL(CONCAT('х', ODD.Width), '')), '')) Label
+		$query = "SELECT ODD.Price, CONCAT(ODD.Price, IFNULL(CONCAT(IF(ODD.Width > 0, ' ', ' Ø'), ODD.Length, IFNULL(CONCAT('(+', IFNULL(CONCAT(ODD.PieceAmount, 'x'), ''), ODD.PieceSize, ')'), ''), IFNULL(CONCAT('х', ODD.Width), '')), '')) Label
 					FROM OrdersDataDetail ODD
 					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND IF(SH.KA_ID IS NULL, 1, 0) = {$_GET["retail"]}

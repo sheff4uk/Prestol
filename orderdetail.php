@@ -187,6 +187,11 @@
 		$odd_id = mysqli_insert_id( $mysqli );
 
 		$_SESSION["odd_id"] = $odd_id; // Cохраняем в сессию id вставленной записи
+
+		// Вычисляем и записываем стоимость по прайсу
+		$query = "CALL Price({$odd_id})";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#'.$odd_id.'">');
 		die;
 	}

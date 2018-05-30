@@ -1017,7 +1017,7 @@ case "update_price":
 		$html .= "<input type='hidden' name='PT_ID[]' value='{$row["PT_ID"]}'>";
 		$html .= "<input type='hidden' name='itemID[]' value='{$row["itemID"]}'>";
 		$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
-		$html .= "<td class='prod_price'><input type='number' id='prod_price{$row["itemID"]}' min='1' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;'></td>";
+		$html .= "<td class='prod_price'><input type='number' id='prod_price{$row["itemID"]}' min='0' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;'></td>";
 		$html .= "<td class='prod_amount' style='text-align: center; font-size: 1.3em; font-weight: bold;'>{$row["Amount"]}</td>";
 		$html .= "<td class='prod_sum' style='text-align: right;'></td>";
 		$html .= "</tr>";
