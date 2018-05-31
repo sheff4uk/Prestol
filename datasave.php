@@ -147,6 +147,10 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 		$_SESSION["error"][] = mysqli_error( $mysqli );
 	}
 
+	// Вычисляем и обновляем стоимость по прайсу
+	$query = "CALL Price({$_GET["oddid"]})";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
 	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#prod'.$_GET["oddid"].'">');
 	die;
 }
