@@ -145,7 +145,6 @@
 		}
 
 		// Добавление в базу нового изделия
-//		$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 		$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
 		$Form = $_POST["Form"] ? "{$_POST["Form"]}" : "NULL";
 		$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
@@ -202,7 +201,6 @@
 
 	// Добавление к заказу заготовки или прочего
 	if ( isset($_GET["addblank"]) and $_GET["addblank"] == 1 and !$disabled ) {
-		$Price = ($_POST["Price"] !== '') ? "{$_POST["Price"]}" : "NULL";
 		$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
 		$Other = trim($_POST["Other"]);
 		$Other = mysqli_real_escape_string( $mysqli, $Other );
@@ -232,8 +230,8 @@
 			$mt_id = "NULL";
 		}
 
-		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Amount, Price, Comment, MT_ID, IsExist, order_date, arrival_date, author, ptn)
-				  VALUES ({$id}, {$Blank}, '{$Other}', {$_POST["Amount"]}, {$Price}, '{$Comment}', {$mt_id}, {$IsExist}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
+		$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, Amount, Comment, MT_ID, IsExist, order_date, arrival_date, author, ptn)
+				  VALUES ({$id}, {$Blank}, '{$Other}', {$_POST["Amount"]}, '{$Comment}', {$mt_id}, {$IsExist}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		$odb_id = mysqli_insert_id( $mysqli );
