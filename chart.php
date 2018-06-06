@@ -42,7 +42,7 @@ $query = "
 		FROM OrdersDataBlank ODB
 		WHERE ODB.Del = 0
 	) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-	WHERE DATEDIFF(NOW(), OD.ReadyDate) <= 7
+	WHERE DATEDIFF(NOW(), OD.ReadyDate) < 7
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $current_power = mysqli_result($res,0,'Amount');
