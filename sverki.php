@@ -533,12 +533,15 @@ while( $row = mysqli_fetch_array($res) ) {
 			<br>
 			<div>
 				<hr>
-				<h3>Сумма накладной: <span id="invoice_total" style="color: #16A085;">0</span></h3>
+				<h3 style="display: inline-block; margin: 10px;">Сумма накладной: <span id="invoice_total" style="color: #16A085;">0</span></h3>
+				<h3 style="display: inline-block; margin: 10px;">Сумма скидки: <span id="invoice_discount" style="color: #16A085;">0</span></h3>
+				<h3 style="display: inline-block; margin: 10px;">Процент скидки: <span id="invoice_percent" style="color: #16A085;">0</span></h3>
 				<input type="hidden" name="summa" value="0">
+				<input type="hidden" name="total_discount" value="0">
 				<input type='submit' value='Создать накладную' style='float: right;'>
 				<input type="text" name="date" id="date" class="date" style="float: right; margin: 4px 10px; width: 90px;" readonly>
 			</div>
-			<p id="return_message" style="color: #911; display: none;">ВНИМАНИЕ! Накладную на возврат товара отменить не возможно.</p>
+			<h3 id="return_message" style="color: #911; display: none;">ВНИМАНИЕ! Накладную на возврат товара отменить не возможно.</h3>
 		</fieldset>
 	</form>
 </div>
@@ -574,23 +577,41 @@ while( $row = mysqli_fetch_array($res) ) {
 
 	// Подсчет суммы накладной
 	function invoice_total() {
-		let arr = Array
-					.from(document.querySelectorAll('#orders_to_invoice input[name="opt_price[]"]')) // собираем массив из нод
+		let arr_price = Array
+					.from(document.querySelectorAll('#orders_to_invoice input[name="price[]"]')) // собираем массив из нод
 					.map((item) => {
-//						var item_price = (item.offsetWidth > 0 || item.offsetHeight > 0) ? item.value : 0;
 						var item_price = (item.getAttribute('disabled') == "disabled") ? 0 : item.value;
 						var item_amount = item.getAttribute('amount');
 						return item_price * item_amount // трансформируем массив в массив содержащий уже не ноды, а их содержимое
 					})
 					.map(Number); // приводим к числовому типу
 
-		let total = arr.reduce((sum, item) => {
+		let total_price = arr_price.reduce((sum, item) => {
 			return sum+item; // считаем сумму массива
 		});
 
+		let arr_discount = Array
+					.from(document.querySelectorAll('#orders_to_invoice input[name="discount[]"]')) // собираем массив из нод
+					.map((item) => {
+						var item_price = (item.getAttribute('disabled') == "disabled") ? 0 : item.value;
+						var item_amount = item.getAttribute('amount');
+						return item_price * item_amount // трансформируем массив в массив содержащий уже не ноды, а их содержимое
+					})
+					.map(Number); // приводим к числовому типу
+
+		let total_discount = arr_discount.reduce((sum, item) => {
+			return sum+item; // считаем сумму массива
+		});
+
+		var total = total_price - total_discount;
 		$('input[name="summa"]').val(total);
+		$('input[name="total_discount"]').val(total_discount);
+		total_percent = (total_discount / total_price * 100).toFixed(1);
 		total = total.format();
+		total_discount = total_discount.format();
 		$('#invoice_total').html(total);
+		$('#invoice_discount').html(total_discount);
+		$('#invoice_percent').html(total_percent);
 	}
 
 	$(function() {
@@ -624,6 +645,8 @@ while( $row = mysqli_fetch_array($res) ) {
 			$('#date').val('<?=( date('d.m.Y') )?>');
 			$('#num_rows select').val(25);
 			$('#invoice_total').html('0');
+			$('#invoice_discount').html('0');
+			$('#invoice_percent').html('0');
 
 			$('#add_invoice_form').dialog({
 				position: { my: "center top", at: "center top", of: window },
@@ -679,6 +702,8 @@ while( $row = mysqli_fetch_array($res) ) {
 			else {
 				$('#add_invoice_form .accordion').accordion( "option", "active", 1 );
 				$('#invoice_total').html('0');
+				$('#invoice_discount').html('0');
+				$('#invoice_percent').html('0');
 			}
 		});
 

@@ -78,18 +78,15 @@
 	// Обновление цены изделий в заказе
 	if( isset($_GET["add_price"]) ) {
 		$OD_ID = $_POST["OD_ID"];
-		$discount = $_POST["discount"] ? $_POST["discount"] : "NULL";
-		// Обновление скидки заказа
-		$query = "UPDATE OrdersData SET discount = {$discount}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
-		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 
 		foreach ($_POST["PT_ID"] as $key => $value) {
 			$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
+			$discount = $_POST["discount"][$key] ? $_POST["discount"][$key] : "NULL";
 			if( $value == 0 ) {
-				$query = "UPDATE OrdersDataBlank SET Price = {$price}, author = {$_SESSION['id']} WHERE ODB_ID = {$_POST["itemID"][$key]}";
+				$query = "UPDATE OrdersDataBlank SET Price = {$price}, discount = {$discount}, author = {$_SESSION['id']} WHERE ODB_ID = {$_POST["itemID"][$key]}";
 			}
 			else {
-				$query = "UPDATE OrdersDataDetail SET Price = {$price}, author = {$_SESSION['id']} WHERE ODD_ID = {$_POST["itemID"][$key]}";
+				$query = "UPDATE OrdersDataDetail SET Price = {$price}, discount = {$discount}, author = {$_SESSION['id']} WHERE ODD_ID = {$_POST["itemID"][$key]}";
 			}
 			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 		}
@@ -374,7 +371,11 @@
 				<thead>
 					<tr>
 						<th>Салон</th>
-						<th></th>
+						<?
+						if( in_array('selling_all', $Rights) ) {
+							echo "<th></th>";
+						}
+						?>
 						<th>Продажи<i class="fa fa-question-circle" aria-hidden="true" title="Не включает суммы отказных заказов."></i></th>
 						<th>Скидки</th>
 						<th>Отказы</th>
@@ -421,84 +422,72 @@
 									GROUP BY OP.OD_ID
 								) OP2 ON OP2.OD_ID = OD.OD_ID
 								JOIN (
-									SELECT ODD.OD_ID, ODD.Price * ODD.Amount Price
+									SELECT ODD.OD_ID, (ODD.Price - IFNULL(ODD.discount, 0)) * ODD.Amount Price
 									FROM OrdersDataDetail ODD
 									WHERE ODD.Del = 0
 									UNION ALL
-									SELECT ODB.OD_ID, ODB.Price * ODB.Amount Price
+									SELECT ODB.OD_ID, (ODB.Price - IFNULL(ODB.discount, 0)) * ODB.Amount Price
 									FROM OrdersDataBlank ODB
 									WHERE ODB.Del = 0
 								) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 									AND OD.DelDate IS NULL
 								GROUP BY OD.OD_ID
-								HAVING (SUM(ODD_ODB.Price) - MAX(IFNULL(OD.discount, 0))) > MAX(OP1.payment_sum) OR MAX(OP1.terminal_sum) > 0
+								HAVING SUM(ODD_ODB.Price) > MAX(OP1.payment_sum) OR MAX(OP1.terminal_sum) > 0
 							) SUB
 						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$sum_cash_report = mysqli_result($subres,0,'cash_sum');
 						$city_report += $sum_cash_report;
 
-						// Получаем сумму выручки по салону
+						// Получаем сумму выручки и скидки по салону
 						$query = "
 							SELECT SUM(ODD_ODB.Price) Price
+								,SUM(ODD_ODB.discount) discount
 							FROM OrdersData OD
 							JOIN (
-								SELECT ODD.OD_ID ,ODD.Price * ODD.Amount Price
+								SELECT ODD.OD_ID
+									,ODD.Price * ODD.Amount Price
+									,IFNULL(ODD.discount, 0) * ODD.Amount discount
 								FROM OrdersDataDetail ODD
 								WHERE ODD.Del = 0
 								UNION ALL
-								SELECT ODB.OD_ID ,ODB.Price * ODB.Amount Price
+								SELECT ODB.OD_ID
+									,ODB.Price * ODB.Amount Price
+									,IFNULL(ODB.discount, 0) * ODB.Amount discount
 								FROM OrdersDataBlank ODB
 								WHERE ODB.Del = 0
 							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-							WHERE OD.Del = 0 AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}
+							WHERE OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}
 						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_price = mysqli_result($subres,0,'Price');
 						$city_price = $city_price + $shop_price;
+						$shop_discount = mysqli_result($subres,0,'discount');
+						$city_discount = $city_discount + $shop_discount;
+
 						// Получаем сумму выручки по салону по накладным (чтобы получить дебиторку)
 						$query = "
 							SELECT SUM(ODD_ODB.Price) Price
+								,SUM(ODD_ODB.discount) discount
 							FROM OrdersData OD
-							LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
+							JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 AND PFI.rtrn != 1
 							JOIN (
-								SELECT ODD.OD_ID ,ODD.Price * ODD.Amount Price
+								SELECT ODD.OD_ID
+									,ODD.Price * ODD.Amount Price
+									,IFNULL(ODD.discount, 0) * ODD.Amount discount
 								FROM OrdersDataDetail ODD
 								WHERE ODD.Del = 0
 								UNION ALL
-								SELECT ODB.OD_ID ,ODB.Price * ODB.Amount Price
+								SELECT ODB.OD_ID
+									,ODB.Price * ODB.Amount Price
+									,IFNULL(ODB.discount, 0) * ODB.Amount discount
 								FROM OrdersDataBlank ODB
 								WHERE ODB.Del = 0
 							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-							WHERE IF(PFI.rtrn = 1, NULL, OD.PFI_ID) IS NOT NULL AND OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}
+							WHERE OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}
 						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_price_inv = mysqli_result($subres,0,'Price');
-
-						// Получаем скидку по салону
-						$query = "
-							SELECT SUM(discount) discount
-							FROM OrdersData OD
-							WHERE OD.Del = 0
-								AND YEAR(StartDate) = {$_GET["year"]}
-								AND MONTH(StartDate) = {$_GET["month"]}
-								AND SH_ID = {$row["SH_ID"]}
-						";
-						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						$shop_discount = mysqli_result($subres,0,'discount');
-						$city_discount = $city_discount + $shop_discount;
-						// Получаем скидку по салону по накладным (чтобы получить дебиторку)
-						$query = "
-							SELECT SUM(discount) discount
-							FROM OrdersData OD
-							LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
-							WHERE IF(PFI.rtrn = 1, NULL, OD.PFI_ID) IS NOT NULL
-								AND OD.Del = 0
-								AND YEAR(StartDate) = {$_GET["year"]}
-								AND MONTH(StartDate) = {$_GET["month"]}
-								AND SH_ID = {$row["SH_ID"]}
-						";
-						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_discount_inv = mysqli_result($subres,0,'discount');
 
 						// Получаем сумму отказов по салону
@@ -525,7 +514,7 @@
 						$shop_cash = mysqli_result($subres,0,'ostatok');
 						$city_cash = $city_cash + $shop_cash;
 
-						$shop_percent = round($shop_discount / ($shop_price - $shop_discount) * 100, 2);
+						$shop_percent = round($shop_discount / $shop_price * 100, 2);
 						$format_shop_report = number_format($sum_cash_report, 0, '', ' ');
 						$format_shop_price = number_format(($shop_price - $shop_discount), 0, '', ' ');
 						$format_shop_discount = number_format($shop_discount, 0, '', ' ');
@@ -535,7 +524,9 @@
 
 						echo "<tr>";
 						echo "<td class='nowrap'><a href='{$location}&SH_ID={$row["SH_ID"]}' ".( $SH_ID == $row["SH_ID"] ? "style='color: #D65C4F;'" : "" ).">{$row["Shop"]}:</a></td>";
-						echo "<td class='txtright'>{$format_shop_report}</td>";
+						if( in_array('selling_all', $Rights) ) {
+							echo "<td class='txtright'>{$format_shop_report}</td>";
+						}
 						echo "<td class='txtright'>{$format_shop_price}</td>";
 						echo "<td class='txtright'>{$format_shop_discount}<i class='fa fa-question-circle' aria-hidden='true' title='{$shop_percent}%'></i></td>";
 						echo "<td class='txtright' style='color: #911;'>{$format_shop_otkaz}</td>";
@@ -544,7 +535,7 @@
 						echo "</tr>";
 					}
 					if( !$USR_Shop ) {
-						$city_percent = round($city_discount / ($city_price - $city_discount) * 100, 2);
+						$city_percent = round($city_discount / $city_price * 100, 2);
 						$format_city_report = number_format($city_report, 0, '', ' ');
 						$format_city_price = number_format($city_price - $city_discount, 0, '', ' ');
 						$format_city_discount = number_format($city_discount, 0, '', ' ');
@@ -553,7 +544,9 @@
 						$format_city_cash = number_format($city_cash, 0, '', ' ');
 						echo "<tr>";
 						echo "<td class='nowrap'><b><a href='{$location}' ".( $SH_ID ? "" : "style='color: #D65C4F;'" ).">ВСЕГО:</a></b></td>";
-						echo "<td class='txtright'><b>{$format_city_report}</b></td>";
+						if( in_array('selling_all', $Rights) ) {
+							echo "<td class='txtright'><b>{$format_city_report}</b></td>";
+						}
 						echo "<td class='txtright'><b>{$format_city_price}</b></td>";
 						echo "<td class='txtright'><b>{$format_city_discount}</b><i class='fa fa-question-circle' aria-hidden='true' title='{$city_percent}%'></td>";
 						echo "<td class='txtright' style='color: #911;'><b>{$format_city_otkaz}</b></td>";
@@ -890,10 +883,10 @@
 						,GROUP_CONCAT(ODD_ODB.Amount SEPARATOR '') Amount
 						,Color(OD.CL_ID) Color
 						,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
-						,SUM(ODD_ODB.Price) - IFNULL(OD.discount, 0) Price
+						,SUM(ODD_ODB.Price) - SUM(ODD_ODB.discount) Price
+						,IFNULL(SUM(ODD_ODB.discount), 0) discount
 						,SUM(ODD_ODB.opt_price) opt_price
-						,IFNULL(OD.discount, 0) discount
-						,ROUND(IFNULL(OD.discount, 0) / SUM(ODD_ODB.Price) * 100) percent
+						,ROUND(IFNULL(SUM(ODD_ODB.discount), 0) / SUM(ODD_ODB.Price) * 100, 1) percent
 						,IFNULL(OP.payment_sum, 0) payment_sum
 						,OP.terminal_payer
 						,IF(IFNULL(OP.check_payment, 0) > 0, CheckPayment(OD.OD_ID), 0) attention
@@ -901,10 +894,7 @@
 						,OD.confirmed
 						,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
 						,PFI.count
-						#,IFNULL(OT.type, 0) type
-						#,IFNULL(OT.comment, '') comment
-						#,IFNULL(OT.old_SH_ID, OD.SH_ID) old_SH_ID
-						#,IFNULL(OT.old_StartDate, OD.StartDate) old_StartDate
+						,PFI.platelshik_id
 					FROM OrdersData OD
 					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
 						".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
@@ -926,6 +916,7 @@
 								,IFNULL(PM.PT_ID, 2) PT_ID
 								,ODD.ODD_ID itemID
 								,ODD.Price * ODD.Amount Price
+								,IFNULL(ODD.discount, 0) * ODD.Amount discount
 								,ODD.opt_price * ODD.Amount opt_price
 
 								,CONCAT('
@@ -946,6 +937,7 @@
 								,0 PT_ID
 								,ODB.ODB_ID itemID
 								,ODB.Price * ODB.Amount Price
+								,IFNULL(ODB.discount, 0) * ODB.Amount discount
 								,ODB.opt_price * ODB.Amount opt_price
 
 								,CONCAT('
@@ -997,25 +989,29 @@
 					<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
 					<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>";
 
-					// Если заказ в накладной - под датой продажи ссылка на накладную, под ценой стоимость по накладной
+					// Если заказ в накладной - сумма заказа ведет в накладную, цена не редактируется
 					if( $row["PFI_ID"] ) {
-						$invoice = "<br><b><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'>Накладная</a></b>";
-						$invoice_price = "<br><b title='Стоимость по накладной'>{$format_opt_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b>";
+						// Исключение для Клена
+						if( $row["SH_ID"] == 36 ) {
+							$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}'>{$format_price}</button><br><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_opt_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
+						}
+						else {
+							$price = "<a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
+						}
 					}
 					else {
-						$invoice = "";
-						$invoice_price = "";
+						$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}'>{$format_price}</button>";
 					}
 
-			echo "<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "").">{$invoice}</td>
-					<td class='txtright'><button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}'>{$format_price}</button>{$invoice_price}</td>
-					<td class='txtright nowrap'>{$format_discount} p.<br>{$row["percent"]} %</td>
+			echo "<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
+					<td class='txtright'>{$price}</td>
+					<td class='txtright nowrap'>{$format_discount} p.<br><b>{$row["percent"]} %</b></td>
 					<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
 //					echo "<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
 
-					// Если в накладной - не показываем остаток
+					// Если в накладной - выводим ссылку на сверки
 					if( $row["PFI_ID"] ) {
-						echo "<td></td>";
+						echo "<td><a href='sverki.php?payer={$row["platelshik_id"]}' target='_blank' title='Перейти в сверки'><b>Сверки</b></a></td>";
 					}
 					else {
 						echo "<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>";
@@ -1237,83 +1233,47 @@
 			return false;
 		});
 
+		// Функция пересчитывает итог в форме редактирования суммы заказа
+		function updtotal() {
+			var total_sum = 0;
+			var total_discount = 0;
+			var total_percent = 0;
+			$('.prod_price').each(function(){
+				var prod_price = $(this).find('input').val();
+				var prod_discount = $(this).parents('tr').find('.prod_discount input').val();
+				var prod_amount = $(this).parents('tr').find('.prod_amount').html();
+				var prod_sum = (prod_price - prod_discount) * prod_amount;
+				var prod_percent = (prod_discount / prod_price * 100).toFixed(1);
+				total_sum = total_sum + prod_sum;
+				total_discount = total_discount + prod_discount * prod_amount;
+				prod_sum = prod_sum.format();
+				$(this).parents('tr').find('.prod_sum').html(prod_sum);
+				$(this).parents('tr').find('.prod_percent').html(prod_percent);
+			});
+			total_percent = (total_discount / (total_sum + total_discount) * 100).toFixed(1);
+			$('#prod_total input').val(total_sum);
+			$('#discount input').val(total_discount);
+			$('#discount span').html(total_percent);
+		}
+
 		// Кнопка редактирования суммы заказа
 		$('.update_price_btn').click( function() {
 			var OD_ID = $(this).attr('id');
 			$.ajax({ url: "ajax.php?do=update_price&OD_ID="+OD_ID, dataType: "script", async: false });
 
 			$('#update_price').dialog({
-				width: 500,
+				width: 600,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 
-			function updprice() {
-				var prod_total = 0;
-				var discount = $('#discount input').val();
-				var percent = 0;
-				$('.prod_price').each(function(){
-					var prod_price = $(this).find('input').val();
-					var prod_amount = $(this).parents('tr').find('.prod_amount').html();
-					var prod_sum = prod_price * prod_amount;
-					prod_total = prod_total + prod_sum;
-					prod_sum = prod_sum.format();
-					$(this).parents('tr').find('.prod_sum').html(prod_sum);
-				});
-				percent = (discount / prod_total * 100).toFixed(2);
-				prod_total = prod_total - discount;
-				$('#prod_total input').val(prod_total);
-				$('#discount span').html(percent);
-			}
+			updtotal();
 
-			function upddiscount() {
-				var prod_total = $('#prod_total input').val();
-				var discount = prod_total * -1;
-				var percent = 0;
-				$('.prod_price').each(function(){
-					var prod_price = $(this).find('input').val();
-					var prod_amount = $(this).parents('tr').find('.prod_amount').html();
-					var prod_sum = prod_price * prod_amount;
-					discount = discount + prod_sum;
-				});
-				percent = (discount / prod_total * 100).toFixed(2);
-				prod_total = prod_total - discount;
-				if( discount == 0 ) {
-					discount = '';
-				}
-				$('#discount input').val(discount);
-				$('#discount span').html(percent);
-			}
-
-			updprice();
-
-			$('.prod_price input, #discount input').on('input', function() {
-				updprice();
+			$('.prod_price input, .prod_discount input').on('input', function() {
+				updtotal();
 			});
-
-			$('.prod_price input').on( "autocompleteselect", function( event, ui ) {
-				$(this).val( ui.item.value );
-				updprice();
-			});
-
-			$('#prod_total input').on('input', function() {
-				upddiscount();
-			});
-
-			$('#discount input').on('input', function() {
-				if( $(this).val() == 0 ) {
-					$(this).val('');
-				}
-			});
-
-			// Раскрытие автокомплита на фокусе
-			$( '.prod_price input' ).focus(function(){
-				$(this).autocomplete( "search", "1" );
-			});
-			// Автокомплит поверх диалога
-			$( '.prod_price input' ).autocomplete( "option", "appendTo", "#update_price" );
 
 			return false;
 		});

@@ -13,23 +13,25 @@ if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !
 // Обработка полученных данных из формы
 if( $_GET["add_bill"] ) {
 
-	// Сохраняем оптовые цены изделий в ODD/ODB
+	// Сохраняем цены и скидки изделий в ODD/ODB
 	$summa = 0;
 	foreach ($_POST["tovar_cena"] as $key => $value) {
-		$_POST["tovar_sum"][$key] = $_POST["tovar_cena"][$key] * $_POST["tovar_kol"][$key];
-
-		$tbl = $_POST["pt"][$key] ? "odd" : "odb";
 		$tbl_id = $_POST["item"][$key];
+		$discount = ($_POST["tovar_skidka"][$key] > 0) ? $_POST["tovar_skidka"][$key] : "NULL";
 
-		if( $tbl == "odd" ) {
-			$query = "UPDATE OrdersDataDetail SET opt_price = {$value}, author = {$_SESSION["id"]} WHERE ODD_ID = {$tbl_id}";
+		if( $_POST["pt"][$key] == "1" ) {
+			$query = "UPDATE OrdersDataDetail SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$tbl_id}";
 		}
-		elseif( $tbl == "odb" ) {
-			$query = "UPDATE OrdersDataBlank SET opt_price = {$value}, author = {$_SESSION["id"]} WHERE ODB_ID = {$tbl_id}";
+		elseif( $_POST["pt"][$key] == "0" ) {
+			$query = "UPDATE OrdersDataBlank SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODB_ID = {$tbl_id}";
 		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		$summa += $_POST["tovar_sum"][$key];
+		// Если товар из заказа - приписываем вначале код
+		if( $_POST["code"][$key] ) {
+			$_POST["tovar_name"][$key] = "[{$_POST["code"][$key]}] {$_POST["tovar_name"][$key]}";
+		}
+		$summa += ($_POST["tovar_cena"][$key] - $_POST["tovar_skidka"][$key]) * $_POST["tovar_kol"][$key];
 	}
 
 	// Получаем номер очередного документа
@@ -355,14 +357,15 @@ while( $row = mysqli_fetch_array($res) ) {
 		<table width="100%" border="0" cellspacing="4" class="forms" id="tab1">
 			<tbody>
 				<tr>
-					<th colspan="6" align="left"><strong>Наименование товара, подлежащего оплате:</strong></th>
+					<th colspan="7" align="left"><strong>Наименование товара, подлежащего оплате:</strong></th>
 				</tr>
 				<tr>
 					<th width="60">Код</th>
 					<th width="50%">Наименование товара</th>
 					<th width="40">Ед. измерения</th>
 					<th width="60">Кол-во</th>
-					<th width="80">Цена<br>за<br>единицу</th>
+					<th width="80">Цена за шт.</th>
+					<th width="80">Скидка за шт.</th>
 					<th width="20"><p>&nbsp;</p></th>
 				</tr>
 			</tbody>
@@ -378,7 +381,7 @@ while( $row = mysqli_fetch_array($res) ) {
 		</table>
 
 <script type="text/javascript">
-	function addRow(ed, name, amount, price, item, pt, code, odid)
+	function addRow(ed, name, amount, min_price, price, discount, item, pt, code, odid)
 	{
 
 		// Находим нужную таблицу
@@ -388,13 +391,14 @@ while( $row = mysqli_fetch_array($res) ) {
 		var row = $("<tr></tr>");
 		tbody.append(row);
 
-		// Создаем ячейки в вышесозданной строке и добавляем тх
+		// Создаем ячейки в вышесозданной строке и добавляем их
 		var td0 = $("<td></td>");
 		var td1 = $("<td></td>");
 		var td2 = $("<td></td>");
 		var td3 = $("<td></td>");
 		var td4 = $("<td></td>");
 		var td5 = $("<td></td>");
+		var td6 = $("<td></td>");
 
 		row.append(td0);
 		row.append(td1);
@@ -402,6 +406,7 @@ while( $row = mysqli_fetch_array($res) ) {
 		row.append(td3);
 		row.append(td4);
 		row.append(td5);
+		row.append(td6);
 
 		// Наполняем ячейки
 		if( typeof name === "undefined" ) {
@@ -416,6 +421,12 @@ while( $row = mysqli_fetch_array($res) ) {
 		if( typeof price === "undefined" ) {
 			price = '';
 		}
+		if( typeof min_price === "undefined" ) {
+			min_price = '0';
+		}
+		if( typeof discount === "undefined" ) {
+			discount = '';
+		}
 		if( typeof item === "undefined" ) {
 			item = '';
 		}
@@ -428,21 +439,24 @@ while( $row = mysqli_fetch_array($res) ) {
 		if( typeof odid === "undefined" ) {
 			odid = '';
 		}
-		td0.html('<b id="code">'+code+'</b><input type="hidden" name="odid[]" id="odid" value="'+odid+'">');
+		td0.html('<b id="code">'+code+'</b><input type="hidden" name="odid[]" id="odid" value="'+odid+'"><input type="hidden" name="code[]" id="icode" value="'+code+'">');
 		td1.html('<input required type="text" autocomplete="off" value="'+name+'" name="tovar_name[]" id="tovar_name" class="tovar_name" placeholder="Введите код заказа для поиска товара"/>');
 		td2.html('<input required type="text" autocomplete="off" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />');
 		td3.html('<input required type="number" autocomplete="off" min="1" value="'+amount+'" name="tovar_kol[]" id="tovar_kol"/>');
-		td4.html('<input required type="number" autocomplete="off" min="0" value="'+price+'" name="tovar_cena[]" id="tovar_cena"/><input type="hidden" name="item[]" id="item" value="'+item+'"><input type="hidden" name="pt[]" id="pt" value="'+pt+'">');
-		td5.html('<i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i>');
+		td4.html('<input required type="number" autocomplete="off" min="'+min_price+'" value="'+price+'" name="tovar_cena[]" id="tovar_cena"/><input type="hidden" name="item[]" id="item" value="'+item+'"><input type="hidden" name="pt[]" id="pt" value="'+pt+'">');
+		td5.html('<input type="number" autocomplete="off" min="0" value="'+discount+'" name="tovar_skidka[]" id="tovar_skidka"/>');
+		td6.html('<i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i>');
 
 		td1.find('.tovar_name').autocomplete({
 			source: "search_prod.php",
 			minLength: 2,
 			select: function( event, ui ) {
 				$(this).parents('tr').find('#code').text(ui.item.code);
+				$(this).parents('tr').find('#icode').val(ui.item.code);
 				$(this).parents('tr').find('#odid').val(ui.item.odid);
 				$(this).parents('tr').find('#item').val(ui.item.id);
 				$(this).parents('tr').find('#pt').val(ui.item.PT);
+				$(this).parents('tr').find('#tovar_cena').attr('min', ui.item.min_price);
 				$(this).parents('tr').find('#tovar_cena').val(ui.item.Price);
 				$(this).parents('tr').find('#tovar_kol').val(ui.item.Amount);
 			}
@@ -451,9 +465,11 @@ while( $row = mysqli_fetch_array($res) ) {
 		td1.find('.tovar_name').on("keyup", function() {
 			if( $(this).val().length < 2 ) {
 				$(this).parents('tr').find('#code').text('');
+				$(this).parents('tr').find('#icode').val('');
 				$(this).parents('tr').find('#odid').val('');
 				$(this).parents('tr').find('#item').val('');
 				$(this).parents('tr').find('#pt').val('');
+				$(this).parents('tr').find('#tovar_cena').attr('min', '0');
 				$(this).parents('tr').find('#tovar_cena').val('');
 				$(this).parents('tr').find('#tovar_kol').val('');
 			}
@@ -516,14 +532,18 @@ while( $row = mysqli_fetch_array($res) ) {
 						,ODD_ODB.ItemID
 						,ODD_ODB.PT_ID
 						,ODD_ODB.Amount
+						,ODD_ODB.min_price
 						,ODD_ODB.Price
+						,ODD_ODB.discount
 						,ODD_ODB.Zakaz
 						,OD.Code
 				  FROM (SELECT ODD.OD_ID
 							  ,ODD.ODD_ID ItemID
 							  ,IFNULL(PM.PT_ID, 2) PT_ID
 							  ,ODD.Amount
-							  ,IFNULL(ODD.opt_price, IFNULL(ODD.Price, 'NULL')) Price
+							  ,IFNULL(ODD.min_price, 0) min_price
+							  ,ODD.Price
+							  ,ODD.discount
 							  ,Zakaz(ODD.ODD_ID) Zakaz
 						FROM OrdersDataDetail ODD
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -533,7 +553,9 @@ while( $row = mysqli_fetch_array($res) ) {
 							  ,ODB.ODB_ID ItemID
 							  ,0 PT_ID
 							  ,ODB.Amount
-							  ,IFNULL(ODB.opt_price, IFNULL(ODB.Price, 'NULL')) Price
+							  ,IFNULL(ODB.min_price, 0) min_price
+							  ,ODB.Price
+							  ,ODB.discount
 							  ,ZakazB(ODB.ODB_ID) Zakaz
 						FROM OrdersDataBlank ODB
 						WHERE ODB.Del = 0
@@ -545,7 +567,7 @@ while( $row = mysqli_fetch_array($res) ) {
 				  ORDER BY ODD_ODB.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
-			echo "addRow('шт', escapeHtml('{$row["Zakaz"]}'), '{$row["Amount"]}', '{$row["Price"]}', '{$row["ItemID"]}', '{$row["PT_ID"]}', '{$row["Code"]}', '{$row["OD_ID"]}');";
+			echo "addRow('шт', escapeHtml('{$row["Zakaz"]}'), '{$row["Amount"]}', '{$row["min_price"]}', '{$row["Price"]}', '{$row["discount"]}', '{$row["ItemID"]}', '{$row["PT_ID"]}', '{$row["Code"]}', '{$row["OD_ID"]}');";
 		}
 		echo "$('#add_bill_btn').click();";
 	}

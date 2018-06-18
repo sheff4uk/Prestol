@@ -688,7 +688,9 @@ case "invoice":
 							,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 							,OD.SH_ID
 							,SH.Shop
-							,GROUP_CONCAT(ODD_ODB.Price SEPARATOR '') Price
+							# Исключение для Клена
+							,IF(OD.SH_ID = 36, GROUP_CONCAT(ODD_ODB.opt_price SEPARATOR ''), GROUP_CONCAT(ODD_ODB.Price SEPARATOR '')) Price
+							,IF(OD.SH_ID = 36, GROUP_CONCAT(ODD_ODB.opt_discount SEPARATOR ''), GROUP_CONCAT(ODD_ODB.discount SEPARATOR '')) discount
 							,OD.confirmed
 							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
 							,IFNULL(OP.payment_sum, 0) payment_sum
@@ -696,12 +698,19 @@ case "invoice":
 						FROM OrdersData OD
 						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 						LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
+						LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 AND PFI.rtrn != 1
 						JOIN (
 							SELECT ODD.OD_ID
 								,IFNULL(PM.PT_ID, 2) PT_ID
 								,ODD.ODD_ID itemID
 
-								,CONCAT('<input type=\'hidden\' name=\'tbl[]\' value=\'odd\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'0\' name=\'opt_price[]\' value=\'', IFNULL(ODD.opt_price, IFNULL(ODD.Price, ".($num_rows > 0 ? "0" : "''").")), '\' amount=\'', ODD.Amount, '\'><br>') Price
+								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODD.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odd\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'', IFNULL(ODD.min_price, 0), '\' name=\'price[]\' value=\'', IFNULL(ODD.Price, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'><br>') Price
+
+								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODD.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odd\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'0\' name=\'price[]\' value=\'', IFNULL((ODD.Price - IFNULL(ODD.discount, 0)), ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'><br>') opt_price
+
+								,CONCAT('<input ".($num_rows > 0 ? "readonly" : "")." type=\'number\' min=\'0\' name=\'discount[]\' value=\'', IFNULL(ODD.discount, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'><br>') discount
+
+								,CONCAT('<input ".($num_rows > 0 ? "readonly" : "")." type=\'number\' min=\'0\' name=\'discount[]\' value=\'', IF(ODD.opt_price IS NOT NULL, (ODD.Price - IFNULL(ODD.discount, 0) - ODD.opt_price), ''), '\' amount=\'', ODD.Amount, '\'><br>') opt_discount
 
 								,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', Zakaz(ODD.ODD_ID), '</a></b><br>') Zakaz
 
@@ -729,7 +738,13 @@ case "invoice":
 								,0 PT_ID
 								,ODB.ODB_ID itemID
 
-								,CONCAT('<input type=\'hidden\' name=\'tbl[]\' value=\'odb\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODB.ODB_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'0\' name=\'opt_price[]\' value=\'', IFNULL(ODB.opt_price, IFNULL(ODB.Price, ".($num_rows > 0 ? "0" : "''").")), '\' amount=\'', ODB.Amount, '\'><br>') Price
+								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODB.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odb\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODB.ODB_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'', IFNULL(ODB.min_price, 0), '\' name=\'price[]\' value=\'', IFNULL(ODB.Price, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODB.Amount, '\'><br>') Price
+
+								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODB.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odb\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODB.ODB_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'0\' name=\'price[]\' value=\'', IFNULL((ODB.Price - IFNULL(ODB.discount, 0)), ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODB.Amount, '\'><br>') opt_price
+
+								,CONCAT('<input ".($num_rows > 0 ? "readonly" : "")." type=\'number\' min=\'0\' name=\'discount[]\' value=\'', IFNULL(ODB.discount, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODB.Amount, '\'><br>') discount
+
+								,CONCAT('<input ".($num_rows > 0 ? "readonly" : "")." type=\'number\' min=\'0\' name=\'discount[]\' value=\'', IF(ODB.opt_price IS NOT NULL, (ODB.Price - IFNULL(ODB.discount, 0) - ODB.opt_price), ''), '\' amount=\'', ODB.Amount, '\'><br>') opt_discount
 
 								,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODB.Amount, '</b> ', ZakazB(ODB.ODB_ID), '</a></b><br>') Zakaz
 
@@ -751,7 +766,7 @@ case "invoice":
 							WHERE ODB.Del = 0
 							GROUP BY ODB.ODB_ID
 							ORDER BY PT_ID DESC, itemID
-							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 						LEFT JOIN (
 							SELECT OD_ID, SUM(payment_sum) payment_sum
 							FROM OrdersPayment
@@ -761,7 +776,8 @@ case "invoice":
 							".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.KA_ID IS NULL AND OD.ul = 1")."
 							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 							AND OD.Del = 0
-							".($num_rows > 0 ? "AND (OD.StartDate IS NOT NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NOT NULL))" : "AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))")."
+							".($num_rows > 0 ? "AND PFI.PFI_ID IS NOT NULL" : "AND PFI.PFI_ID IS NULL")."
+							#".($num_rows > 0 ? "AND (OD.StartDate IS NOT NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NOT NULL))" : "AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))")."
 							AND OD.ReadyDate IS NOT NULL
 							AND IFNULL(OP.payment_sum, 0) = 0
 							AND NOT (OS.locking_date IS NOT NULL AND SH.KA_ID IS NULL)
@@ -774,12 +790,13 @@ case "invoice":
 			$html .= "<th width='75'>Код<br>Создан</th>";
 			$html .= "<th width='20%'>Заказчик [Продажа]-[Сдача]</th>";
 			$html .= "<th width='10%'>Салон</th>";
-			$html .= "<th width='70'>Цена за единицу</th>";
+			$html .= "<th width='70'>Цена за шт.</th>";
+			$html .= "<th width='70'>Скидка за шт.</th>";
 			$html .= "<th width='30%'>Заказ</th>";
 			$html .= "<th width='20%'>Материал</th>";
 			$html .= "<th width='20%'>Цвет</th>";
-			$html .= "<th width='100'>Этапы</th>";
-			$html .= "<th width='40'>Принят</th>";
+//			$html .= "<th width='100'>Этапы</th>";
+//			$html .= "<th width='40'>Принят</th>";
 			$html .= "<th width='20%'>Примечание</th>";
 			$html .= "</tr></thead><tbody>";
 			while( $row = mysqli_fetch_array($res) ) {
@@ -789,49 +806,47 @@ case "invoice":
 				$html .= "<td><span class='nowrap'><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["Shop"]}</span></td>";
 				$html .= "<td>{$row["Price"]}</td>";
+				$html .= "<td>{$row["discount"]}</td>";
 				$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 				switch ($row["IsPainting"]) {
 					case 0:
 						$class = "empty";
-						//$title = "Без покраски";
 						break;
 					case 1:
 						$class = "notready";
-						//$title = "Не в работе";
 						break;
 					case 2:
 						$class = "inwork";
-						//$title = "В работе";
 						break;
 					case 3:
 						$class = "ready";
-						//$title = "Готово";
 						break;
 				}
 				$html .= "<td><span class='nowrap'>{$row["Material"]}</span></td>";
 				$html .= "<td class='{$class}'>{$row["Color"]}</td>";
-				$html .= "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
-					// Если заказ принят
-					if( $row["confirmed"] == 1 ) {
-						$class = 'confirmed';
-						//$title = 'Принят в работу';
-					}
-					else {
-						$class = 'not_confirmed';
-						//$title = 'Не принят в работу';
-					}
-				$html .= "<td class='{$class}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
+//				$html .= "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
+//					// Если заказ принят
+//					if( $row["confirmed"] == 1 ) {
+//						$class = 'confirmed';
+//						//$title = 'Принят в работу';
+//					}
+//					else {
+//						$class = 'not_confirmed';
+//						//$title = 'Не принят в работу';
+//					}
+//				$html .= "<td class='{$class}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 				$html .= "<td>{$row["Comment"]}</td>";
 				$html .= "</tr>";
 			}
 			$html .= "</tbody></table>";
 			$html .= "<p><input type='checkbox' id='selectallbottom'><label for='selectallbottom'>Выбрать все</label></p>";
 			$html = addslashes($html);
-			echo "window.top.window.$('#orders_to_invoice').html('{$html}');";
-			echo "window.top.window.$('#orders_to_invoice input[type=\"number\"], #orders_to_invoice input[type=\"hidden\"]').attr('disabled', true);";
-			echo "window.top.window.$('#orders_to_invoice input[type=\"number\"]').hide();";
-			echo "window.top.window.$('#orders_to_invoice input[type=\"number\"]').attr('placeholder', 'цена');";
-			echo "window.top.window.$('.button_shops').button();";
+			echo "$('#orders_to_invoice').html('{$html}');";
+			echo "$('#orders_to_invoice input[type=\"number\"], #orders_to_invoice input[type=\"hidden\"]').attr('disabled', true);";
+			echo "$('#orders_to_invoice input[type=\"number\"]').hide();";
+			echo "$('#orders_to_invoice input[name=\"price[]\"]').attr('placeholder', 'цена');";
+			echo "$('#orders_to_invoice input[name=\"discount[]\"]').attr('placeholder', 'скидка');";
+			echo "$('.button_shops').button();";
 			echo "$('.button_shops').prop('checked', true).change();";
 			//echo "window.top.window.$('.chbox').button();";
 		}
@@ -967,17 +982,12 @@ case "add_payment":
 case "update_price":
 	$OD_ID = $_GET["OD_ID"];
 
-	// Узнаем скидку заказа
-	$query = "SELECT discount FROM OrdersData WHERE OD_ID = {$OD_ID}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-	$discount = mysqli_result($res,0,'discount');
-
-	$js = '';
-
 	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 	$html .= "<table class='main_table'><thead><tr>";
 	$html .= "<th>Наименование</th>";
 	$html .= "<th width='75'>Цена за шт.</th>";
+	$html .= "<th width='75'>Скидка за шт.</th>";
+	$html .= "<th width='50'>%</th>";
 	$html .= "<th width='50'>Кол-во</th>";
 	$html .= "<th width='75'>Сумма</th>";
 	$html .= "</tr></thead><tbody>";
@@ -985,7 +995,9 @@ case "update_price":
 	$query = "SELECT ODD.OD_ID
 					,IFNULL(PM.PT_ID, 2) PT_ID
 					,ODD.ODD_ID itemID
+					,IFNULL(ODD.min_price, 0) min_price
 					,ODD.Price
+					,ODD.discount
 					,ODD.Amount
 					,ODD.PM_ID
 					,ODD.PME_ID
@@ -1000,7 +1012,9 @@ case "update_price":
 			  SELECT ODB.OD_ID
 					,0 PT_ID
 					,ODB.ODB_ID itemID
+					,IFNULL(ODB.min_price, 0) min_price
 					,ODB.Price
+					,ODB.discount
 					,ODB.Amount
 					,0 PM_ID
 					,0 PME_ID
@@ -1017,20 +1031,18 @@ case "update_price":
 		$html .= "<input type='hidden' name='PT_ID[]' value='{$row["PT_ID"]}'>";
 		$html .= "<input type='hidden' name='itemID[]' value='{$row["itemID"]}'>";
 		$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
-		$html .= "<td class='prod_price'><input type='number' id='prod_price{$row["itemID"]}' min='0' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;'></td>";
+		$html .= "<td class='prod_price'><input type='number' min='{$row["min_price"]}' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;'></td>";
+		$html .= "<td class='prod_discount'><input type='number' min='0' name='discount[]' value='{$row["discount"]}' style='width: 70px; text-align: right;'></td>";
+		$html .= "<td><span class='prod_percent'></span>%</td>";
 		$html .= "<td class='prod_amount' style='text-align: center; font-size: 1.3em; font-weight: bold;'>{$row["Amount"]}</td>";
 		$html .= "<td class='prod_sum' style='text-align: right;'></td>";
 		$html .= "</tr>";
-//		if( $row["PT_ID"] > 0 ) {
-			$js .= "window.top.window.$( '#prod_price{$row["itemID"]}' ).autocomplete({ source: 'autocomplete.php?do=price&retail=1&PM_ID={$row["PM_ID"]}&PME_ID={$row["PME_ID"]}' });";
-//		}
 	}
-	$html .= "<tr style='text-align: right; font-weight: bold;'><td colspan='2' id='discount'>Скидка: <input type='number' name='discount' value='{$discount}' style='width: 70px; text-align: right;'> руб. (<span></span> %)</td><td>Итог:</td><td id='prod_total'><input type='number' style='width: 70px; text-align: right;'></td></tr>";
+	$html .= "<tr style='text-align: right; font-weight: bold;'><td colspan='4' id='discount'>Скидка: <input readonly type='number' style='width: 70px; text-align: right;'> руб. (<span></span> %)</td><td>Итог:</td><td id='prod_total'><input readonly type='number' style='width: 70px; text-align: right;'></td></tr>";
 	$html .= "</tbody></table>";
 
 	$html = addslashes($html);
 	echo "window.top.window.$('#update_price fieldset').html('{$html}');";
-	echo $js;
 
 	break;
 ///////////////////////////////////////////////////////////////////
@@ -1122,13 +1134,22 @@ case "update_shop":
 	$SH_ID = $_GET["SH_ID"] ? $_GET["SH_ID"] : "NULL";
 
 	// Узнаем название старого салона
-	$query = "SELECT SH.Shop FROM Shops SH JOIN OrdersData OD ON OD.SH_ID = SH.SH_ID AND OD.OD_ID = {$OD_ID}";
+	$query = "
+		SELECT IFNULL(SH.SH_ID, 0) SH_ID, IFNULL(SH.Shop, 'Свободные') Shop
+		FROM OrdersData OD
+		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		WHERE OD.OD_ID = {$OD_ID}
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-	$old_shop = mysqli_result($res,0,'Shop') ? mysqli_result($res,0,'Shop') : 'Свободные';
+	$old_shid = mysqli_result($res,0,'SH_ID');
+	$old_shop = mysqli_result($res,0,'Shop');
 
 	// Меняем салон в заказе
 	$query = "UPDATE OrdersData SET SH_ID = {$SH_ID}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
-	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+	if( !mysqli_query( $mysqli, $query ) ) {
+		echo "$('.main_table select.select_shops').val({$old_shid});";
+		die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+	}
 
 	// Узнаем название нового салона
 	$query = "SELECT IFNULL(SH.Shop, 'Свободные') Shop
@@ -1164,13 +1185,18 @@ case "update_shop":
 
 	echo "noty({timeout: 3000, text: 'Салон изменен с <b>{$old_shop}</b> на <b>{$new_shop}</b>', type: 'success'});";
 	if( $SH_ID == 0 ) {
-//		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a.shipping').hide();";
-		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"]').hide('fast');";
+		echo "$('.main_table tr[id=\"ord{$OD_ID}\"]').hide('fast');";
 		echo "noty({timeout: 4000, text: 'Заказ перемещен в <b>СВОБОДНЫЕ</b>', type: 'alert'});";
 	}
-//	else {
-//		echo "window.top.window.$('.main_table tr[id=\"ord{$OD_ID}\"] action a.shipping').show();";
-//	}
+
+	// Проверяем отметку об изменении суммы заказа и выводим сообщение
+	$query = "SELECT OD.Code FROM OrdersData OD WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) ) {
+		echo "noty({timeout: 10000, text: 'Внимание! Ваши действия вызвали изменение суммы заказа {$row['Code']}.', type: 'alert'});";
+	}
+	$query = "UPDATE OrdersData OD SET OD.change_price = 0 WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	break;
 ///////////////////////////////////////////////////////////////////

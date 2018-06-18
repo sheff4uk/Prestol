@@ -14,6 +14,7 @@
 	}
 
 	if( in_array('order_add', $Rights) ) {
+		// Генерируем таблицу workflow
 		$query = "SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 1 is_read, USR_Name(OM.author) Name
 					FROM OrdersMessage OM
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
@@ -106,6 +107,15 @@
 			";
 		}
 		$workflow_table_outcoming .= "</tbody></table>";
+
+		// Проверяем отметку об изменении суммы заказа и выводим сообщение
+		$query = "SELECT OD.Code FROM OrdersData OD WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) ) {
+			$_SESSION['alert'][] = "Внимание! Ваши действия вызвали изменение суммы заказа {$row['Code']}.";
+		}
+		$query = "UPDATE OrdersData OD SET OD.change_price = 0 WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -256,6 +266,7 @@
 	</script>
 
 <?
+	// Выводим собранные в сесии сообщения через noty
 	if( isset($_SESSION["error"]) ) {
 		foreach ($_SESSION["error"] as $value) {
 			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
@@ -273,7 +284,7 @@
 	}
 
 	if( isset($_SESSION["success"]) ) {
-		foreach ($_SESSION["alert"] as $value) {
+		foreach ($_SESSION["success"] as $value) {
 			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
 			echo "<script>$(document).ready(function() {noty({timeout: 3000, text: '{$value}', type: 'success'});});</script>";
 		}

@@ -5,17 +5,52 @@ session_start();
 // Узнаем тип накладной ОТГРУЗКА/ВОЗВРАТ
 $return = $_POST["num_rows"] ? 1 : 0;
 
-// Сохраняем оптовые цены изделий в ODD/ODB
-foreach ($_POST["opt_price"] as $key => $value) {
+// Сохраняем цены изделий в ODD/ODB
+foreach ($_POST["price"] as $key => $value) {
 	$tbl = $_POST["tbl"][$key];
 	$tbl_id = $_POST["tbl_id"][$key];
+	$discount = ($_POST["discount"][$key] > 0) ? $_POST["discount"][$key] : "NULL";
+	$odid = $_POST["odid"][$key];
 
-	if( $tbl == "odd" ) {
-		$query = "UPDATE OrdersDataDetail SET opt_price = {$value}, author = {$_SESSION["id"]} WHERE ODD_ID = {$tbl_id}";
+	// Узнаем нет ли накладной для очередного заказа
+	$query = "
+		SELECT PFI.PFI_ID
+		FROM OrdersData OD
+		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 ".($return ? "AND PFI.rtrn = 1" : "AND PFI.rtrn != 1")."
+		WHERE OD.OD_ID = {$odid}
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$PFI_ID = mysqli_result($res,0,'PFI_ID');
+	// Если заказ в накладной - останавливаем, выводим сообщение
+	if( $PFI_ID ) {
+		$_SESSION["error"][] = "При создании накладной возникла ошибка. Пожалуйста, повторите попытку.";
+		exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_POST["year"]).'&payer='.($_POST["payer"]).'">');
+		die;
 	}
-	elseif( $tbl == "odb" ) {
-		$query = "UPDATE OrdersDataBlank SET opt_price = {$value}, author = {$_SESSION["id"]} WHERE ODB_ID = {$tbl_id}";
+
+	// Делаем исключение для Клена
+	$query = "SELECT OD.SH_ID FROM OrdersData OD WHERE OD.OD_ID = {$odid}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$shop = mysqli_result($res,0,'SH_ID') ? mysqli_result($res,0,'SH_ID') : 1;
+
+	// Если Клен - цену записываем в opt_price
+	if( $shop == 36 ) {
+		if( $tbl == "odd" ) {
+			$query = "UPDATE OrdersDataDetail SET opt_price = ".($value - $discount).", author = {$_SESSION["id"]} WHERE ODD_ID = {$tbl_id}";
+		}
+		elseif( $tbl == "odb" ) {
+			$query = "UPDATE OrdersDataBlank SET opt_price = ".($value - $discount).", author = {$_SESSION["id"]} WHERE ODB_ID = {$tbl_id}";
+		}
 	}
+	else {
+		if( $tbl == "odd" ) {
+			$query = "UPDATE OrdersDataDetail SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$tbl_id}";
+		}
+		elseif( $tbl == "odb" ) {
+			$query = "UPDATE OrdersDataBlank SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODB_ID = {$tbl_id}";
+		}
+	}
+
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 }
 
@@ -73,7 +108,7 @@ $count = mysqli_result($res,0,'count') ? mysqli_result($res,0,'count') : 1;
 
 // Сохраняем в таблицу PrintFormsInvoice данные по накладной
 $date = date( 'Y-m-d', strtotime($_POST["date"]) );
-$query = "INSERT INTO PrintFormsInvoice SET summa = {$_POST["summa"]}, platelshik_id = {$platelshik_id}, count = {$count}, date = '{$date}', USR_ID = {$_SESSION["id"]}, rtrn = {$return}";
+$query = "INSERT INTO PrintFormsInvoice SET summa = {$_POST["summa"]}, discount = {$_POST["total_discount"]}, platelshik_id = {$platelshik_id}, count = {$count}, date = '{$date}', USR_ID = {$_SESSION["id"]}, rtrn = {$return}";
 mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $id = mysqli_insert_id($mysqli);
 
@@ -103,13 +138,15 @@ $query = "SELECT ODD_ODB.OD_ID
 				,ODD_ODB.PT_ID
 				,OD.Code
 				,ODD_ODB.Amount
-				,ODD_ODB.Price
+				#Исключение для Клена
+				,IF(OD.SH_ID = 36, ODD_ODB.opt_price, ODD_ODB.Price) Price
 				,ODD_ODB.Zakaz
 		  FROM (SELECT ODD.OD_ID
 					  ,ODD.ODD_ID ItemID
 					  ,IFNULL(PM.PT_ID, 2) PT_ID
 					  ,ODD.Amount
-					  ,ODD.opt_price Price
+					  ,(ODD.Price - IFNULL(ODD.discount, 0)) Price
+					  ,ODD.opt_price
 					  ,Zakaz(ODD.ODD_ID) Zakaz
 				FROM OrdersDataDetail ODD
 				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -119,7 +156,8 @@ $query = "SELECT ODD_ODB.OD_ID
 					  ,ODB.ODB_ID ItemID
 					  ,0 PT_ID
 					  ,ODB.Amount
-					  ,ODB.opt_price Price
+					  ,(ODB.Price - IFNULL(ODB.discount, 0)) Price
+					  ,ODB.opt_price
 					  ,ZakazB(ODB.ODB_ID) Zakaz
 				FROM OrdersDataBlank ODB
 				WHERE ODB.Del = 0
@@ -140,7 +178,6 @@ while( $row = mysqli_fetch_array($res) ) {
 	$Counter++;
 }
 
-//$_POST["nomer"] = str_pad($count, 8, '0', STR_PAD_LEFT); // Дописываем нули к номеру накладной
 $_POST["nomer"] = $count;
 
 // Информация о грузоотправителе
