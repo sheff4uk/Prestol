@@ -296,7 +296,7 @@
 					FROM OrdersData OD
 					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
 					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = {$CT_ID}
-					WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID}
+					WHERE OD.DelDate IS NULL AND SH.CT_ID = {$CT_ID}
 					GROUP BY YEAR(OD.StartDate), MONTH(OD.StartDate)
 
 					UNION
@@ -502,7 +502,7 @@
 						$query = "SELECT SUM(OP.payment_sum) payment_sum
 									FROM OrdersData OD
 									JOIN OrdersPayment OP ON OP.OD_ID = OD.OD_ID
-									WHERE OD.Del = 0 AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}";
+									WHERE OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$month_payment_sum = mysqli_result($subres,0,'payment_sum');
 						$shop_debt = ($shop_price - $shop_price_inv) - ($shop_discount - $shop_discount_inv) - $month_payment_sum;
@@ -954,7 +954,7 @@
 						GROUP BY ODB.ODB_ID
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-					WHERE OD.Del = 0 AND SH.CT_ID = {$CT_ID}
+					WHERE OD.DelDate IS NULL AND SH.CT_ID = {$CT_ID}
 					".(($year != '' and $month != '') ? (($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year) : '')."
 					GROUP BY OD.OD_ID
 					#HAVING Price - payment_sum <> 0 OR Price IS NULL OR DATEDIFF(NOW(), RD) <= {$datediff}

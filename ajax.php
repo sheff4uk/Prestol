@@ -556,7 +556,7 @@ case "shipment":
 							GROUP BY ODB.ODB_ID
 							ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-						WHERE OD.Del = 0
+						WHERE OD.DelDate IS NULL
 							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 							".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "");
 			if( $_GET["shpid"] ) {
@@ -775,7 +775,7 @@ case "invoice":
 						WHERE SH.CT_ID = {$CT_ID}
 							".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.KA_ID IS NULL AND OD.ul = 1")."
 							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-							AND OD.Del = 0
+							AND OD.DelDate IS NULL
 							".($num_rows > 0 ? "AND PFI.PFI_ID IS NOT NULL" : "AND PFI.PFI_ID IS NULL")."
 							#".($num_rows > 0 ? "AND (OD.StartDate IS NOT NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NOT NULL))" : "AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))")."
 							AND OD.ReadyDate IS NOT NULL
@@ -877,6 +877,17 @@ case "add_payment":
 	$is_lock = mysqli_result($res,0,'is_lock');
 
 	$html .= "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
+
+	$html .= "<div class='accordion'>";
+	$html .= "<h3>Памятка по внесению оплаты</h3>";
+	$html .= "<div><ul>";
+	$html .= "<li>Менять дату возможно только у терминальных платежей.</li>";
+	$html .= "<li>Ранее добавленные платежи <b>не редактируются</b>. Если нужно изменить или отменить предыдущую запись, то создайте новую корректирующую операцию с отрицательной суммой.</li>";
+	$html .= "<li>Если нужно совершить возврат денег по заказу, он так же вносится со знаком минус.</li>";
+	$html .= "<li>Для переноса платежа с одного заказа на другой: сначала сделайте возврат платежа на первом заказе, затем внесите эту сумму на второй заказ.</li>";
+	$html .= "</ul></div>";
+	$html .= "</div>";
+
 	$html .= "<table><thead><tr>";
 	$html .= "<th style='width: 56px;'>Касса</th>";
 	$html .= "<th>Дата</th>";
@@ -960,20 +971,10 @@ case "add_payment":
 	}
 	$html .= "</tbody></table>";
 
-	$html .= "<div class='accordion'>";
-	$html .= "<h3>Памятка по внесению оплаты</h3>";
-	$html .= "<div><ul>";
-	$html .= "<li>Менять дату возможно только у терминальных платежей.</li>";
-	$html .= "<li>Ранее добавленные платежи <b>не редактируются</b>. Если нужно изменить или отменить предыдущую запись, то создайте новую корректирующую операцию с отрицательной суммой.</li>";
-	$html .= "<li>Если нужно совершить возврат денег по заказу, он так же вносится со знаком минус.</li>";
-	$html .= "<li>Для переноса платежа с одного заказа на другой: сначала сделайте возврат платежа на первом заказе, затем внесите эту сумму на второй заказ.</li>";
-	$html .= "</ul></div>";
-	$html .= "</div>";
-
 	$html = addslashes($html);
-	echo "window.top.window.$('#add_payment fieldset').html('{$html}');";
+	echo "$('#add_payment fieldset').html('{$html}');";
 	// Инициируем акордион
-	echo "window.top.window.$('#add_payment .accordion').accordion({collapsible: true, heightStyle: 'content', active: false});";
+	echo "$('#add_payment .accordion').accordion({collapsible: true, heightStyle: 'content', active: false});";
 
 	break;
 ///////////////////////////////////////////////////////////////////
@@ -983,6 +984,15 @@ case "update_price":
 	$OD_ID = $_GET["OD_ID"];
 
 	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
+
+	$html .= "<div class='accordion'>";
+	$html .= "<h3>Памятка по изменению суммы заказа</h3>";
+	$html .= "<div><ul>";
+	$html .= "<li>Стоимость изделий вычисляется автоматически согласно прайса и может быть изменена только в большую сторону.</li>";
+	$html .= "<li>Для уменьшения стоимости воспользуйтесь скидкой. Размер скидки указывается в рублях за единицу товара.</li>";
+	$html .= "</ul></div>";
+	$html .= "</div>";
+
 	$html .= "<table class='main_table'><thead><tr>";
 	$html .= "<th>Наименование</th>";
 	$html .= "<th width='75'>Цена за шт.</th>";
@@ -1042,7 +1052,9 @@ case "update_price":
 	$html .= "</tbody></table>";
 
 	$html = addslashes($html);
-	echo "window.top.window.$('#update_price fieldset').html('{$html}');";
+	echo "$('#update_price fieldset').html('{$html}');";
+	// Инициируем акордион
+	echo "$('#update_price .accordion').accordion({collapsible: true, heightStyle: 'content', active: false});";
 
 	break;
 ///////////////////////////////////////////////////////////////////
@@ -1656,10 +1668,10 @@ case "start_balance_blank":
 			) SBS ON SBS.BL_ID = BL.BL_ID
 			LEFT JOIN (
 				SELECT PB.BL_ID
-					,SUM(ODD.Amount * PB.Amount * IF(OD.Del, 0, 1)) Amount
-					,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) Painting
-					,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount * IF(OD.Del, 0, 1)) InPainting
-					,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * OD.Del) PaintingDeleted
+					,SUM(ODD.Amount * PB.Amount * IF(OD.DelDate IS NULL, 1, 0)) Amount
+					,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 1, 0)) Painting
+					,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 1, 0)) InPainting
+					,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
 			FROM OrdersDataDetail ODD
 				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 				JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
@@ -1668,10 +1680,10 @@ case "start_balance_blank":
 			) SODD ON SODD.BL_ID = BL.BL_ID
 			LEFT JOIN (
 				SELECT ODB.BL_ID
-					,SUM(ODB.Amount * IF(OD.Del, 0, 1)) Amount
-					,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.Del, 0, 1)) Painting
-					,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0) * IF(OD.Del, 0, 1)) InPainting
-					,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * OD.Del) PaintingDeleted
+					,SUM(ODB.Amount * IF(OD.DelDate IS NULL, 1, 0)) Amount
+					,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) Painting
+					,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) InPainting
+					,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
 				FROM OrdersDataBlank ODB
 				JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
 				WHERE ODB.BL_ID IS NOT NULL

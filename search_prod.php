@@ -41,7 +41,7 @@
 			FROM OrdersDataBlank ODB
 			WHERE ODB.Del = 0
 		) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-		WHERE OD.Del = 0 AND OD.Code LIKE '%{$_GET["term"]}%' AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND ((OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}) OR (OD.ReadyDate IS NULL))
+		WHERE OD.DelDate IS NULL AND OD.Code LIKE '%{$_GET["term"]}%' AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND ((OD.ReadyDate IS NOT NULL AND DATEDIFF(NOW(), OD.ReadyDate) <= {$datediff}) OR (OD.ReadyDate IS NULL))
 	";
 
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

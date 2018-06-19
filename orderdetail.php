@@ -10,7 +10,7 @@
 		$query = "SELECT OD.OD_ID
 						,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
 						,OD.confirmed
-						,OD.Del
+						,IF(OD.DelDate IS NULL, 0, 1) Del
 						,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
 					FROM OrdersData OD
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID

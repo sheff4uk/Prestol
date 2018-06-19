@@ -121,8 +121,8 @@
 
 		if( $left_sum != 0 and $right_sum != 0 ) {
 			// Создание копии заказа
-			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, Progress, IsReady, Del, author, confirmed)
-			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, Progress, IsReady, Del, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, Progress, IsReady, author, confirmed)
+			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, Progress, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
@@ -851,12 +851,12 @@
 					,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 					,BIT_OR(IFNULL(ODD_ODB.PRfilter, 1)) PRfilter
 					,BIT_OR(IFNULL(ODD_ODB.MTfilter, 1)) MTfilter
-					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.Del = 0, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
+					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 					,BIT_AND(ODD_ODB.IsReady) IsReady
 					,IFNULL(OD.SHP_ID, 0) SHP_ID
 					,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
 					,OD.confirmed
-					,OD.Del
+					,IF(OD.DelDate IS NULL, 0, 1) Del
 					,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
 					,PFI.count
 			  FROM OrdersData OD
@@ -935,17 +935,17 @@
 			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
 				switch ($archive) {
 					case 0:
-						$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL";
+						$query .= " AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL";
 						break;
 					case 1:
-						$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";
+						$query .= " AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";
 						break;
 					case 2:
-						$query .= " AND OD.Del = 0 AND OD.ReadyDate IS NOT NULL";
+						$query .= " AND OD.DelDate IS NULL AND OD.ReadyDate IS NOT NULL";
 						$limit = " LIMIT 500";
 						break;
 					case 3:
-						$query .= " AND OD.Del = 1";
+						$query .= " AND OD.DelDate IS NOT NULL";
 						$limit = " LIMIT 500";
 						break;
 				}
@@ -1197,12 +1197,12 @@
 				JOIN (
 					SELECT ODD.OD_ID, ODD.MT_ID, ODD.IsExist
 					FROM OrdersDataDetail ODD
-					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.Del = 0
+					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.DelDate IS NULL
 					WHERE ODD.OD_ID IN ({$orders_IDs}) AND ODD.Del = 0
 					UNION
 					SELECT ODB.OD_ID, ODB.MT_ID, ODB.IsExist
 					FROM OrdersDataBlank ODB
-					JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID AND OD.Del = 0
+					JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID AND OD.DelDate IS NULL
 					WHERE ODB.OD_ID IN ({$orders_IDs}) AND ODB.Del = 0
 					) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
 				GROUP BY MT.MT_ID

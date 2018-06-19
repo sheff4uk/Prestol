@@ -192,7 +192,7 @@
 							JOIN (
 								SELECT ODD.OD_ID, ODD.MT_ID, ODD.IsExist, IFNULL(ODS_ST.WD_ID, 0) WD_ID, IF(ODS_ST.IsReady = 1, 1, IF(ODS_ST.IsReady = 0 AND ODS_ST.WD_ID IS NOT NULL, 0, NULL)) IsReady
 								FROM OrdersDataDetail ODD
-								JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.Del = 0
+								JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.DelDate IS NULL
 								LEFT JOIN (
 									SELECT ODS.ODD_ID, ODS.WD_ID, ODS.IsReady
 									FROM OrdersDataSteps ODS
@@ -204,7 +204,7 @@
 								UNION
 								SELECT ODB.OD_ID, ODB.MT_ID, ODB.IsExist, IFNULL(ODS_ST.WD_ID, 0) WD_ID, IF(ODS_ST.IsReady = 1, 1, IF(ODS_ST.IsReady = 0 AND ODS_ST.WD_ID IS NOT NULL, 0, NULL)) IsReady
 								FROM OrdersDataBlank ODB
-								JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID AND OD.Del = 0
+								JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID AND OD.DelDate IS NULL
 								LEFT JOIN (
 									SELECT ODS.ODB_ID, ODS.WD_ID, ODS.IsReady
 									FROM OrdersDataSteps ODS
@@ -377,7 +377,7 @@
 							".( isset( $_GET["WD_ID"] ) ? " AND IFNULL(ODS.WD_ID, 0) = {$_GET["WD_ID"]}" : "" )."
 						ORDER BY PT_ID DESC, ItemID
 				) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-				WHERE OD.Del = 0 AND OD.ReadyDate IS NULL
+				WHERE OD.DelDate IS NULL AND OD.ReadyDate IS NULL
 				GROUP BY OD.OD_ID
 				ORDER BY OD.OD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

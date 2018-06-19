@@ -132,7 +132,7 @@
 				  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
 				  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 				  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-				  WHERE OD.Del = 0
+				  WHERE OD.DelDate IS NULL
 				  GROUP BY OD.OD_ID, ODS.ST_ID
 				  ORDER BY ST.Sort";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
