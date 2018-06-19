@@ -776,8 +776,8 @@ case "invoice":
 							".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.KA_ID IS NULL AND OD.ul = 1")."
 							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 							AND OD.DelDate IS NULL
-							".($num_rows > 0 ? "AND PFI.PFI_ID IS NOT NULL" : "AND PFI.PFI_ID IS NULL")."
-							#".($num_rows > 0 ? "AND (OD.StartDate IS NOT NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NOT NULL))" : "AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))")."
+							#".($num_rows > 0 ? "AND PFI.PFI_ID IS NOT NULL" : "AND PFI.PFI_ID IS NULL")."
+							".($num_rows > 0 ? "AND (OD.StartDate IS NOT NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NOT NULL))" : "AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))")."
 							AND OD.ReadyDate IS NOT NULL
 							AND IFNULL(OP.payment_sum, 0) = 0
 							AND NOT (OS.locking_date IS NOT NULL AND SH.KA_ID IS NULL)
