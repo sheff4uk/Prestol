@@ -974,6 +974,11 @@
 			$format_diff = number_format($row["Price"] - $row["payment_sum"], 0, '', ' ');
 			$diff_color = ($row["Price"] == $row["payment_sum"]) ? "#6f6" : (($row["Price"] < $row["payment_sum"]) ? "#f66" : "#fff");
 			$otkaz_cell = ($row["type"] == 1) ? "<b>Замена</b><br>{$row["comment"]}" : (($row["type"] == 2) ? "<b>Отказ</b><br>{$row["comment"]}" : "");
+			// Подсвечиваем скидку в случае превышения порога
+			if( $row["percent"] >= 5 ) {$discount_bg = "bg-red";}
+			elseif( $row["percent"] >= 3 ) {$discount_bg = "bg-yellow";}
+			else {$discount_bg = "";}
+
 			echo "
 				<tr id='ord{$row["OD_ID"]}'>
 					<td>
@@ -1005,7 +1010,7 @@
 
 			echo "<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
 					<td class='txtright'>{$price}</td>
-					<td class='txtright nowrap'>{$format_discount} p.<br><b>{$row["percent"]} %</b></td>
+					<td class='txtright nowrap'>{$format_discount} p.<br><b class='{$discount_bg}'>{$row["percent"]} %</b></td>
 					<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
 //					echo "<td>".($row["terminal_payer"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
 
