@@ -435,17 +435,20 @@
 									GROUP BY OP.OD_ID
 								) OP2 ON OP2.OD_ID = OD.OD_ID
 								JOIN (
-									SELECT ODD.OD_ID, (ODD.Price - IFNULL(ODD.discount, 0)) * ODD.Amount Price
-									FROM OrdersDataDetail ODD
-									WHERE ODD.Del = 0
-									UNION ALL
-									SELECT ODB.OD_ID, (ODB.Price - IFNULL(ODB.discount, 0)) * ODB.Amount Price
-									FROM OrdersDataBlank ODB
-									WHERE ODB.Del = 0
-								) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+									SELECT ODD_ODB.OD_ID, SUM(ODD_ODB.Price) Price
+									FROM (
+										SELECT ODD.OD_ID, (ODD.Price - IFNULL(ODD.discount, 0)) * ODD.Amount Price
+										FROM OrdersDataDetail ODD
+										WHERE ODD.Del = 0
+										UNION ALL
+										SELECT ODB.OD_ID, (ODB.Price - IFNULL(ODB.discount, 0)) * ODB.Amount Price
+										FROM OrdersDataBlank ODB
+										WHERE ODB.Del = 0
+									) ODD_ODB
+									GROUP BY ODD_ODB.OD_ID
+								) PRICE ON PRICE.OD_ID = OD.OD_ID
 									AND OD.DelDate IS NULL
-								GROUP BY OD.OD_ID
-								HAVING (SUM(ODD_ODB.Price) - MAX(OP1.payment_sum)) > 10 OR MAX(OP1.terminal_sum) > 0
+								WHERE (PRICE.Price - OP1.payment_sum > 10 AND OD.StartDate IS NOT NULL) OR OP1.terminal_sum > 0
 							) SUB
 						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
