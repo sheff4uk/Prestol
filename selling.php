@@ -159,12 +159,25 @@
 				}
 				else { $_SESSION["alert"][] = mysqli_error( $mysqli ); }
 			}
+			// Очищаем дату продажи
 			$query = "UPDATE OrdersData SET StartDate = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена', ' Отказ')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 			if( mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"][] = "Заказ перемещен в \"Свободные\"";
 			}
 			else {
-				$_SESSION["alert"][] = mysqli_error( $mysqli );
+				$_SESSION["error"][] = mysqli_error( $mysqli );
+			}
+
+			// Очищаем скидку
+			$query = "
+				UPDATE OrdersDataDetail SET discount = NULL, author = NULL WHERE OD_ID = {$OD_ID};
+				UPDATE OrdersDataBlank SET discount = NULL, author = NULL WHERE OD_ID = {$OD_ID};
+			";
+			if( mysqli_multi_query( $mysqli, $query ) ) {
+				$_SESSION["alert"][] = "Скидка по заказу была обнулена.";
+			}
+			else {
+				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 		}
 		else {
@@ -432,7 +445,7 @@
 								) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 									AND OD.DelDate IS NULL
 								GROUP BY OD.OD_ID
-								HAVING SUM(ODD_ODB.Price) > MAX(OP1.payment_sum) OR MAX(OP1.terminal_sum) > 0
+								HAVING (SUM(ODD_ODB.Price) - MAX(OP1.payment_sum)) > 10 OR MAX(OP1.terminal_sum) > 0
 							) SUB
 						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
