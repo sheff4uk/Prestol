@@ -419,8 +419,9 @@
 										,SUM(OP.payment_sum) payment_sum
 										,SUM(IF(OP.terminal_payer IS NOT NULL, OP.payment_sum, 0)) terminal_sum
 									FROM OrdersPayment OP
+									JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND SH.CT_ID = {$CT_ID}
 									WHERE IFNULL(payment_sum, 0) != 0
-										AND OP.SH_ID = {$row["SH_ID"]}
+										#AND OP.SH_ID = {$row["SH_ID"]}
 									GROUP BY OP.OD_ID
 								) OP1 ON OP1.OD_ID = OD.OD_ID
 								JOIN (
@@ -581,37 +582,93 @@
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
 				<?
-					$query = "SELECT OP.OP_ID
-									,DATE_FORMAT(OP.payment_date, '%d.%m') payment_date_short
-									,DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
-									,OP.cost_name
-									,OP.payment_sum
-									,OD.Code
-									,YEAR(OD.StartDate) year
-									,MONTH(OD.StartDate) month
-									,OD.OD_ID
-									,OP.SH_ID
-									,SH.Shop
-									,IF(OD.DelDate IS NULL, '', 'del') del
-								FROM OrdersPayment OP
-								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
-								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) > 0 AND OP.terminal_payer IS NULL
-								ORDER BY OP.payment_date DESC";
+				if( in_array('selling_all', $Rights) ) {
+					$query = "
+						SELECT OP.OP_ID
+							,DATE_FORMAT(OP.payment_date, '%d.%m') payment_date_short
+							,DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
+							,OP.cost_name
+							,OP.payment_sum
+							,OD.Code
+							,YEAR(OD.StartDate) year
+							,MONTH(OD.StartDate) month
+							,OD.OD_ID
+							,OP.SH_ID
+							,SH.Shop
+							,IF(OD.DelDate IS NULL, '', 'del') del
+							,IF(OP.payment_sum < 0, '-', '+') sign
+							,IF(OP1.terminal_sum > 0, 2,IF((PRICE.Price - OP1.payment_sum > 10 AND OD.StartDate IS NOT NULL), 1, 0)) is_terminal
+						FROM OrdersPayment OP
+						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
+						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
+						JOIN (
+							SELECT OP.OD_ID
+								,SUM(OP.payment_sum) payment_sum
+								,SUM(IF(OP.terminal_payer IS NOT NULL, OP.payment_sum, 0)) terminal_sum
+							FROM OrdersPayment OP
+							JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND SH.CT_ID = {$CT_ID}
+							WHERE IFNULL(payment_sum, 0) != 0
+							GROUP BY OP.OD_ID
+						) OP1 ON OP1.OD_ID = OD.OD_ID
+						JOIN (
+							SELECT ODD_ODB.OD_ID, SUM(ODD_ODB.Price) Price
+							FROM (
+								SELECT ODD.OD_ID, (ODD.Price - IFNULL(ODD.discount, 0)) * ODD.Amount Price
+								FROM OrdersDataDetail ODD
+								WHERE ODD.Del = 0
+								UNION ALL
+								SELECT ODB.OD_ID, (ODB.Price - IFNULL(ODB.discount, 0)) * ODB.Amount Price
+								FROM OrdersDataBlank ODB
+								WHERE ODB.Del = 0
+							) ODD_ODB
+							GROUP BY ODD_ODB.OD_ID
+						) PRICE ON PRICE.OD_ID = OD.OD_ID AND OD.DelDate IS NULL
+						WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL
+						ORDER BY OP.payment_date DESC
+					";
+				}
+				else {
+					$query = "
+						SELECT OP.OP_ID
+							,DATE_FORMAT(OP.payment_date, '%d.%m') payment_date_short
+							,DATE_FORMAT(OP.payment_date, '%d.%m.%Y') payment_date
+							,OP.cost_name
+							,OP.payment_sum
+							,OD.Code
+							,YEAR(OD.StartDate) year
+							,MONTH(OD.StartDate) month
+							,OD.OD_ID
+							,OP.SH_ID
+							,SH.Shop
+							,IF(OD.DelDate IS NULL, '', 'del') del
+							,IF(OP.payment_sum < 0, '-', '+') sign
+						FROM OrdersPayment OP
+						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
+						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
+						WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL
+						ORDER BY OP.payment_date DESC
+					";
+				}
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				$cache_sum = 0;
 				while( $row = mysqli_fetch_array($res) ) {
 					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 					$cache_sum = $cache_sum + $row["payment_sum"];
 					$cache_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>" : "<span>{$row["cost_name"]}</span>";
+					if( in_array('selling_all', $Rights) ) {
+						$is_terminal = $row["is_terminal"] == 2 ? " <i class='fa fa-credit-card' title='В оплате содержится эквайринг'></i>" : ($row["is_terminal"] == 1 ? " <i class='fa fa-credit-card' style='opacity: .4;' title='Заказ оплачен не полностью. Возможен эквайринг.'></i>" : "");
+					}
+					else {
+						$is_terminal = "";
+					}
 					echo "<tr>";
 					echo "<td width='49'>{$row["payment_date_short"]}</td>";
 					echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
 					echo "<td width='60'><span>{$row["Shop"]}</span></td>";
-					echo "<td width='180'>{$cache_name}</td>";
+					echo "<td width='180'>{$cache_name}{$is_terminal}</td>";
 					echo "<td width='22'>";
 						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
-							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='+' title='Изменить приход'><i class='fa fa-pencil fa-lg'></i></a>";
+							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='{$row["sign"]}' title='Отредактировать запись'><i class='fa fa-pencil fa-lg'></i></a>";
 						}
 					echo "</td>";
 					echo "</tr>";
@@ -622,6 +679,7 @@
 			</table>
 			</div>
 
+<!--
 			<h3 id="section2"></h3>
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
@@ -668,8 +726,47 @@
 				</tbody>
 			</table>
 			</div>
+-->
 
 			<h3 id="section3"></h3>
+			<div>
+			<table class="main_table" style="margin: 0; display: table;">
+				<tbody>
+				<?
+					$query = "SELECT DATE_FORMAT(OP.payment_date, '%d.%m') payment_date
+									,OP.payment_sum
+									,OP.terminal_payer
+									,OD.Code
+									,YEAR(OD.StartDate) year
+									,MONTH(OD.StartDate) month
+									,OD.OD_ID
+									,SH.Shop
+									,IF(OD.DelDate IS NULL, '', 'del') del
+								FROM OrdersPayment OP
+								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
+								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
+								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NOT NULL
+								ORDER BY OP.payment_date DESC";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					$terminal_sum = 0;
+					while( $row = mysqli_fetch_array($res) ) {
+						$format_sum = number_format($row["payment_sum"], 0, '', ' ');
+						$terminal_sum = $terminal_sum + $row["payment_sum"];
+						echo "<tr>";
+						echo "<td width='49'>{$row["payment_date"]}</td>";
+						echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
+						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
+						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
+						echo "<td width='140' class='nowrap'>{$row["terminal_payer"]}</td>";
+						echo "</tr>";
+					}
+					$format_terminal_sum = number_format($terminal_sum, 0, '', ' ');
+				?>
+				</tbody>
+			</table>
+			</div>
+
+			<h3 id="section4"></h3>
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
@@ -710,43 +807,6 @@
 			</table>
 			</div>
 
-			<h3 id="section4"></h3>
-			<div>
-			<table class="main_table" style="margin: 0; display: table;">
-				<tbody>
-				<?
-					$query = "SELECT DATE_FORMAT(OP.payment_date, '%d.%m') payment_date
-									,OP.payment_sum
-									,OP.terminal_payer
-									,OD.Code
-									,YEAR(OD.StartDate) year
-									,MONTH(OD.StartDate) month
-									,OD.OD_ID
-									,SH.Shop
-									,IF(OD.DelDate IS NULL, '', 'del') del
-								FROM OrdersPayment OP
-								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
-								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NOT NULL
-								ORDER BY OP.payment_date DESC";
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					$terminal_sum = 0;
-					while( $row = mysqli_fetch_array($res) ) {
-						$format_sum = number_format($row["payment_sum"], 0, '', ' ');
-						$terminal_sum = $terminal_sum + $row["payment_sum"];
-						echo "<tr>";
-						echo "<td width='49'>{$row["payment_date"]}</td>";
-						echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
-						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
-						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
-						echo "<td width='140' class='nowrap'>{$row["terminal_payer"]}</td>";
-						echo "</tr>";
-					}
-					$format_terminal_sum = number_format($terminal_sum, 0, '', ' ');
-				?>
-				</tbody>
-			</table>
-			</div>
 			<h3 id="section5"></h3>
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
@@ -790,10 +850,10 @@
 			$(document).ready(function() {
 				$('.wr_main_table_body').css('height', 'calc(100vh - 430px)');
 				$('#MT_header').css('margin-top','210px');
-				$('#section1').html('<i class=\'fa fa-plus fa-lg\'></i> ПРИХОД наличных: {$format_cache_sum}');
-				$('#section2').html('<i class=\'fa fa-minus fa-lg\'></i> РАСХОД наличных: {$format_sum_cost}');
-				$('#section3').html('<i class=\'fa fa-exchange fa-lg\'></i> ИНКАССАЦИЯ: {$format_sum_send}');
-				$('#section4').html('<i class=\'fa fa-credit-card fa-lg\'></i> Оплата по ТЕРМИНАЛУ: {$format_terminal_sum}');
+				$('#section1').html('<i class=\'fa fa-money fa-lg\'></i> Наличные: {$format_cache_sum}');
+				//$('#section2').html('<i class=\'fa fa-minus fa-lg\'></i> РАСХОД наличных: {$format_sum_cost}');
+				$('#section3').html('<i class=\'fa fa-credit-card fa-lg\'></i> Эквайринг: {$format_terminal_sum}');
+				$('#section4').html('<i class=\'fa fa-exchange fa-lg\'></i> Инкассация: {$format_sum_send}');
 				$('#section5').html('<i class=\'fa fa-hand-paper-o fa-lg\'></i> Отказы/замены: {$reject_count}');
 			});
 		</script>";
