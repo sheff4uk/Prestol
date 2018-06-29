@@ -57,7 +57,7 @@ $query = "
 		,YEARWEEK(OD.EndDate, 1) yearweek
 		,'rgba(255, 99, 132, 1)' chairs_color
 		,'rgba(54, 162, 235, 1)' tables_color
-		,'rgba(75, 192, 192, 1)' others_color
+		,'rgba(75, 255, 192, 1)' others_color
 	FROM OrdersData OD
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 	WHERE OD.ReadyDate IS NULL
@@ -109,13 +109,13 @@ while( $row = mysqli_fetch_array($res) ) {
 		$already_ready .= ", {$subrow["Amount"]}";
 	}
 
-	// Получаем план производства по СТУЛЬЯМ в очередную неделю
+	// Получаем план производства по СТУЛЬЯМ розница
 	$query = "
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 		JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
-		JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 		WHERE OD.ReadyDate IS NULL
 			AND OD.DelDate IS NULL
 			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
@@ -124,16 +124,34 @@ while( $row = mysqli_fetch_array($res) ) {
 	";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $subrow = mysqli_fetch_array($subres) ) {
-		$chairs_plan .= ", {$subrow["Amount"]}";
+		$chairs_plan_retail .= ", {$subrow["Amount"]}";
 	}
 
-	// Получаем план производства по СТОЛАМ в очередную неделю
+	// Получаем план производства по СТУЛЬЯМ опт
+	$query = "
+		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+		FROM OrdersData OD
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
+		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+		WHERE OD.ReadyDate IS NULL
+			AND OD.DelDate IS NULL
+			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+			AND OD.EndDate IS NOT NULL
+			AND YEARWEEK(OD.EndDate, 1) = '$yearweek'
+	";
+	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $subrow = mysqli_fetch_array($subres) ) {
+		$chairs_plan_opt .= ", {$subrow["Amount"]}";
+	}
+
+	// Получаем план производства по СТОЛАМ розница
 	$query = "
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 		JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
-		JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 		WHERE OD.ReadyDate IS NULL
 			AND OD.DelDate IS NULL
 			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
@@ -142,15 +160,33 @@ while( $row = mysqli_fetch_array($res) ) {
 	";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $subrow = mysqli_fetch_array($subres) ) {
-		$tables_plan .= ", {$subrow["Amount"]}";
+		$tables_plan_retail .= ", {$subrow["Amount"]}";
 	}
 
-	// Получаем план производства по ПРОЧЕМУ в очередную неделю
+	// Получаем план производства по СТОЛАМ опт
+	$query = "
+		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+		FROM OrdersData OD
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
+		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+		WHERE OD.ReadyDate IS NULL
+			AND OD.DelDate IS NULL
+			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+			AND OD.EndDate IS NOT NULL
+			AND YEARWEEK(OD.EndDate, 1) = '$yearweek'
+	";
+	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $subrow = mysqli_fetch_array($subres) ) {
+		$tables_plan_opt .= ", {$subrow["Amount"]}";
+	}
+
+	// Получаем план производства по ПРОЧЕМУ розница
 	$query = "
 		SELECT IFNULL(SUM(ODB.Amount), 0) Amount
 		FROM OrdersData OD
 		JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
-		JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 		WHERE OD.ReadyDate IS NULL
 			AND OD.DelDate IS NULL
 			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
@@ -159,17 +195,34 @@ while( $row = mysqli_fetch_array($res) ) {
 	";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $subrow = mysqli_fetch_array($subres) ) {
-		$others_plan .= ", {$subrow["Amount"]}";
+		$others_plan_retail .= ", {$subrow["Amount"]}";
+	}
+
+	// Получаем план производства по ПРОЧЕМУ опт
+	$query = "
+		SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+		FROM OrdersData OD
+		JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+		WHERE OD.ReadyDate IS NULL
+			AND OD.DelDate IS NULL
+			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+			AND OD.EndDate IS NOT NULL
+			AND YEARWEEK(OD.EndDate, 1) = '$yearweek'
+	";
+	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $subrow = mysqli_fetch_array($subres) ) {
+		$others_plan_opt .= ", {$subrow["Amount"]}";
 	}
 }
 
-//Просроченные стулья
+//Просроченные стулья розница
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
-	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
@@ -177,15 +230,15 @@ $query = "
 		AND OD.EndDate < NOW()
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$outdated_chairs = mysqli_result($res,0,'Amount');
+$outdated_chairs_retail = mysqli_result($res,0,'Amount');
 
-//Просроченные столы
+//Просроченные стулья опт
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
-	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
@@ -193,14 +246,15 @@ $query = "
 		AND OD.EndDate < NOW()
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$outdated_tables = mysqli_result($res,0,'Amount');
+$outdated_chairs_opt = mysqli_result($res,0,'Amount');
 
-//Просроченное прочее
+//Просроченные столы розница
 $query = "
-	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
-	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
@@ -208,92 +262,223 @@ $query = "
 		AND OD.EndDate < NOW()
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$outdated_others = mysqli_result($res,0,'Amount');
+$outdated_tables_retail = mysqli_result($res,0,'Amount');
 
-//Выставочные СТУЛЬЯ
-$query = "
-	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
-	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
-	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-	WHERE OD.ReadyDate IS NULL
-		AND OD.DelDate IS NULL
-		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
-";
-$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$show_chairs = mysqli_result($res,0,'Amount');
-
-//Выставочные СТОЛЫ
+//Просроченные столы опт
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
-	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
-		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND OD.EndDate IS NOT NULL
+		AND OD.EndDate < NOW()
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$show_tables = mysqli_result($res,0,'Amount');
+$outdated_tables_opt = mysqli_result($res,0,'Amount');
 
-//Выставочное ПРОЧЕЕ
+//Просроченное прочее розница
 $query = "
 	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
-	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
-		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND OD.EndDate IS NOT NULL
+		AND OD.EndDate < NOW()
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$show_others = mysqli_result($res,0,'Amount');
+$outdated_others_retail = mysqli_result($res,0,'Amount');
 
-//Отложенные СТУЛЬЯ
+//Просроченное прочее опт
+$query = "
+	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND OD.EndDate IS NOT NULL
+		AND OD.EndDate < NOW()
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$outdated_others_opt = mysqli_result($res,0,'Amount');
+
+//Выставочные СТУЛЬЯ розница
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
-	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
-		AND OD.EndDate IS NULL
-		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$hold_chairs = mysqli_result($res,0,'Amount');
+$show_chairs_retail = mysqli_result($res,0,'Amount');
 
-//Отложенные СТОЛЫ
+//Выставочные СТУЛЬЯ опт
+$query = "
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$show_chairs_opt = mysqli_result($res,0,'Amount');
+
+//Выставочные СТОЛЫ розница
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
-	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
-		AND OD.EndDate IS NULL
-		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$hold_tables = mysqli_result($res,0,'Amount');
+$show_tables_retail = mysqli_result($res,0,'Amount');
 
-//Отложенное ПРОЧЕЕ
+//Выставочные СТОЛЫ опт
+$query = "
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$show_tables_opt = mysqli_result($res,0,'Amount');
+
+//Выставочное ПРОЧЕЕ розница
 $query = "
 	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
-	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$show_others_retail = mysqli_result($res,0,'Amount');
+
+//Выставочное ПРОЧЕЕ опт
+$query = "
+	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$show_others_opt = mysqli_result($res,0,'Amount');
+
+//Отложенные СТУЛЬЯ розница
+$query = "
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND OD.EndDate IS NULL
 		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$hold_others = mysqli_result($res,0,'Amount');
+$hold_chairs_retail = mysqli_result($res,0,'Amount');
+
+//Отложенные СТУЛЬЯ опт
+$query = "
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND OD.EndDate IS NULL
+		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$hold_chairs_opt = mysqli_result($res,0,'Amount');
+
+//Отложенные СТОЛЫ розница
+$query = "
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND OD.EndDate IS NULL
+		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$hold_tables_retail = mysqli_result($res,0,'Amount');
+
+//Отложенные СТОЛЫ опт
+$query = "
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND OD.EndDate IS NULL
+		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$hold_tables_opt = mysqli_result($res,0,'Amount');
+
+//Отложенное ПРОЧЕЕ розница
+$query = "
+	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND OD.EndDate IS NULL
+		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$hold_others_retail = mysqli_result($res,0,'Amount');
+
+//Отложенное ПРОЧЕЕ опт
+$query = "
+	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	WHERE OD.ReadyDate IS NULL
+		AND OD.DelDate IS NULL
+		AND OD.EndDate IS NULL
+		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$hold_others_opt = mysqli_result($res,0,'Amount');
 
 ?>
 <h2>Загруженность производства: <font color="red"><?=$load?>%</font></h2>
@@ -305,24 +490,46 @@ $hold_others = mysqli_result($res,0,'Amount');
 			type: 'line',
 			label: 'Норма',
 			fill: false,
-			borderColor: 'rgba(255, 159, 64, 1)',
 			backgroundColor: 'rgba(255, 159, 64, 1)',
+			borderWidth: 4,
+			borderColor: 'rgba(255, 159, 64, 1)',
 			data: [<?=$normal?>]
 		}, {
 			type: 'bar',
-			label: 'Стулья',
+			label: 'Стулья розн.',
 			backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(255, 99, 132, 0.5)', 'rgba(255, 99, 132, 0.5)'<?=$chairs_color?>],
-			data: [<?=$hold_chairs?>, <?=$show_chairs?>, <?=$outdated_chairs?><?=$chairs_plan?>]
+			borderWidth: 2,
+			borderColor: 'rgba(255, 99, 132, 1)',
+			data: [<?=$hold_chairs_retail?>, <?=$show_chairs_retail?>, <?=$outdated_chairs_retail?><?=$chairs_plan_retail?>]
 		}, {
 			type: 'bar',
-			label: 'Столы',
+			label: 'Стулья опт',
+			backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(255, 99, 132, 0.5)', 'rgba(255, 99, 132, 0.5)'<?=$chairs_color?>],
+			data: [<?=$hold_chairs_opt?>, <?=$show_chairs_opt?>, <?=$outdated_chairs_opt?><?=$chairs_plan_opt?>]
+		}, {
+			type: 'bar',
+			label: 'Столы розн.',
 			backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(54, 162, 235, 0.5)', 'rgba(54, 162, 235, 0.5)'<?=$tables_color?>],
-			data: [<?=$hold_tables?>, <?=$show_tables?>, <?=$outdated_tables?><?=$tables_plan?>]
+			borderWidth: 2,
+			borderColor: 'rgba(54, 162, 235, 1)',
+			data: [<?=$hold_tables_retail?>, <?=$show_tables_retail?>, <?=$outdated_tables_retail?><?=$tables_plan_retail?>]
 		}, {
 			type: 'bar',
-			label: 'Прочее',
-			backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 0.5)'<?=$others_color?>],
-			data: [<?=$hold_others?>, <?=$show_others?>, <?=$outdated_others?><?=$others_plan?>]
+			label: 'Столы опт',
+			backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(54, 162, 235, 0.5)', 'rgba(54, 162, 235, 0.5)'<?=$tables_color?>],
+			data: [<?=$hold_tables_opt?>, <?=$show_tables_opt?>, <?=$outdated_tables_opt?><?=$tables_plan_opt?>]
+		}, {
+			type: 'bar',
+			label: 'Прочее розн.',
+			backgroundColor: ['rgba(75, 255, 192, 0.5)', 'rgba(75, 255, 192, 0.5)', 'rgba(75, 255, 192, 0.5)'<?=$others_color?>],
+			borderWidth: 2,
+			borderColor: 'rgba(75, 255, 192, 1)',
+			data: [<?=$hold_others_retail?>, <?=$show_others_retail?>, <?=$outdated_others_retail?><?=$others_plan_retail?>]
+		}, {
+			type: 'bar',
+			label: 'Прочее опт',
+			backgroundColor: ['rgba(75, 255, 192, 0.5)', 'rgba(75, 255, 192, 0.5)', 'rgba(75, 255, 192, 0.5)'<?=$others_color?>],
+			data: [<?=$hold_others_opt?>, <?=$show_others_opt?>, <?=$outdated_others_opt?><?=$others_plan_opt?>]
 		}, {
 			type: 'bar',
 			label: 'Готовые',
