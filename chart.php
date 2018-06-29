@@ -55,9 +55,9 @@ $query = "
 	SELECT WEEK(OD.EndDate, 1) week
 		,LEFT(YEARWEEK(OD.EndDate, 1), 4) year
 		,YEARWEEK(OD.EndDate, 1) yearweek
-		,'rgba(255, 99, 132, 1)' chairs_color
-		,'rgba(54, 162, 235, 1)' tables_color
-		,'rgba(75, 255, 192, 1)' others_color
+		,'rgba(255, 99, 132, 0.5)' chairs_color
+		,'rgba(54, 162, 235, 0.5)' tables_color
+		,'rgba(75, 255, 192, 0.5)' others_color
 	FROM OrdersData OD
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 	WHERE OD.ReadyDate IS NULL
