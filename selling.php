@@ -623,7 +623,7 @@
 							) ODD_ODB
 							GROUP BY ODD_ODB.OD_ID
 						) PRICE ON PRICE.OD_ID = OD.OD_ID
-						WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OD.DelDate IS NULL
+						WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OP.send IS NULL
 						ORDER BY OP.payment_date DESC
 					";
 				}
@@ -645,7 +645,7 @@
 						FROM OrdersPayment OP
 						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-						WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL
+						WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OP.send IS NULL
 						ORDER BY OP.payment_date DESC
 					";
 				}
