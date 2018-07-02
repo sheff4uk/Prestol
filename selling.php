@@ -601,7 +601,7 @@
 						FROM OrdersPayment OP
 						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-						JOIN (
+						LEFT JOIN (
 							SELECT OP.OD_ID
 								,SUM(OP.payment_sum) payment_sum
 								,SUM(IF(OP.terminal_payer IS NOT NULL, OP.payment_sum, 0)) terminal_sum
@@ -610,7 +610,7 @@
 							WHERE IFNULL(payment_sum, 0) != 0
 							GROUP BY OP.OD_ID
 						) OP1 ON OP1.OD_ID = OD.OD_ID
-						JOIN (
+						LEFT JOIN (
 							SELECT ODD_ODB.OD_ID, SUM(ODD_ODB.Price) Price
 							FROM (
 								SELECT ODD.OD_ID, (ODD.Price - IFNULL(ODD.discount, 0)) * ODD.Amount Price
@@ -622,8 +622,8 @@
 								WHERE ODB.Del = 0
 							) ODD_ODB
 							GROUP BY ODD_ODB.OD_ID
-						) PRICE ON PRICE.OD_ID = OD.OD_ID AND OD.DelDate IS NULL
-						WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL
+						) PRICE ON PRICE.OD_ID = OD.OD_ID
+						WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OD.DelDate IS NULL
 						ORDER BY OP.payment_date DESC
 					";
 				}
