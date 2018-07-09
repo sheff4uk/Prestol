@@ -597,7 +597,7 @@
 							,SH.Shop
 							,IF(OD.DelDate IS NULL, '', 'del') del
 							,IF(OP.payment_sum < 0, '-', '+') sign
-							,IF(OP1.terminal_sum > 0, 2,IF((PRICE.Price - OP1.payment_sum > 10 AND OD.StartDate IS NOT NULL), 1, 0)) is_terminal
+							,IF(OP1.terminal_sum > 0, 2,IF((PRICE.Price - OP1.payment_sum > 10 AND OD.StartDate IS NOT NULL AND SH.FA_ID IS NOT NULL), 1, 0)) is_terminal
 						FROM OrdersPayment OP
 						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
