@@ -1,29 +1,41 @@
 <?
 	include "config.php";
-	include "header.php";
+	include "checkrights.php";
 
 	if( isset($_GET["id"]) and (int)$_GET["id"] > 0 )
 	{
-		$title = 'Детали заказа';
 		// Проверка прав на доступ к экрану
 		// Проверка города
-		$query = "SELECT OD.OD_ID
-						,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
-						,OD.confirmed
-						,IF(OD.DelDate IS NULL, 0, 1) Del
-						,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
-					FROM OrdersData OD
-					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-					WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}
-						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
-						".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "");
+		$query = "
+			SELECT OD.OD_ID
+				,OD.Code
+				,IFNULL(YEAR(OD.StartDate), 0) start_year
+				,IFNULL(MONTH(OD.StartDate), 0) start_month
+				,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
+				,OD.confirmed
+				,IF(OD.DelDate IS NULL, 0, 1) Del
+				,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
+			FROM OrdersData OD
+			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
+			WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}
+				".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+				".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")
+		;
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$OD_ID = mysqli_result($res,0,'OD_ID');
+		$Code = mysqli_result($res,0,'Code');
 		$Del = mysqli_result($res,0,'Del');
 		$Archive = mysqli_result($res,0,'Archive');
 		$is_lock = mysqli_result($res,0,'is_lock');
+		$start_year = mysqli_result($res,0,'start_year');
+		$start_month = mysqli_result($res,0,'start_month');
 		$confirmed = mysqli_result($res,0,'confirmed');
+
+		// В заголовке страницы выводим код заказа
+		$title = $Code;
+		include "header.php";
+
 		// Запрет на редактирование
 		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$is_lock and !$Archive and !$Del );
 
@@ -518,8 +530,8 @@
 					echo "<p><a href='#' onclick='if(confirm(\"<b>Подтвердите клонирование заказа!</b>\", \"clone_order.php?id={$id}&confirmed=".(in_array('order_add_confirm', $Rights) ? 1 : 0)."\")) return false;' title='Клонировать'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></a></p>";
 				}
 				// Если розничный заказ - показываем кнопку перехода в реализацию
-				if( $retail and !$is_lock and !$Del and $editable ) {
-					echo "<p><a href='/selling.php?CT_ID={$CT_ID}#ord{$id}' title='Перейти в реализацию'><i class='fa fa-money fa-2x' aria-hidden='true'></i></a></p>";
+				if( $retail and !$Del and $editable ) {
+					echo "<p><a href='/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$id}' title='Перейти в реализацию'><i class='fa fa-money fa-2x' aria-hidden='true'></i></a></p>";
 				}
 				// Если заказ в отгрузке и заказ не чужой - показываем кнопку перехода в отгрузку
 				if( $SHP_ID and $editable ) {
@@ -537,9 +549,7 @@
 			// Выводится выпадающий список салонов аяксом
 			$.ajax({ url: "ajax.php?do=create_shop_select&OD_ID=<?=$id?>&SH_ID=<?=$SH_ID?>", dataType: "script", async: false });
 
-//			$("input.from[name='StartDate']").datepicker("disable");
-//			$( "input.from" ).datepicker( "option", "maxDate", "<?=$EndDate?>" );
-//			$( "input.to" ).datepicker( "option", "minDate", "<?=$StartDate?>" );
+			$( 'input[name="StartDate"]' ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
 
 			if("<?=$StartDate?>") {
 				$("input[name='StartDate']").hover(function() {
@@ -586,6 +596,7 @@
 <?
 	$query = "SELECT ODD.ODD_ID
 					,ODD.Amount
+					,PM.Model
 					,ODD.Price
 					,IFNULL(PM.PT_ID, 2) PT_ID
 					,Zakaz(ODD.ODD_ID) Zakaz

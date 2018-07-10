@@ -1840,11 +1840,21 @@ case "order_del":
 			echo "noty({timeout: 3000, text: 'Заказ удален!', type: 'success'});";
 		}
 		else {
-			// Узнаем город заказа
-			$query = "SELECT SH.CT_ID FROM OrdersData OD LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD_ID = {$od_id}";
+			// Узнаем город заказа, год и месяц продажи
+			$query = "
+				SELECT SH.CT_ID
+					,IFNULL(YEAR(OD.StartDate), 0) start_year
+					,IFNULL(MONTH(OD.StartDate), 0) start_month
+				FROM OrdersData OD
+				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+				WHERE OD_ID = {$od_id}
+			";
 			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 			$CT_ID = mysqli_result($res,0,'CT_ID');
-			$selling_link = "/selling.php?CT_ID={$CT_ID}#ord{$od_id}";
+			$start_year = mysqli_result($res,0,'start_year');
+			$start_month = mysqli_result($res,0,'start_month');
+
+			$selling_link = "/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$od_id}";
 			echo "noty({text: 'По заказу внесена оплата <b>{$order_payments}р.</b> Проверьте <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b> и повторите попытку удаления.', type: 'alert'});";
 		}
 	}
@@ -1867,12 +1877,22 @@ case "order_shp":
 		echo "noty({timeout: 3000, text: 'Заказ успешно отгружен!', type: 'success'});";
 
 		// Если это розничный заказ, то предлагаем перейти в реализацию
-		$query = "SELECT IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL), 1, 0) retail, SH.CT_ID FROM OrdersData OD LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID WHERE OD_ID = {$od_id}";
+		$query = "
+			SELECT IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL), 1, 0) retail
+				,SH.CT_ID
+				,IFNULL(YEAR(OD.StartDate), 0) start_year
+				,IFNULL(MONTH(OD.StartDate), 0) start_month
+			FROM OrdersData OD
+			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			WHERE OD_ID = {$od_id}
+		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		$retail = mysqli_result($res,0,'retail');
 		if( $retail == "1" ) {
 			$CT_ID = mysqli_result($res,0,'CT_ID');
-			$selling_link = "/selling.php?CT_ID={$CT_ID}#ord{$od_id}";
+			$start_year = mysqli_result($res,0,'start_year');
+			$start_month = mysqli_result($res,0,'start_month');
+			$selling_link = "/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$od_id}";
 			echo "noty({text: 'Проверить <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b>?', type: 'alert'});";
 		}
 	}

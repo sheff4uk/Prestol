@@ -5,7 +5,7 @@
 	$query = "SET @@group_concat_max_len = 10000;";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	include "checkrights.php";
+	include_once "checkrights.php";
 
 	// Функция делает ссылки кликабельными
 	function src_url($src) {

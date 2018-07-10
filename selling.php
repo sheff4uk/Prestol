@@ -9,11 +9,11 @@
 		die('Недостаточно прав для совершения операции');
 	}
 
-	$CT_ID = (isset($_GET["CT_ID"]) and (int)$_GET["CT_ID"] > 0) ? $_GET["CT_ID"] : 0;
+	$CT_ID = (isset($_GET["CT_ID"]) and (int)$_GET["CT_ID"] > 0) ? $_GET["CT_ID"] : $USR_City;
 	$SH_ID = (isset($_GET["SH_ID"]) and (int)$_GET["SH_ID"] > 0) ? $_GET["SH_ID"] : 0;
 	$SH_ID = $USR_Shop ? $USR_Shop : $SH_ID;
-	$year = (isset($_GET["year"]) and (int)$_GET["year"] >= 0) ? $_GET["year"] : "";
-	$month = (isset($_GET["month"]) and (int)$_GET["month"] >= 0) ? $_GET["month"] : "";
+	$year = isset($_GET["year"]) ? $_GET["year"] : date('Y');
+	$month = isset($_GET["month"]) ? $_GET["month"] : date('n');
 
 	// Проверка прав на доступ к экрану (если пользователю доступен только город)
 	if( in_array('selling_city', $Rights) ) {
@@ -34,10 +34,7 @@
 		$select_shops .= "<option value='{$row["SH_ID"]}'>{$row["Shop"]}</option>";
 	}
 
-	$datediff = 60; // Максимальный период отображения данных
-//	$datediff = $_SESSION['id'] == 1 ? 600 : 60;
-
-	$location = "selling.php?CT_ID={$CT_ID}".( ($year != "" and $month != "") ? '&year='.$year.'&month='.$month : '' );
+	$location = "selling.php?CT_ID={$CT_ID}&year={$year}&month={$month}";
 	$_SESSION["location"] = $_SERVER['REQUEST_URI'];
 
 	// Добавление в базу нового платежа
@@ -125,11 +122,11 @@
 		$locking_date = date( 'Y-m-d', strtotime($_POST["locking_date"]) );
 		if( $_POST["locking_date"] != '' ) {
 			$query = "INSERT INTO OstatkiShops
-				SET CT_ID = {$_GET["CT_ID"]}, year = {$_GET["year"]}, month = {$_GET["month"]}, locking_date = '{$locking_date}'
+				SET CT_ID = {$CT_ID}, year = {$year}, month = {$month}, locking_date = '{$locking_date}'
 				ON DUPLICATE KEY UPDATE locking_date = '{$locking_date}'";
 		}
 		else {
-			$query = "UPDATE OstatkiShops SET locking_date = NULL WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month = {$_GET["month"]}";
+			$query = "UPDATE OstatkiShops SET locking_date = NULL WHERE CT_ID = {$CT_ID} AND year = {$year} AND month = {$month}";
 		}
 		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 
@@ -285,64 +282,100 @@
 		echo "<h3 style='display: inline-block; margin: 10px 20px;'>&nbsp;</h3>";
 	}
 ?>
+	<style>
+		#sell_archive {
+			display: inline-block;
+		}
+		#sell_archive > a {
+			width: 60px;
+			height: 22px;
+		}
+		#sell_archive > div {
+			width: 0px;
+			height: 0px;
+			opacity: 0;
+			background: #fff;
+			border: solid 1px #bbb;
+			border-radius: 10px;
+			overflow-y: auto;
+			box-shadow: 5px 5px 10px #bbb;
+			transition: .3s;
+			-webkit-transition: .3s;
+			position: absolute;
+			z-index: 14;
+		}
+		#sell_archive:hover > div {
+			width: 200px;
+			height: 400px;
+			padding: 10px;
+			opacity: 1;
+		}
+	</style>
 
 	<!-- КНОПКИ ОТЧЕТОВ -->
 	<div style="max-height: 23px;">
 		Отчеты:
 		<?
-		$highlight = ($year == '' or $month == '') ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
-		echo "<a href='?CT_ID={$CT_ID}' class='button' style='{$highlight}'>Все</a> ";
+		echo "<div id='sell_archive'><a href='#' class='button'>Архив</a><div>";
+		// Формируем список архивных отчетов
+		$query = "
+			SELECT OS.year
+				,OS.month
+			FROM OstatkiShops OS
+			WHERE OS.CT_ID = {$CT_ID} AND ( OS.pay_in > 0 OR OS.pay_out > 0 ) AND OS.locking_date IS NOT NULL
 
-		$query = "SELECT year
-						,month
-						,IF(locking_date IS NULL, 0, 1) is_lock
-						,IF(DATEDIFF(NOW(), IFNULL(locking_date, NOW())) <= {$datediff}, 1, 0) is_visible
-					FROM OstatkiShops
-					WHERE CT_ID = {$CT_ID} AND ( pay_in > 0 OR pay_out > 0 )
+			UNION
 
-					UNION
+			SELECT IFNULL(YEAR(OD.StartDate), 0) year
+				,IFNULL(MONTH(OD.StartDate), 0) month
+			FROM OrdersData OD
+			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
+			LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = {$CT_ID}
+			WHERE OD.DelDate IS NULL AND OS.locking_date IS NOT NULL AND SH.CT_ID = {$CT_ID}
+			GROUP BY year, month
+			ORDER BY year DESC, month DESC
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		if( $CT_ID ) {
+			while( $row = mysqli_fetch_array($res) ) {
+				$highlight = ($year == $row["year"] and $month == $row["month"]) ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
+				echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>{$MONTHS[$row["month"]]} - {$row["year"]} <i class='fa fa-lock' aria-hidden='true'></i></a><br>";
+			}
+		}
+		echo "</div></div>";
 
-					SELECT IFNULL(YEAR(OD.StartDate), 0) year
-						,IFNULL(MONTH(OD.StartDate), 0) month
-						,IF(OS.locking_date IS NULL, 0, 1) is_lock
-						,IF(DATEDIFF(NOW(), IFNULL(OS.locking_date, NOW())) <= {$datediff}, 1, 0) is_visible
-					FROM OrdersData OD
-					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
-					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = {$CT_ID}
-					WHERE OD.DelDate IS NULL AND SH.CT_ID = {$CT_ID}
-					GROUP BY YEAR(OD.StartDate), MONTH(OD.StartDate)
+		$query = "
+			SELECT OS.year
+				,OS.month
+			FROM OstatkiShops OS
+			WHERE OS.CT_ID = {$CT_ID} AND ( OS.pay_in > 0 OR OS.pay_out > 0 ) AND OS.locking_date IS NULL
 
-					UNION
+			UNION
 
-					SELECT YEAR(NOW()), MONTH(NOW()), 0, 1
-					ORDER BY year, month";
+			SELECT IFNULL(YEAR(OD.StartDate), 0) year
+				,IFNULL(MONTH(OD.StartDate), 0) month
+			FROM OrdersData OD
+			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
+			LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = {$CT_ID}
+			WHERE OD.DelDate IS NULL AND OS.locking_date IS NULL AND SH.CT_ID = {$CT_ID}
+			GROUP BY YEAR(OD.StartDate), MONTH(OD.StartDate)
+
+			UNION
+
+			SELECT YEAR(NOW()), MONTH(NOW())
+			ORDER BY year, month
+		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		if( $CT_ID ) {
 			while( $row = mysqli_fetch_array($res) ) {
 				$highlight = ($year == $row["year"] and $month == $row["month"]) ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
 				if( $row["year"] == 0 and $row["month"] == 0 ) {
 					echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>Свободные</a> ";
-					$OTCHET_MONTHS[] = "{$row["year"]}-{$row["month"]}";
 				}
 				else {
-					if( $row["is_visible"] ) {
-						echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}' ".($row["is_lock"] == 1 ? "title='Месяц закрыт'" : "").">{$MONTHS[$row["month"]]} - {$row["year"]}".($row["is_lock"] == 1 ? " <i class='fa fa-lock' aria-hidden='true'></i>" : "")."</a> ";
-						$OTCHET_MONTHS[] = "{$row["year"]}-{$row["month"]}";
-					}
+					echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>{$MONTHS[$row["month"]]} - {$row["year"]}</a> ";
 				}
 			}
-		}
-
-		// Проверяем доступен ли месяц из GET в списке отчетных периодов
-		if( ($year != '' or $month != '') and !in_array("{$year}-{$month}", $OTCHET_MONTHS) ) {
-			if( $year == 0 and $month == 0 ) {
-				die('<h3>Список свободных изделий пуст.<h3>');
-			}
-			else {
-				die('<h3>'.$MONTHS["{$month}"].'-'.$year.' отсутствует в списке доступных отчетов.<h3>');
-			}
-			//exit ('<meta http-equiv="refresh" content="0; url=selling.php?CT_ID='.$CT_ID.'">');
-			//die;
 		}
 		?>
 	</div>
@@ -354,7 +387,7 @@
 		// Узнаем дату закрытия месяца
 		$query = "SELECT DATE_FORMAT(locking_date, '%d.%m.%Y') locking_date
 					FROM OstatkiShops
-					WHERE CT_ID = {$_GET["CT_ID"]} AND year = {$_GET["year"]} AND month = {$_GET["month"]}";
+					WHERE CT_ID = {$CT_ID} AND year = {$year} AND month = {$month}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$locking = mysqli_result($res,0,'locking_date') ? 1 : 0;
 		$locking_date = mysqli_result($res,0,'locking_date');
@@ -370,7 +403,7 @@
 					</form>
 					<br>
 				";
-				if( date('Y') != $_GET["year"] or date('n') != $_GET["month"] ) {
+				if( date('Y') != $year or date('n') != $month ) {
 					if( in_array('selling_all', $Rights) ) {
 						echo $locking_form;
 					}
@@ -430,8 +463,8 @@
 									FROM OrdersPayment OP
 									WHERE IFNULL(payment_sum, 0) != 0
 										AND OP.SH_ID = {$row["SH_ID"]}
-										AND YEAR(OP.payment_date) = {$_GET["year"]}
-										AND MONTH(OP.payment_date) = {$_GET["month"]}
+										AND YEAR(OP.payment_date) = {$year}
+										AND MONTH(OP.payment_date) = {$month}
 										AND OP.terminal_payer IS NULL
 									GROUP BY OP.OD_ID
 								) OP2 ON OP2.OD_ID = OD.OD_ID
@@ -474,7 +507,7 @@
 								FROM OrdersDataBlank ODB
 								WHERE ODB.Del = 0
 							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-							WHERE OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}
+							WHERE OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$year} AND MONTH(OD.StartDate) = {$month} AND OD.SH_ID = {$row["SH_ID"]}
 						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_price = mysqli_result($subres,0,'Price');
@@ -501,7 +534,7 @@
 								FROM OrdersDataBlank ODB
 								WHERE ODB.Del = 0
 							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-							WHERE OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}
+							WHERE OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$year} AND MONTH(OD.StartDate) = {$month} AND OD.SH_ID = {$row["SH_ID"]}
 						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_price_inv = mysqli_result($subres,0,'Price');
@@ -510,7 +543,7 @@
 						// Получаем сумму отказов по салону
 						$query = "SELECT SUM(OT.old_sum) Price
 									FROM Otkazi OT
-									WHERE YEAR(OT.StartDate) = {$_GET["year"]} AND MONTH(OT.StartDate) = {$_GET["month"]} AND OT.SH_ID = {$row["SH_ID"]} AND OT.type = 2";
+									WHERE YEAR(OT.StartDate) = {$year} AND MONTH(OT.StartDate) = {$month} AND OT.SH_ID = {$row["SH_ID"]} AND OT.type = 2";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$shop_otkaz = mysqli_result($subres,0,'Price');
 						$city_otkaz = $city_otkaz + $shop_otkaz;
@@ -519,7 +552,7 @@
 						$query = "SELECT SUM(OP.payment_sum) payment_sum
 									FROM OrdersData OD
 									JOIN OrdersPayment OP ON OP.OD_ID = OD.OD_ID
-									WHERE OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$_GET["year"]} AND MONTH(OD.StartDate) = {$_GET["month"]} AND OD.SH_ID = {$row["SH_ID"]}";
+									WHERE OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$year} AND MONTH(OD.StartDate) = {$month} AND OD.SH_ID = {$row["SH_ID"]}";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$month_payment_sum = mysqli_result($subres,0,'payment_sum');
 						$shop_debt = ($shop_price - $shop_price_inv) - ($shop_discount - $shop_discount_inv) - $month_payment_sum;
@@ -574,9 +607,11 @@
 				?>
 				</tbody>
 			</table>
-			</div>
+		</div>
 
-		<div id="accordion" style="display: inline-block; width: 400px;">
+		<div style="display: inline-block; width: 400px;">
+			<h3><?=$MONTHS[$month]?> - <?=$year?></h3>
+		<div id="accordion">
 			<h3 id="section1"></h3>
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
@@ -623,7 +658,7 @@
 							) ODD_ODB
 							GROUP BY ODD_ODB.OD_ID
 						) PRICE ON PRICE.OD_ID = OD.OD_ID
-						WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OP.send IS NULL
+						WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OP.send IS NULL
 						ORDER BY OP.payment_date DESC
 					";
 				}
@@ -645,7 +680,7 @@
 						FROM OrdersPayment OP
 						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-						WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OP.send IS NULL
+						WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OP.send IS NULL
 						ORDER BY OP.payment_date DESC
 					";
 				}
@@ -700,7 +735,7 @@
 								FROM OrdersPayment OP
 								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 								LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NULL
+								WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NULL
 								ORDER BY OP.payment_date DESC";
 
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -745,7 +780,7 @@
 								FROM OrdersPayment OP
 								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
 								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NOT NULL
+								WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NOT NULL
 								ORDER BY OP.payment_date DESC";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					$terminal_sum = 0;
@@ -781,7 +816,7 @@
 									,OP.send
 								FROM OrdersPayment OP
 								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
-								WHERE YEAR(OP.payment_date) = {$_GET["year"]} AND MONTH(OP.payment_date) = {$_GET["month"]} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NOT NULL
+								WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NOT NULL
 								ORDER BY OP.payment_date DESC";
 
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -824,7 +859,7 @@
 								FROM OrdersData OD
 								JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
 								JOIN Shops SH ON SH.SH_ID = OT.SH_ID ".($SH_ID ? "AND SH.SH_ID = {$SH_ID}" : "AND SH.CT_ID = {$CT_ID}")."
-								WHERE YEAR(OT.StartDate) = {$_GET["year"]} AND MONTH(OT.StartDate) = {$_GET["month"]}";
+								WHERE YEAR(OT.StartDate) = {$year} AND MONTH(OT.StartDate) = {$month}";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					$reject_count = 0;
 					while( $row = mysqli_fetch_array($res) ) {
@@ -843,6 +878,7 @@
 				</tbody>
 			</table>
 			</div>
+		</div>
 		</div>
 	</div>
 	<?
@@ -1031,12 +1067,10 @@
 						ORDER BY PT_ID DESC, itemID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 					WHERE OD.DelDate IS NULL AND SH.CT_ID = {$CT_ID}
-					".(($year != '' and $month != '') ? (($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year) : '')."
+					".(($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year)."
 					GROUP BY OD.OD_ID
-					#HAVING Price - payment_sum <> 0 OR Price IS NULL OR DATEDIFF(NOW(), RD) <= {$datediff}
-					#".(($year != '' and $month != '') ? "" : "HAVING Price - payment_sum <> 0 OR is_lock = 0")."
-					".(($year != '' and $month != '') ? "" : "HAVING is_lock = 0")."
-					ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC";
+					#ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC
+					ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.OD_ID ASC";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
@@ -1452,6 +1486,9 @@
 			var val = $(this).val();
 			$.ajax({ url: "ajax.php?do=update_sell_comment&OD_ID="+OD_ID+"&sell_comment="+val, dataType: "script", async: false });
 		});
+
+		// При изменении даты продажи нельзя поставить переднее число
+		$( '.sell_date' ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
 	});
 </script>
 
