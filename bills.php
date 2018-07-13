@@ -458,6 +458,7 @@ while( $row = mysqli_fetch_array($res) ) {
 				$(this).parents('tr').find('#pt').val(ui.item.PT);
 				$(this).parents('tr').find('#tovar_cena').attr('min', ui.item.min_price);
 				$(this).parents('tr').find('#tovar_cena').val(ui.item.Price);
+				$(this).parents('tr').find('#tovar_skidka').val(ui.item.Price);
 				$(this).parents('tr').find('#tovar_kol').val(ui.item.Amount);
 			}
 		});
@@ -471,6 +472,7 @@ while( $row = mysqli_fetch_array($res) ) {
 				$(this).parents('tr').find('#pt').val('');
 				$(this).parents('tr').find('#tovar_cena').attr('min', '0');
 				$(this).parents('tr').find('#tovar_cena').val('');
+				$(this).parents('tr').find('#tovar_skidka').val('');
 				$(this).parents('tr').find('#tovar_kol').val('');
 			}
 		});
