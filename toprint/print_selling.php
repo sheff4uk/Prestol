@@ -137,9 +137,8 @@
 			GROUP BY ODB.ODB_ID
 		) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 		WHERE OD.OD_ID IN ({$id_list})
-		#GROUP BY ODD_ODB.itemID
-		#ORDER BY is_free, OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID
-		ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC
+		#ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC
+		ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.OD_ID ASC
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -159,8 +158,8 @@
 		) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 		WHERE OD.OD_ID IN ({$id_list})
 		GROUP BY OD.OD_ID
-		#ORDER BY is_free, OD.AddDate, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID
-		ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC
+		#ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC
+		ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.OD_ID ASC
 	";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$odid = 0;
@@ -197,9 +196,9 @@
 		if($span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["StartDate"]}</td>";
 		echo "</tr>";
 	}
-    ?>
-        </tbody>
-    </table>
+	?>
+		</tbody>
+	</table>
 	</div>
 </body>
 </html>

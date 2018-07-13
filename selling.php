@@ -980,97 +980,99 @@
 		</thead>
 		<tbody>
 		<?
-		$query = "SELECT OD.OD_ID
-						,OD.Code
-						,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
-						,IFNULL(OD.ClientName, '') ClientName
-						,OD.ul
-						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
-						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
-						,OD.sell_comment
-						,OD.ReadyDate RD
-						,SH.SH_ID
-						,OD.OrderNumber
-						,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
-						,GROUP_CONCAT(ODD_ODB.Amount SEPARATOR '') Amount
-						,Color(OD.CL_ID) Color
-						,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
-						,SUM(ODD_ODB.Price) - SUM(ODD_ODB.discount) Price
-						,IFNULL(SUM(ODD_ODB.discount), 0) discount
-						,SUM(ODD_ODB.opt_price) opt_price
-						,ROUND(IFNULL(SUM(ODD_ODB.discount), 0) / SUM(ODD_ODB.Price) * 100, 1) percent
-						,IFNULL(OP.payment_sum, 0) payment_sum
-						,OP.terminal_payer
-						,IF(IFNULL(OP.check_payment, 0) > 0, CheckPayment(OD.OD_ID), 0) attention
-						,IF(OS.locking_date IS NOT NULL, 1, 0) is_lock
-						,OD.confirmed
-						,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
-						,PFI.count
-						,PFI.platelshik_id
-					FROM OrdersData OD
-					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
-						".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
-					LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
-					LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-					LEFT JOIN (
-						SELECT OP.OD_ID
-							,SUM(OP.payment_sum) payment_sum
-							,GROUP_CONCAT(OP.terminal_payer) terminal_payer
-							,SUM(IF(OD.SH_ID != OP.SH_ID AND OP.terminal_payer IS NULL, 1, 0)) check_payment
-						FROM OrdersPayment OP
-						JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-						WHERE IFNULL(payment_sum, 0) != 0
-						GROUP BY OP.OD_ID
-					) OP ON OP.OD_ID = OD.OD_ID
-					#LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE IFNULL(payment_sum, 0) != 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
-					LEFT JOIN (
-						SELECT ODD.OD_ID
-								,IFNULL(PM.PT_ID, 2) PT_ID
-								,ODD.ODD_ID itemID
-								,ODD.Price * ODD.Amount Price
-								,IFNULL(ODD.discount, 0) * ODD.Amount discount
-								,ODD.opt_price * ODD.Amount opt_price
+		$query = "
+			SELECT OD.OD_ID
+				,OD.Code
+				,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
+				,IFNULL(OD.ClientName, '') ClientName
+				,OD.ul
+				,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
+				,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
+				,OD.sell_comment
+				,OD.ReadyDate RD
+				,SH.SH_ID
+				,OD.OrderNumber
+				,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
+				,GROUP_CONCAT(ODD_ODB.Amount SEPARATOR '') Amount
+				,Color(OD.CL_ID) Color
+				,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
+				,SUM(ODD_ODB.Price) - SUM(ODD_ODB.discount) Price
+				,IFNULL(SUM(ODD_ODB.discount), 0) discount
+				,SUM(ODD_ODB.opt_price) opt_price
+				,ROUND(IFNULL(SUM(ODD_ODB.discount), 0) / SUM(ODD_ODB.Price) * 100, 1) percent
+				,IFNULL(OP.payment_sum, 0) payment_sum
+				,OP.terminal_payer
+				,IF(IFNULL(OP.check_payment, 0) > 0, CheckPayment(OD.OD_ID), 0) attention
+				,IF(OS.locking_date IS NOT NULL, 1, 0) is_lock
+				,OD.confirmed
+				,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
+				,PFI.count
+				,PFI.platelshik_id
+			FROM OrdersData OD
+			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
+				".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
+			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
+			LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
+			LEFT JOIN (
+				SELECT OP.OD_ID
+					,SUM(OP.payment_sum) payment_sum
+					,GROUP_CONCAT(OP.terminal_payer) terminal_payer
+					,SUM(IF(OD.SH_ID != OP.SH_ID AND OP.terminal_payer IS NULL, 1, 0)) check_payment
+				FROM OrdersPayment OP
+				JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
+				WHERE IFNULL(payment_sum, 0) != 0
+				GROUP BY OP.OD_ID
+			) OP ON OP.OD_ID = OD.OD_ID
+			#LEFT JOIN (SELECT OD_ID, SUM(payment_sum) payment_sum, GROUP_CONCAT(terminal_payer) terminal_payer FROM OrdersPayment WHERE IFNULL(payment_sum, 0) != 0 GROUP BY OD_ID) OP ON OP.OD_ID = OD.OD_ID
+			LEFT JOIN (
+				SELECT ODD.OD_ID
+						,IFNULL(PM.PT_ID, 2) PT_ID
+						,ODD.ODD_ID itemID
+						,ODD.Price * ODD.Amount Price
+						,IFNULL(ODD.discount, 0) * ODD.Amount discount
+						,ODD.opt_price * ODD.Amount opt_price
 
-								,CONCAT('
-								".(($year > 0 and $month > 0) ? '' : '<input type="checkbox" value="\', ODD.ODD_ID, \'" name="odd[]" class="chbox">')."
-								<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', Zakaz(ODD.ODD_ID), '</i></b><br>') Zakaz
+						,CONCAT('
+						".(($year > 0 and $month > 0) ? '' : '<input type="checkbox" value="\', ODD.ODD_ID, \'" name="odd[]" class="chbox">')."
+						<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', Zakaz(ODD.ODD_ID), '</i></b><br>') Zakaz
 
-								,CONCAT(IFNULL(CONCAT(MT.Material, ' (', SH.Shipper, ')'), ''), '<br>') Material
-								,CONCAT(ODD.Amount, '<br>') Amount
+						,CONCAT(IFNULL(CONCAT(MT.Material, ' (', SH.Shipper, ')'), ''), '<br>') Material
+						,CONCAT(ODD.Amount, '<br>') Amount
 
-						FROM OrdersDataDetail ODD
-						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-						WHERE ODD.Del = 0
-						GROUP BY ODD.ODD_ID
-						UNION ALL
-						SELECT ODB.OD_ID
-								,0 PT_ID
-								,ODB.ODB_ID itemID
-								,ODB.Price * ODB.Amount Price
-								,IFNULL(ODB.discount, 0) * ODB.Amount discount
-								,ODB.opt_price * ODB.Amount opt_price
+				FROM OrdersDataDetail ODD
+				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+				LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+				LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+				WHERE ODD.Del = 0
+				GROUP BY ODD.ODD_ID
+				UNION ALL
+				SELECT ODB.OD_ID
+						,0 PT_ID
+						,ODB.ODB_ID itemID
+						,ODB.Price * ODB.Amount Price
+						,IFNULL(ODB.discount, 0) * ODB.Amount discount
+						,ODB.opt_price * ODB.Amount opt_price
 
-								,CONCAT('
-								".(($year > 0 and $month > 0) ? '' : '<input type="checkbox" value="\', ODB.ODB_ID, \'" name="odb[]" class="chbox">')."
-								<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ZakazB(ODB.ODB_ID), '</i></b><br>') Zakaz
+						,CONCAT('
+						".(($year > 0 and $month > 0) ? '' : '<input type="checkbox" value="\', ODB.ODB_ID, \'" name="odb[]" class="chbox">')."
+						<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ZakazB(ODB.ODB_ID), '</i></b><br>') Zakaz
 
-								,CONCAT(IFNULL(CONCAT(MT.Material, ' (', SH.Shipper, ')'), ''), '<br>') Material
-								,CONCAT(ODB.Amount, '<br>') Amount
+						,CONCAT(IFNULL(CONCAT(MT.Material, ' (', SH.Shipper, ')'), ''), '<br>') Material
+						,CONCAT(ODB.Amount, '<br>') Amount
 
-						FROM OrdersDataBlank ODB
-						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-						WHERE ODB.Del = 0
-						GROUP BY ODB.ODB_ID
-						ORDER BY PT_ID DESC, itemID
-						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-					WHERE OD.DelDate IS NULL AND SH.CT_ID = {$CT_ID}
-					".(($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year)."
-					GROUP BY OD.OD_ID
-					#ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC
-					ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.OD_ID ASC";
+				FROM OrdersDataBlank ODB
+				LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+				LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+				WHERE ODB.Del = 0
+				GROUP BY ODB.ODB_ID
+				ORDER BY PT_ID DESC, itemID
+				) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+			WHERE OD.DelDate IS NULL AND SH.CT_ID = {$CT_ID}
+			".(($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year)."
+			GROUP BY OD.OD_ID
+			#ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC
+			ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.OD_ID ASC
+		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
