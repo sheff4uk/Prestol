@@ -14,6 +14,7 @@
 			,ODD_ODB.Amount
 			,ODD_ODB.min_price
 			,ODD_ODB.Price
+			,ODD_ODB.discount
 			,CONCAT('[', OD.Code, '] ', ODD_ODB.Amount, ' ', ODD_ODB.Zakaz ) Label
 		FROM OrdersData OD
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
