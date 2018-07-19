@@ -127,15 +127,21 @@
 			$_SESSION["error"][] = mysqli_error( $mysqli );
 		}
 		else {
-			// Узнаем есть ли платежи по кассе другого салона
-			$query = "SELECT CheckPayment({$OD_ID}) attention";
-			$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-			$attention = mysqli_result($res,0,'attention');
-			if( $attention ) {
-				$_SESSION["alert"][] = "У этого заказа имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.";
-			}
+			// Узнаем изменилась ли запись
+			if( mysqli_affected_rows( $mysqli ) ) {
+				$_SESSION["success"][] = "Данные сохранены.";
 
-			$_SESSION["success"][] = "Данные сохранены.";
+				// Узнаем есть ли платежи по кассе другого салона
+				$query = "SELECT CheckPayment({$OD_ID}) attention";
+				$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+				$attention = mysqli_result($res,0,'attention');
+				if( $attention ) {
+					$_SESSION["alert"][] = "У этого заказа имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.";
+				}
+			}
+			else {
+				$_SESSION["error"][] = "Данные не были сохранены.";
+			}
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
