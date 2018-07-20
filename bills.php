@@ -19,7 +19,7 @@ if( $_GET["add_bill"] ) {
 		$tbl_id = $_POST["item"][$key];
 		$discount = ($_POST["tovar_skidka"][$key] > 0) ? $_POST["tovar_skidka"][$key] : "NULL";
 
-		if( $_POST["pt"][$key] == "1" ) {
+		if( $_POST["pt"][$key] == "1" or $_POST["pt"][$key] == "2" ) {
 			$query = "UPDATE OrdersDataDetail SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$tbl_id}";
 		}
 		elseif( $_POST["pt"][$key] == "0" ) {
