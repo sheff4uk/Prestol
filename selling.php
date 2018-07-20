@@ -914,7 +914,7 @@
 		<thead>
 			<tr>
 				<th width="60">Дата отгрузки</th>
-				<th width="60">Код<br>Создан</th>
+				<th width="80">Код<br>Создан</th>
 				<th width="5%">Заказчик<br>Квитанция</th>
 				<th width="25%">Наименование</th>
 				<th width="15%">Материал</th>
@@ -960,7 +960,7 @@
 		<thead>
 			<tr>
 				<th width="60"></th>
-				<th width="60"></th>
+				<th width="80"></th>
 				<th width="5%"></th>
 				<th width="25%"></th>
 				<th width="15%"></th>
@@ -994,6 +994,7 @@
 				,OD.OrderNumber
 				,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 				,GROUP_CONCAT(ODD_ODB.Amount SEPARATOR '') Amount
+				,SUM(ODD_ODB.cnt) cnt
 				,Color(OD.CL_ID) Color
 				,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
 				,SUM(ODD_ODB.Price) - SUM(ODD_ODB.discount) Price
@@ -1028,12 +1029,13 @@
 				SELECT ODD.OD_ID
 						,IFNULL(PM.PT_ID, 2) PT_ID
 						,ODD.ODD_ID itemID
+						,ODD.Amount cnt
 						,ODD.Price * ODD.Amount Price
 						,IFNULL(ODD.discount, 0) * ODD.Amount discount
 						,ODD.opt_price * ODD.Amount opt_price
 
 						,CONCAT('
-						".(($year > 0 and $month > 0) ? '' : '<input type="checkbox" value="\', ODD.ODD_ID, \'" name="odd[]" class="chbox">')."
+						".(($year > 0 or $month > 0) ? '' : '<input type="checkbox" value="\', ODD.ODD_ID, \'" name="odd[]" class="chbox">')."
 						<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', Zakaz(ODD.ODD_ID), '</i></b><br>') Zakaz
 
 						,CONCAT(IFNULL(CONCAT(MT.Material, ' (', SH.Shipper, ')'), ''), '<br>') Material
@@ -1049,12 +1051,13 @@
 				SELECT ODB.OD_ID
 						,0 PT_ID
 						,ODB.ODB_ID itemID
+						,ODB.Amount cnt
 						,ODB.Price * ODB.Amount Price
 						,IFNULL(ODB.discount, 0) * ODB.Amount discount
 						,ODB.opt_price * ODB.Amount opt_price
 
 						,CONCAT('
-						".(($year > 0 and $month > 0) ? '' : '<input type="checkbox" value="\', ODB.ODB_ID, \'" name="odb[]" class="chbox">')."
+						".(($year > 0 or $month > 0) ? '' : '<input type="checkbox" value="\', ODB.ODB_ID, \'" name="odb[]" class="chbox">')."
 						<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ZakazB(ODB.ODB_ID), '</i></b><br>') Zakaz
 
 						,CONCAT(IFNULL(CONCAT(MT.Material, ' (', SH.Shipper, ')'), ''), '<br>') Material
@@ -1097,7 +1100,7 @@
 						<input type='hidden' name='OD_ID[]' form='print_selling' value='{$row["OD_ID"]}'>
 						<span>{$row["ReadyDate"]}</span>
 					</td>
-					<td><span><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>
+					<td><span><b class='code'>{$row["Code"]}</b>".(($year > 0 or $month > 0 or $row["cnt"] == 1) ? "" : "<input type='checkbox' value='{$row["OD_ID"]}' name='od[]' class='chbox'>")."<br>{$row["AddDate"]}</span></td>
 					<td><span><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b></span></td>
 					<td><span class='nowrap'>{$row["Zakaz"]}</span></td>
 					<td><span class='nowrap material'>{$row["Material"]}</span></td>
