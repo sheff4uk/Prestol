@@ -443,7 +443,13 @@ while( $row = mysqli_fetch_array($res) ) {
 		td1.html('<input required type="text" autocomplete="off" value="'+name+'" name="tovar_name[]" id="tovar_name" class="tovar_name" placeholder="Введите код заказа для поиска товара"/>');
 		td2.html('<input required type="text" autocomplete="off" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />');
 		td3.html('<input required type="number" autocomplete="off" min="1" value="'+amount+'" name="tovar_kol[]" id="tovar_kol"/>');
-		td4.html('<input required type="number" autocomplete="off" min="'+min_price+'" value="'+price+'" name="tovar_cena[]" id="tovar_cena"/><input type="hidden" name="item[]" id="item" value="'+item+'"><input type="hidden" name="pt[]" id="pt" value="'+pt+'">');
+		if( min_price > 0 ) {
+			td4.html('<input required type="number" autocomplete="off" min="'+min_price+'" value="'+price+'" name="tovar_cena[]" id="tovar_cena" title="Вычисленная стоимость по прайсу: '+min_price+'"><input type="hidden" name="item[]" id="item" value="'+item+'"><input type="hidden" name="pt[]" id="pt" value="'+pt+'">');
+
+		}
+		else {
+			td4.html('<input required type="number" autocomplete="off" min="'+min_price+'" value="'+price+'" name="tovar_cena[]" id="tovar_cena"/><input type="hidden" name="item[]" id="item" value="'+item+'"><input type="hidden" name="pt[]" id="pt" value="'+pt+'">');
+		}
 		td5.html('<input type="number" autocomplete="off" min="0" value="'+discount+'" name="tovar_skidka[]" id="tovar_skidka"/>');
 		td6.html('<i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i>');
 
@@ -457,6 +463,9 @@ while( $row = mysqli_fetch_array($res) ) {
 				$(this).parents('tr').find('#item').val(ui.item.id);
 				$(this).parents('tr').find('#pt').val(ui.item.PT);
 				$(this).parents('tr').find('#tovar_cena').attr('min', ui.item.min_price);
+				if( ui.item.min_price > 0 ) {
+					$(this).parents('tr').find('#tovar_cena').attr('title', 'Вычисленная стоимость по прайсу: '+ui.item.min_price);
+				}
 				$(this).parents('tr').find('#tovar_cena').val(ui.item.Price);
 				$(this).parents('tr').find('#tovar_skidka').val(ui.item.discount);
 				$(this).parents('tr').find('#tovar_kol').val(ui.item.Amount);
@@ -471,6 +480,7 @@ while( $row = mysqli_fetch_array($res) ) {
 				$(this).parents('tr').find('#item').val('');
 				$(this).parents('tr').find('#pt').val('');
 				$(this).parents('tr').find('#tovar_cena').attr('min', '0');
+				$(this).parents('tr').find('#tovar_cena').attr('title', '');
 				$(this).parents('tr').find('#tovar_cena').val('');
 				$(this).parents('tr').find('#tovar_skidka').val('');
 				$(this).parents('tr').find('#tovar_kol').val('');

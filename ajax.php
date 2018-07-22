@@ -704,7 +704,7 @@ case "invoice":
 								,IFNULL(PM.PT_ID, 2) PT_ID
 								,ODD.ODD_ID itemID
 
-								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODD.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odd\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'', IFNULL(ODD.min_price, 0), '\' name=\'price[]\' value=\'', IFNULL(ODD.Price, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'><br>') Price
+								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODD.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odd\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'', IFNULL(ODD.min_price, 0), '\' name=\'price[]\' value=\'', IFNULL(ODD.Price, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'', IF(IFNULL(ODD.min_price, 0) > 0, CONCAT(' title=\'Вычисленная стоимость по прайсу: ', IFNULL(ODD.min_price, 0)), ''), '\'><br>') Price
 
 								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODD.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odd\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'0\' name=\'price[]\' value=\'', IFNULL((ODD.Price - IFNULL(ODD.discount, 0)), ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'><br>') opt_price
 
@@ -738,7 +738,7 @@ case "invoice":
 								,0 PT_ID
 								,ODB.ODB_ID itemID
 
-								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODB.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odb\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODB.ODB_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'', IFNULL(ODB.min_price, 0), '\' name=\'price[]\' value=\'', IFNULL(ODB.Price, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODB.Amount, '\'><br>') Price
+								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODB.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odb\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODB.ODB_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'', IFNULL(ODB.min_price, 0), '\' name=\'price[]\' value=\'', IFNULL(ODB.Price, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODB.Amount, '\'', IF(IFNULL(ODB.min_price, 0) > 0, CONCAT(' title=\'Вычисленная стоимость по прайсу: ', IFNULL(ODB.min_price, 0)), ''), '\'><br>') Price
 
 								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODB.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odb\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODB.ODB_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'0\' name=\'price[]\' value=\'', IFNULL((ODB.Price - IFNULL(ODB.discount, 0)), ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODB.Amount, '\'><br>') opt_price
 
@@ -1041,7 +1041,7 @@ case "update_price":
 		$html .= "<input type='hidden' name='PT_ID[]' value='{$row["PT_ID"]}'>";
 		$html .= "<input type='hidden' name='itemID[]' value='{$row["itemID"]}'>";
 		$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
-		$html .= "<td class='prod_price'><input type='number' min='{$row["min_price"]}' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;'></td>";
+		$html .= "<td class='prod_price'><input type='number' min='{$row["min_price"]}' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;' ".($row["min_price"] > 0 ? "title='Вычисленная стоимость по прайсу: {$row["min_price"]}'" : "")."></td>";
 		$html .= "<td class='prod_discount'><input type='number' min='0' name='discount[]' value='{$row["discount"]}' style='width: 70px; text-align: right;'></td>";
 		$html .= "<td><span class='prod_percent'></span>%</td>";
 		$html .= "<td class='prod_amount' style='text-align: center; font-size: 1.3em; font-weight: bold;'>{$row["Amount"]}</td>";
