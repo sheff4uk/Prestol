@@ -1205,7 +1205,7 @@ case "update_shop":
 	$query = "SELECT OD.Code FROM OrdersData OD WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
-		echo "noty({timeout: 10000, text: 'Внимание! Ваши действия вызвали изменение суммы заказа {$row['Code']}.', type: 'alert'});";
+		echo "noty({text: 'Внимание! Ваши действия вызвали изменение суммы заказа {$row['Code']}.', type: 'error'});";
 	}
 	$query = "UPDATE OrdersData OD SET OD.change_price = 0 WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
