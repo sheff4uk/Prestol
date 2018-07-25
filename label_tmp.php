@@ -21,20 +21,22 @@
 		box-sizing: border-box;
 	}
 	img.logo {
-		width: 150px;
-		margin: 1px;
+		width: 100px;
+		margin: 5px;
 	}
 	.head-wr {
 		border: 1px solid #999;
 		text-align: center;
 		overflow: hidden;
 		height: 95px;
+		display: flex;
 	}
 	.mfr {
-		display: inline-block;
-		margin: 5px 0;
-		white-space: nowrap;
-		height: 30px;
+		font-size: 16px;
+		//display: inline-block;
+		margin: 5px;
+		//white-space: nowrap;
+		//height: 30px;
 		line-height: 30px;
 	}
 	.body-wr {
@@ -97,13 +99,15 @@
 		?>
 		<div class="label-wr prod<?=$key?>">
 			<div class="head-wr">
-				<img src="/img/logo.jpg" class="logo">
-				<div class="mfr" style="font-size: 16px;" fontSize="16" onload="fontSize(this, 18);">Изготовитель: ООО «Престол», г.Киров ул.Луганская 59, т.89091317732, сайт: фабрикастульев.рф</div>
+				<img src="/img/logo.png" class="logo">
+				<div class="mfr">
+					Изготовитель: ООО «Престол», г.Киров ул.Луганская 59<br>
+					8(909)131-77-32<br>fabrikaprestol.ru&nbsp;&nbsp;&nbsp;&nbsp;фабрикастульев.рф</div>
 			</div>
 			<div class="body-wr">
 				<div class="half-block">
-					<p>Номер упаковки:</p>
-					<div class="number" style="font-size: 50px;"><?=$_POST["code"][$key]?></div>
+					<p>Код:</p>
+					<div class="number" style="font-size: 40px; font-weight: bold;"><?=$_POST["code"][$key]?></div>
 				</div>
 				<div class="half-block">
 					<p><?=$_POST["amount_label"][$key]?>:</p>
@@ -137,8 +141,8 @@
 	}
 ?>
 <script>
-	$(document).ready(function(){
-		fontSize('.mfr', 18);
+	$(function(){
+		//fontSize('.mfr', 18);
 		$('body').css('font-size', '0');
 	});
 </script>
