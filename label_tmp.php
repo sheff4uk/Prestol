@@ -33,11 +33,8 @@
 	}
 	.mfr {
 		font-size: 16px;
-		//display: inline-block;
 		margin: 5px;
-		//white-space: nowrap;
-		//height: 30px;
-		line-height: 30px;
+		line-height: 22px;
 	}
 	.body-wr {
 		border: 1px solid #999;
@@ -102,7 +99,10 @@
 				<img src="/img/logo.png" class="logo">
 				<div class="mfr">
 					Изготовитель: ООО «Престол», г.Киров ул.Луганская 59<br>
-					8(909)131-77-32<br>fabrikaprestol.ru&nbsp;&nbsp;&nbsp;&nbsp;фабрикастульев.рф</div>
+					8(909)131-77-32<br>
+					fabrikaprestol@gmail.com<br>
+					fabrikaprestol.ru&nbsp;&nbsp;&nbsp;&nbsp;фабрикастульев.рф
+				</div>
 			</div>
 			<div class="body-wr">
 				<div class="half-block">
