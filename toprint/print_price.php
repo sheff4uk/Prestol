@@ -21,7 +21,7 @@
 			width: 800px;
 			height: 560px;
 			border-width: 5px;
-			border-color: #edc248;
+			border-color: #e3d600;
 			border-style: outset;
 			box-sizing: border-box;
 		}
@@ -46,7 +46,7 @@
 			font-weight: bold;
 		}
 		.price_wr {
-			background: #edc248;
+			background: #e3d600;
 			height: 120px;
 			text-align: center;
 		}
@@ -179,7 +179,7 @@
 <!--							<?=($row["color"] ? "<i>Цвет краски</i><br>" : "")?>-->
 							<?=($row["mtype"] == 1 ? "<i>Ткань</i><br>" : ($row["mtype"] == 2 ? "<i>Поверхность</i><br>" : ""))?>
 						</div>
-						<div style="width: 60%; text-align: left; border: 2px dotted #edc248; background: #f9da90; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
+						<div style="width: 60%; text-align: left; border: 2px dotted #5dc140; background: #a3f496; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
 							<?=($row["mechanism"] ? "<i>{$row["mechanism"]}</i><br>" : "")?>
 							<?=($row["size"] ? "<i>{$row["size"]}</i><br>" : "")?>
 							<?=($row["materials"] ? "<i>{$row["materials"]}</i><br>" : "")?>
@@ -282,7 +282,7 @@
 <!--					<?=($row["color"] ? "<i>Цвет краски</i><br>" : "")?>-->
 					<?=($row["mtype"] == 1 ? "<i>Ткань</i><br>" : ($row["mtype"] == 2 ? "<i>Поверхность</i><br>" : ""))?>
 				</div>
-				<div style="width: 60%; text-align: left; border: 2px dotted #edc248; background: #f9da90; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
+				<div style="width: 60%; text-align: left; border: 2px dotted #5dc140; background: #a3f496; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
 					<?=($row["mechanism"] ? "<i>{$row["mechanism"]}</i><br>" : "")?>
 					<?=($row["size"] ? "<i>{$row["size"]}</i><br>" : "")?>
 					<?=($row["materials"] ? "<i>{$row["materials"]}</i><br>" : "")?>
