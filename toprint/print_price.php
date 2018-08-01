@@ -53,10 +53,12 @@
 		}
 		.price {
 			color: #C00000;
-			font-size: 90px;
+			font-size: 125px;
 			font-weight: bold;
 			display: block;
 			text-shadow: 3px 3px 5px #640;
+			line-height: 90px;
+			padding-top: 15px;
 		}
 		.discount {
 			background: red;
@@ -79,7 +81,7 @@
 			text-decoration: line-through;
 			opacity: .6;
 			top: 30px;
-			left: 40px;
+			left: 30px;
 		}
 	</style>
 	<script>
@@ -214,18 +216,18 @@
 							<?=($row["PieceAmount"] == 3 ? "<br>ТРИ<br>ВСТАВКИ" : "")?>
 						</div>
 						<div style="width: 21%; text-align: right; padding: 5px;">
-							<?=($row["mechanism"] ? "<i>Механизм</i><br>" : "")?>
 							<?=($row["size"] ? "<i>Размер</i><br>" : "")?>
+							<?=($row["mechanism"] ? "<i>Механизм</i><br>" : "")?>
 							<?=($row["materials"] ? "<i>Материалы</i><br>" : "")?>
 <!--							<?=($row["color"] ? "<i>Цвет краски</i><br>" : "")?>-->
-							<?=($row["mtype"] == 1 ? "<i>Ткань</i><br>" : ($row["mtype"] == 2 ? "<i>Поверхность</i><br>" : ""))?>
+<!--							<?=($row["mtype"] == 1 ? "<i>Ткань</i><br>" : ($row["mtype"] == 2 ? "<i>Поверхность</i><br>" : ""))?>-->
 						</div>
 						<div style="width: 60%; text-align: left; border: 2px dotted #5dc140; background: #a3f496; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
-							<?=($row["mechanism"] ? "<i>{$row["mechanism"]}</i><br>" : "")?>
 							<?=($row["size"] ? "<i>{$row["size"]}</i><br>" : "")?>
+							<?=($row["mechanism"] ? "<i>{$row["mechanism"]}</i><br>" : "")?>
 							<?=($row["materials"] ? "<i>{$row["materials"]}</i><br>" : "")?>
 <!--							<?=($row["color"] ? "<i>{$row["color"]}</i><br>" : "")?>-->
-							<?=($row["mtype"] == 1 ? "<i>{$row["material"]}</i><br>" : ($row["mtype"] == 2 ? "<i>{$row["material"]}</i><br><div style='text-align: right;'><i style='color: #C00000; font-size: .6em;'>ТЕРМОСТОЙКИЙ ПЛАСТИК</i></div>" : ""))?>
+<!--							<?=($row["mtype"] == 1 ? "<i>{$row["material"]}</i><br>" : ($row["mtype"] == 2 ? "<i>{$row["material"]}</i><br><div style='text-align: right;'><i style='color: #C00000; font-size: .6em;'>ТЕРМОСТОЙКИЙ ПЛАСТИК</i></div>" : ""))?>-->
 						</div>
 					</div>
 				</div>
@@ -335,18 +337,18 @@
 					<?=($row["PieceAmount"] == 3 ? "<br>ТРИ<br>ВСТАВКИ" : "")?>
 				</div>
 				<div style="width: 21%; text-align: right; padding: 5px;">
-					<?=($row["mechanism"] ? "<i>Механизм</i><br>" : "")?>
 					<?=($row["size"] ? "<i>Размер</i><br>" : "")?>
+					<?=($row["mechanism"] ? "<i>Механизм</i><br>" : "")?>
 					<?=($row["materials"] ? "<i>Материалы</i><br>" : "")?>
 <!--					<?=($row["color"] ? "<i>Цвет краски</i><br>" : "")?>-->
-					<?=($row["mtype"] == 1 ? "<i>Ткань</i><br>" : ($row["mtype"] == 2 ? "<i>Поверхность</i><br>" : ""))?>
+<!--					<?=($row["mtype"] == 1 ? "<i>Ткань</i><br>" : ($row["mtype"] == 2 ? "<i>Поверхность</i><br>" : ""))?>-->
 				</div>
 				<div style="width: 60%; text-align: left; border: 2px dotted #5dc140; background: #a3f496; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
-					<?=($row["mechanism"] ? "<i>{$row["mechanism"]}</i><br>" : "")?>
 					<?=($row["size"] ? "<i>{$row["size"]}</i><br>" : "")?>
+					<?=($row["mechanism"] ? "<i>{$row["mechanism"]}</i><br>" : "")?>
 					<?=($row["materials"] ? "<i>{$row["materials"]}</i><br>" : "")?>
 <!--					<?=($row["color"] ? "<i>{$row["color"]}</i><br>" : "")?>-->
-					<?=($row["mtype"] == 1 ? "<i>{$row["material"]}</i><br>" : ($row["mtype"] == 2 ? "<i>{$row["material"]}</i><br><div style='text-align: right;'><i style='color: #C00000; font-size: .6em;'>ТЕРМОСТОЙКИЙ ПЛАСТИК</i></div>" : ""))?>
+<!--					<?=($row["mtype"] == 1 ? "<i>{$row["material"]}</i><br>" : ($row["mtype"] == 2 ? "<i>{$row["material"]}</i><br><div style='text-align: right;'><i style='color: #C00000; font-size: .6em;'>ТЕРМОСТОЙКИЙ ПЛАСТИК</i></div>" : ""))?>-->
 				</div>
 			</div>
 			<div class="price_wr">
