@@ -49,6 +49,7 @@
 			background: #e3d600;
 			height: 120px;
 			text-align: center;
+			position: relative;
 		}
 		.price {
 			color: #C00000;
@@ -56,6 +57,29 @@
 			font-weight: bold;
 			display: block;
 			text-shadow: 3px 3px 5px #640;
+		}
+		.discount {
+			background: red;
+			width: 100px;
+			padding: 10px;
+			border-radius: 10px;
+			color: #e2d94c;
+			font-size: 1.8em;
+			font-weight: bold;
+			transform: rotate(-5deg);
+			position: absolute;
+			top: 15px;
+			right: 40px;
+			box-shadow: 3px 3px 5px #640;
+		}
+		.old_price {
+			position: absolute;
+			font-size: 4em;
+			font-weight: bold;
+			text-decoration: line-through;
+			opacity: .6;
+			top: 30px;
+			left: 40px;
 		}
 	</style>
 	<script>
@@ -78,6 +102,9 @@
 		$query = "
 			SELECT OD.Code
 				,SUM(ODD_ODB.Price) Price
+				,SUM(ODD_ODB.old_Price) old_Price
+				,SUM(ODD_ODB.discount) discount
+				,ROUND((SUM(ODD_ODB.discount) * 100) / SUM(ODD_ODB.Price)) percent
 				,GROUP_CONCAT(IF(ODD_ODB.odd = 1, ODD_ODB.item_id, 0)) ODDs
 				,GROUP_CONCAT(IF(ODD_ODB.odd = 0, ODD_ODB.item_id, 0)) ODBs
 				,SUM(1) count
@@ -85,12 +112,16 @@
 			JOIN (
 				SELECT ODD.ODD_ID item_id
 					,(ODD.Price - IFNULL(ODD.discount, 0)) * ODD.Amount Price
+					,ODD.Price * ODD.Amount old_Price
+					,IFNULL(ODD.discount, 0) * ODD.Amount discount
 					,1 odd
 				FROM OrdersDataDetail ODD
 				WHERE ODD.Del = 0 AND ODD.OD_ID = $od_id
 				UNION ALL
 				SELECT ODB.ODB_ID item_id
 					,(ODB.Price - IFNULL(ODB.discount, 0)) * ODB.Amount Price
+					,ODB.Price * ODB.Amount old_Price
+					,IFNULL(ODB.discount, 0) * ODB.Amount discount
 					,0 odd
 				FROM OrdersDataBlank ODB
 				WHERE ODB.Del = 0 AND ODB.OD_ID = $od_id
@@ -103,6 +134,16 @@
 		$ODD_IDs = mysqli_result($res,0,'ODDs');
 		$ODB_IDs = mysqli_result($res,0,'ODBs');
 		$count = mysqli_result($res,0,'count');
+
+		if( mysqli_result($res,0,'discount') ) {
+			$old_price = number_format(mysqli_result($res,0,'old_Price'), 0, '', ' ');
+			$old_price = "<div class='old_price'>{$old_price}</div>";
+			$discount = "<div class='discount'>скидка<br><span style='font-size: 1.5em;'>".mysqli_result($res,0,'percent')."%</span></div>";
+		}
+		else {
+			$old_price = "";
+			$discount = "";
+		}
 	?>
 		<div class="label-wr">
 			<div style="position: relative; text-align: center;">
@@ -196,6 +237,8 @@
 			?>
 			</div>
 			<div class="price_wr">
+				<?=$old_price?>
+				<?=$discount?>
 				<span class="price"><?=$price?></span>
 				<b>РОССИЯ</b><b style="color: #C00000;"> / </b><b>КИРОВ</b>
 			</div>
@@ -227,6 +270,9 @@
 				,IFNULL(PM.materials, '') materials
 				,ODD.PieceAmount
 				,(ODD.Price - IFNULL(ODD.discount, 0)) Price
+				,ODD.Price old_Price
+				,IFNULL(ODD.discount, 0) discount
+				,ROUND((ODD.discount * 100) / ODD.Price) percent
 		FROM OrdersDataDetail ODD
 		JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
@@ -249,6 +295,9 @@
 				,''
 				,''
 				,(ODB.Price - IFNULL(ODB.discount, 0)) Price
+				,ODB.Price old_Price
+				,IFNULL(ODB.discount, 0) discount
+				,ROUND((ODB.discount * 100) / ODB.Price) percent
 		FROM OrdersDataBlank ODB
 		JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
 		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
@@ -261,6 +310,16 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$price = number_format($row["Price"], 0, '', ' ');
+
+		if($row["discount"]) {
+			$old_price = number_format($row["old_Price"], 0, '', ' ');
+			$old_price = "<div class='old_price'>{$old_price}</div>";
+			$discount = "<div class='discount'>скидка<br><span style='font-size: 1.5em;'>{$row["percent"]}%</span></div>";
+		}
+		else {
+			$old_price = "";
+			$discount = "";
+		}
 	?>
 		<div id="<?=$row["id"]?>" class="label-wr">
 			<div style="position: relative; text-align: center;">
@@ -291,6 +350,8 @@
 				</div>
 			</div>
 			<div class="price_wr">
+				<?=$old_price?>
+				<?=$discount?>
 				<span class="price"><?=$price?></span>
 				<b>РОССИЯ</b><b style="color: #C00000;"> / </b><b>КИРОВ</b>
 			</div>
