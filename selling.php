@@ -670,8 +670,8 @@
 							,OP.cost_name
 							,OP.payment_sum
 							,OD.Code
-							,YEAR(OD.StartDate) year
-							,MONTH(OD.StartDate) month
+							,IFNULL(YEAR(OD.StartDate), 0) year
+							,IFNULL(MONTH(OD.StartDate), 0) month
 							,OD.OD_ID
 							,OP.SH_ID
 							,SH.Shop
@@ -726,8 +726,8 @@
 									,OP.cost_name
 									,ABS(OP.payment_sum) payment_sum
 									,OD.Code
-									,YEAR(OD.StartDate) year
-									,MONTH(OD.StartDate) month
+									,IFNULL(YEAR(OD.StartDate), 0) year
+									,IFNULL(MONTH(OD.StartDate), 0) month
 									,OD.OD_ID
 									,OP.SH_ID
 									,SH.Shop
@@ -772,8 +772,8 @@
 									,OP.payment_sum
 									,OP.terminal_payer
 									,OD.Code
-									,YEAR(OD.StartDate) year
-									,MONTH(OD.StartDate) month
+									,IFNULL(YEAR(OD.StartDate), 0) year
+									,IFNULL(MONTH(OD.StartDate), 0) month
 									,OD.OD_ID
 									,SH.Shop
 									,IF(OD.DelDate IS NULL, '', 'del') del
@@ -850,6 +850,8 @@
 					$query = "SELECT DATE_FORMAT(OT.StartDate, '%d.%m') reject_date
 									,OD.OD_ID
 									,OD.Code
+									,IFNULL(YEAR(OD.StartDate), 0) year
+									,IFNULL(MONTH(OD.StartDate), 0) month
 									,SH.Shop
 									,OT.old_sum
 									,IF(OT.type = 1, 'Замена', 'Отказ') comment
@@ -869,7 +871,7 @@
 						echo "<td width='49'><span class='nowrap'>{$row["reject_date"]}</span></td>";
 						echo "<td width='70' class='txtright'><b>{$format_old_price}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
-						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
+						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
 						echo "<td width='120' style='color: #911;'>{$row["comment"]}</td>";
 						//echo "<td width='22'><a href='#' onclick='if(confirm(\"Убрать заказ <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
