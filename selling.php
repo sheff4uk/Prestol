@@ -625,8 +625,8 @@
 							,OP.cost_name
 							,OP.payment_sum
 							,OD.Code
-							,YEAR(OD.StartDate) year
-							,MONTH(OD.StartDate) month
+							,IFNULL(YEAR(OD.StartDate), 0) year
+							,IFNULL(MONTH(OD.StartDate), 0) month
 							,OD.OD_ID
 							,OP.SH_ID
 							,SH.Shop
