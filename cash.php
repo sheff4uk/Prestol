@@ -825,7 +825,7 @@
 							<div class='btnset'>
 								<?
 								echo "<input id='author_select_all' class='select_all' type='checkbox' name='all_authors' value='1' form='filter_form'><label for='author_select_all'>Все авторы</label>";
-								$query = "SELECT USR_ID, USR_Name(USR_ID) Name FROM Users WHERE Activation = 1 ORDER BY Name";
+								$query = "SELECT USR_ID, USR_Name(USR_ID) Name FROM Users WHERE Activation = 1 AND KA_ID IS NULL ORDER BY Name";
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 								while( $row = mysqli_fetch_array($res) )
 								{
@@ -1190,7 +1190,7 @@
 				<select name="USR_ID" id="USR_ID" style="width: 150px;">
 					<option value="">-=Выберите пользователя=-</option>
 					<?
-						$query = "SELECT USR_ID, USR_Name(USR_ID) Name FROM Users WHERE Activation = 1 ORDER BY Name";
+						$query = "SELECT USR_ID, USR_Name(USR_ID) Name FROM Users WHERE Activation = 1 AND KA_ID IS NULL ORDER BY Name";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{
