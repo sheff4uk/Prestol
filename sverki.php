@@ -313,7 +313,7 @@ if( $payer ) {
 					,PFI.count
 					,DATE_FORMAT(PFI.date, '%d.%m.%y') date_format
 					,PFI.date
-					,USR_Name(PFI.USR_ID) Name
+					,USR_Icon(PFI.USR_ID) Name
 					,PFI.del
 					,PFI.rtrn
 				FROM PrintFormsInvoice PFI
@@ -331,7 +331,7 @@ if( $payer ) {
 					,NULL
 					,DATE_FORMAT(F.date, '%d.%m.%y') date_format
 					,F.date
-					,USR_Name(F.author) Name
+					,USR_Icon(F.author) Name
 					,NULL
 					,1
 				FROM Finance F
@@ -350,7 +350,7 @@ else {
 					,PFI.count
 					,DATE_FORMAT(PFI.date, '%d.%m.%y') date_format
 					,PFI.date
-					,USR_Name(PFI.USR_ID) Name
+					,USR_Icon(PFI.USR_ID) Name
 					,PFI.del
 					,PFI.rtrn
 				FROM PrintFormsInvoice PFI

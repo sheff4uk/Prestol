@@ -14,9 +14,10 @@
 
 		<form action="save_user.php" method="post">
 			<div><label>Имя:</label><input required type="text" name="name" maxlength="255"></div>
+			<div><label>Фамилия:</label><input required type="text" name="surname" maxlength="255"></div>
 			<div><label>Ваш логин:</label><input required type="text" name="login" minlength="3" maxlength="15"></div>
 			<div><label>Пароль:</label><input required type="password" name="password" minlength="3" maxlength="15"></div>
-			<div><label>Email:</label><input required type="email" name="email" maxlength="255"></div>
+			<div><label>Email:</label><input required type="email" name="email" maxlength="255" placeholder="На эту почту придет письмо"></div>
 			<div><button>Регистрация »</button></div>
 		</form>
 		<p><sup>*</sup>КИС - корпоративная информационная система</p>

@@ -15,7 +15,7 @@
 
 	if( in_array('order_add', $Rights) ) {
 		// Генерируем таблицу workflow
-		$query = "SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 1 is_read, USR_Name(OM.author) Name
+		$query = "SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 1 is_read, USR_Icon(OM.author) Name
 					FROM OrdersMessage OM
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -23,7 +23,7 @@
 						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
 						".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
 				  UNION ALL
-				  SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 0 is_read, USR_Name(OM.author) Name
+				  SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 0 is_read, USR_Icon(OM.author) Name
 					FROM OrdersMessage OM
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -66,7 +66,7 @@
 		}
 		$workflow_table .= "</tbody></table>";
 
-		$query = "SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 1 is_read, USR_Name(OM.read_user) Name
+		$query = "SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 1 is_read, USR_Icon(OM.read_user) Name
 					FROM OrdersMessage OM
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -74,7 +74,7 @@
 						".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
 						".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
 				  UNION ALL
-				  SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 0 is_read, USR_Name(OM.read_user) Name
+				  SELECT OM.OM_ID, OM.OD_ID, OD.Code, OM.Message, OM.priority, 0 is_read, USR_Icon(OM.read_user) Name
 					FROM OrdersMessage OM
 					JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 					LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -388,7 +388,7 @@
 		if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
 			$menu["Касса"] = "cash.php";
 		}
-		$menu["Выход (".$_SESSION['name'].")"] = "exit.php";
+		$menu["Выход {$USR_Icon}"] = "exit.php";
 	}
 
 	// Формируем элементы меню

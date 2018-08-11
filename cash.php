@@ -916,7 +916,7 @@
 									,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
 									,F.FA_ID account_filter
 									,0 receipt
-									,USR_Name(F.author) author
+									,USR_Icon(F.author) author
 									,F.author USR_ID
 									,IF(FA.archive = 1 OR IFNULL(TFA.archive, 0) = 1, 1, 0) archive
 								FROM Finance F
@@ -948,7 +948,7 @@
 									,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
 									,F.to_account account_filter
 									,1 receipt
-									,USR_Name(F.author) author
+									,USR_Icon(F.author) author
 									,F.author USR_ID
 									,IF(FA.archive = 1 OR IFNULL(TFA.archive, 0) = 1, 1, 0) archive
 								FROM Finance F
@@ -987,7 +987,7 @@
 						echo "<td class='txtright' style='color: {$color};'><b>{$money}</b></td>";
 						echo "<td><span class='nowrap' style='background-color: {$row["color"]}; border-radius: 20%;'>{$row["account"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["category"]}</span></td>";
-						echo "<td><span class='nowrap'>{$row["author"]}</span></td>";
+						echo "<td>{$row["author"]}</td>";
 						echo "<td><span class='nowrap'><a href='sverki.php?payer={$row["KA_ID"]}' target='_blank' title='Перейти в сверки'><b>{$row["kontragent"]}</b></a></span></td>";
 						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
 						if( $row["is_edit"] and $row["receipt"] == 0 and $row["archive"] == 0 ) {

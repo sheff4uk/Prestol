@@ -172,7 +172,7 @@
 					,DATE_FORMAT(PFD.date, '%d.%m.%y') date_format
 					,PFD.firma_prodavetc
 					,PD.fio
-					,USR_Name(PFD.USR_ID) Name
+					,USR_Icon(PFD.USR_ID) Name
 				FROM PrintFormsDoverennost PFD
 				JOIN PassportData PD ON PD.PD_ID = PFD.PD_ID
 				WHERE YEAR(PFD.date) = {$year}

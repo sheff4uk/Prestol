@@ -904,7 +904,7 @@ case "add_payment":
 					,IF(IFNULL(OP.terminal_payer, '') = '', 0, 1) terminal
 					,OP.terminal_payer
 					,IFNULL(OP.FA_ID, 0) FA_ID
-					,USR_Name(OP.author) Name
+					,USR_Icon(OP.author) Name
 					,IF(OP.FA_ID IS NOT NULL AND OP.terminal_payer IS NULL, FA.name, '') account
 					,SH.Shop
 				FROM OrdersPayment OP
@@ -963,7 +963,7 @@ case "add_payment":
 			$html .= "<td><input style='display: none;' type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
 		}
 
-		$html .= "<td>{$_SESSION['name']}</td>";
+		$html .= "<td>{$USR_Icon}</td>";
 		$html .= "</tr>";
 	}
 	else {
@@ -1744,7 +1744,7 @@ case "blank_log_table":
 							,WD.WD_ID
 							,BL.BL_ID
 							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
-							,USR_Name(BS.author) Name
+							,USR_Icon(BS.author) Name
 							,PBS.BS_ID is_parent
 						FROM BlankStock BS
 						LEFT JOIN BlankStock PBS ON PBS.PBS_ID = BS.BS_ID
@@ -1773,7 +1773,7 @@ case "blank_log_table":
 					<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$row["Amount"]}</b></td>
 					<td class='tariff txtright'>{$row["Tariff"]}</td>
 					<td class='comment'><pre>{$row["Comment"]}</pre></td>
-					<td>".($row["Name"] ? "<i class='fa fa-lg fa-user' aria-hidden='true' title='{$row["Name"]}' style='cursor: pointer;'></i>" : "")."</td>
+					<td>{$row["Name"]}</td>
 					</tr>
 				";
 				if( $row["is_parent"] ) {

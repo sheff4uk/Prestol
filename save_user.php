@@ -6,9 +6,10 @@
 	if (isset($_POST['login'])) { $login = $_POST['login']; if ($login == '') { unset($login);} } //заносим введенный пользователем логин в переменную $login, если он пустой, то уничтожаем переменную
 	if (isset($_POST['password'])) { $passwd=$_POST['password']; if ($passwd =='') { unset($passwd);} } //заносим введенный пользователем пароль в переменную $passwd, если он пустой, то уничтожаем переменную
 	if (isset($_POST['name'])) { $name=$_POST['name']; if ($name =='') { unset($name);} }
+	if (isset($_POST['surname'])) { $surname=$_POST['surname']; if ($surname =='') { unset($surname);} }
 	if (isset($_POST['email'])) { $email=$_POST['email']; if ($email =='') { unset($email);} }
 
-	if (empty($login) or empty($passwd) or empty($name) or empty($email)) //если пользователь не ввел логин или пароль, то выдаем ошибку и останавливаем скрипт
+	if (empty($login) or empty($passwd) or empty($name) or empty($surname) or empty($email)) //если пользователь не ввел логин или пароль, то выдаем ошибку и останавливаем скрипт
 	{
 		exit ("Вы ввели не всю информацию, вернитесь назад и заполните все поля!");
 	}
@@ -24,6 +25,8 @@
 	$passwd = htmlspecialchars($passwd);
 	$name = stripslashes($name);
 	$name = htmlspecialchars($name);
+	$surname = stripslashes($surname);
+	$surname = htmlspecialchars($surname);
 	$email = stripslashes($email);
 	$email = htmlspecialchars($email);
 
@@ -31,6 +34,7 @@
 	$login = trim($login);
 	$passwd = trim($passwd);
 	$name = trim($name);
+	$surname = trim($surname);
 	$email = trim($email);
 
 	//добавляем проверку на длину логина и пароля
@@ -54,7 +58,7 @@
 		exit ("Извините, введённый вами логин уже зарегистрирован. Введите другой логин.");
 	}
 	// если такого нет, то сохраняем данные
-	$query = "INSERT INTO Users (Login, Password, password_hash, Name, Email, Date) VALUES('{$login}', '{$passwd}', '{$hash}', '{$name}', '{$email}', NOW())";
+	$query = "INSERT INTO Users (Login, Password, password_hash, Name, Surname, Email, Date) VALUES('{$login}', '{$passwd}', '{$hash}', '{$name}', '{$surname}', '{$email}', NOW())";
 	$result2 = mysqli_query( $mysqli, $query );
 	// Проверяем, есть ли ошибки
 	if ($result2=='TRUE')
@@ -73,10 +77,10 @@
 		$mail->isSMTP();
 		$mail->SMTPAuth = true;
 		$mail->SMTPSecure = "ssl";
-		$mail->Host = "smtp.yandex.ru";
-		$mail->Port = "465";
-		$mail->Username = "admin@fabrikaprestol.ru";
-		$mail->Password = "GmvN6*D%";
+		$mail->Host = $mail_Host;
+		$mail->Port = $mail_Port;
+		$mail->Username = $mail_Username;
+		$mail->Password = $mail_Password;
 		$mail->CharSet = "UTF-8";
 		$mail->ContentType = 'text/plain';
 		$mail->addAddress($email);

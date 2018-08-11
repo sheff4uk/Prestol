@@ -402,7 +402,7 @@
 				<th width='60'>Начислено</th>
 				<th width='75'>Выдано</th>
 				<th width='70%'>Примечание</th>
-				<th width='25'></th>
+				<th width='50'>Автор</th>
 				<th width='25'></th>
 			</tr>
 			</thead>
@@ -423,7 +423,7 @@
 							,IF(PL.Archive = 1, 'pl-archive', '') Archive
 							,FA.bank
 							,FA.FA_ID
-							,USR_Name(PL.author) Name
+							,USR_Icon(PL.author) Name
 							,FA.archive
 						FROM PayLog PL
 						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
@@ -474,12 +474,12 @@
 					echo "<a href='orderdetail.php?id={$OD_ID}' target='_blank' title='Посмотреть заказ.'><b class='code'>{$Code}</b></a> ";
 				}
 				echo "{$row["Comment"]}</span></td>";
+				echo "<td>{$row["Name"]}</td>";
 				echo "<td>";
 				if ( $row["FA_ID"] and $row["archive"] == 0 ) {
 					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' pay = '{$row["Pay"]}' account='{$row["FA_ID"]}' comment='{$row["Comment"]}' class='edit_pay' location='{$location}' title='Редактировать выдачу.'><i class='fa fa-pencil fa-lg'></i></a>";
 				}
 				echo "</td>";
-				echo "<td>".($row["Name"] ? "<i class='fa fa-lg fa-user' aria-hidden='true' title='{$row["Name"]}' style='cursor: pointer;'></i>" : "")."</td>";
 				echo "</tr>";
 			}
 	?>

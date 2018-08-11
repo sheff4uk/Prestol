@@ -794,7 +794,8 @@ if( $id != "NULL" ) {
 					<th width="">Старое значение</th>
 					<th width=""><i class='fa fa-arrow-right'></i></th>
 					<th width="">Новое значение</th>
-					<th width="">Дата/Время/Автор</th>
+					<th width="">Дата<br>Время</th>
+					<th width="">Автор</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -804,7 +805,7 @@ if( $id != "NULL" ) {
 							,OCL.field_name
 							,OCL.old_value
 							,OCL.new_value
-							,IFNULL(USR_Name(OCL.author), 'СИСТЕМА') Name
+							,USR_Icon(OCL.author) Name
 							,Friendly_date(OCL.date_time) friendly_date
 							,TIME(OCL.date_time) Time
 						FROM OrdersChangeLog OCL
@@ -822,7 +823,8 @@ if( $id != "NULL" ) {
 				else {
 					echo "<td colspan='4'><b>{$row["field_name"]}</b></td>";
 				}
-				echo "<td class='nowrap'>{$row["friendly_date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
+				echo "<td class='nowrap'>{$row["friendly_date"]}<br>{$row["Time"]}</td>";
+				echo "<td>{$row["Name"]}</td>";
 				echo "</tr>";
 			}
 		?>
@@ -837,7 +839,8 @@ if( $id != "NULL" ) {
 					<tr>
 					<th width="40"><a href="#" class="add_message_btn" title="Добавить сообщение"><i class="fa fa-plus-square fa-2x" style="color: green;"></i></a></th>
 					<th width="">Сообщение</th>
-					<th width="">Дата/Время/Автор</th>
+					<th width="">Дата<br>Время</th>
+					<th width="">Автор</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -845,7 +848,7 @@ if( $id != "NULL" ) {
 			$query = "SELECT OM.OM_ID
 							,OM.Message
 							,OM.priority
-							,USR_Name(OM.author) Name
+							,USR_Icon(OM.author) Name
 							,Friendly_date(OM.date_time) friendly_date
 							,TIME(OM.date_time) Time
 							,IFNULL(USR_Name(OM.read_user), '') read_user
@@ -876,7 +879,8 @@ if( $id != "NULL" ) {
 				echo "<tr".($row["priority"] ? " style='font-weight: bold;'" : "").">";
 				echo "<td>{$letter_btn}</td>";
 				echo "<td>".(src_url($row["Message"]))."</td>";
-				echo "<td>{$row["friendly_date"]}<br>{$row["Time"]}<br>{$row["Name"]}</td>";
+				echo "<td>{$row["friendly_date"]}<br>{$row["Time"]}</td>";
+				echo "<td>{$row["Name"]}</td>";
 				echo "</tr>";
 			}
 		?>

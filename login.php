@@ -15,7 +15,6 @@
 			$result = mysqli_query( $mysqli, $query );
 			$myrow = mysqli_fetch_array($result);
 			$_SESSION['login'] = $myrow['Login'];
-			$_SESSION['name'] = $myrow['Name'];
 
 			if( $_GET["location"] ) {
 				exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
@@ -132,7 +131,6 @@
 
 				$_SESSION['login'] = $myrow['Login'];
 				$_SESSION['id'] = $myrow['USR_ID'];
-				$_SESSION['name'] = $myrow['Name'];
 
 				if( isset($_GET["location"]) ) {
 					exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
@@ -164,10 +162,10 @@
 						$mail->isSMTP();
 						$mail->SMTPAuth = true;
 						$mail->SMTPSecure = "ssl";
-						$mail->Host = "smtp.yandex.ru";
-						$mail->Port = "465";
-						$mail->Username = "admin@fabrikaprestol.ru";
-						$mail->Password = "GmvN6*D%";
+						$mail->Host = $mail_Host;
+						$mail->Port = $mail_Port;
+						$mail->Username = $mail_Username;
+						$mail->Password = $mail_Password;
 						$mail->CharSet = "UTF-8";
 						$mail->ContentType = 'text/plain';
 						$mail->addAddress($myrow['Email']);

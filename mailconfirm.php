@@ -38,10 +38,10 @@
 		$mail->isSMTP();
 		$mail->SMTPAuth = true;
 		$mail->SMTPSecure = "ssl";
-		$mail->Host = "smtp.yandex.ru";
-		$mail->Port = "465";
-		$mail->Username = "admin@fabrikaprestol.ru";
-		$mail->Password = "GmvN6*D%";
+		$mail->Host = $mail_Host;
+		$mail->Port = $mail_Port;
+		$mail->Username = $mail_Username;
+		$mail->Password = $mail_Password;
 		$mail->CharSet = "UTF-8";
 		$mail->ContentType = 'text/plain';
 		$mail->addAddress($from);
