@@ -85,7 +85,7 @@
 				<input type='radio' id='1ptn2' name='ptn' value='2'>
 				<label for='1ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
 				<input type='radio' id='1ptn3' name='ptn' value='3'>
-				<label for='1ptn3'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Кофе</label>
+				<label for='1ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
 			</div>
 			<br>
 		</div>
