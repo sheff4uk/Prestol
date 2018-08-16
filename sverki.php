@@ -445,12 +445,10 @@ while( $row = mysqli_fetch_array($res) ) {
 				</select>
 				<br>
 				<br>
-				<div id="wr_platelshik" style="display: flex;">
-					<table width="50%" class="forms" style="border: 2px solid;">
+				<fieldset id="wr_platelshik" style="text-align: left;">
+					<legend id="KA_info"></legend>
+					<table width="100%" class="forms">
 						<tbody>
-							<tr align="left">
-								<td colspan="2"><strong id="KA_info"></strong></td>
-							</tr>
 							<tr>
 								<td width="200" align="left" valign="top">Название ООО или ИП:</td>
 								<td align="left" valign="top">
@@ -478,14 +476,6 @@ while( $row = mysqli_fetch_array($res) ) {
 								<td align="left" valign="top">Телефоны:</td>
 								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_tel" id="platelshik_tel" class="forminput" placeholder=""></td>
 							</tr>
-						</tbody>
-					</table>
-
-					<table width="50%" class="forms" style="border: 2px solid;">
-						<tbody>
-							<tr>
-								<td colspan="2" align="left" valign="top"><strong id="KA_bank"></strong></td>
-							</tr>
 							<tr>
 								<td width="200" align="left" valign="top">Расчетный счет:</td>
 								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_schet" id="platelshik_schet" class="forminput" placeholder=""></td>
@@ -506,13 +496,91 @@ while( $row = mysqli_fetch_array($res) ) {
 								<td align="left" valign="top">Местонахождение банка:</td>
 								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank_adres" id="platelshik_bank_adres" class="forminput" placeholder=""></td>
 							</tr>
-							<tr>
-								<td height="29"></td>
-								<td></td>
+						</tbody>
+					</table>
+				</fieldset>
+				<br>
+				<fieldset id="wr_gruzopoluchatel" style="text-align: left;">
+					<legend>Информация о грузополучателе:</legend>
+					<table width="100%" class="forms">
+						<tbody>
+							<tr class="forms">
+								<td width="200" align="left" valign="top">Грузополучатель:</td>
+								<td valign="top" class="btnset">
+									<input type="radio" name="gruzopoluchatel" value="0" id="gruzopoluchatel_0">
+									<label for="gruzopoluchatel_0">Такой же, как плательщик</label>
+									<input type="radio" name="gruzopoluchatel" value="1" id="gruzopoluchatel_1">
+									<label for="gruzopoluchatel_1">Сторонняя организация</label>
+								</td>
 							</tr>
 						</tbody>
 					</table>
-				</div>
+					<table width="100%" class="forms" id="gruzopoluchatel1">
+						<tbody>
+							<tr>
+								<td width="200" align="left" valign="top">Название ООО или ИП:</td>
+								<td align="left" valign="top">
+									<input type="text" name="gruzopoluchatel_name" id="gruzopoluchatel_name" class="forminput" placeholder="">
+								</td>
+							</tr>
+							<tr>
+								<td align="left" valign="top">ИНН:</td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_inn" id="gruzopoluchatel_inn" class="forminput" placeholder=""></td>
+							</tr>
+							<tr>
+								<td align="left" valign="top">КПП:</td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_kpp" id="gruzopoluchatel_kpp" class="forminput" placeholder=""></td>
+							</tr>
+							<tr>
+								<td align="left" valign="top">ОКПО:</td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_okpo" id="gruzopoluchatel_okpo" class="forminput" placeholder=""></td>
+							</tr>
+							<tr>
+								<td align="left" valign="top">Адрес:</td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_adres" id="gruzopoluchatel_adres" class="forminput" placeholder=""></td>
+							</tr>
+							<tr>
+								<td align="left" valign="top">Телефоны:</td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_tel" id="gruzopoluchatel_tel" class="forminput" placeholder=""></td>
+							</tr>
+							<tr>
+								<td width="200" align="left" valign="top">Расчетный счет:</td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_schet" id="gruzopoluchatel_schet" class="forminput" placeholder=""></td>
+							</tr>
+							<tr>
+								<td align="left" valign="top">Наименование банка:</td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank" id="gruzopoluchatel_bank" class="forminput" placeholder=""></td>
+							</tr>
+							<tr>
+								<td align="left" valign="top">БИК:</td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bik" id="gruzopoluchatel_bik" class="forminput" placeholder=""></td>
+							</tr>
+							<tr>
+								<td align="left" valign="top">Корреспондентский счет:</td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_ks" id="gruzopoluchatel_ks" class="forminput" placeholder=""></td>
+							</tr>
+							<tr>
+								<td align="left" valign="top">Местонахождение банка:</td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank_adres" id="gruzopoluchatel_bank_adres" class="forminput" placeholder=""></td>
+							</tr>
+						</tbody>
+					</table>
+				</fieldset>
+				<br>
+				<fieldset>
+					<table width="100%" class="forms">
+						<tbody>
+							<tr>
+								<td width="200" align="left">Основание:</td>
+								<td align="left">
+									<input type="text" name="osnovanie" id="osnovanie" style="width: 490px;" placeholder="" value="">&nbsp;
+									<input type="text" name="osnovanie_nomer" id="osnovanie_nomer" style="width: 100px;" placeholder="номер" value="">&nbsp;
+									<input type="text" name="osnovanie_data" id="osnovanie_data" class="date" style="width: 90px;" placeholder="дата" value="">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</fieldset>
 			</div>
 			<div id="num_rows" style="display: none;">
 				Ниже показаны последние
@@ -624,22 +692,24 @@ while( $row = mysqli_fetch_array($res) ) {
 			var title;
 			if( this_id == 'add_invoice_btn' ) {
 				title = 'Накладная на ОТГРУЗКУ';
-				$('#KA_info').html('Информация о ГРУЗОПОЛУЧАТЕЛЕ:');
-				$('#KA_bank').html('Банковские реквизиты ГРУЗОПОЛУЧАТЕЛЯ:');
+				$('#KA_info').html('Информация о плательщике:');
 				$('#num_rows').hide();
 				$('#num_rows input').val(0);
 				$('#return_message').hide();
+				$('#wr_gruzopoluchatel').show();
 			}
 			else {
 				title = 'Накладная на ВОЗВРАТ'
-				$('#KA_info').html('Информация о ГРУЗООТПРАВИТЕЛЕ:');
-				$('#KA_bank').html('Банковские реквизиты ГРУЗООТПРАВИТЕЛЯ:');
+				$('#KA_info').html('Информация о грузоотправителе:');
 				$('#num_rows').show();
 				$('#num_rows input').val(25);
 				$('#return_message').show();
+				$('#wr_gruzopoluchatel').hide();
 			}
 			// Очистка
 			$('select[name="KA_ID"]').val('').change();
+			$('#gruzopoluchatel1 input').val('');
+			$('#gruzopoluchatel_0').prop('checked', true).button('refresh').change();
 			$('#orders_to_invoice').html('');
 			$('#add_invoice_form .accordion').accordion( "option", "active", 1 );
 			$('#date').val('<?=( date('d.m.Y') )?>');
@@ -682,6 +752,16 @@ while( $row = mysqli_fetch_array($res) ) {
 				hide: 'explode',
 				closeText: 'Закрыть'
 			});
+		});
+
+		// При выборе сторонней организации отображается форма грузополучателя
+		$('#wr_gruzopoluchatel input[name=gruzopoluchatel]').on('change', function() {
+			if ($(this).val() == 0){
+				$('#gruzopoluchatel1').hide('fast');
+			}
+			else{
+				$('#gruzopoluchatel1').show('fast');
+			}
 		});
 
 		// Динамическая подгрузка заказов при выборе контрагента (в форме накладной)

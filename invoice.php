@@ -194,7 +194,6 @@ $_POST["gruzootpravitel_schet"] = mysqli_result($res,0,'RS');
 $_POST["gruzootpravitel_bank"] = mysqli_result($res,0,'Bank');
 $_POST["gruzootpravitel_bik"] = mysqli_result($res,0,'BIK');
 $_POST["gruzootpravitel_ks"] = mysqli_result($res,0,'KS');
-$_POST["gruzopoluchatel"] = 0;
 $_POST["postavshik"] = 1;
 
 // Если накладная на возврат меняем грузоотправителя и получателя местами
