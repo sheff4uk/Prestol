@@ -971,3 +971,16 @@ td.tscell > i {
 	color: red;
 	font-weight: bold;
 }
+
+.price {
+	color: #C00000;
+	font-weight: bold;
+	margin: 0px;
+}
+
+.old_price {
+	font-weight: bold;
+	text-decoration: line-through;
+	opacity: .6;
+	margin: 0px;
+}

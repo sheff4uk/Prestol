@@ -594,7 +594,7 @@
 			<th width="">Материал</th>
 			<th width="">Поставщик</th>
 			<th width="">Примечание</th>
-<!--			<th width="60">Цена</th>-->
+			<th width="60">Цена</th>
 			<th width="75">Действие</th>
 		</tr>
 		</thead>
@@ -603,7 +603,8 @@
 	$query = "SELECT ODD.ODD_ID
 					,ODD.Amount
 					,PM.Model
-					,ODD.Price
+					,IF(ODD.discount, ODD.Price, '') old_Price
+					,(ODD.Price - IFNULL(ODD.discount, 0)) Price
 					,IFNULL(PM.PT_ID, 2) PT_ID
 					,Zakaz(ODD.ODD_ID) Zakaz
 					,IFNULL(MT.Material, '') Material
@@ -641,7 +642,8 @@
 
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
+		$format_old_price = ($row["old_Price"] != '') ? '<p class="old_price">'.number_format($row["old_Price"], 0, '', ' ').'</p>' : '';
+		$format_price = ($row["Price"] != '') ? '<p class="price">'.number_format($row["Price"], 0, '', ' ').'</p>' : '';
 		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
 		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
 		echo "<td><span>{$row["Zakaz"]}</span></td>";
@@ -666,7 +668,7 @@
 		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
-//		echo "<td class='txtright'>{$format_price}</td>";
+		echo "<td class='txtright'>{$format_old_price}{$format_price}</td>";
 		echo "<td>";
 		
 		if( $row["Del"] == 0 ) {
@@ -684,7 +686,8 @@
 <?
 	$query = "SELECT ODB.ODB_ID
 					,ODB.Amount
-					,ODB.Price
+					,IF(ODB.discount, ODB.Price, '') old_Price
+					,(ODB.Price - IFNULL(ODB.discount, 0)) Price
 					,ZakazB(ODB.ODB_ID) Zakaz
 					,ODB.Comment
 					,ODB.MT_ID
@@ -719,7 +722,8 @@
 
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$format_price = ($row["Price"] != '') ? number_format($row["Price"], 0, '', ' ') : '';
+		$format_old_price = ($row["old_Price"] != '') ? '<p class="old_price">'.number_format($row["old_Price"], 0, '', ' ').'</p>' : '';
+		$format_price = ($row["Price"] != '') ? '<p class="price">'.number_format($row["Price"], 0, '', ' ').'</p>' : '';
 		echo "<tr id='blank{$row["ODB_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODB_ID{$row["ODB_ID"]}*'>";
 		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
 		echo "<td>{$row["Zakaz"]}</td>";
@@ -744,7 +748,7 @@
 		echo "</div></td>";
 		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
-//		echo "<td class='txtright'>{$format_price}</td>";
+		echo "<td class='txtright'>{$format_old_price}{$format_price}</td>";
 		echo "<td>";
 
 		if( $row["Del"] == 0 ) {
