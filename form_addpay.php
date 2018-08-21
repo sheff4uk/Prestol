@@ -42,7 +42,7 @@
 				<select required name="Worker" id="worker" style="width: 200px;">
 					<option value="">-=Выберите работника=-</option>
 					<?
-					$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD ORDER BY WD.Name";
+					$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE IsActive = 1 ORDER BY WD.Name";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) )
 					{
