@@ -33,6 +33,19 @@
 		$ModelPatina[$row["PM_ID"]] = [$row["ptn"]];
 		$ModelDefForm[$row["PM_ID"]] = [$row["PF_ID"]];
 	}
+
+	// Массив стандартных размеров
+	$ModelStandart = array();
+	$query = "
+		SELECT PMM.PM_ID, PMM.PME_ID, CONCAT(PME.Mechanism'(', PSS.sizes, ')<br>') sizes
+		FROM ProductModelsMechanism PMM
+		JOIN ProductMechanism PME ON PME.PME_ID = PMM.PME_ID
+		JOIN (
+			SELECT PMM_ID, GROUP_CONCAT(CONCAT(CONCAT('<a href=\"#\">', IF(Width > 0, '', 'Ø'), Length), IF(PieceSize, CONCAT('(+', IF(PieceAmount, CONCAT(PieceAmount, 'x'), ''), PieceSize, ')'), ''), IF(Width, CONCAT('х', Width), ''), '</a>') SEPARATOR ' ') sizes
+			FROM ProductStandartSize
+			GROUP BY PMM_ID
+		) PSS ON PSS.PMM_ID = PMM.PMM_ID
+	";
 ?>
 	<script>
 		// Передаем в JavaScript массивы
@@ -41,6 +54,7 @@
 		ModelDefForm = <?= json_encode($ModelDefForm); ?>;
 		ModelMech = <?= json_encode($ModelMech); ?>;
 		ModelMech_box = <?= json_encode($ModelMech_box); ?>;
+		ModelStandart = <?= json_encode($ModelStandart); ?>;
 	</script>
 
 <!-- Форма добавления стула -->
@@ -53,10 +67,6 @@
 			<input required type='number' min='1' value='1' style='width: 70px; font-size: 2em;' name='Amount' autocomplete="off">
 			&nbsp;&nbsp;&nbsp;
 			<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Изменение кол-ва невозможно.'>
-		</div>
-		<div style='display: none;'>
-			<label>Цена за шт:</label>
-			<input type='number' min='0' style='width: 100px;' name='Price' autocomplete="off">
 		</div>
 		<div>
 			<label>Модель:</label>
@@ -148,13 +158,8 @@
 		<input type='hidden' value='2' name='Type'>
 		<div>
 			<label>Kол-во:</label>
-			<input required type='number' min='1' value='1' style='width: 70px; font-size: 2em;' name='Amount' autocomplete="off">
-			&nbsp;&nbsp;&nbsp;
-			<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Изменение кол-ва невозможно.'>
-		</div>
-		<div style='display: none;'>
-			<label>Цена за шт:</label>
-			<input type='number' min='0' style='width: 100px;' name='Price' autocomplete="off">
+			<span id="amount" style="font-size: 2em;">1</span>
+			<input type='hidden' value='1' name='Amount'>
 		</div>
 		<div>
 			<label>Модель:</label>
@@ -173,18 +178,8 @@
 			<img src='/img/attention.png' class='attention' id='Model' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 		</div>
 		<div>
-			<label>Патина:</label>
-			<div class='btnset'>
-				<input type='radio' id='2ptn0' name='ptn' value='0'>
-					<label for='2ptn0'>Нет</label>
-				<input type='radio' id='2ptn1' name='ptn' value='1'>
-					<label for='2ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
-				<input type='radio' id='2ptn2' name='ptn' value='2'>
-					<label for='2ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
-				<input type='radio' id='2ptn3' name='ptn' value='3'>
-					<label for='2ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
-			</div>
-			<br>
+			<label>Стандарт:</label>
+			<div id="standart"></div><br>
 		</div>
 		<div>
 			<label>Форма:</label>
@@ -226,7 +221,7 @@
 		</div>
 		<div>
 			<label>Размер:</label>
-			<input id="length" required type='number' min='500' max='3000' step='10' name='Length' style='width: 60px;' autocomplete='off' title="Длина">
+			<input id="length" required type='number' min='500' max='3000' step='10' name='Length' style='width: 70px;' autocomplete='off' title="Длина" placeholder="Длина">
 			<img src='/img/attention.png' class='attention' id='Length' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 			<div id="sliding" style="display: inline-block;">
 				<span>(</span>
@@ -239,11 +234,25 @@
 					</select>
 					<span>x</span>
 				</div>
-				<input type="number" name="PieceSize" required min="200" max="650" step="10" style='width: 50px;' autocomplete="off" title="Размер вставки">
+				<input type="number" name="PieceSize" required min="200" max="650" step="10" style='width: 70px;' autocomplete="off" title="Размер вставки" placeholder="Вставка">
 				<span>)</span>
 			</div>
 			<span id="second_x">x</span>
-			<input id='width' required type='number' min='500' max='1500' step='10' name='Width' style='width: 60px;' autocomplete='off' title="Ширина">
+			<input id='width' required type='number' min='500' max='1500' step='10' name='Width' style='width: 70px;' autocomplete='off' title="Ширина" placeholder="Ширина">
+		</div>
+		<div>
+			<label>Патина:</label>
+			<div class='btnset'>
+				<input type='radio' id='2ptn0' name='ptn' value='0'>
+					<label for='2ptn0'>Нет</label>
+				<input type='radio' id='2ptn1' name='ptn' value='1'>
+					<label for='2ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
+				<input type='radio' id='2ptn2' name='ptn' value='2'>
+					<label for='2ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
+				<input type='radio' id='2ptn3' name='ptn' value='3'>
+					<label for='2ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
+			</div>
+			<br>
 		</div>
 		<div>
 			<label>Пластик и поставщик:</label>
@@ -306,10 +315,6 @@
 				<input required type='number' min='1' value='1' style='width: 70px; font-size: 2em;' name='Amount' autocomplete="off">
 				&nbsp;&nbsp;&nbsp;
 				<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Изменение кол-ва невозможно.'>
-			</div>
-			<div style='display: none;'>
-				<label>Цена за шт:</label>
-				<input type='number' min='0' style='width: 100px;' name='Price' autocomplete="off">
 			</div>
 			<h3 style="color: #911;">Внимание! Каркасы стульев и другие заготовки нужно выбирать из списка ниже, а не писать вручную.</h3>
 			<div>
@@ -458,6 +463,19 @@
 </div>
 <!-- Конец формы разбитя заказа -->
 
+<!-- Форма редактирования суммы заказа -->
+<div id='update_price' title='Изменение суммы заказа' style='display:none'>
+	<form method='post' action="<?=$location?>&add_price=1">
+		<fieldset>
+		</fieldset>
+		<div>
+			<hr>
+			<button style='float: right;'>Сохранить</button>
+		</div>
+	</form>
+</div>
+<!-- Конец формы редактирования суммы заказа -->
+
 <script>
 	// Функция активирует/деактивирует кнопки наличия ткани/пластика
 	function materialonoff(element)
@@ -592,6 +610,30 @@
 			$('#addtable input[type="radio"]').button('refresh');
 		}
 	}
+
+	// Функция пересчитывает итог в форме редактирования суммы заказа
+	function updtotal() {
+		var total_sum = 0;
+		var total_discount = 0;
+		var total_percent = 0;
+		$('.prod_price').each(function(){
+			var prod_price = $(this).find('input').val();
+			var prod_discount = $(this).parents('tr').find('.prod_discount input').val();
+			var prod_amount = $(this).parents('tr').find('.prod_amount').html();
+			var prod_sum = (prod_price - prod_discount) * prod_amount;
+			var prod_percent = (prod_discount / prod_price * 100).toFixed(1);
+			total_sum = total_sum + prod_sum;
+			total_discount = total_discount + prod_discount * prod_amount;
+			prod_sum = prod_sum.format();
+			$(this).parents('tr').find('.prod_sum').html(prod_sum);
+			$(this).parents('tr').find('.prod_percent').html(prod_percent);
+		});
+		total_percent = (total_discount / (total_sum + total_discount) * 100).toFixed(1);
+		$('#prod_total input').val(total_sum);
+		$('#discount input').val(total_discount);
+		$('#discount span').html(total_percent);
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	$(function() {
 		// Select2
@@ -635,7 +677,6 @@
 			$('#addchair textarea').val('');
 			$('#addchair input[name="Amount"]').val('');
 			$('#addchair input[name="Amount"]').prop('readonly', false);
-			$('#addchair input[name="Price"]').val('');
 			$('#1radio').prop('checked', true);
 			$('#1ptn0').prop('checked', true);
 			$('#addchair .radiostatus input[type="radio"]').prop('disabled', true);
@@ -660,7 +701,6 @@
 				$.ajax({ url: "ajax.php?do=odd_data&id=" + id, success:function(msg){ odd_data = msg; }, dataType: "json", async: false });
 
 				$('#addchair input[name="Amount"]').val(odd_data['amount']);
-				$('#addchair input[name="Price"]').val(odd_data['price']);
 
 				// Задание значение, создав при необходимости новую опцию
 				if ($('#addchair select[name="Model"]').find("option[value='" + odd_data['model'] + "']").length) {
@@ -709,6 +749,7 @@
 
 			// Форма добавления/редактирования стульев
 			$('#addchair').dialog({
+				resizable: false,
 				width: 600,
 				modal: true,
 				show: 'blind',
@@ -755,28 +796,20 @@
 			$('#addtable input[type="text"]').val('');
 			$('#addtable select[name="Shipper"]').attr("required", false);
 			$('#addtable textarea').val('');
-			$('#addtable input[name="Amount"]').val('');
-			$('#addtable input[name="Amount"]').prop('readonly', false);
-			$('#addtable input[name="Price"]').val('');
+			$('#addtable #amount').text('1');
+			$('#addtable input[name="Amount"]').val('1');
 			$('#addtable input[name="Length"]').val('');
 			$('#addtable input[name="Width"]').val('');
 			$('#addtable input[name="PieceSize"]').val('');
 			$('#2radio').prop('checked', true);
 			$('#2ptn0').prop('checked', true);
 			$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
-//			$('#addtable input[name="Form"]:nth-child(1)').prop('checked', true);
-//			// Выбираем механизм первый по списку
-//			$('#addtable input[name="Mechanism"]:nth-child(1)').prop('checked', true);
-//			piece_from_mechanism($('#addtable input[name="Mechanism"]').val());
 
 			// Выключается ящик
 			$('#addtable #box').prop('checked', false);
 			$('#addtable #box').button('refresh');
 
-
 			$('#addtable input[type="radio"]').button("refresh");
-			//$('#addtable input[type="checkbox"]').button("refresh");
-			$('#addtable input[name="Amount"]').removeAttr('max');
 			// Очистка инпутов дат заказа пластика
 			$('#addtable .order_material').hide('fast');
 			$('#addtable .order_material input').attr("required", false);
@@ -786,7 +819,6 @@
 			// Устанавливаем дефолтное значение кол-ва вставок
 			$('#addtable select[name=PieceAmount]').val('2');
 			// Прячем картинки-треугольники
-			$('#addtable img[id="Amount"]').hide();
 			$('#addtable img[id="Model"]').hide();
 			$('#addtable img[id="Mechanism"]').hide();
 			$('#addtable img[id="Length"]').hide();
@@ -811,8 +843,8 @@
 					$('#addtable select[name="Model"]').select2();
 				}
 
+				$('#addtable #amount').text(odd_data['amount']);
 				$('#addtable input[name="Amount"]').val(odd_data['amount']);
-				$('#addtable input[name="Price"]').val(odd_data['price']);
 
 				// Задание значение, создав при необходимости новую опцию
 				if ($('#addtable select[name="Model"]').find("option[value='" + model + "']").length) {
@@ -854,12 +886,9 @@
 				// Если изделие в работе, то выводятся предупреждения
 				if( odd_data['inprogress'] == 1 )
 				{
-					$('#addtable img[id="Amount"]').show();
-					$('#addtable input[name="Amount"]').prop('readonly', true);
 					$('#addtable img[id="Model"]').show();
 					$('#addtable img[id="Mechanism"]').show();
 					$('#addtable img[id="Length"]').show();
-					$('#addtable input[name="Amount"]').attr('max', odd_data['amount']);
 				}
 
 				materialonoff('#addtable');
@@ -880,7 +909,8 @@
 
 			$("#addtable").dialog(
 			{
-				width: 850,
+				resizable: false,
+				width: 750,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
@@ -1035,6 +1065,7 @@
 
 			$("#addblank").dialog(
 			{
+				resizable: false,
 				width: 600,
 				modal: true,
 				show: 'blind',
@@ -1118,6 +1149,32 @@
 			else {
 				$(this).parent('div').find('select[name="Shipper"]').attr("required", false);
 			}
+		});
+
+		// Форма редактирования суммы заказа
+		$('.update_price_btn').click( function() {
+			var OD_ID = $(this).attr('id');
+			var location = $(this).attr("location");
+			$.ajax({ url: "ajax.php?do=update_price&OD_ID="+OD_ID, dataType: "script", async: false });
+
+			$("#update_price form").attr("action", "datasave.php?OD_ID="+OD_ID+"&add_price=1");
+			$("#update_price input[name=location]").val(location);
+
+			$('#update_price').dialog({
+				width: 600,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
+
+			updtotal();
+
+			$('.prod_price input, .prod_discount input').on('input', function() {
+				updtotal();
+			});
+
+			return false;
 		});
 	});
 </script>

@@ -984,6 +984,7 @@ case "update_price":
 	$OD_ID = $_GET["OD_ID"];
 
 	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
+	$html .= "<input type='hidden' name='location'>";
 
 	$html .= "<div class='accordion'>";
 	$html .= "<h3>Памятка по изменению суммы заказа</h3>";

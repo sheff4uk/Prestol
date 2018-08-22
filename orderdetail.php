@@ -352,66 +352,87 @@
 	{
 		echo "<p><a href='{$_SESSION["location"]}#ord{$_GET["id"]}' class='button'><< Вернуться</a></p>";
 
-		$query = "SELECT OD.Code
-						,OD.ClientName
-						,OD.ul
-						,OD.mtel
-						,OD.address
-						,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
-						,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
-						,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
-						,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
-						,DATE_FORMAT(OD.DelDate, '%d.%m.%y') DelDate
-						,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), '<br><b style=\'background-color: silver;\'>Выставка</b>', '') showing
-						,IFNULL(OD.SH_ID, 0) SH_ID
-						,IFNULL(SH.KA_ID, 0) KA_ID
-						,OD.OrderNumber
-						,CL.color Color
-						,CL.clear
-						,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-						,WD.Name
-						,OD.Comment
-						,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
-						,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL), 1, 0) retail
-						,SH.CT_ID
-						,IFNULL(OD.SHP_ID, 0) SHP_ID
-						,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
-						,PFI.count
-						,PFI.platelshik_id
-				  FROM OrdersData OD
-				  LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
-				  LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
-				  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-				  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-				  LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
-				  WHERE OD_ID = {$id}";
+		$query = "
+			SELECT OD.OD_ID
+				,OD.Code
+				,OD.ClientName
+				,OD.ul
+				,OD.mtel
+				,OD.address
+				,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
+				,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
+				,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
+				,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
+				,DATE_FORMAT(OD.DelDate, '%d.%m.%y') DelDate
+				,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), '<br><b style=\'background-color: silver;\'>Выставка</b>', '') showing
+				,IFNULL(OD.SH_ID, 0) SH_ID
+				,IFNULL(SH.KA_ID, 0) KA_ID
+				,OD.OrderNumber
+				,CL.color Color
+				,CL.clear
+				,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
+				,WD.Name
+				,OD.Comment
+				,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
+				,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL), 1, 0) retail
+				,SH.CT_ID
+				,IFNULL(OD.SHP_ID, 0) SHP_ID
+				,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
+				,PFI.count
+				,PFI.platelshik_id
+				,SUM(ODD_ODB.Price) - SUM(ODD_ODB.discount) Price
+			FROM OrdersData OD
+			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
+			LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
+			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+			LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
+			LEFT JOIN (
+				SELECT ODD.OD_ID
+					,ODD.Price * ODD.Amount Price
+					,IFNULL(ODD.discount, 0) * ODD.Amount discount
+				FROM OrdersDataDetail ODD
+				WHERE ODD.Del = 0
+				UNION ALL
+				SELECT ODB.OD_ID
+					,ODB.Price * ODB.Amount Price
+					,IFNULL(ODB.discount, 0) * ODB.Amount discount
+				FROM OrdersDataBlank ODB
+				WHERE ODB.Del = 0
+				) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+			WHERE OD.OD_ID = {$id}
+		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$Code = mysqli_result($res,0,'Code');
-		$ClientName = mysqli_result($res,0,'ClientName');
-		$ul = mysqli_result($res,0,'ul');
-		$mtel = mysqli_result($res,0,'mtel');
-		$address = mysqli_result($res,0,'address');
-		$AddDate = mysqli_result($res,0,'AddDate');
-		$StartDate = mysqli_result($res,0,'StartDate');
-		$EndDate = mysqli_result($res,0,'EndDate');
-		$ReadyDate = mysqli_result($res,0,'ReadyDate');
-		$DelDate = mysqli_result($res,0,'DelDate');
-		$showing = mysqli_result($res,0,'showing');
-		$SH_ID = mysqli_result($res,0,'SH_ID');
-		$KA_ID = mysqli_result($res,0,'KA_ID');
-		$OrderNumber = mysqli_result($res,0,'OrderNumber');
-		$Color = mysqli_result($res,0,'Color');
-		$clear = mysqli_result($res,0,'clear');
-		$IsPainting = mysqli_result($res,0,'IsPainting');
-		$Name = mysqli_result($res,0,'Name');
-		$Comment = mysqli_result($res,0,'Comment');
-		$CTColor = mysqli_result($res,0,'CTColor');
-		$retail = mysqli_result($res,0,'retail');
-		$CT_ID = mysqli_result($res,0,'CT_ID');
-		$SHP_ID = mysqli_result($res,0,'SHP_ID');
-		$PFI_ID = mysqli_result($res,0,'PFI_ID');
-		$count = mysqli_result($res,0,'count');
-		$platelshik_id = mysqli_result($res,0,'platelshik_id');
+		$row = mysqli_fetch_array($res);
+
+		$Code = $row['Code'];
+		$ClientName = $row['ClientName'];
+		$ul = $row['ul'];
+		$mtel = $row['mtel'];
+		$address = $row['address'];
+		$AddDate = $row['AddDate'];
+		$StartDate = $row['StartDate'];
+		$EndDate = $row['EndDate'];
+		$ReadyDate = $row['ReadyDate'];
+		$DelDate = $row['DelDate'];
+		$showing = $row['showing'];
+		$SH_ID = $row['SH_ID'];
+		$KA_ID = $row['KA_ID'];
+		$OrderNumber = $row['OrderNumber'];
+		$Color = $row['Color'];
+		$clear = $row['clear'];
+		$IsPainting = $row['IsPainting'];
+		$Name = $row['Name'];
+		$Comment = $row['Comment'];
+		$CTColor = $row['CTColor'];
+		$retail = $row['retail'];
+		$CT_ID = $row['CT_ID'];
+		$SHP_ID = $row['SHP_ID'];
+		$PFI_ID = $row['PFI_ID'];
+		$count = $row['count'];
+		$platelshik_id = $row['platelshik_id'];
+		$format_price = number_format($row['Price'], 0, '', ' ');
+
 		// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информацию заказа.
 		$editable = (!($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and !($SH_ID == 0 and !in_array('order_add_confirm', $Rights)));
 ?>
@@ -431,6 +452,7 @@
 			<th width="125">Салон</th>
 			<th width="170">Цвет краски</th>
 			<th width="40">Принят</th>
+			<th width="65">Сумма<br>заказа</th>
 			<th width="20%">Примечание</th>
 			<th width="70">Действие</th>
 		</tr>
@@ -526,6 +548,33 @@
 				$class = $class." edit_confirmed";
 			}
 			echo "<td val='{$confirmed}' class='{$class}' style='text-align: center;'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
+
+			// СУММА ЗАКАЗА
+			// Если свободные - ячейка пуста
+			if( $SH_ID == 0 ) {
+				$price = "";
+			}
+			// Если розница и есть доступ к реализации или опт и есть доступ к сверкам то цена редактируемая
+			elseif( ($retail and (in_array('selling_all', $Rights) or in_array('selling_city', $Rights))) or (!$retail and(in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights))) ) {
+				// Если заказ в накладной - сумма заказа ведет в накладную, цена не редактируется
+				if( $row["PFI_ID"] ) {
+					// Исключение для Клена
+					if( $row["SH_ID"] == 36 ) {
+						$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}' location='{$location}'>{$format_price}</button><br><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_opt_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
+					}
+					else {
+						$price = "<a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
+					}
+				}
+				else {
+					$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}' location='{$location}'>{$format_price}</button>";
+				}
+			}
+			else {
+				$price = "<p class='price'>$format_price</p>";
+			}
+
+			echo "<td class='txtright'>{$price}</td>";
 			?>
 
 			<td><textarea name='Comment' rows='6' <?=( (in_array('order_add', $Rights) and !$Del and $editable) ? "" : "disabled" )?> style='width: 100%;'><?=$Comment?></textarea></td>

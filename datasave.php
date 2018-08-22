@@ -3,12 +3,6 @@ session_start();
 include "config.php";
 include "header.php";
 
-// Проверка прав на доступ к экрану
-if( !in_array('order_add', $Rights) ) {
-	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-	die('Недостаточно прав для совершения операции');
-}
-
 // Обновление параметров изделия
 if( $_GET["oddid"] and isset($_POST["Amount"]) )
 {
@@ -31,47 +25,6 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	$Model = mysqli_result($res,0,'PM_ID');
 	$Mechanism = mysqli_result($res,0,'PME_ID');
 	$Length = mysqli_result($res,0,'Length');
-
-// СОЗДАН ТРИГГЕР AddStepsAfterUpdate
-//	// Если изменения затрагивают этапы то создаем новые этапы, а старые помечаем
-//	if( $Model != ($_POST["Model"] == "0" ? "" : $_POST["Model"]) or $Mechanism != $_POST["Mechanism"] or $Length != $_POST["Length"] ) {
-//		// Удаляем видимые этапы без работника
-//		$query = "DELETE FROM OrdersDataSteps WHERE ODD_ID = {$_GET["oddid"]} AND WD_ID IS NULL AND Visible = 1";
-//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//
-//		// Оставшиеся этапы помечаются архивом (Old)
-//		$query = "UPDATE OrdersDataSteps SET Old = 1, author = {$_SESSION['id']} WHERE ODD_ID = {$_GET["oddid"]}";
-//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//
-//		// Добавляем заново все этапы
-//		$Model = $_POST["Model"] ? "{$_POST["Model"]}" : "NULL";
-//		$Mechanism = $_POST["Mechanism"] ? "{$_POST["Mechanism"]}" : "NULL";
-//		$Length = $_POST["Type"] == 2 ? "{$_POST["Length"]}" : "NULL";
-//		if( $Model != "NULL" ) {
-//			$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
-//					SELECT {$_GET["oddid"]}
-//						  ,ST.ST_ID
-//						  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
-//					FROM StepsTariffs ST
-//					JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
-//					LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
-//					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
-//					# Заглушка для обивки
-//					#WHERE ST.ST_ID != 4";
-//		}
-//		else {
-//			$query="INSERT INTO OrdersDataSteps(ODD_ID, ST_ID, Tariff)
-//					SELECT {$_GET["oddid"]}
-//						  ,ST.ST_ID
-//						  ,(IFNULL(ST.Tariff, 0) + IFNULL(PMET.Tariff, 0) + IFNULL(PMOT.Tariff, 0) + IFNULL(PSLT.Tariff, 0))
-//					FROM StepsTariffs ST
-//					LEFT JOIN ProductModelsTariff PMOT ON PMOT.ST_ID = ST.ST_ID AND PMOT.PM_ID = IFNULL({$Model}, 0)
-//					LEFT JOIN ProductMechanismTariff PMET ON PMET.ST_ID = ST.ST_ID AND PMET.PME_ID = {$Mechanism}
-//					LEFT JOIN ProductSizeLengthTariff PSLT ON PSLT.ST_ID = ST.ST_ID AND {$Length} BETWEEN PSLT.From AND PSLT.To
-//					WHERE ST.Default = 1";
-//		}
-//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//	}
 
 	// Узнаем возможен ли ящик для этой модели с таким механизмом
 	if( $_POST["Mechanism"] and $_POST["Model"] ) {
@@ -279,6 +232,25 @@ elseif( isset($_POST["ODB_ID"]) )
 	else {
 		exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#blank'.$_POST["ODB_ID"].'">');
 	}
+	die;
+}
+
+// Обновление цены изделий в заказе
+elseif( isset($_GET["add_price"]) ) {
+	$OD_ID = $_POST["OD_ID"];
+
+	foreach ($_POST["PT_ID"] as $key => $value) {
+		$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
+		$discount = $_POST["discount"][$key] ? $_POST["discount"][$key] : "NULL";
+		if( $value == 0 ) {
+			$query = "UPDATE OrdersDataBlank SET Price = {$price}, discount = {$discount}, author = {$_SESSION['id']} WHERE ODB_ID = {$_POST["itemID"][$key]}";
+		}
+		else {
+			$query = "UPDATE OrdersDataDetail SET Price = {$price}, discount = {$discount}, author = {$_SESSION['id']} WHERE ODD_ID = {$_POST["itemID"][$key]}";
+		}
+		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
+	}
+	exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'#ord'.$OD_ID.'">');
 	die;
 }
 

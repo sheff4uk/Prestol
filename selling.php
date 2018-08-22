@@ -72,25 +72,6 @@
 		die;
 	}
 
-	// Обновление цены изделий в заказе
-	if( isset($_GET["add_price"]) ) {
-		$OD_ID = $_POST["OD_ID"];
-
-		foreach ($_POST["PT_ID"] as $key => $value) {
-			$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
-			$discount = $_POST["discount"][$key] ? $_POST["discount"][$key] : "NULL";
-			if( $value == 0 ) {
-				$query = "UPDATE OrdersDataBlank SET Price = {$price}, discount = {$discount}, author = {$_SESSION['id']} WHERE ODB_ID = {$_POST["itemID"][$key]}";
-			}
-			else {
-				$query = "UPDATE OrdersDataDetail SET Price = {$price}, discount = {$discount}, author = {$_SESSION['id']} WHERE ODD_ID = {$_POST["itemID"][$key]}";
-			}
-			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
-		}
-		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
-		die;
-	}
-
 	// Добавление/редактирование расхода/прихода
 	if( isset($_GET["add_cost"]) )
 	{
@@ -1115,14 +1096,14 @@
 					if( $row["PFI_ID"] ) {
 						// Исключение для Клена
 						if( $row["SH_ID"] == 36 ) {
-							$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}'>{$format_price}</button><br><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_opt_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
+							$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}' location='{$location}'>{$format_price}</button><br><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_opt_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
 						}
 						else {
 							$price = "<a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
 						}
 					}
 					else {
-						$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}'>{$format_price}</button>";
+						$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}' location='{$location}'>{$format_price}</button>";
 					}
 
 			echo "<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
@@ -1186,19 +1167,6 @@
 	</form>
 </div>
 <!-- Конец формы добавления оплаты -->
-
-<!-- Форма редактирования суммы заказа -->
-<div id='update_price' title='Изменение суммы заказа' style='display:none'>
-	<form method='post' action="<?=$location?>&add_price=1">
-		<fieldset>
-		</fieldset>
-		<div>
-			<hr>
-			<button style='float: right;'>Сохранить</button>
-		</div>
-	</form>
-</div>
-<!-- Конец формы редактирования суммы заказа -->
 
 <!-- Форма добавления/редактирования расхода/прихода -->
 <div id='add_cost' style='display:none'>
@@ -1271,7 +1239,7 @@
 <!-- Конец формы отказа -->
 
 <script>
-	$(document).ready(function() {
+	$(function() {
 		// Данные для печати
 		print_data = $('#print_selling').serialize();
 		$("#toprint").attr('href', '/toprint/print_selling.php?' + print_data);
@@ -1352,51 +1320,6 @@
 			$('input[name=payment_sum_add]').focus();
 
 			$('#add_payment .terminal').change();
-			return false;
-		});
-
-		// Функция пересчитывает итог в форме редактирования суммы заказа
-		function updtotal() {
-			var total_sum = 0;
-			var total_discount = 0;
-			var total_percent = 0;
-			$('.prod_price').each(function(){
-				var prod_price = $(this).find('input').val();
-				var prod_discount = $(this).parents('tr').find('.prod_discount input').val();
-				var prod_amount = $(this).parents('tr').find('.prod_amount').html();
-				var prod_sum = (prod_price - prod_discount) * prod_amount;
-				var prod_percent = (prod_discount / prod_price * 100).toFixed(1);
-				total_sum = total_sum + prod_sum;
-				total_discount = total_discount + prod_discount * prod_amount;
-				prod_sum = prod_sum.format();
-				$(this).parents('tr').find('.prod_sum').html(prod_sum);
-				$(this).parents('tr').find('.prod_percent').html(prod_percent);
-			});
-			total_percent = (total_discount / (total_sum + total_discount) * 100).toFixed(1);
-			$('#prod_total input').val(total_sum);
-			$('#discount input').val(total_discount);
-			$('#discount span').html(total_percent);
-		}
-
-		// Кнопка редактирования суммы заказа
-		$('.update_price_btn').click( function() {
-			var OD_ID = $(this).attr('id');
-			$.ajax({ url: "ajax.php?do=update_price&OD_ID="+OD_ID, dataType: "script", async: false });
-
-			$('#update_price').dialog({
-				width: 600,
-				modal: true,
-				show: 'blind',
-				hide: 'explode',
-				closeText: 'Закрыть'
-			});
-
-			updtotal();
-
-			$('.prod_price input, .prod_discount input').on('input', function() {
-				updtotal();
-			});
-
 			return false;
 		});
 
