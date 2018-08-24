@@ -867,7 +867,7 @@
 	<?
 		echo "<script>
 			$(document).ready(function() {
-				$('.wr_main_table_body').css('height', 'calc(100vh - 430px)');
+				$('.wr_main_table_body').css('height', 'calc(100vh - 435px)');
 				$('#MT_header').css('margin-top','210px');
 				$('#section1').html('<i class=\'fa fa-money fa-lg\'></i> Наличные: {$format_cache_sum}');
 				//$('#section2').html('<i class=\'fa fa-minus fa-lg\'></i> РАСХОД наличных: {$format_sum_cost}');

@@ -31,6 +31,10 @@
 	{
 		$Date = '\''.date( 'Y-m-d', strtotime($_POST["date"]) ).'\'';
 		$Worker = $_POST["worker"];
+		$start1 = ($_POST["start1"] != $_POST["end1"]) ? $_POST["start1"] : 'NULL';
+		$end1 = ($_POST["start1"] != $_POST["end1"]) ? $_POST["end1"] : 'NULL';
+		$start2 = ($_POST["start2"] != $_POST["end2"]) ? $_POST["start2"] : 'NULL';
+		$end2 = ($_POST["start2"] != $_POST["end2"]) ? $_POST["end2"] : 'NULL';
 		$Hours = $_POST["hours"];
 		$Tariff = $_POST["tariff"];
 		$NightBonus = ($_POST["nightshift"] == 1) ? $_POST["nightbonus"] : 'NULL';
@@ -39,13 +43,21 @@
 		$query = "INSERT INTO TimeSheet
 					 SET WD_ID = {$Worker}
 						,Date = {$Date}
+						,start1 = {$start1}
+						,end1 = {$end1}
+						,start2 = {$start2}
+						,end2 = {$end2}
 						,Hours = {$Hours}
 						,Tariff = {$Tariff}
 						,NightBonus = {$NightBonus}
 						,Comment = '{$Comment}'
 						,author = {$_SESSION["id"]}
 				  ON DUPLICATE KEY UPDATE
-						 Hours = {$Hours}
+						 start1 = {$start1}
+						,end1 = {$end1}
+						,start2 = {$start2}
+						,end2 = {$end2}
+						,Hours = {$Hours}
 						,Tariff = {$Tariff}
 						,NightBonus = {$NightBonus}
 						,Comment = '{$Comment}'
@@ -210,7 +222,7 @@
 				$('#normhours > b').text('<?=$NormHours?>');
 			</script>
 
-			<th width="45">Часы</th>
+			<th width="50">Часы</th>
 			<th width="40">К</th>
 			<th width="55">Сумма</th>
 			<th width="40">%</th>
@@ -227,30 +239,40 @@
 			<button id="timesheetbutton">Сохранить</button>
 		<?
 			// Получаем список работников
-			$query = "SELECT WD.WD_ID, WD.Name
-						,IFNULL(WD.HourlyTariff, 0) deftariff
-						,IFNULL(WD.NightBonus, 0) defbonus
-						,CONCAT('<a class=\"btn\">', IFNULL(WD.HourlyTariff, 0), '</a>') tariffs
-						,IFNULL(WD.PremiumPercent, 0) PremiumPercent
-						,IFNULL(MPP.PremiumPercent, '') ManPercent
-						,IF(MPP.DisableNormHours = 1, 'checked', '') DNHcheck
-						,WD.IsActive
-						,IFNULL(SUM(TS.Hours), 0) Hours
-						FROM WorkersData WD
-						LEFT JOIN TimeSheet TS ON TS.WD_ID = WD.WD_ID AND YEAR(TS.Date) = {$year} AND MONTH(TS.Date) = {$month}
-						LEFT JOIN MonthlyPremiumPercent MPP ON MPP.WD_ID = WD.WD_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
-						WHERE WD.Type = 2
-						GROUP BY WD.WD_ID
-						HAVING IsActive = 1 OR Hours > 0";
+			$query = "
+				SELECT WD.WD_ID, WD.Name
+					,IFNULL(WD.HourlyTariff, 0) deftariff
+					,IFNULL(WD.NightBonus, 0) defbonus
+					,IFNULL(WD.PremiumPercent, 0) PremiumPercent
+					,IFNULL(MPP.PremiumPercent, '') ManPercent
+					,IF(MPP.DisableNormHours = 1, 'checked', '') DNHcheck
+					,WD.IsActive
+					,IFNULL(SUM(TS.Hours), 0) Hours
+					FROM WorkersData WD
+					LEFT JOIN TimeSheet TS ON TS.WD_ID = WD.WD_ID AND YEAR(TS.Date) = {$year} AND MONTH(TS.Date) = {$month}
+					LEFT JOIN MonthlyPremiumPercent MPP ON MPP.WD_ID = WD.WD_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
+					WHERE WD.Type = 2
+					GROUP BY WD.WD_ID
+					HAVING IsActive = 1 OR Hours > 0
+			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "<tr><td class='worker' val='{$row["WD_ID"]}' deftariff='{$row["deftariff"]}' defbonus='{$row["defbonus"]}'><span class='nowrap'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Name"]}</a></span>";
-				echo "<div class='tariffs' style='display: none;'>{$row["tariffs"]}</div></td>";
 
 				// Получаем список часов по работнику за месяц
-				$query = "SELECT DAY(Date) Day, Hours, Tariff, IFNULL(NightBonus, 0) NightBonus, Comment
-						  FROM TimeSheet
-						  WHERE YEAR(Date) = {$year} AND MONTH(Date) = {$month} AND WD_ID = {$row["WD_ID"]}";
+				$query = "
+					SELECT DAY(Date) Day
+						,start1
+						,end1
+						,start2
+						,end2
+						,Hours
+						,Tariff
+						,IFNULL(NightBonus, 0) NightBonus
+						,Comment
+					FROM TimeSheet
+					WHERE YEAR(Date) = {$year} AND MONTH(Date) = {$month} AND WD_ID = {$row["WD_ID"]}
+				";
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 				$sigmahours = 0; // Сумма отработанных дней по работнику
@@ -266,10 +288,9 @@
 					$date = date('d.m.Y', strtotime($year.'-'.$month.'-'.$i));
 					if( $i == $day ) {
 						// значек ночной смены
-						//$nighticon = ($subrow["NightBonus"] > 0) ? "<i class='fa fa-moon-o' aria-hidden='true'></i>" : "";
 						$nightstyle = ($subrow["NightBonus"] > 0) ? "style='background: #666; color: #fff; border-radius: 4px; border: 1px solid #666;'" : "";
 
-						echo "<td style='overflow: visible; font-size: .9em;' class='tscell nowrap' id='{$date}' tariff='{$subrow["Tariff"]}' bonus='{$subrow["NightBonus"]}' comment='{$subrow["Comment"]}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$nighticon}<span {$nightstyle}>{$subrow["Hours"]}</span></td>";
+						echo "<td style='overflow: visible; font-size: .8em; padding: 0px;' class='tscell nowrap' date='{$date}' start1='{$subrow["start1"]}' end1='{$subrow["end1"]}' start2='{$subrow["start2"]}' end2='{$subrow["end2"]}' hours='{$subrow["Hours"]}' tariff='{$subrow["Tariff"]}' bonus='{$subrow["NightBonus"]}' comment='{$subrow["Comment"]}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$nighticon}<span {$nightstyle}>{$subrow["Hours"]}</span></td>";
 						$sigmahours = $sigmahours + $subrow["Hours"];
 						$sigmamoney = $sigmamoney + ($subrow["Hours"] * $subrow["Tariff"] + $subrow["NightBonus"]);
 						if( $subrow = mysqli_fetch_array($subres) ) {
@@ -277,7 +298,7 @@
 						}
 					}
 					else {
-						echo "<td class='tscell' id='{$date}'><span></span></td>";
+						echo "<td class='tscell' date='{$date}'><span></span></td>";
 					}
 					$i++;
 				}
@@ -366,13 +387,58 @@
 			<fieldset>
 				<input type="hidden" name="date">
 				<input type="hidden" name="worker">
+
+				<div>
+					<label>Интервал №1:</label>
+					С <span id="start1" style="width: 45px; font-weight:bold;"></span>
+					до <span id="end1" style="width: 45px; font-weight:bold;"></span>
+					<input type="hidden" name="start1">
+					<input type="hidden" name="end1">
+				</div>
+				<div id="slider-range1"></div>
+				<div style="display: flex; font-size: .8em; margin-top: -18px; text-align: center; margin-left: -22px; width:108%;">
+					<span style="width: 8%; font-weight: bold;">|<br>00:00</span>
+					<span style="width: 8%;">|<br>03:00</span>
+					<span style="width: 8%;">|<br>06:00</span>
+					<span style="width: 8%;">|<br>09:00</span>
+					<span style="width: 8%;">|<br>12:00</span>
+					<span style="width: 8%;">|<br>15:00</span>
+					<span style="width: 8%;">|<br>18:00</span>
+					<span style="width: 8%;">|<br>21:00</span>
+					<span style="width: 8%; font-weight: bold;">|<br>00:00</span>
+					<span style="width: 8%;">|<br>03:00</span>
+					<span style="width: 8%;">|<br>06:00</span>
+					<span style="width: 8%;">|<br>09:00</span>
+					<span style="width: 8%;">|<br>12:00</span>
+				</div>
+
+				<div>
+					<label>Интервал №2:</label>
+					С <span id="start2" style="width: 45px; font-weight:bold;"></span>
+					до <span id="end2" style="width: 45px; font-weight:bold;"></span>
+					<input type="hidden" name="start2">
+					<input type="hidden" name="end2">
+				</div>
+				<div id="slider-range2"></div>
+				<div style="display: flex; font-size: .8em; margin-top: -18px; text-align: center; margin-left: -22px; width:108%;">
+					<span style="width: 8%; font-weight: bold;">|<br>00:00</span>
+					<span style="width: 8%;">|<br>03:00</span>
+					<span style="width: 8%;">|<br>06:00</span>
+					<span style="width: 8%;">|<br>09:00</span>
+					<span style="width: 8%;">|<br>12:00</span>
+					<span style="width: 8%;">|<br>15:00</span>
+					<span style="width: 8%;">|<br>18:00</span>
+					<span style="width: 8%;">|<br>21:00</span>
+					<span style="width: 8%; font-weight: bold;">|<br>00:00</span>
+					<span style="width: 8%;">|<br>03:00</span>
+					<span style="width: 8%;">|<br>06:00</span>
+					<span style="width: 8%;">|<br>09:00</span>
+					<span style="width: 8%;">|<br>12:00</span>
+				</div>
+
 				<div>
 					<label>Часы:</label>
-					<input required type='number' name='hours' step='0.5' min="0" max="24">
-				</div>
-				<div style="display: none;">
-					<label>Тарифы:</label>
-					<div class="tariffs"></div>
+					<input required type='number' name='hours' step='0.25' min="0" max="24">
 				</div>
 				<div>
 					<label>Тариф:</label>
@@ -415,15 +481,123 @@
 		// Подсвечивание столбцов таблицы
 		$('#timesheet').columnHover({eachCell:true, hoverClass:'hover', ignoreCols: [1]});
 
+		// Инициализация слайдеров
+		$( "#slider-range1" ).slider({
+			range: true,
+			min: 0,
+			max: 2160,
+			step: 15,
+			slide: function( event, ui ) {
+				minutes = ui.values[ 0 ] % 60;
+				hours = (ui.values[ 0 ] - minutes) / 60;
+				hours = hours % 24;
+				if( String(minutes).length < 2 ) {minutes = "0" + minutes;}
+				if( String(hours).length < 2 ) {hours = "0" + hours;}
+				$( "#start1" ).text(hours+":"+minutes);
+				minutes = ui.values[ 1 ] % 60;
+				hours = (ui.values[ 1 ] - minutes) / 60;
+				hours = hours % 24;
+				if( String(minutes).length < 2 ) {minutes = "0" + minutes;}
+				if( String(hours).length < 2 ) {hours = "0" + hours;}
+				$( "#end1" ).text(hours+":"+minutes);
+				$('#dayworklog input[name="start1"]').val(ui.values[ 0 ]);
+				$('#dayworklog input[name="end1"]').val(ui.values[ 1 ]);
+				start2 = $('#dayworklog input[name="start2"]').val();
+				end2 = $('#dayworklog input[name="end2"]').val();
+				$('#dayworklog input[name="hours"]').val(((ui.values[ 1 ] - ui.values[ 0 ]) + (end2 - start2)) / 60);
+			},
+			change: function( event, ui ) {
+				minutes = ui.values[ 0 ] % 60;
+				hours = (ui.values[ 0 ] - minutes) / 60;
+				hours = hours % 24;
+				if( String(minutes).length < 2 ) {minutes = "0" + minutes;}
+				if( String(hours).length < 2 ) {hours = "0" + hours;}
+				$( "#start1" ).text(hours+":"+minutes);
+				minutes = ui.values[ 1 ] % 60;
+				hours = (ui.values[ 1 ] - minutes) / 60;
+				hours = hours % 24;
+				if( String(minutes).length < 2 ) {minutes = "0" + minutes;}
+				if( String(hours).length < 2 ) {hours = "0" + hours;}
+				$( "#end1" ).text(hours+":"+minutes);
+				$('#dayworklog input[name="start1"]').val(ui.values[ 0 ]);
+				$('#dayworklog input[name="end1"]').val(ui.values[ 1 ]);
+				start2 = $('#dayworklog input[name="start2"]').val();
+				end2 = $('#dayworklog input[name="end2"]').val();
+				$('#dayworklog input[name="hours"]').val(((ui.values[ 1 ] - ui.values[ 0 ]) + (end2 - start2)) / 60);
+			}
+		});
+		$( "#slider-range2" ).slider({
+			range: true,
+			min: 0,
+			max: 2160,
+			step: 15,
+			slide: function( event, ui ) {
+				minutes = ui.values[ 0 ] % 60;
+				hours = (ui.values[ 0 ] - minutes) / 60;
+				hours = hours % 24;
+				if( String(minutes).length < 2 ) {minutes = "0" + minutes;}
+				if( String(hours).length < 2 ) {hours = "0" + hours;}
+				$( "#start2" ).text(hours+":"+minutes);
+				minutes = ui.values[ 1 ] % 60;
+				hours = (ui.values[ 1 ] - minutes) / 60;
+				hours = hours % 24;
+				if( String(minutes).length < 2 ) {minutes = "0" + minutes;}
+				if( String(hours).length < 2 ) {hours = "0" + hours;}
+				$( "#end2" ).text(hours+":"+minutes);
+				$('#dayworklog input[name="start2"]').val(ui.values[ 0 ]);
+				$('#dayworklog input[name="end2"]').val(ui.values[ 1 ]);
+				start1 = $('#dayworklog input[name="start1"]').val();
+				end1 = $('#dayworklog input[name="end1"]').val();
+				$('#dayworklog input[name="hours"]').val(((ui.values[ 1 ] - ui.values[ 0 ]) + (end1 - start1)) / 60);
+			},
+			change: function( event, ui ) {
+				minutes = ui.values[ 0 ] % 60;
+				hours = (ui.values[ 0 ] - minutes) / 60;
+				hours = hours % 24;
+				if( String(minutes).length < 2 ) {minutes = "0" + minutes;}
+				if( String(hours).length < 2 ) {hours = "0" + hours;}
+				$( "#start2" ).text(hours+":"+minutes);
+				minutes = ui.values[ 1 ] % 60;
+				hours = (ui.values[ 1 ] - minutes) / 60;
+				hours = hours % 24;
+				if( String(minutes).length < 2 ) {minutes = "0" + minutes;}
+				if( String(hours).length < 2 ) {hours = "0" + hours;}
+				$( "#end2" ).text(hours+":"+minutes);
+				$('#dayworklog input[name="start2"]').val(ui.values[ 0 ]);
+				$('#dayworklog input[name="end2"]').val(ui.values[ 1 ]);
+				start1 = $('#dayworklog input[name="start1"]').val();
+				end1 = $('#dayworklog input[name="end1"]').val();
+				$('#dayworklog input[name="hours"]').val(((ui.values[ 1 ] - ui.values[ 0 ]) + (end1 - start1)) / 60);
+			}
+		});
+
 		// Форма добавления часов
 		$('.tscell').click(function() {
 			var workername = $(this).parents('tr').find('.worker a ').html();
-			var workertariffs = $(this).parents('tr').find('.tariffs').html();
-			var date = $(this).attr('id');
+			var date = $(this).attr('date');
 			var worker = $(this).parents('tr').find('.worker').attr('val');
 			var deftariff = $(this).parents('tr').find('.worker').attr('deftariff');
 			var defbonus = $(this).parents('tr').find('.worker').attr('defbonus');
-			var hours = $(this).find('span').html();
+
+			if( $(this).attr('start1') != $(this).attr('end1') ) {
+				var start1 = $(this).attr('start1');
+				var end1 = $(this).attr('end1');
+			}
+			else {
+				var start1 = 720;
+				var end1 = 720;
+			}
+
+			if( $(this).attr('start2') != $(this).attr('end2') ) {
+				var start2 = $(this).attr('start2');
+				var end2 = $(this).attr('end2');
+			}
+			else {
+				var start2 = 720;
+				var end2 = 720;
+			}
+
+			var hours = $(this).attr('hours');
 			var tariff = $(this).attr('tariff');
 			var bonus = $(this).attr('bonus');
 			var comment = $(this).attr('comment');
@@ -432,9 +606,21 @@
 			$('#dayworklog input[name="worker"]').val(worker);
 
 			// Заполнение
-			if( hours != '' ) // Редактирование
+			if( hours > 0 ) // Редактирование
 			{
-				$('#dayworklog input[name="hours"]').val(hours);
+				$( "#slider-range1" ).slider( "option", "values", [ start1, end1 ] );
+				$( "#slider-range2" ).slider( "option", "values", [ start2, end2 ] );
+
+				if( start1 != end1 || start2 != end2 ) {
+					$('#dayworklog input[name="hours"]').attr('required', false);
+					$('#dayworklog input[name="hours"]').attr('readonly', true);
+				}
+				else {
+					$('#dayworklog input[name="hours"]').val(hours);
+					$('#dayworklog input[name="hours"]').attr('required', true);
+					$('#dayworklog input[name="hours"]').attr('readonly', false);
+				}
+
 				$('#dayworklog input[name="tariff"]').val(tariff);
 				if( bonus > 0 ) {
 					$('#dayworklog input[name="nightbonus"]').val(bonus);
@@ -446,18 +632,15 @@
 				bonusonoff(bonus);
 			}
 			else { // Добавление
-				$('#dayworklog input[name="hours"]').val('8');
+				$('#dayworklog input[name="hours"]').attr('required', false);
+				$('#dayworklog input[name="hours"]').attr('readonly', true);
 				$('#dayworklog input[name="tariff"]').val(deftariff);
 				$('#dayworklog input[name="nightbonus"]').val(defbonus);
 				$('#dayworklog input[name="comment"]').val('');
 				bonusonoff(0);
+				$( "#slider-range1" ).slider( "option", "values", [ 720, 720 ] );
+				$( "#slider-range2" ).slider( "option", "values", [ 720, 720 ] );
 			}
-
-			$('#dayworklog div.tariffs').html(workertariffs);
-
-			$('.tariffs a').click(function() {
-				$('#dayworklog input[name="tariff"]').val($(this).html());
-			});
 
 			$(".nightshift").change(function() {
 				if(this.checked) {
@@ -470,14 +653,22 @@
 
 			// Вызов формы
 			$('#dayworklog').dialog({
-				title:	workername+' '+date,
-				width:	400,
-				modal:	true,
-				show:	'blind',
-				hide:	'explode',
-				closeText: 'Закрыть'
+				title:		workername+' '+date,
+				width:		600,
+				modal:		true,
+				resizable:	false,
+				show:		'blind',
+				hide:		'explode',
+				closeText:	'Закрыть'
 			});
+
 			return false;
+		});
+
+		// Когда сдвинулся слайдер интервала - инпут часов readonly
+		$('#slider-range1, #slider-range2').on("slide", function() {
+			$('#dayworklog input[name="hours"]').attr('required', false);
+			$('#dayworklog input[name="hours"]').attr('readonly', true);
 		});
 
 		// Показывать кнопку сохранить при изменении данных в форме табеля

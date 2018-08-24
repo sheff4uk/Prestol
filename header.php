@@ -157,12 +157,13 @@
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=48'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=50'>
 	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
 	<link rel='stylesheet' type='text/css' href='plugins/jReject-master/css/jquery.reject.css'>
 	<link rel='stylesheet' type='text/css' href='css/loading.css'>
+	<link rel='stylesheet' type='text/css' href='js/timepicker/jquery-ui-timepicker-addon.css'>
 <!--	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>-->
 <!--	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>-->
 	<script src="js/jquery-1.11.3.min.js"></script>
@@ -175,6 +176,8 @@
 	<script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript"></script>
 	<script src="js/Chart.min.js" type="text/javascript"></script>
 	<script src="plugins/jReject-master/js/jquery.reject.js" type="text/javascript"></script>
+	<script src="js/timepicker/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+	<script src="js/timepicker/jquery-ui-timepicker-ru.js" type="text/javascript"></script>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.4.0/clipboard.min.js"></script>
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />

@@ -650,7 +650,7 @@ td.tscell > i {
 }
 
 .wr_main_table_body {
-	height: calc(100vh - 220px);
+	height: calc(100vh - 225px);
 //	position: absolute;
 	overflow-y: scroll;
 	background: #fff;
@@ -983,4 +983,8 @@ td.tscell > i {
 	text-decoration: line-through;
 	opacity: .6;
 	margin: 0px;
+}
+
+.datetime {
+	width: 120px;
 }
