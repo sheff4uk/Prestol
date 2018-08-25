@@ -288,9 +288,15 @@
 					$date = date('d.m.Y', strtotime($year.'-'.$month.'-'.$i));
 					if( $i == $day ) {
 						// значек ночной смены
-						$nightstyle = ($subrow["NightBonus"] > 0) ? "style='background: #666; color: #fff; border-radius: 4px; border: 1px solid #666;'" : "";
+						$nightstyle = ($subrow["NightBonus"] > 0) ? " background: #666; color: #fff; border-radius: 4px; border: 1px solid #666;" : "";
 
-						echo "<td style='overflow: visible; font-size: .8em; padding: 0px;' class='tscell nowrap' date='{$date}' start1='{$subrow["start1"]}' end1='{$subrow["end1"]}' start2='{$subrow["start2"]}' end2='{$subrow["end2"]}' hours='{$subrow["Hours"]}' tariff='{$subrow["Tariff"]}' bonus='{$subrow["NightBonus"]}' comment='{$subrow["Comment"]}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$nighticon}<span {$nightstyle}>{$subrow["Hours"]}</span></td>";
+						echo "
+							<td style='overflow: visible; font-size: 0px; padding: 0px; line-height: 12px;' class='tscell nowrap' date='{$date}' start1='{$subrow["start1"]}' end1='{$subrow["end1"]}' start2='{$subrow["start2"]}' end2='{$subrow["end2"]}' hours='{$subrow["Hours"]}' tariff='{$subrow["Tariff"]}' bonus='{$subrow["NightBonus"]}' comment='{$subrow["Comment"]}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$nighticon}
+								<span style='font-size: 11px;{$nightstyle}'>{$subrow["Hours"]}</span>
+								<div style='background-color: #e78f08; left: ".($subrow["start1"]/60/24*100)."%; width: ".(($subrow["end1"] - $subrow["start1"])/60/24*100)."%; position: absolute; top: 16px; opacity: .5;'>.</div>
+								<div style='background-color: #e78f08; left: ".($subrow["start2"]/60/24*100)."%; width: ".(($subrow["end2"] - $subrow["start2"])/60/24*100)."%; position: absolute; top: 16px; opacity: .5;'>.</div>
+							</td>
+						";
 						$sigmahours = $sigmahours + $subrow["Hours"];
 						$sigmamoney = $sigmamoney + ($subrow["Hours"] * $subrow["Tariff"] + $subrow["NightBonus"]);
 						if( $subrow = mysqli_fetch_array($subres) ) {
