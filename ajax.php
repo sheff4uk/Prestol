@@ -688,9 +688,9 @@ case "invoice":
 							,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 							,OD.SH_ID
 							,SH.Shop
-							# Исключение для Клена
-							,IF(OD.SH_ID = 36, GROUP_CONCAT(ODD_ODB.opt_price SEPARATOR ''), GROUP_CONCAT(ODD_ODB.Price SEPARATOR '')) Price
-							,IF(OD.SH_ID = 36, GROUP_CONCAT(ODD_ODB.opt_discount SEPARATOR ''), GROUP_CONCAT(ODD_ODB.discount SEPARATOR '')) discount
+							# Исключение для Клена и Горизонта
+							,IF(OD.SH_ID IN (36,85), GROUP_CONCAT(ODD_ODB.opt_price SEPARATOR ''), GROUP_CONCAT(ODD_ODB.Price SEPARATOR '')) Price
+							,IF(OD.SH_ID IN (36,85), GROUP_CONCAT(ODD_ODB.opt_discount SEPARATOR ''), GROUP_CONCAT(ODD_ODB.discount SEPARATOR '')) discount
 							,OD.confirmed
 							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
 							,IFNULL(OP.payment_sum, 0) payment_sum
