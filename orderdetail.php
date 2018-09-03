@@ -133,7 +133,7 @@
 
 				// Узнаем есть ли платежи по кассе другого салона
 				$query = "SELECT CheckPayment({$OD_ID}) attention";
-				$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				$attention = mysqli_result($res,0,'attention');
 				if( $attention ) {
 					$_SESSION["alert"][] = "У этого заказа имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.";
@@ -649,44 +649,42 @@
 		</thead>
 		<tbody>
 <?
-	$query = "SELECT ODD.ODD_ID
-					,ODD.Amount
-					,PM.Model
-					,IF(ODD.discount, ODD.Price, '') old_Price
-					,(ODD.Price - IFNULL(ODD.discount, 0)) Price
-					,IFNULL(PM.PT_ID, 2) PT_ID
-					,Zakaz(ODD.ODD_ID) Zakaz
-					,IFNULL(MT.Material, '') Material
-					,ODD.MT_ID
-					,IF(MT.removed=1, 'removed ', '') removed
-					,IF(ODD.MT_ID IS NULL, '', SH.Shipper) Shipper
-					,IFNULL(MT.SH_ID, '') SH_ID
-					,SH.mtype
-					,ODD.IsExist
-					,ODD.Comment
-					,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
-					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
-					,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
-					,IF(IFNULL(SUM(ODS.WD_ID * ODS.Visible), 0) = 0, 0, 1) inprogress
-					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
-					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
-					,ODD.Del
-			  FROM OrdersDataDetail ODD
-			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
-			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-			  LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-			  LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID";
-	if( $id != "NULL" )
-	{
-		$query .= " WHERE ODD.OD_ID = {$id}";
-	}
-	else
-	{
-		$query .= " WHERE ODD.OD_ID IS NULL";
-	}
-	$query .= " GROUP BY ODD.ODD_ID ORDER BY IFNULL(PM.PT_ID, 2) DESC, PM.Model, ODD.ODD_ID";
+	$query = "
+		SELECT ODD.ODD_ID
+			,ODD.Amount
+			,PM.Model
+			,IF(ODD.discount, ODD.Price, '') old_Price
+			,(ODD.Price - IFNULL(ODD.discount, 0)) Price
+			,IFNULL(PM.PT_ID, 2) PT_ID
+			,Zakaz(ODD.ODD_ID) Zakaz
+			,IFNULL(MT.Material, '') Material
+			,ODD.MT_ID
+			,IF(MT.removed=1, 'removed ', '') removed
+			,IF(ODD.MT_ID IS NULL, '', SH.Shipper) Shipper
+			,IFNULL(MT.SH_ID, '') SH_ID
+			,SH.mtype
+			,ODD.IsExist
+			,ODD.Comment
+			,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
+			,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
+			,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
+			,IF(IFNULL(SUM(ODS.WD_ID * ODS.Visible), 0) = 0, 0, 1) inprogress
+			,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR '') Steps
+			,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
+			,ODD.Del
+			,IF(CL.clear = 1 AND PM.enamel = 1, 1, 0) enamel_error
+		FROM OrdersDataDetail ODD
+		JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
+		LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+		LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+		LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+		LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+		WHERE ODD.OD_ID = {$id}
+		GROUP BY ODD.ODD_ID ORDER BY IFNULL(PM.PT_ID, 2) DESC, PM.Model, ODD.ODD_ID
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	while( $row = mysqli_fetch_array($res) )
@@ -727,46 +725,50 @@
 			echo "<button ".(($disabled or $PFI_ID or $row["inprogress"] or !$editable) ? 'disabled' : 'title=\'Удалить\'')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;'><i class='fa fa-times fa-lg'></i></button>";
 		}
 		echo "</td></tr>";
+
+		// Выводим ошибку если прозрачное покрытие пластика
+		if( $row["enamel_error"] ) {
+			echo "
+				<script>
+					noty({text: 'Ошибка в заказе: {$row["Model"]} только ПОД ЭМАЛЬ!', type: 'error'});
+				</script
+			";
+		}
 	}
 ?>
 	<!-- Конец таблицы изделий -->
 
 	<!-- Таблица заготовок -->
 <?
-	$query = "SELECT ODB.ODB_ID
-					,ODB.Amount
-					,IF(ODB.discount, ODB.Price, '') old_Price
-					,(ODB.Price - IFNULL(ODB.discount, 0)) Price
-					,ZakazB(ODB.ODB_ID) Zakaz
-					,ODB.Comment
-					,ODB.MT_ID
-					,IFNULL(MT.Material, '') Material
-					,IF(MT.removed=1, 'removed ', '') removed
-					,IF(ODB.MT_ID IS NULL, '', SH.Shipper) Shipper
-					,IFNULL(MT.SH_ID, '') SH_ID
-					,SH.mtype
-					,ODB.IsExist
-					,DATE_FORMAT(ODB.order_date, '%d.%m.%Y') order_date
-					,DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y') arrival_date
-					,IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), '') clock
-					,IF(IFNULL(SUM(ODS.WD_ID * ODS.Visible), 0) = 0, 0, 1) inprogress
-					,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR '') Steps
-					,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
-					,ODB.Del
-			  FROM OrdersDataBlank ODB
-			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
-			  LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-			  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID";
-	if( $id != "NULL" )
-	{
-		$query .= " WHERE ODB.OD_ID = {$id}";
-	}
-	else
-	{
-		$query .= " WHERE ODB.OD_ID IS NULL";
-	}
-	$query .= " GROUP BY ODB.ODB_ID ORDER BY ODB.ODB_ID";
+	$query = "
+		SELECT ODB.ODB_ID
+			,ODB.Amount
+			,IF(ODB.discount, ODB.Price, '') old_Price
+			,(ODB.Price - IFNULL(ODB.discount, 0)) Price
+			,ZakazB(ODB.ODB_ID) Zakaz
+			,ODB.Comment
+			,ODB.MT_ID
+			,IFNULL(MT.Material, '') Material
+			,IF(MT.removed=1, 'removed ', '') removed
+			,IF(ODB.MT_ID IS NULL, '', SH.Shipper) Shipper
+			,IFNULL(MT.SH_ID, '') SH_ID
+			,SH.mtype
+			,ODB.IsExist
+			,DATE_FORMAT(ODB.order_date, '%d.%m.%Y') order_date
+			,DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y') arrival_date
+			,IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), '') clock
+			,IF(IFNULL(SUM(ODS.WD_ID * ODS.Visible), 0) = 0, 0, 1) inprogress
+			,GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR '') Steps
+			,IF(SUM(ODS.Old) > 0, ' attention', '') Attention
+			,ODB.Del
+		FROM OrdersDataBlank ODB
+		LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
+		LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+		LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
+		LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+		WHERE ODB.OD_ID = {$id}
+		GROUP BY ODB.ODB_ID ORDER BY ODB.ODB_ID
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	while( $row = mysqli_fetch_array($res) )
