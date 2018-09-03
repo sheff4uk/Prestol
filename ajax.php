@@ -996,6 +996,7 @@ case "update_price":
 
 	$html .= "<table class='main_table'><thead><tr>";
 	$html .= "<th>Наименование</th>";
+	$html .= "<th width='75'>По прайсу</th>";
 	$html .= "<th width='75'>Цена за шт.</th>";
 	$html .= "<th width='75'>Скидка за шт.</th>";
 	$html .= "<th width='50'>%</th>";
@@ -1038,18 +1039,20 @@ case "update_price":
 			  ORDER BY PT_ID DESC, itemID";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	while( $row = mysqli_fetch_array($res) ) {
+		$format_min_price = number_format($row["min_price"], 0, '', ' ');
 		$html .= "<tr>";
 		$html .= "<input type='hidden' name='PT_ID[]' value='{$row["PT_ID"]}'>";
 		$html .= "<input type='hidden' name='itemID[]' value='{$row["itemID"]}'>";
 		$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
-		$html .= "<td class='prod_price'><input type='number' min='{$row["min_price"]}' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;' ".($row["min_price"] > 0 ? "title='Вычисленная стоимость по прайсу: {$row["min_price"]}'" : "")."></td>";
+		$html .= "<td class='txtright'><span class='price'>{$format_min_price}</span></td>";
+		$html .= "<td class='prod_price'><input type='number' min='{$row["min_price"]}' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;'></td>";
 		$html .= "<td class='prod_discount'><input type='number' min='0' name='discount[]' value='{$row["discount"]}' style='width: 70px; text-align: right;'></td>";
 		$html .= "<td><span class='prod_percent'></span>%</td>";
 		$html .= "<td class='prod_amount' style='text-align: center; font-size: 1.3em; font-weight: bold;'>{$row["Amount"]}</td>";
 		$html .= "<td class='prod_sum' style='text-align: right;'></td>";
 		$html .= "</tr>";
 	}
-	$html .= "<tr style='text-align: right; font-weight: bold;'><td colspan='4' id='discount'>Скидка: <input disabled type='number' style='width: 70px; text-align: right;'> руб. (<span></span> %)</td><td>Итог:</td><td id='prod_total'><input disabled type='number' style='width: 70px; text-align: right;'></td></tr>";
+	$html .= "<tr style='text-align: right; font-weight: bold;'><td colspan='5' id='discount'>Скидка: <input disabled type='number' style='width: 70px; text-align: right;'> руб. (<span></span> %)</td><td>Итог:</td><td id='prod_total'><input disabled type='number' style='width: 70px; text-align: right;'></td></tr>";
 	$html .= "</tbody></table>";
 
 	$html = addslashes($html);

@@ -1161,7 +1161,8 @@
 			$("#update_price input[name=location]").val(location);
 
 			$('#update_price').dialog({
-				width: 600,
+				resizable: false,
+				width: 700,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
