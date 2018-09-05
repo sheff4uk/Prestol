@@ -481,7 +481,7 @@ $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $
 $hold_others_opt = mysqli_result($res,0,'Amount');
 
 ?>
-<h2>Загруженность производства: <font color="red"><?=$load?>%</font></h2>
+<h2>Загруженность производства: <font color="red"><?=$load?>%</font> <i class="fa fa-question-circle" title="Количество отгруженной продукции за последние семь дней относительно среднегодового показателя"></i></h2>
 <canvas id="myChart" width="400" height="130"></canvas>
 <script>
 	var barChartData = {

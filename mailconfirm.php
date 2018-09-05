@@ -30,7 +30,7 @@
 		$activation = md5($myrow['USR_ID'].$login).md5($login.$myrow['USR_ID']);//код активации аккаунта. Зашифруем через функцию md5 идентификатор + логин и логин + идентификатор.
 		$from = "admin@fabrikaprestol.ru";
 		$subject = "[КИС Престол] Регистрация нового пользователя";//тема сообщения
-		$message = "В Корпоративной Информационной Системе ПРЕСТОЛ зарегистрирован новый пользователь:\n\nИмя пользователя: {$myrow['Name']}\n\nЛогин: {$login}\n\nE-mail: {$myrow['Email']}\n\nПерейдите по ссылке, чтобы активировать этого пользователя:\nhttps://kis.fabrikaprestol.ru/activation.php?login={$login}&code={$activation}";//содержание сообщения
+		$message = "В Корпоративной Информационной Системе ПРЕСТОЛ зарегистрирован новый пользователь:\n\nИмя пользователя: {$myrow['Name']} {$myrow['Surname']}\n\nЛогин: {$login}\n\nE-mail: {$myrow['Email']}\n\nПерейдите по ссылке, чтобы активировать этого пользователя:\nhttps://kis.fabrikaprestol.ru/activation.php?login={$login}&code={$activation}";//содержание сообщения
 
 		// Отправляем письмо администратору для активации пользователя через PHPMailer
 		require "PHPMailer/PHPMailerAutoload.php";

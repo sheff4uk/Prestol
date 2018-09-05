@@ -173,15 +173,6 @@
 		die;
 	}
 
-//	// Если заказ был отгружен вручную, то в сессии хранится ссылка на заказ в реализации
-//	if( $_SESSION['selling_link'] ) {
-//		echo "<script>";
-//		echo "$(document).ready(function() {";
-//		echo "noty({text: 'Заказ успешно отгружен. Проверить <a href=\"{$_SESSION['selling_link']}\" target=\"_blank\">реализацию</a>?', type: 'success'});";
-//		echo "});";
-//		echo "</script>";
-//		$_SESSION['selling_link'] = "";
-//	}
 ?>
 
 	<div id="overlay"></div>
