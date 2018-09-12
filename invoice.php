@@ -181,7 +181,7 @@ while( $row = mysqli_fetch_array($res) ) {
 $_POST["nomer"] = $count;
 
 // Информация о грузоотправителе
-$query = "SELECT * FROM Rekvizity LIMIT 1";
+$query = "SELECT * FROM Rekvizity WHERE R_ID = 1";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $_POST["gruzootpravitel_name"] = mysqli_result($res,0,'Name');
 $_POST["gruzootpravitel_inn"] = mysqli_result($res,0,'INN');

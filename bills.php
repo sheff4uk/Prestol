@@ -75,7 +75,7 @@ if( $_GET["add_bill"] ) {
 	$_POST["nomer"] = $count;
 
 	// Информация о продавце
-	$query = "SELECT * FROM Rekvizity LIMIT 1";
+	$query = "SELECT * FROM Rekvizity WHERE R_ID = 1";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$_POST["destination_name"] = mysqli_result($res,0,'Name');
 	$_POST["destination_adres"] = mysqli_result($res,0,'Addres');

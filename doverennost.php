@@ -10,7 +10,7 @@
 		die('Недостаточно прав для совершения операции');
 	}
 
-	if( $_GET["add_doverennost"] ) {
+	if( isset($_GET["add_doverennost"]) ) {
 		// Обновляем на кого выдана доверенность
 		$fio = trim(mysqli_real_escape_string( $mysqli,$_POST["fio"] ));
 		$pasport_seriya = trim(mysqli_real_escape_string( $mysqli,$_POST["pasport_seriya"] ));
@@ -54,7 +54,7 @@
 		$_POST["nomer"] = $count;
 
 		// Получаем информацио об организации, выдавшей доверенность
-		$query = "SELECT * FROM Rekvizity LIMIT 1";
+		$query = "SELECT * FROM Rekvizity WHERE R_ID = {$_POST["R_ID"]}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$_POST["firma_polechatel"] = mysqli_result($res,0,'Name');
 		$_POST["inn"] = mysqli_result($res,0,'INN');
@@ -196,7 +196,7 @@
 <!-- Форма подготовки доверенности -->
 <div id='add_doverennost_form' style='display:none' title="Доверенность на получение товарно-материальных ценностей">
 	<h1>Доверенность на получение товарно-материальных ценностей</h1>
-	<form method="post" id="formdiv" action="?add_doverennost=1">
+	<form method="post" id="formdiv" action="?add_doverennost">
 
 		<div class="formdiv">
 			<table style="width: 100%" border="0" cellspacing="4" class="forms">
@@ -255,6 +255,28 @@
 					<tr>
 						<td class="left" align="left" valign="top">Дата выдачи: </td>
 						<td valign="top"><input type="text" name="pasport_vidan_data" id="pasport_vidan_data" class="forminput" placeholder="12.12.2011" value=""></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<br>
+
+			<table style="width: 100%" border="0" cellspacing="4" class="forms">
+				<tbody>
+					<tr>
+						<td class="left"><strong>Организация выдавшая доверенность:</strong></td>
+						<td valign="top">
+							<select name="R_ID">
+								<?
+								$query = "SELECT R_ID, Name, IF(R_ID = 1, 'selected', '') selected FROM Rekvizity";
+
+								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+								while( $row = mysqli_fetch_array($res) ) {
+									echo "<option value='{$row["R_ID"]}' {$row["selected"]}>{$row["Name"]}</option>";
+								}
+								?>
+							</select>
+						</td>
 					</tr>
 				</tbody>
 			</table>

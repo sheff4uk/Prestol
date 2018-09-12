@@ -18,7 +18,7 @@
 	}
 
 	// Информация о грузоотправителе
-	$query = "SELECT * FROM Rekvizity LIMIT 1";
+	$query = "SELECT * FROM Rekvizity WHERE R_ID = 1";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$gruzootpravitel_name = mysqli_result($res,0,'Name');
 	$gruzootpravitel_director = mysqli_result($res,0,'Dir');
