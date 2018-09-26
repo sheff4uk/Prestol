@@ -449,7 +449,7 @@
 			?>
 			<th width="95">Дата продажи</th>
 			<?= ($ReadyDate ? "<th width='95'>Отгружено</th>" : ($DelDate ? "<th width='95'>Удалено</th>" : "<th width='95'>Дата сдачи</th>")) ?>
-			<th width="125">Салон</th>
+			<th width="125">Подразделение</th>
 			<th width="170">Цвет краски</th>
 			<th width="40">Принят</th>
 			<th width="65">Сумма<br>заказа</th>

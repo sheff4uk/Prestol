@@ -573,7 +573,7 @@ case "shipment":
 			$html .= "<table class='main_table' id='to_shipment'><thead><tr>";
 			$html .= "<th width='75'>Код<br>Создан</th>";
 			$html .= "<th width='20%'>Заказчик [Продажа]-[Сдача]</th>";
-			$html .= "<th width='10%'>Салон</th>";
+			$html .= "<th width='10%'>Подразделение</th>";
 			$html .= "<th width='30%'>Заказ</th>";
 			$html .= "<th width='20%'>Материал</th>";
 			$html .= "<th width='20%'>Цвет</th>";
@@ -789,7 +789,7 @@ case "invoice":
 			$html .= "<table class='main_table' id='to_invoice'><thead><tr>";
 			$html .= "<th width='75'>Код<br>Создан</th>";
 			$html .= "<th width='20%'>Заказчик [Продажа]-[Сдача]</th>";
-			$html .= "<th width='10%'>Салон</th>";
+			$html .= "<th width='10%'>Подразделение</th>";
 			$html .= "<th width='70'>Цена за шт.</th>";
 			$html .= "<th width='70'>Скидка за шт.</th>";
 			$html .= "<th width='30%'>Заказ</th>";

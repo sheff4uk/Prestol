@@ -77,7 +77,7 @@
 					if(isset($_GET["CN"])) echo "<td width='9%'>Заказчик<br>Квитанция</td>";
 					if(isset($_GET["SD"])) echo "<td width='4%'>Дата продажи</td>";
 					if(isset($_GET["ED"])) echo "<td width='4%'>Дата ".($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))."</td>";
-					if(isset($_GET["SH"])) echo "<td width='7%'>Салон</td>";
+					if(isset($_GET["SH"])) echo "<td width='7%'>Подразде-ление</td>";
 //					if(isset($_GET["ON"])) echo "<td width='5%'>№ квитанции</td>";
 					if(isset($_GET["Z"])) echo "<td width='20'>Кол-во</td>";
 					if(isset($_GET["Z"])) echo "<td width='20%'>Заказ</td>";

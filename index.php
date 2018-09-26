@@ -358,11 +358,11 @@
 		<form method='post'>
 			<fieldset>
 				<div>
-					<label>Салон:</label>
+					<label>Подразделение:</label>
 					<select required name='Shop' style="width: 300px;">
 						<?
 						if( !$USR_Shop ) {
-							echo "<option value=''>-=Выберите салон=-</option>";
+							echo "<option value=''>-=Выберите подразделение=-</option>";
 						}
 						if( in_array('order_add_confirm', $Rights) ) {
 							echo "<option value='0' style='background: #999;'>Свободные</option>";
@@ -676,7 +676,7 @@
 			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик<br>Квитанция</label></th>
 			<th width="60"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
 			<th width="60"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br><?=($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))?></label></th>
-			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Салон</label></th>
+			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Подразделение</label></th>
 			<th width="40"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">Мест</label></th>
 			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
 			<th width="15%"><input type="checkbox" disabled value="8" checked name="M" class="print_col" id="M"><label for="M">Материал <i class="fa fa-question-circle" html="<b>Цветовой статус наличия:</b><br><span class='bg-gray'>Неизвестно</span><br><span class='bg-red'>Нет</span><br><span class='bg-yellow'>Заказано</span><br><span class='bg-green'>В наличии</span><br><span class='bg-red removed'>Выведен</span> - нужно менять"></i></label></th>
@@ -1347,7 +1347,7 @@
 
 		// Select2 для выбора салона
 		$('select[name="Shop"]').select2({
-			placeholder: "Выберите салон",
+			placeholder: "Выберите подразделение",
 			language: "ru"
 		});
 		// Костыль для Select2 чтобы работал поиск

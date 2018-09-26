@@ -72,7 +72,7 @@
 					echo "<td width='15%'>Пластик/ткань</td>";
 					echo "<td width='10%'>Цвет покраски</td>";
 					echo "<td width='30'>Кол-во</td>";
-					echo "<td width='7%'>Салон</td>";
+					echo "<td width='7%'>Подразде-ление</td>";
 					echo "<td width='10%'>Примечание</td>";
 					echo "<td width='4%'>Дата продажи</td>";
 
