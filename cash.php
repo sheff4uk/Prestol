@@ -634,7 +634,7 @@
 							$('#type_label').html('<strong title="Доход"><i class="fa fa-plus fa-lg"></i></strong>');
 						break;
 						case "0":
-							$('#type_label').html('<strong title="Перевод"><i class="fa fa-exchange fa-lg"></i></strong>');
+							$('#type_label').html('<strong title="Перевод"><i class="fa fa-exchange-alt fa-lg"></i></strong>');
 						break;
 					}
 				filtered = 1;
@@ -760,7 +760,7 @@
 								<input required type="radio" id="ftype1" name="cash_type" value="1" form="filter_form" <?=( $_SESSION["cash_type"] == "1" ? "checked" : "" )?>>
 									<label for="ftype1"><i class="fa fa-plus fa-lg"></i>Доход</label>
 								<input type="radio" id="ftype0" name="cash_type" value="0" form="filter_form" <?=( $_SESSION["cash_type"] == "0" ? "checked" : "" )?>>
-									<label for="ftype0"><i class="fa fa-exchange fa-lg"></i>Перевод</label>
+									<label for="ftype0"><i class="fa fa-exchange-alt fa-lg"></i>Перевод</label>
 							</div>
 						</div>
 					</th>
@@ -978,7 +978,7 @@
 					$cash_in_local = $cash_in_local + $row["money"] * $row["local"];
 					$color = $row["money"] < 0 ? '#E74C3C' : '#16A085';
 					$money = number_format($row["money"], 0, '', ' ');
-					$type = ($row["type"] == 1 ? '<i class="fa fa-plus" style="color: #16A085;"></i>' : ($row["type"] == -1 ? '<i class="fa fa-minus" style="color: #E74C3C;"></i>' : '<i class="fa fa-exchange"></i>'));
+					$type = ($row["type"] == 1 ? '<i class="fa fa-plus" style="color: #16A085;"></i>' : ($row["type"] == -1 ? '<i class="fa fa-minus" style="color: #E74C3C;"></i>' : '<i class="fa fa-exchange-alt"></i>'));
 
 					if( $row["receipt"] == 0 or $FA_IDs != "" or in_array('finance_account', $Rights) ) {
 						echo "<tr>";
@@ -1056,7 +1056,7 @@
 					<input required type='radio' id='type1' name='type' value='1'>
 						<label for='type1'><i class="fa fa-plus fa-lg" title="Доход"></i></label>
 					<input type='radio' id='type0' name='type' value='0'>
-						<label for='type0'><i class="fa fa-exchange fa-lg" title="Перевод со счета"></i></label>
+						<label for='type0'><i class="fa fa-exchange-alt fa-lg" title="Перевод со счета"></i></label>
 				</div>
 			</div>
 			<div class="field">
