@@ -417,7 +417,7 @@
 						echo "<tr>";
 						echo "<td class='account_label'><span style='background-color: {$row["color"]}; border-radius: 20%;'>{$row["name"]}</span>";
 						if( !in_array('finance_account', $Rights) ) {
-							echo "<a href='#' class='add_account_btn' FA_ID='{$row["FA_ID"]}' bank='{$row["bank"]}' name='{$row["name"]}' color='{$row["color"]}' start_balance='{$row["start_balance"]}' USR_ID='{$row["USR_ID"]}' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a>";
+							echo "<a href='#' class='add_account_btn' FA_ID='{$row["FA_ID"]}' bank='{$row["bank"]}' name='{$row["name"]}' color='{$row["color"]}' start_balance='{$row["start_balance"]}' USR_ID='{$row["USR_ID"]}' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a>";
 						}
 						echo "</td>";
 						echo "<td width='120' class='txtright' style='color: {$color};'><b>{$money}</b></td>";
@@ -991,7 +991,7 @@
 						echo "<td><span class='nowrap'><a href='sverki.php?payer={$row["KA_ID"]}' target='_blank' title='Перейти в сверки'><b>{$row["kontragent"]}</b></a></span></td>";
 						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
 						if( $row["is_edit"] and $row["receipt"] == 0 and $row["archive"] == 0 ) {
-							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["cost_date"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a></td>";
+							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["cost_date"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil-alt fa-lg'></i></a></td>";
 						}
 						else {
 							echo "<td></td>";

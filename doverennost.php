@@ -160,6 +160,7 @@
 			<th>Дата</th>
 			<th>Фирма продавец</th>
 			<th>На имя</th>
+			<th>Файл</th>
 			<th>Автор</th>
 			<th></th>
 		</tr>
@@ -182,9 +183,10 @@
 	while( $row = mysqli_fetch_array($res) ) {
 		echo "<tr>";
 		echo "<td><b>{$row["count"]}</b></td>";
-		echo "<td><a href='open_print_form.php?type=doverennost&PFD_ID={$row["PFD_ID"]}&number={$row["count"]}' target='_blank'><b>{$row["date_format"]}</b></a></td>";
+		echo "<td><b>{$row["date_format"]}</b></td>";
 		echo "<td>{$row["firma_prodavetc"]}</td>";
 		echo "<td>{$row["fio"]}</td>";
+		echo "<td><a href='open_print_form.php?type=doverennost&PFD_ID={$row["PFD_ID"]}&number={$row["count"]}' target='_blank'><i class='fa fa-file-pdf fa-2x'></a></td>";
 		echo "<td>{$row["Name"]}</td>";
 		echo "</tr>";
 	}

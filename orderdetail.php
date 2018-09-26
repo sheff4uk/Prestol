@@ -586,7 +586,7 @@
 				}
 				// Если розничный заказ - показываем кнопку перехода в реализацию
 				if( $retail and !$Del and $editable ) {
-					echo "<p><a href='/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$id}' title='Перейти в реализацию'><i class='fa fa-money fa-2x' aria-hidden='true'></i></a></p>";
+					echo "<p><a href='/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$id}' title='Перейти в реализацию'><i class='fa fa-money-bill-alt fa-2x' aria-hidden='true'></i></a></p>";
 				}
 				// Если заказ в отгрузке и заказ не чужой - показываем кнопку перехода в отгрузку
 				if( $SHP_ID and $editable ) {
@@ -719,7 +719,7 @@
 		echo "<td>";
 		
 		if( $row["Del"] == 0 ) {
-			echo "<button ".(($disabled or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Редактировать изделие\'')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}'><i class='fa fa-pencil fa-lg'></i></button>";
+			echo "<button ".(($disabled or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Редактировать изделие\'')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}'><i class='fa fa-pencil-alt fa-lg'></i></button>";
 
 			$delmessage = addslashes("Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?");
 			echo "<button ".(($disabled or $PFI_ID or $row["inprogress"] or !$editable) ? 'disabled' : 'title=\'Удалить\'')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;'><i class='fa fa-times fa-lg'></i></button>";
@@ -803,7 +803,7 @@
 		echo "<td>";
 
 		if( $row["Del"] == 0 ) {
-			echo "<button ".($disabled ? 'disabled' : 'title=\'Редактировать\'')." id='{$row["ODB_ID"]}' class='edit_order_blank' location='{$location}'><i class='fa fa-pencil fa-lg'></i></a> ";
+			echo "<button ".($disabled ? 'disabled' : 'title=\'Редактировать\'')." id='{$row["ODB_ID"]}' class='edit_order_blank' location='{$location}'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
 
 			$name = addslashes($row["Name"]);
 			$delmessage = addslashes("Удалить {$name} ({$row["Amount"]} шт.)?");

@@ -2,6 +2,7 @@
 	font-family: "Helvetica Neue";
 	src: url('../fonts/HelveticaNeue.ttf') format('truetype');
 }
+/*
 @font-face {
 	font-family: 'FontAwesome';
 	src: url('../fonts/fontawesome-webfont.eot?v=4.5.0');
@@ -9,6 +10,7 @@
 	font-weight: normal;
 	font-style: normal;
 }
+*/
 
 * {
 	-webkit-box-sizing: border-box;
@@ -962,7 +964,7 @@ td.tscell > i {
 	box-shadow: 0 0 3px 3px white;
 }
 
-.del { /*Удаленные позиции*/
+.del td { /*Удаленные позиции*/
 	opacity: .5;
 	text-decoration: line-through;
 }
@@ -970,6 +972,9 @@ td.tscell > i {
 	content: "Удалено";
 	color: red;
 	font-weight: bold;
+}
+.del td:last-child {
+	text-decoration: none;
 }
 
 .price {
@@ -987,4 +992,8 @@ td.tscell > i {
 
 .datetime {
 	width: 120px;
+}
+
+.fa-file-pdf {
+	color: #E74C3C;
 }

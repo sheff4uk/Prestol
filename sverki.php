@@ -294,9 +294,10 @@ if( $payer ) {
 		<tr>
 			<th>Дебет</th>
 			<th>Кредит</th>
+			<th>Дата</th>
 			<th>Контрагент</th>
 			<th>Операция/Документ</th>
-			<th>Дата</th>
+			<th>Файл</th>
 			<th>Автор</th>
 			<th></th>
 		</tr>
@@ -366,13 +367,14 @@ while( $row = mysqli_fetch_array($res) ) {
 	echo "<tr ".($row["del"] ? "class='del'" : "").">";
 	echo "<td class='txtright' style='color: #E74C3C;'><b>{$debet}</b></td>";
 	echo "<td class='txtright' style='color: #16A085;'><b>{$kredit}</b></td>";
+	echo "<td><b>{$row["date_format"]}</b></td>";
 	echo "<td><a href='sverki.php?year={$year}&payer={$row["KA_ID"]}'>{$row["Naimenovanie"]}</a></td>";
 	echo "<td>{$row["document"]}</td>";
 	if( $row["PFI_ID"] ) {
-		echo "<td><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b>{$row["date_format"]}</b></a></td>";
+		echo "<td><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><i class='fa fa-file-pdf fa-2x'></i></a></td>";
 	}
 	else {
-		echo "<td><b>{$row["date_format"]}</b></td>";
+		echo "<td></td>";
 	}
 	echo "<td>{$row["Name"]}</td>";
 	if( $row["del"] == "0" and $row["rtrn"] == "0" and !in_array('sverki_opt', $Rights) ) {

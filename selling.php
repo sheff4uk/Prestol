@@ -257,7 +257,7 @@
 		echo "<h3 style='display: inline-block; margin: 10px 20px;'>{$label} {$format_ostatok}</h3>";
 		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='+' CT_ID='{$CT_ID}' title='Внести приход'><i class='fa fa-plus fa-lg' style='color: white; background: green; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
 		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='-' CT_ID='{$CT_ID}' title='Внести расход'><i class='fa fa-minus fa-lg' style='color: white; background: red; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
-		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='' CT_ID='{$CT_ID}' title='Сдать выручку'><i class='fa fa-exchange fa-lg' style='color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>";
+		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='' CT_ID='{$CT_ID}' title='Сдать выручку'><i class='fa fa-exchange-alt fa-lg' style='color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>";
 	}
 	else {
 		echo "<h3 style='display: inline-block; margin: 10px 20px;'>&nbsp;</h3>";
@@ -684,7 +684,7 @@
 					echo "<td width='180'>{$cache_name}{$is_terminal}</td>";
 					echo "<td width='22'>";
 						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
-							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='{$row["sign"]}' title='Отредактировать запись'><i class='fa fa-pencil fa-lg'></i></a>";
+							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='{$row["sign"]}' title='Отредактировать запись'><i class='fa fa-pencil-alt fa-lg'></i></a>";
 						}
 					echo "</td>";
 					echo "</tr>";
@@ -732,7 +732,7 @@
 						echo "<td width='180'>{$cost_name}</td>";
 						echo "<td width='22'>";
 						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
-							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='-' title='Изменить расход'><i class='fa fa-pencil fa-lg'></i></a>";
+							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='-' title='Изменить расход'><i class='fa fa-pencil-alt fa-lg'></i></a>";
 						}
 						echo "</td>";
 						echo "</tr>";
@@ -812,7 +812,7 @@
 						echo "<td width='180'><span>{$row["cost_name"]}</span></td>";
 						echo "<td width='22'>";
 						if( $locking == 0 and $row["send"] != 2 ) { // Если месяц не закрыт
-							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='' title='Изменить операцию'><i class='fa fa-pencil fa-lg'></i></a>";
+							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='' title='Изменить операцию'><i class='fa fa-pencil-alt fa-lg'></i></a>";
 						}
 						echo "</td>";
 						echo "</tr>";
@@ -869,11 +869,11 @@
 			$(document).ready(function() {
 				$('.wr_main_table_body').css('height', 'calc(100vh - 435px)');
 				$('#MT_header').css('margin-top','210px');
-				$('#section1').html('<i class=\'fa fa-money fa-lg\'></i> Наличные: {$format_cache_sum}');
+				$('#section1').html('<i class=\'fa fa-money-bill-alt fa-lg\'></i> Наличные: {$format_cache_sum}');
 				//$('#section2').html('<i class=\'fa fa-minus fa-lg\'></i> РАСХОД наличных: {$format_sum_cost}');
 				$('#section3').html('<i class=\'fa fa-credit-card fa-lg\'></i> Эквайринг: {$format_terminal_sum}');
-				$('#section4').html('<i class=\'fa fa-exchange fa-lg\'></i> Инкассация: {$format_sum_send}');
-				$('#section5').html('<i class=\'fa fa-hand-paper-o fa-lg\'></i> Отказы/замены: {$reject_count}');
+				$('#section4').html('<i class=\'fa fa-exchange-alt fa-lg\'></i> Инкассация: {$format_sum_send}');
+				$('#section5').html('<i class=\'fa fa-hand-paper fa-lg\'></i> Отказы/замены: {$reject_count}');
 			});
 		</script>";
 	}
@@ -1124,9 +1124,9 @@
 
 			// Если есть права на редактирование заказа и заказ не закрыт, то показываем карандаш, кнопку разделения и отказа
 			if( in_array('order_add', $Rights) and !$is_lock ) {
-				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil fa-lg'></i></a> ";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders fa-lg'></i></a> ";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' invoice={$row["PFI_ID"]} location='{$location}' payment='{$row["payment_sum"]}' old_sum='{$row["Price"]}' title='Пометить как отказ/замена.'><i class='fa fa-hand-paper-o fa-lg' aria-hidden='true'></i></a>";
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' invoice={$row["PFI_ID"]} location='{$location}' payment='{$row["payment_sum"]}' old_sum='{$row["Price"]}' title='Пометить как отказ/замена.'><i class='fa fa-hand-paper fa-lg' aria-hidden='true'></i></a>";
 			}
 			else {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
@@ -1217,7 +1217,7 @@
 <div id='order_otkaz' style='display:none'>
 	<form method='post' action="<?=$location?>&order_otkaz=1">
 		<div style="display: inline-block;">
-			<i class='fa fa-hand-paper-o fa-4x' aria-hidden='true'></i>
+			<i class='fa fa-hand-paper fa-4x' aria-hidden='true'></i>
 		</div>
 		<fieldset style="display: inline-block; width: calc(100% - 65px);">
 			<input type="hidden" name="OD_ID">

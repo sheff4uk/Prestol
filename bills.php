@@ -282,9 +282,10 @@ if( !in_array('sverki_opt', $Rights) ) {
 	<thead>
 		<tr>
 			<th>Сумма</th>
+			<th>Дата</th>
 			<th>Покупатель</th>
 			<th>Номер</th>
-			<th>Дата</th>
+			<th>Файл</th>
 			<th>Автор</th>
 		</tr>
 	</thead>
@@ -308,10 +309,11 @@ while( $row = mysqli_fetch_array($res) ) {
 	$summa = number_format($row["summa"], 0, '', ' ');
 	$number = str_pad($row["count"], 8, '0', STR_PAD_LEFT);
 	echo "<tr>";
-	echo "<td class='txtright'><b>{$summa}</b></td>";
+	echo "<td class='txtright' style='color: #16A085;'><b>{$summa}</b></td>";
+	echo "<td><b>{$row["date_format"]}</b></td>";
 	echo "<td><a href='bills.php?year={$year}&payer={$row["KA_ID"]}'>{$row["pokupatel"]}</a></td>";
 	echo "<td><b>{$row["count"]}</b></td>";
-	echo "<td><b><a href='open_print_form.php?type=schet&PFB_ID={$row["PFB_ID"]}&number={$number}' target='_blank'>{$row["date_format"]}</a></b></td>";
+	echo "<td><b><a href='open_print_form.php?type=schet&PFB_ID={$row["PFB_ID"]}&number={$number}' target='_blank'><i class='fa fa-file-pdf fa-2x'></a></b></td>";
 	echo "<td>{$row["Name"]}</td>";
 	echo "</tr>";
 }
