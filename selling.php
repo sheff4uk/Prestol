@@ -682,7 +682,7 @@
 					echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
 					echo "<td width='60'><span>{$row["Shop"]}</span></td>";
 					echo "<td width='180'>{$cache_name}{$is_terminal}</td>";
-					echo "<td width='22'>";
+					echo "<td width='25'>";
 						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
 							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='{$row["sign"]}' title='Отредактировать запись'><i class='fa fa-pencil-alt fa-lg'></i></a>";
 						}
@@ -730,7 +730,7 @@
 						echo "<td width='70' class='txtright'><b>{$format_cost}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
 						echo "<td width='180'>{$cost_name}</td>";
-						echo "<td width='22'>";
+						echo "<td width='25'>";
 						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
 							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='-' title='Изменить расход'><i class='fa fa-pencil-alt fa-lg'></i></a>";
 						}
@@ -810,7 +810,7 @@
 						echo "<td width='70' class='txtright'><b>{$format_cost}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
 						echo "<td width='180'><span>{$row["cost_name"]}</span></td>";
-						echo "<td width='22'>";
+						echo "<td width='25'>";
 						if( $locking == 0 and $row["send"] != 2 ) { // Если месяц не закрыт
 							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='' title='Изменить операцию'><i class='fa fa-pencil-alt fa-lg'></i></a>";
 						}
@@ -854,7 +854,7 @@
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
 						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
 						echo "<td width='120' style='color: #911;'>{$row["comment"]}</td>";
-						//echo "<td width='22'><a href='#' onclick='if(confirm(\"Убрать заказ <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
+						//echo "<td width='25'><a href='#' onclick='if(confirm(\"Убрать заказ <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
 					}
 					?>
