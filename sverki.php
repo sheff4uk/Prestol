@@ -339,7 +339,7 @@ if( $payer ) {
 					,USR_Icon(F.author) Name
 					,NULL
 					,1
-					,comment
+					,NULL
 					,0
 				FROM Finance F
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
