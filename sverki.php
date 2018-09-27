@@ -294,9 +294,11 @@ if( $payer ) {
 		<tr>
 			<th>Дебет</th>
 			<th>Кредит</th>
+			<th>Скидка</th>
 			<th>Дата</th>
 			<th>Контрагент</th>
 			<th>Операция/Документ</th>
+			<th>Примечание</th>
 			<th>Файл</th>
 			<th>Автор</th>
 			<th></th>
@@ -317,6 +319,8 @@ if( $payer ) {
 					,USR_Icon(PFI.USR_ID) Name
 					,PFI.del
 					,PFI.rtrn
+					,PFI.comment
+					,ROUND((PFI.discount / (PFI.summa + PFI.discount)) * 100, 1) discount
 				FROM PrintFormsInvoice PFI
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
 				WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID = {$payer}
@@ -335,6 +339,8 @@ if( $payer ) {
 					,USR_Icon(F.author) Name
 					,NULL
 					,1
+					,comment
+					,0
 				FROM Finance F
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
 				WHERE YEAR(F.date) = {$year} AND KA.KA_ID = {$payer} AND F.money != 0
@@ -354,6 +360,8 @@ else {
 					,USR_Icon(PFI.USR_ID) Name
 					,PFI.del
 					,PFI.rtrn
+					,PFI.comment
+					,ROUND((PFI.discount / (PFI.summa + PFI.discount)) * 100, 1) discount
 				FROM PrintFormsInvoice PFI
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
 				WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID IN ({$KA_IDs})
@@ -363,20 +371,31 @@ $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $
 while( $row = mysqli_fetch_array($res) ) {
 	$debet = ($row["debet"] != '') ? number_format($row["debet"], 0, '', ' ') : '';
 	$kredit = ($row["kredit"] != '') ? number_format($row["kredit"], 0, '', ' ') : '';
-//	$number = str_pad($row["count"], 8, '0', STR_PAD_LEFT);
+	$discount = ($row["discount"] != 0) ? "<b class='invoice_discount'>{$row["discount"]}%</b>" : "";
 	echo "<tr ".($row["del"] ? "class='del'" : "").">";
 	echo "<td class='txtright' style='color: #E74C3C;'><b>{$debet}</b></td>";
 	echo "<td class='txtright' style='color: #16A085;'><b>{$kredit}</b></td>";
+	echo "<td class='txtright'>{$discount}</td>";
 	echo "<td><b>{$row["date_format"]}</b></td>";
 	echo "<td><a href='sverki.php?year={$year}&payer={$row["KA_ID"]}'>{$row["Naimenovanie"]}</a></td>";
 	echo "<td>{$row["document"]}</td>";
+
+	if( $row["PFI_ID"] and !in_array('sverki_opt', $Rights) ) {
+		echo "<td><input type='text' value='{$row["comment"]}'></td>";
+	}
+	else {
+		echo "<td>{$row["comment"]}</td>";
+	}
+
 	if( $row["PFI_ID"] ) {
 		echo "<td><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><i class='fa fa-file-pdf fa-2x'></i></a></td>";
 	}
 	else {
 		echo "<td></td>";
 	}
+
 	echo "<td>{$row["Name"]}</td>";
+
 	if( $row["del"] == "0" and $row["rtrn"] == "0" and !in_array('sverki_opt', $Rights) ) {
 		$Naimenovanie = addslashes($row["Naimenovanie"]);
 		echo "<td><button onclick='if(confirm(\"Удалить накладную <b>№{$row["count"]} ({$Naimenovanie})</b> от <b>{$row["date_format"]}</b>?\", \"?del={$row["PFI_ID"]}&year={$year}&payer={$payer}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button></td>";

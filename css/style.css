@@ -997,3 +997,10 @@ td.tscell > i {
 .fa-file-pdf {
 	color: #E74C3C;
 }
+
+.invoice_discount {
+	background: #E74C3C;
+	color: #fff;
+	padding: 3px;
+	border-radius: 8px;
+}
