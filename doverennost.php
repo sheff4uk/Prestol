@@ -47,7 +47,7 @@
 		$count = mysqli_result($res,0,'Cnt');
 
 		// Сохраняем в таблицу информацию по доверенности, узнаем её ID.
-		$query = "INSERT INTO PrintFormsDoverennost SET count = {$count}, date = '{$date}', firma_prodavetc = '{$_POST["firma_prodavetc"]}', PD_ID = {$PD_ID}, USR_ID = {$_SESSION["id"]}";
+		$query = "INSERT INTO PrintFormsDoverennost SET count = {$count}, date = '{$date}', firma_prodavetc = '{$_POST["firma_prodavetc"]}', PD_ID = {$PD_ID}, USR_ID = {$_SESSION["id"]}, R_ID = {$_POST["R_ID"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$id = mysqli_insert_id($mysqli);
 
@@ -160,6 +160,7 @@
 			<th>Дата</th>
 			<th>Фирма продавец</th>
 			<th>На имя</th>
+			<th>Организация выдавшая доверенность</th>
 			<th>Файл</th>
 			<th>Автор</th>
 			<th></th>
@@ -174,8 +175,10 @@
 					,PFD.firma_prodavetc
 					,PD.fio
 					,USR_Icon(PFD.USR_ID) Name
+					,R.Name R_Name
 				FROM PrintFormsDoverennost PFD
 				JOIN PassportData PD ON PD.PD_ID = PFD.PD_ID
+				JOIN Rekvizity R ON R.R_ID = PFD.R_ID
 				WHERE YEAR(PFD.date) = {$year}
 				ORDER BY PFD.date DESC, PFD.PFD_ID DESC";
 
@@ -185,7 +188,8 @@
 		echo "<td><b>{$row["count"]}</b></td>";
 		echo "<td><b>{$row["date_format"]}</b></td>";
 		echo "<td>{$row["firma_prodavetc"]}</td>";
-		echo "<td>{$row["fio"]}</td>";
+		echo "<td><b>{$row["fio"]}</b></td>";
+		echo "<td>{$row["R_Name"]}</td>";
 		echo "<td><a href='open_print_form.php?type=doverennost&PFD_ID={$row["PFD_ID"]}&number={$row["count"]}' target='_blank'><i class='fa fa-file-pdf fa-2x'></a></td>";
 		echo "<td>{$row["Name"]}</td>";
 		echo "</tr>";
