@@ -1248,6 +1248,7 @@ case "update_sell_date":
 		echo "$('td#{$OD_ID} .sell_date').val('{$old_StartDate}');";
 		die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	}
+	$old_StartDate = $old_StartDate ? $old_StartDate : "___";
 
 	echo "noty({timeout: 3000, text: 'Дата продажи изменена с <b>{$old_StartDate}</b> на <b>{$_GET["StartDate"]}</b>', type: 'success'});";
 
@@ -1271,9 +1272,33 @@ case "update_sell_comment":
 		die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	}
 
-	$old_sell_comment = htmlspecialchars($old_sell_comment, ENT_QUOTES);
-	$sell_comment = htmlspecialchars($sell_comment, ENT_QUOTES);
+	$old_sell_comment = $old_sell_comment ? htmlspecialchars($old_sell_comment, ENT_QUOTES) : "___";
+	$sell_comment = $sell_comment ? htmlspecialchars($sell_comment, ENT_QUOTES) : "___";
 	echo "noty({timeout: 3000, text: 'Комментарий изменен с <b>{$old_sell_comment}</b> на <b>{$sell_comment}</b>', type: 'success'});";
+
+	break;
+///////////////////////////////////////////////////////////////////
+
+// Редактирование примечания к накладным
+case "update_sverki_comment":
+	$PFI_ID = $_GET["PFI_ID"];
+	$sverki_comment = trim( mysqli_real_escape_string( $mysqli, $_GET["sverki_comment"] ) );
+
+	// Узнаем старое примечание
+	$query = "SELECT comment FROM PrintFormsInvoice WHERE PFI_ID = {$PFI_ID}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+	$old_sverki_comment = mysqli_result($res,0,'comment');
+
+	// Меняем примечание
+	$query = "UPDATE PrintFormsInvoice SET comment = '{$sverki_comment}' WHERE PFI_ID = {$PFI_ID}";
+	if( !mysqli_query( $mysqli, $query ) ) {
+		echo "$('td#{$PFI_ID} .sverki_comment').val('{$old_sverki_comment}');";
+		die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+	}
+
+	$old_sverki_comment = $old_sverki_comment ? htmlspecialchars($old_sverki_comment, ENT_QUOTES) : "___";
+	$sverki_comment = $sverki_comment ? htmlspecialchars($sverki_comment, ENT_QUOTES) : "___";
+	echo "noty({timeout: 3000, text: 'Комментарий изменен с <b>{$old_sverki_comment}</b> на <b>{$sverki_comment}</b>', type: 'success'});";
 
 	break;
 ///////////////////////////////////////////////////////////////////

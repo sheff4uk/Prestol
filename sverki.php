@@ -381,7 +381,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	echo "<td>{$row["document"]}</td>";
 
 	if( $row["PFI_ID"] and !in_array('sverki_opt', $Rights) ) {
-		echo "<td><input type='text' value='{$row["comment"]}'></td>";
+		echo "<td id='{$row["PFI_ID"]}'><input class='sverki_comment' type='text' value='{$row["comment"]}'></td>";
 	}
 	else {
 		echo "<td>{$row["comment"]}</td>";
@@ -705,6 +705,13 @@ while( $row = mysqli_fetch_array($res) ) {
 
 	$(function() {
 		$('#payer').select2({ placeholder: 'Выберите контрагента', language: 'ru' });
+
+		// Редактирование примечания к накладной
+		$('.sverki_comment').on('change', function() {
+			var PFI_ID = $(this).parents('td').attr('id');
+			var val = $(this).val();
+			$.ajax({ url: "ajax.php?do=update_sverki_comment&PFI_ID="+PFI_ID+"&sverki_comment="+val, dataType: "script", async: false });
+		});
 
 		// Форма составления накладной
 		$('#add_invoice_btn, #add_invoice_btn_return').click(function() {
