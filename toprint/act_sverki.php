@@ -211,7 +211,7 @@ ___________________________ <?=$platelshik_name?> ______________________________
 			<div style="width: 50%;">
 				По данным <?=$gruzootpravitel_name?><br>
 				<?
-					echo "<b>на {$date_to} задолженность ".(($saldo < 0) ? "в пользу {$gruzootpravitel_name} {$debt_format} руб." : (($saldo > 0) ? "в пользу {$platelshik_name} {$debt_format} руб." : "отсутствует."))."</b>";
+					echo "<b>на {$date_to} задолженность ".(($end_saldo < 0) ? "в пользу {$gruzootpravitel_name} {$debt_format} руб." : (($end_saldo > 0) ? "в пользу {$platelshik_name} {$debt_format} руб." : "отсутствует."))."</b>";
 				?>
 			</div>
 			<div style="width: 50%;"></div>
