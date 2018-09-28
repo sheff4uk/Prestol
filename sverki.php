@@ -373,8 +373,8 @@ while( $row = mysqli_fetch_array($res) ) {
 	$kredit = ($row["kredit"] != '') ? number_format($row["kredit"], 0, '', ' ') : '';
 	$discount = ($row["discount"] != 0) ? "<b class='invoice_discount'>{$row["discount"]}%</b>" : "";
 	echo "<tr ".($row["del"] ? "class='del'" : "").">";
-	echo "<td class='txtright' style='color: #E74C3C;'><b>{$debet}</b></td>";
-	echo "<td class='txtright' style='color: #16A085;'><b>{$kredit}</b></td>";
+	echo "<td class='txtright nowrap' style='color: #E74C3C;'><b>{$debet}</b></td>";
+	echo "<td class='txtright nowrap' style='color: #16A085;'><b>{$kredit}</b></td>";
 	echo "<td class='txtright'>{$discount}</td>";
 	echo "<td><b>{$row["date_format"]}</b></td>";
 	echo "<td><a href='sverki.php?year={$year}&payer={$row["KA_ID"]}'>{$row["Naimenovanie"]}</a></td>";

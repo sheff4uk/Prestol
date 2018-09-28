@@ -309,7 +309,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$summa = number_format($row["summa"], 0, '', ' ');
 	$number = str_pad($row["count"], 8, '0', STR_PAD_LEFT);
 	echo "<tr>";
-	echo "<td class='txtright' style='color: #16A085;'><b>{$summa}</b></td>";
+	echo "<td class='txtright nowrap' style='color: #16A085;'><b>{$summa}</b></td>";
 	echo "<td><b>{$row["date_format"]}</b></td>";
 	echo "<td><a href='bills.php?year={$year}&payer={$row["KA_ID"]}'>{$row["pokupatel"]}</a></td>";
 	echo "<td><b>{$row["count"]}</b></td>";
