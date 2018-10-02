@@ -105,7 +105,8 @@ $(function(){
 	// Всплывающая подсказка
 	$( document ).tooltip({
 		track: true,
-		items: "img, [html], [title]",
+//		items: "img, [html], [title]",
+		items: "img, [html]",
 		content: function() {
 			var element = $( this );
 			if ( element.is( "[html]" ) ) {
