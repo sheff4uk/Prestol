@@ -138,7 +138,7 @@ pre {
 .not_confirmed {
 	color: #666 !important;
 }
-.edit_confirmed {
+.edit_confirmed, .taken_confirmed {
 	cursor: pointer;
 }
 

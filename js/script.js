@@ -411,5 +411,13 @@ $(function(){
 			$.ajax({ url: "ajax.php?do=confirmed&od_id="+id+"&val="+val, dataType: "script", async: false });
 		});
 
+		// Смена статуса получения заказчиком аяксом
+		$('.taken_confirmed').click(function() {
+			var id = $(this).parents('tr').attr('id');
+			id = id.replace('ord', '');
+			var val = $(this).attr('val');
+			$.ajax({ url: "ajax.php?do=taken&od_id="+id+"&val="+val, dataType: "script", async: false });
+		});
+
 
 });

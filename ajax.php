@@ -338,8 +338,39 @@ case "confirmed":
 
 	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').removeClass('confirmed not_confirmed');";
 	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').addClass('{$class}');";
-	//echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('title', '{$status}');";
 	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('val', '{$val}');";
+	echo "noty({timeout: 3000, text: 'Статус заказа изменен на <b>{$status}</b>', type: 'success'});";
+	break;
+///////////////////////////////////////////////////////////////////
+
+// Смена статуса получения заказчиком заказа
+case "taken":
+
+	$id = $_GET["od_id"];
+	$val = $_GET["val"];
+	$val = ($val == 0) ? 1 : 0;
+
+	// Обновляем статус получения заказа
+	$query = "UPDATE OrdersData SET taken = {$val}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+
+	// Получаем статус получения заказа из базы
+	$query = "SELECT taken FROM OrdersData WHERE OD_ID = {$id}";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+	$val = mysqli_result($res,0,'taken');
+
+	if( $val == 1) {
+		$class = 'confirmed';
+		$status = 'Клиент забрал заказ';
+	}
+	else {
+		$class = 'not_confirmed';
+		$status = 'Клиент НЕ забрал заказ';
+	}
+
+	echo "$('.main_table tr[id=\"ord{$id}\"] .taken_confirmed').removeClass('confirmed not_confirmed');";
+	echo "$('.main_table tr[id=\"ord{$id}\"] .taken_confirmed').addClass('{$class}');";
+	echo "$('.main_table tr[id=\"ord{$id}\"] .taken_confirmed').attr('val', '{$val}');";
 	echo "noty({timeout: 3000, text: 'Статус заказа изменен на <b>{$status}</b>', type: 'success'});";
 	break;
 ///////////////////////////////////////////////////////////////////

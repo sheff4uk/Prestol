@@ -1108,11 +1108,9 @@
 		// Если заказ принят
 		if( $row["confirmed"] == 1 ) {
 			$class = 'confirmed';
-			//$title = 'Принят в работу';
 		}
 		else {
 			$class = 'not_confirmed';
-			//$title = 'Не принят в работу';
 		}
 		if( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 ) {
 			$class = $class." edit_confirmed";

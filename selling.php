@@ -896,7 +896,7 @@
 	<table class="main_table" id="MT_header">
 		<thead>
 			<tr>
-				<th width="60">Дата отгрузки</th>
+				<th width="60">Отгружен <i class="fa fa-question-circle" html="<b>Статус получения заказа:</b><br><i class='fas fa-handshake fa-2x not_confirmed'></i> - Клиент НЕ забрал заказ<br><i class='fas fa-handshake fa-2x confirmed'></i> - Клиент забрал заказ"></i></th>
 				<th width="80">Код<br>Создан</th>
 				<th width="5%">Заказчик<br>Квитанция</th>
 				<th width="25%">Наименование</th>
@@ -992,6 +992,7 @@
 				,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
 				,PFI.count
 				,PFI.platelshik_id
+				,OD.taken
 			FROM OrdersData OD
 			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
 				".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
@@ -1062,9 +1063,6 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
-//			$confirmed = $row["confirmed"];		// Заказ принят в работу
-//			// Запрет на редактирование
-//			$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and $is_lock == 0 and $row["Del"] == 0 );
 			$format_price = number_format($row["Price"], 0, '', ' ');
 			$format_opt_price = number_format($row["opt_price"], 0, '', ' ');
 			$format_payment = number_format($row["payment_sum"], 0, '', ' ');
@@ -1082,29 +1080,47 @@
 					<td>
 						<input type='hidden' name='OD_ID[]' form='print_selling' value='{$row["OD_ID"]}'>
 						<span>{$row["ReadyDate"]}</span>
-					</td>
-					<td><span><b class='code'>{$row["Code"]}</b>".(($year > 0 or $month > 0 or $row["cnt"] == 1) ? "" : "<input type='checkbox' value='{$row["OD_ID"]}' name='od[]' class='chbox'>")."<br>{$row["AddDate"]}</span></td>
-					<td><span><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b></span></td>
-					<td><span class='nowrap'>{$row["Zakaz"]}</span></td>
-					<td><span class='nowrap material'>{$row["Material"]}</span></td>
-					<td>{$row["Color"]}</td>
-					<td class='material'><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>
-					<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
-					<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>";
+			";
 
-					// Если заказ в накладной - сумма заказа ведет в накладную, цена не редактируется
-					if( $row["PFI_ID"] ) {
-						// Исключение для Клена и Горизонта
-						if( $row["SH_ID"] == 36 or $row["SH_ID"] == 85 ) {
-							$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}' location='{$location}'>{$format_price}</button><br><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_opt_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
-						}
-						else {
-							$price = "<a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
-						}
-					}
-					else {
-						$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}' location='{$location}'>{$format_price}</button>";
-					}
+			// Если заказ у клиента
+			if( $row["ReadyDate"] ) {
+				if( $row["taken"] == 1 ) {
+					$class = 'confirmed';
+				}
+				else {
+					$class = 'not_confirmed';
+				}
+				if( $row["StartDate"] and in_array('order_add', $Rights) and !$is_lock ) {
+					$class = $class." taken_confirmed";
+				}
+				echo "<span val='{$row["taken"]}' class='{$class}'><i class='fas fa-handshake fa-2x'></i></td>";
+			}
+
+			echo "
+				</td>
+				<td><span><b class='code'>{$row["Code"]}</b>".(($year > 0 or $month > 0 or $row["cnt"] == 1) ? "" : "<input type='checkbox' value='{$row["OD_ID"]}' name='od[]' class='chbox'>")."<br>{$row["AddDate"]}</span></td>
+				<td><span><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b></span></td>
+				<td><span class='nowrap'>{$row["Zakaz"]}</span></td>
+				<td><span class='nowrap material'>{$row["Material"]}</span></td>
+				<td>{$row["Color"]}</td>
+				<td class='material'><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>
+				<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
+				<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
+			";
+
+			// Если заказ в накладной - сумма заказа ведет в накладную, цена не редактируется
+			if( $row["PFI_ID"] ) {
+				// Исключение для Клена и Горизонта
+				if( $row["SH_ID"] == 36 or $row["SH_ID"] == 85 ) {
+					$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}' location='{$location}'>{$format_price}</button><br><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_opt_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
+				}
+				else {
+					$price = "<a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
+				}
+			}
+			else {
+				$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}' location='{$location}'>{$format_price}</button>";
+			}
 
 			echo "<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
 					<td class='txtright'>{$price}</td>
