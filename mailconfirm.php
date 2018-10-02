@@ -17,7 +17,7 @@
 	else {
 		exit("Вы зашли на страницу без логина!"); //если не указали логин, то выдаем ошибку
 	}
-	$query = "SELECT USR_ID, Name, Email FROM Users WHERE Login = '{$login}'";
+	$query = "SELECT USR_ID, Name, Surname, Email FROM Users WHERE Login = '{$login}'";
 	$result = mysqli_query( $mysqli, $query ); //извлекаем идентификатор пользователя с данным логином
 	$myrow = mysqli_fetch_array($result);
 	$mailconfirm = md5($myrow['USR_ID']).md5($login);//создаем такой же код подтверждения
