@@ -936,6 +936,10 @@
 						$limit = " LIMIT 500";
 						break;
 					case 3:
+						// Удаленные свободные показываем только администрации
+						if (!in_array('order_add_confirm', $Rights)) {
+							$query .= " AND OD.SH_ID IS NOT NULL";
+						}
 						$query .= " AND OD.DelDate IS NOT NULL";
 						$limit = " LIMIT 500";
 						break;
