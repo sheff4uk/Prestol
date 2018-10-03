@@ -160,8 +160,8 @@
 						$query = "UPDATE OrdersDataDetail SET Amount = {$left}, author = NULL WHERE ODD_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						// Вставляем в новый заказ переносимые изделия
-						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Comment, is_check, order_date, arrival_date, min_price, Price, discount, opt_price, sister_ID, author, ptn)
-						SELECT {$newOD_ID}, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, {$right}, Comment, is_check, order_date, arrival_date, min_price, Price, discount, opt_price, {$value}, {$_SESSION['id']}, ptn FROM OrdersDataDetail WHERE ODD_ID = {$value}";
+						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, min_price, Price, discount, opt_price, sister_ID, author, ptn)
+						SELECT {$newOD_ID}, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, {$right}, Comment, order_date, arrival_date, min_price, Price, discount, opt_price, {$value}, {$_SESSION['id']}, ptn FROM OrdersDataDetail WHERE ODD_ID = {$value}";
 							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					}
 				}
