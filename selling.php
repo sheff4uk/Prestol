@@ -137,8 +137,8 @@
 				}
 				else { $_SESSION["alert"][] = mysqli_error( $mysqli ); }
 			}
-			// Очищаем дату продажи
-			$query = "UPDATE OrdersData SET StartDate = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена', ' Отказ')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
+			// Очищаем дату продажи и статус получения заказа
+			$query = "UPDATE OrdersData SET StartDate = NULL, taken = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена', ' Отказ')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 			if( mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"][] = "Заказ перемещен в \"Свободные\"";
 			}
