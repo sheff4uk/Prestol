@@ -9,8 +9,6 @@
 		die('Недостаточно прав для совершения операции');
 	}
 
-	$datediff = 60; // Максимальный период отображения данных
-
 	$location = $_SERVER['REQUEST_URI'];
 
 	$year = date("Y");
@@ -34,16 +32,18 @@
 	<div class="halfblock">
 		<?
 			// Баланс сдельных работников
-			$query = "SELECT WD.WD_ID
-							,WD.Name
-							,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
-							,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
-							,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
-							,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
-							,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
-					  FROM WorkersData WD
-					  LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
-					  WHERE WD.IsActive = 1 AND WD.Type = 1";
+			$query = "
+				SELECT WD.WD_ID
+					,WD.Name
+					,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
+					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
+					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
+					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
+					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
+				FROM WorkersData WD
+				LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
+				WHERE WD.IsActive = 1 AND WD.Type = 1
+			";
 			if( isset($_GET["worker"]) ) {
 				$query .= " AND WD.WD_ID = {$_GET["worker"]}";
 			}
@@ -140,16 +140,18 @@
 			}
 
 			// Баланс повременных работников
-			$query = "SELECT WD.WD_ID
-							,WD.Name
-							,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
-							,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
-							,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
-							,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
-							,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
-					  FROM WorkersData WD
-					  LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
-					  WHERE WD.IsActive = 1 AND WD.Type = 2";
+			$query = "
+				SELECT WD.WD_ID
+					,WD.Name
+					,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
+					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
+					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
+					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
+					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
+				FROM WorkersData WD
+				LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
+				WHERE WD.IsActive = 1 AND WD.Type = 2
+			";
 
 			if( isset($_GET["worker"]) ) {
 				$query .= " AND WD.WD_ID = {$_GET["worker"]}";
@@ -243,17 +245,20 @@
 			</table>
 			<?
 			}
-		// Баланс работников ИТР
-		$query = "SELECT WD.WD_ID
-						,WD.Name
-						,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
-						,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
-						,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
-						,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
-						,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
-				  FROM WorkersData WD
-				  LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
-				  WHERE WD.IsActive = 1 AND WD.Type = 3";
+			// Баланс работников ИТР
+			$query = "
+				SELECT WD.WD_ID
+					,WD.Name
+					,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
+					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
+					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
+					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
+					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
+				FROM WorkersData WD
+				LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
+				WHERE WD.IsActive = 1 AND WD.Type = 3
+			";
+
 			if( isset($_GET["worker"]) ) {
 				$query .= " AND WD.WD_ID = {$_GET["worker"]}";
 			}
@@ -360,14 +365,16 @@
 			</thead>
 			<tbody>
 <?
-			$query = "SELECT BL.Balance
-							#,DATE_FORMAT(DATE(BL.Date), '%d.%m.%y') Date
-							,DAY(BL.Date) day
-							,MONTH(BL.Date) month
-							,TIME(BL.Date) Time
-					  FROM BalanceLog BL
-					  WHERE WD_ID = {$_GET["worker"]} AND DATEDIFF(NOW(), Date) <= {$datediff}
-					  ORDER BY BL.Date DESC, BL.Balance DESC";
+			$query = "
+				SELECT BL.Balance
+					,DAY(BL.Date) day
+					,MONTH(BL.Date) month
+					,TIME(BL.Date) Time
+				FROM BalanceLog BL
+				WHERE WD_ID = {$_GET["worker"]}
+				ORDER BY BL.Date DESC, BL.Balance DESC
+				LIMIT 100
+			";
 
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -409,33 +416,38 @@
 			<tbody>
 
 	<?
-			$query = "SELECT PL.PL_ID
-							,IFNULL(PL.Link, '') Link
-							#,DATE_FORMAT(PL.ManDate, '%d.%m.%y') ManDate
-							,DAY(PL.Date) day
-							,MONTH(PL.Date) month
-							,TIME(PL.Date) Time
-							,WD.Name Worker
-							,ABS(PL.Pay) Pay
-							,REPLACE(PL.Comment, '\r\n', '<br>') Comment
-							,WD.WD_ID
-							,IF(PL.Pay < 0, '-', '') Sign
-							,IF(PL.Archive = 1, 'pl-archive', '') Archive
-							,FA.bank
-							,FA.FA_ID
-							,USR_Icon(PL.author) Name
-							,FA.archive
-						FROM PayLog PL
-						LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
-						LEFT JOIN FinanceAccount FA ON FA.FA_ID = PL.FA_ID
-						WHERE
-							#DATEDIFF(NOW(), PL.Date) <= {$datediff} AND
-							PL.Pay <> 0";
+			$query = "
+				SELECT PL.PL_ID
+					,DAY(PL.Date) day
+					,MONTH(PL.Date) month
+					,TIME(PL.Date) Time
+					,WD.Name Worker
+					,ABS(PL.Pay) Pay
+					,REPLACE(PL.Comment, '\r\n', '<br>') Comment
+					,WD.WD_ID
+					,IF(PL.Pay < 0, '-', '') Sign
+					,IF(PL.Archive = 1, 'pl-archive', '') Archive
+					,FA.bank
+					,FA.FA_ID
+					,USR_Icon(PL.author) Name
+					,FA.archive
+					,PL.OD_ID
+					,OD.Code
+				FROM PayLog PL
+				LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
+				LEFT JOIN FinanceAccount FA ON FA.FA_ID = PL.FA_ID
+				LEFT JOIN OrdersData OD ON OD.OD_ID = PL.OD_ID
+				WHERE PL.Pay <> 0
+			";
 			if( isset($_GET["worker"]) ) {
-				$query .= " AND PL.WD_ID = {$_GET["worker"]}";
+				$query .= "
+					AND PL.WD_ID = {$_GET["worker"]}
+				";
 			}
-			$query .= " ORDER BY PL.PL_ID DESC
-						LIMIT 100";
+			$query .= "
+				ORDER BY PL.PL_ID DESC
+				LIMIT 100
+			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
@@ -454,24 +466,9 @@
 					echo "<td></td>";
 				}
 				echo "<td class='comment nowrap' style='z-index: 2;'><span>";
-				// Если запись из этапов производства - выводим код заказа, узнаем статус принятия заказа
-				if( strpos($row["Link"],"ODS") === 0 ) {
-					$odd = substr($row["Link"], 4);
-					$step = strstr($odd, '_');
-					$step = substr($step, 1);
-					$pos = strpos($odd, '_');
-					$odd = substr($odd, 0, $pos);
-					if( $step == '0' ) {
-						$query = "SELECT OD.OD_ID, IFNULL(OD.Code, 'Свободные') Code, IFNULL(OD.confirmed, 1) confirmed FROM OrdersDataBlank ODB LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID WHERE ODB.ODB_ID = {$odd}";
-					}
-					else {
-						$query = "SELECT OD.OD_ID, IFNULL(OD.Code, 'Свободные') Code, IFNULL(OD.confirmed, 1) confirmed FROM OrdersDataDetail ODD LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID WHERE ODD.ODD_ID = {$odd}";
-					}
-					$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					$Code = mysqli_result($subres,0,'Code');
-					$OD_ID = mysqli_result($subres,0,'OD_ID');
-					$confirmed = mysqli_result($subres,0,'confirmed');
-					echo "<a href='orderdetail.php?id={$OD_ID}' target='_blank' title='Посмотреть заказ.'><b class='code'>{$Code}</b></a> ";
+				// Если запись из этапов производства - выводим код заказа
+				if( $row["OD_ID"] ) {
+					echo "<a href='orderdetail.php?id={$row["OD_ID"]}' target='_blank' title='Посмотреть заказ.'><b class='code'>{$row["Code"]}</b></a> ";
 				}
 				echo "{$row["Comment"]}</span></td>";
 				echo "<td>{$row["Name"]}</td>";
