@@ -32,8 +32,8 @@
 	// Вычисление оборота за период
 	$query = "SELECT SUM(SUB.debet) debet, SUM(SUB.kredit) kredit
 				FROM (
-					SELECT IF(PFI.rtrn = 1, NULL, PFI.summa) debet
-						,IF(PFI.rtrn = 1, PFI.summa, NULL) kredit
+					SELECT IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+						,NULL kredit
 					FROM PrintFormsInvoice PFI
 					WHERE PFI.date BETWEEN STR_TO_DATE('{$date_from}', '%d.%m.%Y') AND STR_TO_DATE('{$date_to}', '%d.%m.%Y') AND PFI.platelshik_id = {$payer} AND PFI.del = 0
 
@@ -51,8 +51,8 @@
 	// Вычисление оборота за период
 	$query = "SELECT SUM(SUB.debet) debet, SUM(SUB.kredit) kredit
 				FROM (
-					SELECT IF(PFI.rtrn = 1, NULL, PFI.summa) debet
-						,IF(PFI.rtrn = 1, PFI.summa, NULL) kredit
+					SELECT IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+						,NULL kredit
 					FROM PrintFormsInvoice PFI
 					WHERE PFI.date > STR_TO_DATE('{$date_to}', '%d.%m.%Y') AND PFI.platelshik_id = {$payer} AND PFI.del = 0
 
@@ -152,8 +152,8 @@ ___________________________ <?=$platelshik_name?> ______________________________
 				</tr>
 <?
 	$query = "SELECT PFI.PFI_ID ID
-					,IF(PFI.rtrn = 1, NULL, PFI.summa) debet
-					,IF(PFI.rtrn = 1, PFI.summa, NULL) kredit
+					,IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+					,NULL kredit
 					,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
 					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date_format
 					,PFI.date

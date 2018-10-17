@@ -308,8 +308,8 @@ if( $payer ) {
 <?
 if( $payer ) {
 	$query = "SELECT PFI.PFI_ID
-					,IF(PFI.rtrn = 1, NULL, PFI.summa) debet
-					,IF(PFI.rtrn = 1, PFI.summa, NULL) kredit
+					,IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+					,NULL kredit
 					,KA.KA_ID
 					,KA.Naimenovanie
 					,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
