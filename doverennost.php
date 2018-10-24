@@ -157,7 +157,7 @@
 	<thead>
 		<tr>
 			<th>Номер</th>
-			<th>Дата</th>
+			<th>Дата<br>создания</th>
 			<th>Фирма продавец</th>
 			<th>На имя</th>
 			<th>Организация выдавшая доверенность</th>
@@ -209,11 +209,11 @@
 				<tbody>
 					<tr class="forms">
 						<td class="left" align="left">Дата составления:
-						<td valign="top"><input type="text" name="date" id="date" value="<?=date("d.m.Y")?>" class="" autocomplete="off" readonly style="width: 90px; text-align: center;"></td>
+						<td valign="top"><input type="text" name="date" id="date" class="date from" value="<?=date("d.m.Y")?>" class="" autocomplete="off" readonly style="width: 90px; text-align: center;"></td>
 					</tr>
 					<tr class="forms">
 						<td class="left" align="left">Срок действия доверенности по:</td>
-						<td valign="top"><input type="text" name="date_end" id="date_end" class="date" value="<?=(date_format(date_modify(date_create(date('Y-m-d')), '+10 day'), 'd.m.Y'))?>" autocomplete="off" readonly style="width: 90px; text-align: center;"></td>
+						<td valign="top"><input type="text" name="date_end" id="date_end" class="date to" value="<?=(date_format(date_modify(date_create(date('Y-m-d')), '+10 day'), 'd.m.Y'))?>" autocomplete="off" readonly style="width: 90px; text-align: center;"></td>
 					</tr>
 
 					<script>
