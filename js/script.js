@@ -26,16 +26,12 @@ function clearonoff(element)
 }
 
 // Функция генерирует форму с этапами производства
-function makeform(id, other, location, plid)
+function makeform(odd_id, location)
 {
-	if( other == 0 ) {
-		$.ajax({ url: "ajax.php?do=steps&odd_id="+id, dataType: "script", async: false });
-	}
-	else {
-		$.ajax({ url: "ajax.php?do=steps&odb_id="+id, dataType: "script", async: false });
-	}
+	$.ajax({ url: "ajax.php?do=steps&odd_id="+odd_id, dataType: "script", async: false });
+
 	$( '.isready' ).button();
-	$("#steps form").attr("action", "datasave.php?location="+location+"&plid="+plid);
+	$("#steps form").attr("action", "datasave.php?location="+location);
 	
 	// Диалог добавления этапов
 	$('#steps').dialog({
@@ -141,17 +137,7 @@ $(function(){
 			if( $(this).parents('.td_step').hasClass('step_confirmed') ) {
 				var location = $(this).attr("location");
 				var id = $(this).attr("id");
-				var odbid = $(this).attr("odbid");
-				plid = $(this).attr("plid");
-				if( typeof plid === "undefined" ) {
-					plid = '';
-				}
-				if( typeof odbid !== "undefined" ) {
-					makeform(odbid, 1, location, plid);
-				}
-				else {
-					makeform(id, 0, location, plid);
-				}
+				makeform(id, location);
 			}
 			else {
 				noty({timeout: 10000, text: 'Заказ не принят в работу. Вы не можете назначать этапы.', type: 'alert'});

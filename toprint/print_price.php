@@ -103,38 +103,20 @@
 	foreach ($_GET["od"] as $k => $od_id) {
 		$query = "
 			SELECT OD.Code
-				,SUM(ODD_ODB.Price) Price
-				,SUM(ODD_ODB.old_Price) old_Price
-				,SUM(ODD_ODB.discount) discount
-				,ROUND((SUM(ODD_ODB.discount) * 100) / SUM(ODD_ODB.Price)) percent
-				,GROUP_CONCAT(IF(ODD_ODB.odd = 1, ODD_ODB.item_id, 0)) ODDs
-				,GROUP_CONCAT(IF(ODD_ODB.odd = 0, ODD_ODB.item_id, 0)) ODBs
+				,SUM((ODD.Price - IFNULL(ODD.discount, 0)) * ODD.Amount) Price
+				,SUM(ODD.Price * ODD.Amount) old_Price
+				,SUM(IFNULL(ODD.discount, 0) * ODD.Amount) discount
+				,ROUND((SUM(IFNULL(ODD.discount, 0) * ODD.Amount) * 100) / SUM(ODD.Price * ODD.Amount)) percent
+				,GROUP_CONCAT(ODD.ODD_ID) ODDs
 				,SUM(1) count
 			FROM OrdersData OD
-			JOIN (
-				SELECT ODD.ODD_ID item_id
-					,(ODD.Price - IFNULL(ODD.discount, 0)) * ODD.Amount Price
-					,ODD.Price * ODD.Amount old_Price
-					,IFNULL(ODD.discount, 0) * ODD.Amount discount
-					,1 odd
-				FROM OrdersDataDetail ODD
-				WHERE ODD.Del = 0 AND ODD.OD_ID = $od_id
-				UNION ALL
-				SELECT ODB.ODB_ID item_id
-					,(ODB.Price - IFNULL(ODB.discount, 0)) * ODB.Amount Price
-					,ODB.Price * ODB.Amount old_Price
-					,IFNULL(ODB.discount, 0) * ODB.Amount discount
-					,0 odd
-				FROM OrdersDataBlank ODB
-				WHERE ODB.Del = 0 AND ODB.OD_ID = $od_id
-			) ODD_ODB
+			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 			WHERE OD.OD_ID = $od_id
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$Code = mysqli_result($res,0,'Code');
 		$price = number_format(mysqli_result($res,0,'Price'), 0, '', ' ');
 		$ODD_IDs = mysqli_result($res,0,'ODDs');
-		$ODB_IDs = mysqli_result($res,0,'ODBs');
 		$count = mysqli_result($res,0,'count');
 
 		if( mysqli_result($res,0,'discount') ) {
@@ -163,7 +145,7 @@
 				SELECT CONCAT('g_odd', ODD.ODD_ID) id
 						,OD.Code
 						,CL.color
-						,IFNULL(PM.Model, 'Столешница') product
+						,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.Model, 'Столешница'), IFNULL(BL.Name, ODD.Other)) product
 						,ODD.Amount
 						,CONCAT(IF(SH.Shipper LIKE '%=%', '', SH.Shipper), ' ', MT.Material) material
 						,SH.mtype
@@ -171,7 +153,6 @@
 						,IFNULL(CONCAT(IF(ODD.Width > 0, '', 'Ø'), ODD.Length, IFNULL(CONCAT('(+', IFNULL(CONCAT(ODD.PieceAmount, 'x'), ''), ODD.PieceSize, ')'), ''), IFNULL(CONCAT('х', ODD.Width), ''), ' мм'), '') size
 						,IFNULL(PM.materials, '') materials
 						,ODD.PieceAmount
-						,(ODD.Price - IFNULL(ODD.discount, 0)) Price
 				FROM OrdersDataDetail ODD
 				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 				LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
@@ -179,29 +160,8 @@
 				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 				LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 				LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+				LEFT JOIN BlankList BL ON BL.BL_ID = ODD.BL_ID
 				WHERE ODD.ODD_ID IN ($ODD_IDs)
-
-				UNION ALL
-
-				SELECT CONCAT('g_odb', ODB.ODB_ID) id
-						,OD.Code
-						,CL.color
-						,IFNULL(BL.Name, ODB.Other) product
-						,ODB.Amount
-						,CONCAT(IF(SH.Shipper LIKE '%=%', '', SH.Shipper), ' ', MT.Material) material
-						,SH.mtype
-						,''
-						,''
-						,''
-						,''
-						,(ODB.Price - IFNULL(ODB.discount, 0)) Price
-				FROM OrdersDataBlank ODB
-				JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
-				LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
-				LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-				LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-				LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-				WHERE ODB.ODB_ID IN ($ODB_IDs)
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
@@ -250,13 +210,9 @@
 
 	// Собираем идентификаторы изделий и прочего
 	$ODD_IDs = 0;
-	$ODB_IDs = 0;
 
 	foreach ($_GET["odd"] as $k => $v) {
 		$ODD_IDs .= ",{$v}";
-	}
-	foreach ($_GET["odb"] as $k => $v) {
-		$ODB_IDs .= ",{$v}";
 	}
 
 	// Формируем ценники на товары
@@ -264,7 +220,7 @@
 		SELECT CONCAT('odd', ODD.ODD_ID) id
 				,OD.Code
 				,CL.color
-				,IFNULL(PM.Model, 'Столешница') product
+				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.Model, 'Столешница'), IFNULL(BL.Name, ODD.Other)) product
 				,CONCAT(IF(SH.Shipper LIKE '%=%', '', SH.Shipper), ' ', MT.Material) material
 				,SH.mtype
 				,IFNULL(CONCAT(' ', PME.full_mech, IF(ODD.box = 1, '+ящик', '')), '') mechanism
@@ -282,31 +238,8 @@
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 		LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+		LEFT JOIN BlankList BL ON BL.BL_ID = ODD.BL_ID
 		WHERE ODD.ODD_ID IN ($ODD_IDs)
-
-		UNION ALL
-
-		SELECT CONCAT('odb', ODB.ODB_ID) id
-				,OD.Code
-				,CL.color
-				,IFNULL(BL.Name, ODB.Other) product
-				,CONCAT(IF(SH.Shipper LIKE '%=%', '', SH.Shipper), ' ', MT.Material) material
-				,SH.mtype
-				,''
-				,''
-				,''
-				,''
-				,(ODB.Price - IFNULL(ODB.discount, 0)) Price
-				,ODB.Price old_Price
-				,IFNULL(ODB.discount, 0) discount
-				,ROUND((ODB.discount * 100) / ODB.Price) percent
-		FROM OrdersDataBlank ODB
-		JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
-		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
-		LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-		LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-		LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-		WHERE ODB.ODB_ID IN ($ODB_IDs)
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )

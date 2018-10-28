@@ -133,37 +133,21 @@
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			// Цикл по содержимому заказа (используются данные из формы)
-			foreach ($_POST["itemID"] as $key => $value) {
+			foreach ($_POST["ODD_ID"] as $key => $value) {
 				$left = $_POST["prod_amount_left"][$key];
 				$right = $_POST["prod_amount_right"][$key];
 				if( $left == 0 ) {
-					if( $_POST["PT_ID"][$key] == 0 ) {
-						$query = "UPDATE OrdersDataBlank SET OD_ID = {$newOD_ID} WHERE ODB_ID = {$value}";
-					}
-					else {
-						$query = "UPDATE OrdersDataDetail SET OD_ID = {$newOD_ID} WHERE ODD_ID = {$value}";
-					}
+					$query = "UPDATE OrdersDataDetail SET OD_ID = {$newOD_ID} WHERE ODD_ID = {$value}";
 					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				}
 				elseif( $right > 0 ) {
-					if( $_POST["PT_ID"][$key] == 0 ) {
-						// Меняем количество изделий в исходном заказе
-						$query = "UPDATE OrdersDataBlank SET Amount = {$left}, author = NULL WHERE ODB_ID = {$value}";
-							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						// Вставляем в новый заказ переносимые изделия
-						$query = "INSERT INTO OrdersDataBlank(OD_ID, BL_ID, Other, MT_ID, Amount, Comment, IsExist, order_date, arrival_date, min_price, Price, discount, opt_price, sister_ID, author, ptn)
-						SELECT {$newOD_ID}, BL_ID, Other, MT_ID, {$right}, Comment, IsExist, order_date, arrival_date, min_price, Price, discount, opt_price, {$value}, {$_SESSION['id']}, ptn FROM OrdersDataBlank WHERE ODB_ID = {$value}";
-							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					}
-					else {
-						// Меняем количество изделий в исходном заказе
-						$query = "UPDATE OrdersDataDetail SET Amount = {$left}, author = NULL WHERE ODD_ID = {$value}";
-							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						// Вставляем в новый заказ переносимые изделия
-						$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, min_price, Price, discount, opt_price, sister_ID, author, ptn)
-						SELECT {$newOD_ID}, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, {$right}, Comment, order_date, arrival_date, min_price, Price, discount, opt_price, {$value}, {$_SESSION['id']}, ptn FROM OrdersDataDetail WHERE ODD_ID = {$value}";
-							mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					}
+					// Меняем количество изделий в исходном заказе
+					$query = "UPDATE OrdersDataDetail SET Amount = {$left}, author = NULL WHERE ODD_ID = {$value}";
+						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					// Вставляем в новый заказ переносимые изделия
+					$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, min_price, Price, discount, opt_price, sister_ID, author, ptn)
+					SELECT {$newOD_ID}, PM_ID, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, MT_ID, IsExist, {$right}, Comment, order_date, arrival_date, min_price, Price, discount, opt_price, {$value}, {$_SESSION['id']}, ptn FROM OrdersDataDetail WHERE ODD_ID = {$value}";
+					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				}
 			}
 		}
@@ -214,7 +198,7 @@
 			echo "<h3 style='margin: 10px 0;'>Отгрузка на <span style='background: {$Color};'>{$City}</span>".($shp_title != '' ? ' ('.$shp_title.')' : '')."</h3>";
 
 			if( in_array('add_shipment', $Rights) ) {
-				echo "<div id='wr_shipping_date'><form method='post'><label>Отгрузка состоялась: <input type='text' name='shipping_date' value='{$shipping_date}' class='date'></label><button style='margin-left: 10px;'>Сoхранить</button>";
+				echo "<div id='wr_shipping_date'><form method='post'><label>Отгрузка состоялась: <input type='text' name='shipping_date' value='{$shipping_date}' class='date' autocomplete='off'></label><button style='margin-left: 10px;'>Сoхранить</button>";
 				echo "<font style='display: none;' color='red'></font></form></div>";
 			}
 			else {
@@ -538,7 +522,47 @@
 			<th width="5%"><input type='text' name='f_SH' size='8' class='shopstags <?=($_SESSION["f_SH"] != "") ? "filtered" : ""?>' value='<?= $_SESSION["f_SH"] ?>'></th>
 <!--			<th width="40"><input type='text' name='f_ON' size='8' value='<?= $_SESSION["f_ON"] ?>' class="<?=($_SESSION["f_ON"] != "") ? "filtered" : ""?>"></th>-->
 			<th width="40"></th>
-			<th width="25%"><input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class='<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>' autocomplete='off'></th>
+			<th width="25%">
+				<select name="f_Models" style="width: 100%;" onchange="this.form.submit()" class="<?=($_SESSION["f_Models"] != "") ? "filtered" : ""?>">
+					<option></option>
+					<option value="0" <?=(($_SESSION["f_Models"] == "0") ? "selected" : "")?>>Столешницы/Заготовки/Прочее</option>
+					<optgroup label="Столы">
+					<?
+						$query = "
+							SELECT PM.PM_ID, CONCAT(PM.Model, IF(PM.archive, ' (архив)', '')) Model
+							FROM ProductModels PM
+							WHERE PM.PT_ID = 2
+							ORDER BY PM.Model
+						";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option value='{$row["PM_ID"]}' ";
+							if( $_SESSION["f_Models"] == $row["PM_ID"] ) echo "selected";
+							echo ">{$row["Model"]}</option>";
+						}
+					?>
+					</optgroup>
+					<optgroup label="Стулья">
+					<?
+						$query = "
+							SELECT PM.PM_ID, CONCAT(PM.Model, IF(PM.archive, ' (архив)', '')) Model
+							FROM ProductModels PM
+							WHERE PM.PT_ID = 1
+							ORDER BY PM.Model
+						";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option value='{$row["PM_ID"]}' ";
+							if( $_SESSION["f_Models"] == $row["PM_ID"] ) echo "selected";
+							echo ">{$row["Model"]}</option>";
+						}
+					?>
+					</optgroup>
+				</select>
+<!--				<input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class='<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>' autocomplete='off'>-->
+			</th>
 			<th width="15%" id="MT_filter" class="select2_filter"><input type="text" disabled style="width: 100%;" class="<?=( $_SESSION["f_M"] != "" ? "filtered" : "" )?>"><div id="material-select" style=""><select name="MT_ID[]" multiple style="width: 100%;"></select></div></th>
 			<th width="10%" style="font-size: 0;">
 				<style>
@@ -720,330 +744,477 @@
 		</thead>
 		<tbody>
 <?
-	$MT_IDs = $_SESSION["f_M"] != "" ? implode(",", $_SESSION["f_M"]) : "";
-
-	if( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "" and !isset($_GET["shpid"]) ) {
-		if( $_SESSION["f_PR"] === "0" ) {
-			$PRfilterODD = "BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$PRfilterODB = "BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$SelectStepODD = "IF(ODS.WD_ID IS NULL, ' ss', '')";
-			$SelectStepODB = "IF(ODS.WD_ID IS NULL, ' ss', '')";
-		}
-		elseif( $_SESSION["f_PR"] === "02" ) {
-			$PRfilterODD = "BIT_OR(IF(ODS.WD_ID IS NULL AND IFNULL(PM.PT_ID, 2) = 2 AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$PRfilterODB = "0 PRfilter";
-			$SelectStepODD = "IF(ODS.WD_ID IS NULL AND IFNULL(PM.PT_ID, 2) = 2, ' ss', '')";
-			$SelectStepODB = "''";
-		}
-		elseif( $_SESSION["f_PR"] === "01" ) {
-			$PRfilterODD = "BIT_OR(IF(ODS.WD_ID IS NULL AND PM.PT_ID = 1 AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$PRfilterODB = "0 PRfilter";
-			$SelectStepODD = "IF(ODS.WD_ID IS NULL AND PM.PT_ID = 1, ' ss', '')";
-			$SelectStepODB = "''";
-		}
-		elseif( $_SESSION["f_PR"] === "00" ) {
-			$PRfilterODD = "0 PRfilter";
-			$PRfilterODB = "BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$SelectStepODD = "''";
-			$SelectStepODB = "IF(ODS.WD_ID IS NULL, ' ss', '')";
-		}
-		else {
-			$PRfilterODD = "BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$PRfilterODB = "BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$SelectStepODD = "IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
-			$SelectStepODB = "IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
-		}
-	}
-	elseif( $_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "" and !isset($_GET["shpid"]) ) {
-		if( $_SESSION["f_PR"] === "0" ) {
-			$PRfilterODD = "BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$PRfilterODB = "BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$SelectStepODD = "IF(ODS.WD_ID IS NULL, ' ss', '')";
-			$SelectStepODB = "IF(ODS.WD_ID IS NULL, ' ss', '')";
-		}
-		elseif( $_SESSION["f_PR"] === "02" ) {
-			$PRfilterODD = "BIT_OR(IF(ODS.WD_ID IS NULL AND IFNULL(PM.PT_ID, 2) = 2 AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$PRfilterODB = "0 PRfilter";
-			$SelectStepODD = "IF(ODS.WD_ID IS NULL AND IFNULL(PM.PT_ID, 2) = 2, ' ss', '')";
-			$SelectStepODB = "''";
-		}
-		elseif( $_SESSION["f_PR"] === "01" ) {
-			$PRfilterODD = "BIT_OR(IF(ODS.WD_ID IS NULL AND PM.PT_ID = 1 AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$PRfilterODB = "0 PRfilter";
-			$SelectStepODD = "IF(ODS.WD_ID IS NULL AND PM.PT_ID = 1, ' ss', '')";
-			$SelectStepODB = "''";
-		}
-		elseif( $_SESSION["f_PR"] === "00" ) {
-			$PRfilterODD = "0 PRfilter";
-			$PRfilterODB = "BIT_OR(IF(ODS.WD_ID IS NULL AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$SelectStepODD = "''";
-			$SelectStepODB = "IF(ODS.WD_ID IS NULL, ' ss', '')";
-		}
-		else {
-			$PRfilterODD = "BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$PRfilterODB = "BIT_OR(IF(ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-			$SelectStepODD = "IF(ODS.WD_ID = {$_SESSION["f_PR"]}, ' ss', '')";
-			$SelectStepODB = "IF(ODS.WD_ID = {$_SESSION["f_PR"]}, ' ss', '')";
-		}
-	}
-	elseif( $_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "" and !isset($_GET["shpid"]) ) {
-		$PRfilterODD = "BIT_OR(IF(ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-		$PRfilterODB = "BIT_OR(IF(ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]} AND ODS.Visible = 1 AND ODS.Old = 0, 1, 0)) PRfilter";
-		$SelectStepODD = "IF(ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
-		$SelectStepODB = "IF(ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}, ' ss', '')";
-	}
-	else {
-		$PRfilterODD = "1 PRfilter";
-		$PRfilterODB = "1 PRfilter";
-		$SelectStepODD = "''";
-		$SelectStepODB = "''";
-	}
+	$MT_IDs = (!isset($_GET["shpid"]) and $_SESSION["f_M"] != "") ? implode(",", $_SESSION["f_M"]) : "";
 
 	$is_orders_ready = 1;	// Собираем готовые заказы чтобы можно ставить дату отгрузки (когда все готовы должна получиться 1)
 	$orders_count = 0;		// Счетчик видимых заказов
-	$orders_IDs = "0";		// Список ID заказов для Select2 материалов
 
-	$query = "SELECT OD.OD_ID
-					,OD.Code
-					,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
-					,IFNULL(OD.ClientName, '') ClientName
-					,OD.ul
-					,OD.mtel
-					,OD.address
-					,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), '<b style=\'background-color: silver;\'>Выставка</b>', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) StartDate
-					,DATE_FORMAT(
-						IFNULL(
-							OD.DelDate,
-							IFNULL(
-								OD.ReadyDate,
-								IF(
-									(SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL),
-									'',
-									OD.EndDate
-								)
-							)
-						),
-						'%d.%m.%y'
-					) EndDate
-					,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
-					,IFNULL(OD.SH_ID, 0) SH_ID
-					,IFNULL(SH.KA_ID, 0) KA_ID
-					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
-					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
-					,OD.OrderNumber
-					,OD.Comment
-					,COUNT(ODD_ODB.itemID) Child
-					,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
-					,GROUP_CONCAT(ODD_ODB.Zakaz_lock SEPARATOR '') Zakaz_lock
-					,Color(OD.CL_ID) Color
-					,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-					,WD.Name
-					,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
-					,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
-					,BIT_OR(IFNULL(ODD_ODB.PRfilter, 1)) PRfilter
-					,BIT_OR(IFNULL(ODD_ODB.MTfilter, 1)) MTfilter
-					,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
-					,BIT_AND(ODD_ODB.IsReady) IsReady
-					,IFNULL(OD.SHP_ID, 0) SHP_ID
-					,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
-					,OD.confirmed
-					,IF(OD.DelDate IS NULL, 0, 1) Del
-					,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
-					,PFI.count
-			  FROM OrdersData OD
-			  LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
-			  LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-			  LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-			  LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-			  LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
-			  LEFT JOIN (SELECT ODD.OD_ID
-			  				   ,{$PRfilterODD}
-							   ,BIT_AND(IF(ODS.Visible = 1 AND ODS.Old = 0, ODS.IsReady, 1)) IsReady
-							   ,IFNULL(PM.PT_ID, 2) PT_ID
-							   ,ODD.ODD_ID itemID
-							   ,".( $MT_IDs != "" ? "IF(ODD.MT_ID IN ({$MT_IDs}), 1, 0)" : "1" )." MTfilter
+	// Получаем основные сведения по заказу
+	$query = "
+		SELECT OD.OD_ID
+			,OD.Code
+			,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
+			,IFNULL(OD.ClientName, '') ClientName
+			,OD.ul
+			,OD.mtel
+			,OD.address
+			,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) StartDate
+		";
+		if ($archive == "0" or isset($_GET["shpid"])) {
+			$query .= "
+				,DATE_FORMAT(IF((SH.retail AND OD.StartDate IS NULL), '', OD.EndDate), '%d.%m.%y') EndDate
+			";
+		}
+		elseif ($archive == "1") {
+			$query .= "
+				,'' EndDate
+			";
+		}
+		elseif ($archive == "2") {
+			$query .= "
+				,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') EndDate
+			";
+		}
+		elseif ($archive == "3") {
+			$query .= "
+				,DATE_FORMAT(OD.DelDate, '%d.%m.%y') EndDate
+			";
+		}
 
-							   ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'".(in_array('order_add', $Rights) ? "edit_product', IFNULL(PM.PT_ID, 2), '" : "")."\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', Zakaz(ODD.ODD_ID), '</a></b><br>') Zakaz
-
-							   ,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', Zakaz(ODD.ODD_ID), '</i></b><br>') Zakaz_lock
-
-							   ,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span shid=\'', IFNULL(MT.SH_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), ".( $MT_IDs != "" ? "IF(ODD.MT_ID IN ({$MT_IDs}), ' ss', ''), " : "" )."IF(MT.removed=1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
-								CASE ODD.IsExist
-									WHEN 0 THEN 'bg-red'
-									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%y'))
-									WHEN 2 THEN 'bg-green'
-									ELSE 'bg-gray'
-								END,
-							   '\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(SH.mtype, ''), '\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></span><br>') Material
-
-							   ,CONCAT('<a ".(in_array('step_update', $Rights) ? "href=\'#\'" : "")." id=\'', ODD.ODD_ID, '\' class=\'".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODD}, ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
-
-						FROM OrdersDataDetail ODD
-						LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
-						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-						LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-						WHERE ODD.Del = 0
-						GROUP BY ODD.ODD_ID
-						UNION ALL
-						SELECT ODB.OD_ID
-							  ,{$PRfilterODB}
-							  ,BIT_AND(IF(ODS.Visible = 1 AND ODS.Old = 0, ODS.IsReady, 1)) IsReady
-							  ,0 PT_ID
-							  ,ODB.ODB_ID itemID
-							   ,".( $MT_IDs != "" ? "IF(ODB.MT_ID IN ({$MT_IDs}), 1, 0)" : "1" )." MTfilter
-
-							  ,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'blank', ODB.ODB_ID, '\'', 'class=\'".(in_array('order_add', $Rights) ? "edit_order_blank" : "")."\' location=\'{$location}\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODB.Amount, '</b> ', ZakazB(ODB.ODB_ID), '</a></b><br>') Zakaz
-
-							  ,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', ODB.Comment, '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODB.Amount, '</b> ', ZakazB(ODB.ODB_ID), '</i></b><br>') Zakaz_lock
-
-							   ,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span shid=\'', IFNULL(MT.SH_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), ".( $MT_IDs != "" ? "IF(ODB.MT_ID IN ({$MT_IDs}), ' ss', ''), " : "" )."IF(MT.removed=1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
-								CASE ODB.IsExist
-									WHEN 0 THEN 'bg-red'
-									WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%y'))
-									WHEN 2 THEN 'bg-green'
-									ELSE 'bg-gray'
-								END,
-							   '\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(SH.mtype, ''), '\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></span><br>') Material
-
-							  ,CONCAT('<a ".(in_array('step_update', $Rights) ? "href=\'#\'" : "")." odbid=\'', ODB.ODB_ID, '\' class=\'".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStepODB}, ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
-
-			  			FROM OrdersDataBlank ODB
-						LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
-						LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-						LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-						LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-						WHERE ODB.Del = 0
-						GROUP BY ODB.ODB_ID
-						ORDER BY PT_ID DESC, itemID
-						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-			  WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
-				".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
-				".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "");
-
-			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
-				switch ($archive) {
-					case 0:
-						$query .= " AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL";
-						break;
-					case 1:
-						$query .= " AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";
-						break;
-					case 2:
-						$query .= " AND OD.DelDate IS NULL AND OD.ReadyDate IS NOT NULL";
-						$limit = " LIMIT 500";
-						break;
-					case 3:
-						// Удаленные свободные показываем только администрации
-						if (!in_array('order_add_confirm', $Rights)) {
-							$query .= " AND OD.SH_ID IS NOT NULL";
-						}
-						$query .= " AND OD.DelDate IS NOT NULL";
-						$limit = " LIMIT 500";
-						break;
-				}
-				if( $_SESSION["f_CD"] != "" ) {
-					$query .= " AND (OD.Code LIKE '%{$_SESSION["f_CD"]}%' OR DATE_FORMAT(OD.AddDate, '%d.%m.%y') LIKE '%{$_SESSION["f_CD"]}%')";
-				}
-				if( $_SESSION["f_CN"] != "" ) {
-					$query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%' OR OD.mtel LIKE '%{$_SESSION["f_CN"]}%' OR OD.address LIKE '%{$_SESSION["f_CN"]}%')";
-				}
-				if( $_SESSION["f_SD"] != "" ) {
-					$query .= " AND IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) LIKE '%{$_SESSION["f_SD"]}%'";
-				}
-				if( $_SESSION["f_ED"] != "" and $archive != "0") {
+		$query .= "
+			,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
+			,IFNULL(OD.SH_ID, 0) SH_ID
+			,IFNULL(SH.KA_ID, 0) KA_ID
+			,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) Shop
+			,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
+			,OD.OrderNumber
+			,OD.Comment
+			,Color(OD.CL_ID) Color
+			,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
+			,WD.Name
+			,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
+			,IF(OD.ReadyDate IS NULL AND OD.DelDate IS NULL AND OD.SH_ID IS NOT NULL, OD_IsReady(OD.OD_ID), 0) IsReady
+			,IFNULL(OD.SHP_ID, 0) SHP_ID
+			,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
+			,OD.confirmed
+			,IF(OD.DelDate IS NULL, 0, 1) Del
+			,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
+			,PFI.count
+		FROM OrdersData OD
+	";
+	if (!isset($_GET["shpid"])) {
+		if ($_SESSION["f_Models"] != "" or $MT_IDs != "" or $_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "") {
+			$query .= "
+				JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+			";
+			// Фильтр по модели
+			if ($_SESSION["f_Models"] != "") {
+				$query .= "
+					AND IFNULL(ODD.PM_ID, 0) = {$_SESSION["f_Models"]}
+				";
+			}
+			// Фильтр по материалам
+			if ($MT_IDs != "") {
+				$query .= "
+					AND ODD.MT_ID IN ({$MT_IDs})
+				";
+			}
+			// Фильтр по неназначенным этапам (столы, стулья, прочее)
+			if( $_SESSION["f_PR"] === "02" ) {
+				$query .= "
+					AND ODD.PME_ID IS NOT NULL
+				";
+			}
+			elseif( $_SESSION["f_PR"] === "01" ) {
+				$query .= "
+					AND ODD.PM_ID IS NOT NULL AND ODD.PME_ID IS NULL AND ODD.BL_ID IS NULL AND ODD.Other IS NULL
+				";
+			}
+			elseif( $_SESSION["f_PR"] === "00" ) {
+				$query .= "
+					AND (ODD.BL_ID IS NOT NULL OR ODD.Other IS NOT NULL)
+				";
+			}
+			// Фильтр этапов
+			if ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "") {
+				$query .= "
+					JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
+				";
+				if ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "") {
 					$query .= "
-						AND DATE_FORMAT(
-							IFNULL(
-								OD.DelDate,
-								IFNULL(
-									OD.ReadyDate,
-									IF(
-										(SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL),
-										'',
-										OD.EndDate
-									)
-								)
-							),
-							'%d.%m.%y'
-						) LIKE '%{$_SESSION["f_ED"]}%'
+						AND ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}
 					";
 				}
-				if( $_SESSION["f_EndDate"] != "" and $archive == "0") {
-					if( $_SESSION["f_EndDate"] == "0" ) {
-						$query .= " AND IF((SH.KA_ID IS NULL AND OD.StartDate IS NULL), NULL, OD.EndDate) IS NULL";
+				elseif ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "") {
+					if (strpos($_SESSION["f_PR"], "0") === 0) {
+						$query .= "
+							AND ODS.WD_ID IS NULL
+						";
 					}
 					else {
-						$query .= " AND YEARWEEK(IF((SH.KA_ID IS NULL AND OD.StartDate IS NULL), NULL, OD.EndDate), 1) = '{$_SESSION["f_EndDate"]}'";
+						$query .= "
+							AND ODS.WD_ID = {$_SESSION["f_PR"]}
+						";
 					}
 				}
-				if( $_SESSION["f_SH"] != "" ) {
-					$query .= " AND (CONCAT(CT.City, '/', SH.Shop) LIKE '%{$_SESSION["f_SH"]}%'";
-					if( stripos("Свободные", $_SESSION["f_SH"]) !== false ) {
-						$query .= " OR OD.SH_ID IS NULL";
-					}
-					$query .= ")";
-				}
-				if( $_SESSION["f_N"] != "" ) {
-					$query .= " AND OD.Comment LIKE '%{$_SESSION["f_N"]}%'";
-				}
-				if( $_SESSION["f_IP"] != "" ) {
-					$query .= " AND IF(OD.CL_ID IS NULL, 0, OD.IsPainting) = {$_SESSION["f_IP"]}";
-				}
-				if( $_SESSION["f_CR"] != "" ) {
-					$query .= " AND (Color(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%' OR WD.Name LIKE '%{$_SESSION["f_CR"]}%')";
-				}
-				if( $_SESSION["f_CF"] != "" ) {
-					$query .= " AND OD.confirmed = {$_SESSION["f_CF"]}";
+				elseif ($_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "") {
+					$query .= "
+						AND ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}
+					";
 				}
 			}
-			else {  // Если в отгрузке - показываем список этой отгрузки
-				$query .= " AND OD.SHP_ID = {$_GET["shpid"]}
-							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-							".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "");
-				if( isset($_GET["shop"]) ) {
-					$shops = "0";
-					foreach( $_GET["shop"] as $k => $v) {
-						$shops .= ",".$v;
-					}
-					$query .= " AND OD.SH_ID IN({$shops})";
-				}
-			}
+		}
+	}
 
-			$query .= " GROUP BY OD.OD_ID HAVING PRfilter";
+	$query .= "
+		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
+		LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
+		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
+		WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+		".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."
+		".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
+	";
 
-			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
-				$query .= " AND MTfilter";
-				if( $_SESSION["f_Z"] != "" ) {
-					$query .= " AND Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
+	// Фильтр по галочке
+	if( ($_SESSION["f_X"] == "1" and !isset($_GET["shpid"])) or $_GET["X"] == "1" ) {
+		$X_ord = '0';
+		foreach( $_SESSION as $k => $v)
+		{
+			if( strpos($k,"X_") === 0 )
+			{
+				$X_ord .= ','.str_replace( "X_", "", $k );
+			}
+		}
+		$query .= "
+			AND OD.OD_ID IN ({$X_ord})
+		";
+	}
+
+	if (!isset($_GET["shpid"])) { // Если не в отгрузке
+		switch ($archive) {
+			case 0:
+				$query .= "AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL";
+				break;
+			case 1:
+				$query .= "AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";
+				break;
+			case 2:
+				$query .= "AND OD.DelDate IS NULL AND OD.ReadyDate IS NOT NULL";
+				$limit = " LIMIT 500";
+				break;
+			case 3:
+				$query .= "AND OD.DelDate IS NOT NULL";
+				// Удаленные свободные показываем только администрации
+				if (!in_array('order_add_confirm', $Rights)) {
+					$query .= " AND OD.SH_ID IS NOT NULL";
 				}
+				$limit = " LIMIT 500";
+				break;
+		}
+		if( $_SESSION["f_CD"] != "" ) {
+			$query .= " AND (OD.Code LIKE '%{$_SESSION["f_CD"]}%' OR DATE_FORMAT(OD.AddDate, '%d.%m.%y') LIKE '%{$_SESSION["f_CD"]}%')";
+		}
+		if( $_SESSION["f_CN"] != "" ) {
+			$query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%' OR OD.mtel LIKE '%{$_SESSION["f_CN"]}%' OR OD.address LIKE '%{$_SESSION["f_CN"]}%')";
+		}
+		if ($_SESSION["f_ED"] != "") {
+			if ($archive == "2") {
+				$query .= "
+					AND OD.ReadyDate LIKE '%{$_SESSION["f_ED"]}%'
+				";
 			}
-
-			if( ($_SESSION["f_X"] == "1" and !isset($_GET["shpid"])) or $_GET["X"] == "1" ) {
-				$X_ord = '0';
-				foreach( $_SESSION as $k => $v)
-				{
-					if( strpos($k,"X_") === 0 )
-					{
-						$X_ord .= ','.str_replace( "X_", "", $k );
-					}
-				}
-				$query .= " AND OD.OD_ID IN ({$X_ord})";
+			elseif ($archive == "3") {
+				$query .= "
+					AND OD.DelDate LIKE '%{$_SESSION["f_ED"]}%'
+				";
 			}
-
-			if($archive == "2") {
-				$query .= " ORDER BY OD.ReadyDate DESC, ";
-			}
-			elseif($archive == "3") {
-				$query .= " ORDER BY OD.DelDate DESC, ";
+		}
+		if( $_SESSION["f_EndDate"] != "" and $archive == "0") {
+			if( $_SESSION["f_EndDate"] == "0" ) {
+				$query .= " AND IF((SH.KA_ID IS NULL AND OD.StartDate IS NULL), NULL, OD.EndDate) IS NULL";
 			}
 			else {
-				$query .= " ORDER BY OD.AddDate, ";
+				$query .= " AND YEARWEEK(IF((SH.KA_ID IS NULL AND OD.StartDate IS NULL), NULL, OD.EndDate), 1) = '{$_SESSION["f_EndDate"]}'";
 			}
-			$query .= "SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
-			$query .= $limit;
+		}
+		if( $_SESSION["f_N"] != "" ) {
+			$query .= " AND OD.Comment LIKE '%{$_SESSION["f_N"]}%'";
+		}
+		if( $_SESSION["f_IP"] != "" ) {
+			$query .= " AND IF(OD.CL_ID IS NULL, 0, OD.IsPainting) = {$_SESSION["f_IP"]}";
+		}
+		if( $_SESSION["f_CR"] != "" ) {
+			$query .= " AND (Color(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%' OR WD.Name LIKE '%{$_SESSION["f_CR"]}%')";
+		}
+		if( $_SESSION["f_CF"] != "" ) {
+			$query .= " AND OD.confirmed = {$_SESSION["f_CF"]}";
+		}
+		$query .= "
+			GROUP BY OD.OD_ID
+			HAVING 1
+		";
+		if ($_SESSION["f_SD"] != "" and $archive != "1") {
+			$query .= "
+				AND StartDate LIKE '%{$_SESSION["f_SD"]}%'
+			";
+		}
+		if ($_SESSION["f_SH"] != "") {
+			$query .= "
+				AND Shop LIKE '%{$_SESSION["f_SH"]}%'
+			";
+		}
+	}
+	else {  // Если в отгрузке - показываем список этой отгрузки
+		$query .= "
+			AND OD.SHP_ID = {$_GET["shpid"]}
+		";
+		if( isset($_GET["shop"]) ) {
+			$shops = "0";
+			foreach( $_GET["shop"] as $k => $v) {
+				$shops .= ",".$v;
+			}
+			$query .= "
+				AND OD.SH_ID IN({$shops})
+			";
+		}
+	}
+
+	if($archive == "2") {
+		$query .= "
+			ORDER BY OD.ReadyDate DESC
+		";
+	}
+	elseif($archive == "3") {
+		$query .= "
+			ORDER BY OD.DelDate DESC
+		";
+	}
+	else {
+		$query .= "
+			ORDER BY OD.AddDate
+		";
+	}
+	$query .= "
+		,SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID
+	";
+	$query .= $limit;
+
+///////////////////////////////////////////////////////////////////
+//	$query = "
+//		SELECT OD.OD_ID
+//			,OD.Code
+//			,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
+//			,IFNULL(OD.ClientName, '') ClientName
+//			,OD.ul
+//			,OD.mtel
+//			,OD.address
+//			,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) StartDate
+//			,DATE_FORMAT(
+//				IFNULL(
+//					OD.DelDate,
+//					IFNULL(
+//						OD.ReadyDate,
+//						IF(
+//							(SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL),
+//							'',
+//							OD.EndDate
+//						)
+//					)
+//				),
+//				'%d.%m.%y'
+//			) EndDate
+//			,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
+//			,IFNULL(OD.SH_ID, 0) SH_ID
+//			,IFNULL(SH.KA_ID, 0) KA_ID
+//			,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
+//			,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
+//			,OD.OrderNumber
+//			,OD.Comment
+//			,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
+//			,GROUP_CONCAT(ODD_ODB.Zakaz_lock SEPARATOR '') Zakaz_lock
+//			,Color(OD.CL_ID) Color
+//			,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
+//			,WD.Name
+//			,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
+//			,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
+//			,BIT_OR(IFNULL(ODD_ODB.PRfilter, 1)) PRfilter
+//			,BIT_OR(IFNULL(ODD_ODB.MTfilter, 1)) MTfilter
+//			,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
+//			,IF(OD.ReadyDate IS NULL AND OD.DelDate IS NULL AND OD.SH_ID IS NOT NULL, OD_IsReady(OD.OD_ID), 0) IsReady
+//			,IFNULL(OD.SHP_ID, 0) SHP_ID
+//			,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
+//			,OD.confirmed
+//			,IF(OD.DelDate IS NULL, 0, 1) Del
+//			,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
+//			,PFI.count
+//		FROM OrdersData OD
+//		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
+//		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+//		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+//		LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
+//		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
+//		LEFT JOIN (
+//			SELECT ODD.OD_ID
+//				,{$PRfilter}
+//				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+//				,ODD.ODD_ID
+//				,".( $MT_IDs != "" ? "IF(ODD.MT_ID IN ({$MT_IDs}), 1, 0)" : "1" )." MTfilter
+//
+//				,CONCAT('<b style=\'line-height: 1.79em;\'><a ".(in_array('order_add', $Rights) ? "href=\'#\'" : "")." id=\'prod', ODD.ODD_ID, '\' location=\'{$location}\' class=\'".(in_array('order_add', $Rights) ? "edit_product', IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0), '" : "")."\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', Zakaz(ODD.ODD_ID), '</a></b><br>') Zakaz
+//
+//				,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', ODD.Comment, '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', Zakaz(ODD.ODD_ID), '</i></b><br>') Zakaz_lock
+//
+//				,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span shid=\'', IFNULL(MT.SH_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), ".( $MT_IDs != "" ? "IF(ODD.MT_ID IN ({$MT_IDs}), ' ss', ''), " : "" )."IF(MT.removed=1, ' removed', ''), ' material ".(in_array('screen_materials', $Rights) ? " mt_edit " : "")."',
+//					CASE ODD.IsExist
+//						WHEN 0 THEN 'bg-red'
+//						WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%y'))
+//						WHEN 2 THEN 'bg-green'
+//						ELSE 'bg-gray'
+//					END,
+//				'\'>', IFNULL(MT.Material, ''), '</span><input type=\'text\' class=\'materialtags_', IFNULL(SH.mtype, ''), '\' style=\'display: none;\'><input type=\'checkbox\' style=\'display: none;\' title=\'Выведен\'></span><br>') Material
+//
+//#				,CONCAT('<a id=\'', ODD.ODD_ID, '\' class=\'".(in_array('step_update', $Rights) ? "edit_steps " : "")."nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\' location=\'{$location}\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, {$SelectStep}, ' unvisible'), '\' style=\'width:', IFNULL(ST.Size, 1) * 30, 'px;\' title=\'', IFNULL(ST.Step, ''), ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', IFNULL(ST.Short, '<i class=\"fa fa-cog\" style=\"line-height: 1.45em;\"></i>'), '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
+//
+//				,CONCAT('<a id=\'', ODD.ODD_ID, '\' class=\'".(in_array('step_update', $Rights) ? "edit_steps " : "")."\' location=\'{$location}\'>', Steps_button(ODD.ODD_ID), '</a><br>') Steps
+//
+//			FROM OrdersDataDetail ODD
+//#			LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+//			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+//			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+//			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+//#			LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+//#			LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+//			WHERE ODD.Del = 0
+//			GROUP BY ODD.ODD_ID
+//			ORDER BY PTID DESC, ODD.ODD_ID
+//		) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+//		WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+//		".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+//		".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "");
+//
+//			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
+//				switch ($archive) {
+//					case 0:
+//						$query .= " AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL";
+//						break;
+//					case 1:
+//						$query .= " AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";
+//						break;
+//					case 2:
+//						$query .= " AND OD.DelDate IS NULL AND OD.ReadyDate IS NOT NULL";
+//						$limit = " LIMIT 500";
+//						break;
+//					case 3:
+//						// Удаленные свободные показываем только администрации
+//						if (!in_array('order_add_confirm', $Rights)) {
+//							$query .= " AND OD.SH_ID IS NOT NULL";
+//						}
+//						$query .= " AND OD.DelDate IS NOT NULL";
+//						$limit = " LIMIT 500";
+//						break;
+//				}
+//				if( $_SESSION["f_CD"] != "" ) {
+//					$query .= " AND (OD.Code LIKE '%{$_SESSION["f_CD"]}%' OR DATE_FORMAT(OD.AddDate, '%d.%m.%y') LIKE '%{$_SESSION["f_CD"]}%')";
+//				}
+//				if( $_SESSION["f_CN"] != "" ) {
+//					$query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%' OR OD.mtel LIKE '%{$_SESSION["f_CN"]}%' OR OD.address LIKE '%{$_SESSION["f_CN"]}%')";
+//				}
+//				if( $_SESSION["f_SD"] != "" ) {
+//					$query .= " AND IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) LIKE '%{$_SESSION["f_SD"]}%'";
+//				}
+//				if( $_SESSION["f_ED"] != "" and $archive != "0") {
+//					$query .= "
+//						AND DATE_FORMAT(
+//							IFNULL(
+//								OD.DelDate,
+//								IFNULL(
+//									OD.ReadyDate,
+//									IF(
+//										(SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL),
+//										'',
+//										OD.EndDate
+//									)
+//								)
+//							),
+//							'%d.%m.%y'
+//						) LIKE '%{$_SESSION["f_ED"]}%'
+//					";
+//				}
+//				if( $_SESSION["f_EndDate"] != "" and $archive == "0") {
+//					if( $_SESSION["f_EndDate"] == "0" ) {
+//						$query .= " AND IF((SH.KA_ID IS NULL AND OD.StartDate IS NULL), NULL, OD.EndDate) IS NULL";
+//					}
+//					else {
+//						$query .= " AND YEARWEEK(IF((SH.KA_ID IS NULL AND OD.StartDate IS NULL), NULL, OD.EndDate), 1) = '{$_SESSION["f_EndDate"]}'";
+//					}
+//				}
+//				if( $_SESSION["f_SH"] != "" ) {
+//					$query .= " AND (CONCAT(CT.City, '/', SH.Shop) LIKE '%{$_SESSION["f_SH"]}%'";
+//					if( stripos("Свободные", $_SESSION["f_SH"]) !== false ) {
+//						$query .= " OR OD.SH_ID IS NULL";
+//					}
+//					$query .= ")";
+//				}
+//				if( $_SESSION["f_N"] != "" ) {
+//					$query .= " AND OD.Comment LIKE '%{$_SESSION["f_N"]}%'";
+//				}
+//				if( $_SESSION["f_IP"] != "" ) {
+//					$query .= " AND IF(OD.CL_ID IS NULL, 0, OD.IsPainting) = {$_SESSION["f_IP"]}";
+//				}
+//				if( $_SESSION["f_CR"] != "" ) {
+//					$query .= " AND (Color(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%' OR WD.Name LIKE '%{$_SESSION["f_CR"]}%')";
+//				}
+//				if( $_SESSION["f_CF"] != "" ) {
+//					$query .= " AND OD.confirmed = {$_SESSION["f_CF"]}";
+//				}
+//			}
+//			else {  // Если в отгрузке - показываем список этой отгрузки
+//				$query .= " AND OD.SHP_ID = {$_GET["shpid"]}
+//							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+//							".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "");
+//				if( isset($_GET["shop"]) ) {
+//					$shops = "0";
+//					foreach( $_GET["shop"] as $k => $v) {
+//						$shops .= ",".$v;
+//					}
+//					$query .= " AND OD.SH_ID IN({$shops})";
+//				}
+//			}
+//
+//			$query .= " GROUP BY OD.OD_ID HAVING PRfilter";
+//
+//			if( !isset($_GET["shpid"]) ) { // Если не в отгрузке
+//				$query .= " AND MTfilter";
+//				if( $_SESSION["f_Z"] != "" ) {
+//					$query .= " AND Zakaz LIKE '%{$_SESSION["f_Z"]}%'";
+//				}
+//			}
+//
+//			if( ($_SESSION["f_X"] == "1" and !isset($_GET["shpid"])) or $_GET["X"] == "1" ) {
+//				$X_ord = '0';
+//				foreach( $_SESSION as $k => $v)
+//				{
+//					if( strpos($k,"X_") === 0 )
+//					{
+//						$X_ord .= ','.str_replace( "X_", "", $k );
+//					}
+//				}
+//				$query .= " AND OD.OD_ID IN ({$X_ord})";
+//			}
+//
+//			if($archive == "2") {
+//				$query .= " ORDER BY OD.ReadyDate DESC, ";
+//			}
+//			elseif($archive == "3") {
+//				$query .= " ORDER BY OD.DelDate DESC, ";
+//			}
+//			else {
+//				$query .= " ORDER BY OD.AddDate, ";
+//			}
+//			$query .= "SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
+//			$query .= $limit;
 
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
@@ -1059,7 +1230,65 @@
 		// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информацию заказа.
 		$editable = (!($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and !($row["SH_ID"] == 0 and !in_array('order_add_confirm', $Rights)));
 
-		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
+		// Получаем содержимое заказа
+		$query = "
+			SELECT ODD.ODD_ID
+				,ODD.Amount
+				,Zakaz(ODD.ODD_ID) zakaz
+				,".((!isset($_GET["shpid"]) and $_SESSION["f_Models"] != "") ? "IF(IFNULL(ODD.PM_ID, 0) = {$_SESSION["f_Models"]}, 'ss', '')" : "''")." PMfilter
+				,ODD.Comment
+				,DATEDIFF(ODD.arrival_date, NOW()) outdate
+				,ODD.IsExist
+				,DATE_FORMAT(ODD.arrival_date, '%d.%m.%y') arrival_date
+				,IFNULL(MT.Material, '') Material
+				,".( $MT_IDs != "" ? "IF(ODD.MT_ID IN ({$MT_IDs}), 'ss', '')" : "''" )." MTfilter
+				,ODD.MT_ID
+				,MT.SH_ID
+				,SH.mtype
+				,IF(MT.removed=1, 'removed', '') removed
+				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+				,Steps_button(ODD.ODD_ID, ".((!isset($_GET["shpid"]) and ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "")) ? "1" : "0").") Steps
+			FROM OrdersDataDetail ODD
+			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+			WHERE ODD.Del = 0 AND ODD.OD_ID = {$row["OD_ID"]}
+			ORDER BY PTID DESC, ODD.ODD_ID
+		";
+		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		// Формируем подробности заказа
+		$zakaz = '';
+		$item = '';
+		$material = '';
+		$color = '';
+		$steps = '';
+		while( $subrow = mysqli_fetch_array($subres) ) {
+			// Если есть примечание
+			if ($subrow["Comment"]) {
+				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}" : "not_edit_product")."' title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+			}
+			else {
+				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}" : "not_edit_product")."'><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+			}
+
+			if ($subrow["IsExist"] == 0) {
+				$color = "bg-red";
+			}
+			elseif ($subrow["IsExist"] == 1) {
+				$color = "bg-yellow' title='Ожидается: {$subrow["arrival_date"]}";
+			}
+			elseif ($subrow["IsExist"] == 2) {
+				$color = "bg-green";
+			}
+			else {
+				$color = "bg-gray";
+			}
+			$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span shid='{$subrow["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}</span><input type='text' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' style='display: none;' title='Выведен'></span><br>";
+
+			$steps .= "<a id='{$subrow["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$subrow["Steps"]}</a><br>";
+		}
+
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>";
 		echo "<td><span ".($row["address"] ? "title='{$row["address"]}'" : "")."><input type='checkbox' value='{$row["OD_ID"]}' checked name='order[]' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b><br>{$row["mtel"]}</span></td>";
@@ -1077,37 +1306,26 @@
 		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$row["Del"] and !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"])) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
 		echo "<td><span></span></td>";
 
-		// Если есть запрет на редактирование или заказ в накладной - изделия не кликабельные
-		if( $disabled or $row["PFI_ID"] ) {
-			echo "<td><span class='nowrap'>{$row["Zakaz_lock"]}</span></td>";
-		}
-		else {
-			echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
-		}
+		echo "<td><span class='nowrap'>{$zakaz}</span></td>";
 
-		echo "<td class='nowrap'>{$row["Material"]}</td>";
+		echo "<td class='nowrap'>{$material}</td>";
 		echo "<td val='{$row["IsPainting"]}'";
 			switch ($row["IsPainting"]) {
 				case 0:
 					$class = "empty";
-					//$title = "Без покраски";
 					break;
 				case 1:
 					$class = "notready";
-					//$title = "Не в работе";
 					break;
 				case 2:
 					$class = "inwork";
-					//$title = "В работе";
 					break;
 				case 3:
 					$class = "ready";
-					//$title = "Готово";
-					//if($row["Name"]) $title .= " ({$row["Name"]})";
 					break;
 			}
 		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 and $row["IsPainting"] != 0 ) ? "painting " : "")."{$class}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
-		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><span class='nowrap material'>{$row["Steps"]}</span></td>";
+		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><span class='nowrap material'>{$steps}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		// Если заказ принят
 		if( $row["confirmed"] == 1 ) {
@@ -1180,26 +1398,56 @@
 	</form>
 </div>
 
+<script>
+	$(function() {
+		<?
+		// Выделяем рамкой отфильтрованные этапы
+		if (!isset($_GET["shpid"]) and ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "")) {
+			if ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "") {
+				echo "$('.step.w{$_SESSION["f_PR"]}.st{$_SESSION["f_ST"]}:not(.unvisible)').addClass('ss');";
+			}
+			elseif ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "") {
+				if( $_SESSION["f_PR"] === "0" ) {
+					echo "$('.step.w0:not(.unvisible)').addClass('ss');";
+				}
+				else {
+					echo "$('.step.w{$_SESSION["f_PR"]}:not(.unvisible)').addClass('ss');";
+				}
+			}
+			elseif ($_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "") {
+				echo "$('.step.st{$_SESSION["f_ST"]}:not(.unvisible)').addClass('ss');";
+			}
+		}
+		?>
+	});
+</script>
 <?
 	// Генерируем Select2 для фильтра материалов
 	$MT_filter = '';
 	$MT_string = '';
-	$query = "SELECT MT.MT_ID, CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
-				FROM Materials MT
-				JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-				JOIN (
-					SELECT ODD.OD_ID, ODD.MT_ID, ODD.IsExist
-					FROM OrdersDataDetail ODD
-					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.DelDate IS NULL
-					WHERE ODD.OD_ID IN ({$orders_IDs}) AND ODD.Del = 0
-					UNION
-					SELECT ODB.OD_ID, ODB.MT_ID, ODB.IsExist
-					FROM OrdersDataBlank ODB
-					JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID AND OD.DelDate IS NULL
-					WHERE ODB.OD_ID IN ({$orders_IDs}) AND ODB.Del = 0
-					) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
-				GROUP BY MT.MT_ID
-				ORDER BY MT.Material";
+	$query = "
+		SELECT MT.MT_ID, CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
+		FROM Materials MT
+		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+		ORDER BY MT.Material
+	";
+
+//	$query = "SELECT MT.MT_ID, CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
+//				FROM Materials MT
+//				JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+//				JOIN (
+//					SELECT ODD.OD_ID, ODD.MT_ID, ODD.IsExist
+//					FROM OrdersDataDetail ODD
+//					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.DelDate IS NULL
+//					WHERE ODD.OD_ID IN ({$orders_IDs}) AND ODD.Del = 0
+//					UNION
+//					SELECT ODB.OD_ID, ODB.MT_ID, ODB.IsExist
+//					FROM OrdersDataBlank ODB
+//					JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID AND OD.DelDate IS NULL
+//					WHERE ODB.OD_ID IN ({$orders_IDs}) AND ODB.Del = 0
+//					) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
+//				GROUP BY MT.MT_ID
+//				ORDER BY MT.Material";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
 		$selected = in_array($row["MT_ID"], $_SESSION["f_M"]) ? "selected" : "";
@@ -1276,7 +1524,7 @@
 					$('#wr_shipping_date font').html('&nbsp;&nbsp;Список пуст!');
 				}
 				else {
-					$('#wr_shipping_date font').html('&nbsp;&nbsp;В списке присутствуют незавершенные этапы!');
+					$('#wr_shipping_date font').html('&nbsp;&nbsp;Есть неготовые или пустые заказы!');
 				}
 			}
 			else {

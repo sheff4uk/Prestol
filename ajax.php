@@ -8,65 +8,41 @@ switch( $_GET["do"] )
 {
 // Генерирование формы этапов производства
 case "steps":
-	if( isset($_GET["odd_id"]) ) {
-		$odd_id = (int)$_GET["odd_id"];
-		$other = 0;
-	}
-	else {
-		$odb_id = (int)$_GET["odb_id"];
-		$other = 1;
-	}
+	$odd_id = (int)$_GET["odd_id"];
 	
 	// Получение информации об изделии
-	if( $other == 0 ) {
-		$query = "SELECT ODD.Amount
-						,Zakaz(ODD.ODD_ID) Zakaz
-						,OD.ReadyDate
-				  FROM OrdersDataDetail ODD
-				  LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
-				  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-				  LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-				  LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-				  WHERE ODD.ODD_ID = $odd_id";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-		$amount = mysqli_result($res,0,'Amount');
-		$zakaz = mysqli_result($res,0,'Zakaz');
-		$ready_date = mysqli_result($res,0,'ReadyDate');
-		$product = "<h3><b style=\'font-size: 2em; margin-right: 20px;\'>{$amount}</b>{$zakaz}</h3>";
+	$query = "
+		SELECT ODD.Amount
+			,Zakaz(ODD.ODD_ID) Zakaz
+			,OD.ReadyDate
+		FROM OrdersDataDetail ODD
+		LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+		WHERE ODD.ODD_ID = $odd_id
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+	$amount = mysqli_result($res,0,'Amount');
+	$zakaz = mysqli_result($res,0,'Zakaz');
+	$ready_date = mysqli_result($res,0,'ReadyDate');
+	$product = "<h3><b style=\'font-size: 2em; margin-right: 20px;\'>{$amount}</b>{$zakaz}</h3>";
 
-		// Получение информации об этапах производства
-		$query = "SELECT ST.ST_ID, ST.Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible, ODS.Old
-				  FROM OrdersDataSteps ODS
-				  JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-				  WHERE ODS.ODD_ID = $odd_id
-				  ORDER BY ODS.Old DESC, ST.Sort";
-		$result = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
+	// Получение информации об этапах производства
+	$query = "
+		SELECT IFNULL(ODS.ST_ID, 0) ST_ID
+			,IFNULL(ST.Step, '-') Step
+			,ODS.WD_ID
+			,IF(ODS.WD_ID IS NULL, 'disabled', '') disabled
+			,ODS.Tariff
+			,IF (ODS.IsReady, 'checked', '') IsReady
+			,IF(ODS.Visible = 1, 'checked', '') Visible
+			,ODS.Old
+		FROM OrdersDataSteps ODS
+		LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+		WHERE ODS.ODD_ID = $odd_id
+		ORDER BY ODS.Old DESC, ST.Sort
+	";
+	$result = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
-		$text = "<input type=\'hidden\' name=\'ODD_ID\' value=\'$odd_id\'>";
-	}
-	else {
-		$query = "SELECT ODB.Amount
-						,ZakazB(ODB.ODB_ID) Zakaz
-						,OD.ReadyDate
-				  FROM OrdersDataBlank ODB
-				  LEFT JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
-				  LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-				  WHERE ODB.ODB_ID = $odb_id";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-		$amount = mysqli_result($res,0,'Amount');
-		$zakaz = mysqli_result($res,0,'Zakaz');
-		$ready_date = mysqli_result($res,0,'ReadyDate');
-		$product = "<h3><b style=\'font-size: 2em; margin-right: 20px;\'>{$amount}</b>{$zakaz}<h3>";
-
-		// Получение информации об этапах производства
-		$query = "SELECT 0 ST_ID, '-' Step, ODS.WD_ID, IF(ODS.WD_ID IS NULL, 'disabled', '') disabled, ODS.Tariff, IF (ODS.IsReady, 'checked', '') IsReady, IF(ODS.Visible = 1, 'checked', '') Visible, ODS.Old
-				  FROM OrdersDataSteps ODS
-				  WHERE ODS.ODB_ID = $odb_id
-				  ORDER BY ODS.Old DESC";
-		$result = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-
-		$text = "<input type=\'hidden\' name=\'ODB_ID\' value=\'$odb_id\'>";
-	}
+	$text = "<input type=\'hidden\' name=\'ODD_ID\' value=\'$odd_id\'>";
 
 	$text .= $product;
 	$text .= "<table><thead>";
@@ -81,36 +57,23 @@ case "steps":
 	{
 		// Формирование дропдауна со списком рабочих. Сортировка по релевантности.
 		$selectworker = $ready_date ? "" : "<option value=\'\'>-=Выберите работника=-</option>";
-		if( $other == 0 ) {
-			$query = "SELECT WD.WD_ID, WD.Name, SUM(IFNULL(ODS.Amount, 0)) CNT
-					  FROM WorkersData WD
-					  LEFT JOIN (
-						SELECT ODS.*, ODD.Amount
-						FROM OrdersDataSteps ODS
-						JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
-						WHERE ODS.WD_ID IS NOT NULL AND IFNULL(ODS.ST_ID, 0) = {$row["ST_ID"]}
-						ORDER BY ODS.ODD_ID DESC
-						LIMIT 100
-					  ) ODS ON ODS.WD_ID = WD.WD_ID
-					  WHERE WD.Type = 1
-					  GROUP BY WD.WD_ID
-					  ORDER BY CNT DESC";
-		}
-		else {
-			$query = "SELECT WD.WD_ID, WD.Name, SUM(IFNULL(ODS.Amount, 0)) CNT
-					  FROM WorkersData WD
-					  LEFT JOIN (
-						SELECT ODS.*, ODB.Amount
-						FROM OrdersDataSteps ODS
-						JOIN OrdersDataBlank ODB ON ODB.ODB_ID = ODS.ODB_ID
-						WHERE ODS.WD_ID IS NOT NULL
-						ORDER BY ODS.ODB_ID DESC
-						LIMIT 100
-					  ) ODS ON ODS.WD_ID = WD.WD_ID
-					  WHERE WD.Type = 1
-					  GROUP BY WD.WD_ID
-					  ORDER BY CNT DESC";
-		}
+		$query = "
+			SELECT WD.WD_ID
+				,WD.Name
+				,SUM(IFNULL(ODS.Amount, 0)) CNT
+			FROM WorkersData WD
+			LEFT JOIN (
+				SELECT ODS.*, ODD.Amount
+				FROM OrdersDataSteps ODS
+				JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
+				WHERE ODS.WD_ID IS NOT NULL AND IFNULL(ODS.ST_ID, 0) = {$row["ST_ID"]}
+				ORDER BY ODS.ODD_ID DESC
+				LIMIT 100
+			) ODS ON ODS.WD_ID = WD.WD_ID
+			WHERE WD.Type = 1
+			GROUP BY WD.WD_ID
+			ORDER BY CNT DESC
+		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		while( $subrow = mysqli_fetch_array($res) )
 		{
@@ -186,20 +149,11 @@ case "ispainting":
 	if( $shpid > 0 ) {
 		// Узнаем все ли этапы завершены
 		$query = "SELECT BIT_AND(IF(OD.IsPainting = 3 OR OD.CL_ID IS NULL, 1, 0)) IsPainting
-						,BIT_AND(IFNULL(ODD_ODB.IsReady, 1)) IsReady
+						,BIT_AND(IFNULL(ODS.IsReady, 1)) IsReady
 					FROM OrdersData OD
-					LEFT JOIN (
-						SELECT ODD.OD_ID, ODS.IsReady
-						FROM OrdersDataDetail ODD
-						JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
-						WHERE ODD.Del = 0
-						UNION ALL
-						SELECT ODB.OD_ID, ODS.IsReady
-						FROM OrdersDataBlank ODB
-						JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1 AND ODS.Old = 0
-						WHERE ODB.Del = 0
-					) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-					WHERE OD.SHP_ID = {$shpid}";
+					LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
+					WHERE OD.Del = 0 AND OD.SHP_ID = {$shpid}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		$painting = mysqli_result($res,0,'IsPainting');
 		$ready = mysqli_result($res,0,'IsReady');
@@ -209,29 +163,24 @@ case "ispainting":
 	}
 	else {
 		$html = "";
-		//if( $isready == 1 and $archive != 1 and $SHP_ID == 0 ) {
 		if( $archive != 1 ) {
 			if( $isready == 1 and $val == 3 ) {
 				if( in_array('order_ready', $Rights) ) {
-					//echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' ".( $SH_ID == 0 ? 'style=\"display: none;\"' : '')." onclick=\'if(confirm(\"Пожалуйста, подтвердите готовность заказа!\", \"?ready={$id}\")) return false;\' title=\'Готово\'><i style=\'color:red;\' class=\'fa fa-flag-checkered fa-lg\'></i></a>');";
 					$html .= "<a href='#' class='shipping' ".( $SH_ID == 0 ? "style='display: none;'" : "")." onclick='confirm(\"Пожалуйста, подтвердите <b>отгрузку</b> заказа.\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$id}\", dataType: \"script\", async: false });});' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 				}
 			}
-//			else {
-				if( in_array('order_add', $Rights) ) {
-					//echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('<a href=\'#\' class=\'\' onclick=\'if(confirm(\"<b>Подтвердите удаление заказа!</b>\", \"?del={$id}\")) return false;\' title=\'Удалить\'><i class=\'fa fa-times fa-lg\'></i></a>');";
-					if( in_array('order_add_confirm', $Rights) ) {
-						$message = "<b>Внимание!</b><br>Заказ отмеченный как покрашенный при удалении будет считаться <b>списанным</b> - это означает, что задействованные заготовки, тоже останутся <b>списанными</b>.<br>В остальных случаях заказ будет считаться <b>отмененным</b> и заготовки <b>вернутся</b> на склад.<br>К тому же этапы производства, отмеченные как <b>выполненные</b>, после удаления останутся таковыми <b>с сохранением денежного начисления работнику</b>.";
-					}
-					else {
-						$message = "Пожалуйста, подтвердите <b>удаление</b> заказа.";
-					}
-					$html .= "<a href='#' class='deleting' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$id}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+			if( in_array('order_add', $Rights) ) {
+				if( in_array('order_add_confirm', $Rights) ) {
+					$message = "<b>Внимание!</b><br>Заказ отмеченный как покрашенный при удалении будет считаться <b>списанным</b> - это означает, что задействованные заготовки, тоже останутся <b>списанными</b>.<br>В остальных случаях заказ будет считаться <b>отмененным</b> и заготовки <b>вернутся</b> на склад.<br>К тому же этапы производства, отмеченные как <b>выполненные</b>, после удаления останутся таковыми <b>с сохранением денежного начисления работнику</b>.";
 				}
-//			}
+				else {
+					$message = "Пожалуйста, подтвердите <b>удаление</b> заказа.";
+				}
+				$html .= "<a href='#' class='deleting' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$id}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+			}
 		}
 	}
-	// Выводим кнопки удалить и отгрузать
+	// Выводим кнопки удалить и отгрузить
 	$html = addslashes($html);
 	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('{$html}');";
 
@@ -239,18 +188,20 @@ case "ispainting":
 		// Формирование дропдауна со списком лакировщиков. Сортировка по релевантности.
 		$painting_workers = "<select id='painting_workers' size='10'>";
 		$painting_workers .= "<option selected value='0'>-=Выберите работника=-</option>";
-		$query = "SELECT WD.WD_ID, WD.Name, SUM(1) CNT
-				  FROM WorkersData WD
-				  LEFT JOIN (
-					SELECT OD.WD_ID
-					FROM OrdersData OD
-					WHERE OD.WD_ID IS NOT NULL
-					ORDER BY OD.OD_ID DESC
-					LIMIT 100
-				  ) SOD ON SOD.WD_ID = WD.WD_ID
-				  WHERE WD.Type = 2
-				  GROUP BY WD.WD_ID
-				  ORDER BY CNT DESC";
+		$query = "
+			SELECT WD.WD_ID, WD.Name, SUM(1) CNT
+			FROM WorkersData WD
+			LEFT JOIN (
+				SELECT OD.WD_ID
+				FROM OrdersData OD
+				WHERE OD.WD_ID IS NOT NULL
+				ORDER BY OD.OD_ID DESC
+				LIMIT 100
+			) SOD ON SOD.WD_ID = WD.WD_ID
+			WHERE WD.Type = 2
+			GROUP BY WD.WD_ID
+			ORDER BY CNT DESC
+		";
 
 		$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 		while( $row = mysqli_fetch_array($res) )
@@ -461,8 +412,6 @@ case "materials":
 			// Меняем в заказах старый id материала на новый
 			$query = "UPDATE OrdersDataDetail SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
 			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-			$query = "UPDATE OrdersDataBlank SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
-			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 			// Меняем на экране старый id материала на новый
 			echo "$('.mt{$oldmtid}').addClass('mt{$mtid}');";
@@ -537,10 +486,9 @@ case "shipment":
 							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
 						FROM OrdersData OD
 						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
-						JOIN (
+						LEFT JOIN (
 							SELECT ODD.OD_ID
-								,IFNULL(PM.PT_ID, 2) PT_ID
-								,ODD.ODD_ID itemID
+								,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 								,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', Zakaz(ODD.ODD_ID), '</a></b><br>') Zakaz
 
 								,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span shid=\'', IFNULL(MT.SH_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
@@ -552,7 +500,7 @@ case "shipment":
 									END,
 								'\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
 
-								,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
+								,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', IFNULL(ST.Size, 1) * 30, 'px;\' title=\'', IFNULL(ST.Step, ''), ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', IFNULL(ST.Short, '<i class=\"fa fa-cog\" style=\"line-height: 1.45em;\"></i>'), '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
 
 							FROM OrdersDataDetail ODD
 							LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
@@ -562,30 +510,7 @@ case "shipment":
 							LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 							WHERE ODD.Del = 0
 							GROUP BY ODD.ODD_ID
-							UNION ALL
-							SELECT ODB.OD_ID
-								,0 PT_ID
-								,ODB.ODB_ID itemID
-								,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODB.Amount, '</b> ', ZakazB(ODB.ODB_ID), '</a></b><br>') Zakaz
-
-								,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span shid=\'', IFNULL(MT.SH_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
-									CASE ODB.IsExist
-										WHEN 0 THEN 'bg-red'
-										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%y'))
-										WHEN 2 THEN 'bg-green'
-										ELSE 'bg-gray'
-									END,
-								'\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
-
-								,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
-
-							FROM OrdersDataBlank ODB
-							LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
-							LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-							LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-							WHERE ODB.Del = 0
-							GROUP BY ODB.ODB_ID
-							ORDER BY PT_ID DESC, itemID
+							ORDER BY PTID DESC, ODD.ODD_ID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 						WHERE OD.DelDate IS NULL
 							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
@@ -716,13 +641,11 @@ case "invoice":
 							,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
 							,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
 							,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
-							,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 							,OD.SH_ID
 							,SH.Shop
 							# Исключение для Клена и Горизонта
 							,IF(OD.SH_ID IN (36,85), GROUP_CONCAT(ODD_ODB.opt_price SEPARATOR ''), GROUP_CONCAT(ODD_ODB.Price SEPARATOR '')) Price
 							,IF(OD.SH_ID IN (36,85), GROUP_CONCAT(ODD_ODB.opt_discount SEPARATOR ''), GROUP_CONCAT(ODD_ODB.discount SEPARATOR '')) discount
-							,OD.confirmed
 							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
 							,IFNULL(OP.payment_sum, 0) payment_sum
 							,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
@@ -732,12 +655,11 @@ case "invoice":
 						LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 AND PFI.rtrn != 1
 						JOIN (
 							SELECT ODD.OD_ID
-								,IFNULL(PM.PT_ID, 2) PT_ID
-								,ODD.ODD_ID itemID
+								,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 
-								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODD.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odd\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'', IFNULL(ODD.min_price, 0), '\' name=\'price[]\' value=\'', IFNULL(ODD.Price, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'', IF(IFNULL(ODD.min_price, 0) > 0, CONCAT(' title=\'Вычисленная стоимость по прайсу: ', IFNULL(ODD.min_price, 0)), ''), '\'><br>') Price
+								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODD.OD_ID, '\'><input type=\'hidden\' name=\'odd_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'', IFNULL(ODD.min_price, 0), '\' name=\'price[]\' value=\'', IFNULL(ODD.Price, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'', IF(IFNULL(ODD.min_price, 0) > 0, CONCAT(' title=\'Вычисленная стоимость по прайсу: ', IFNULL(ODD.min_price, 0)), ''), '\'><br>') Price
 
-								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODD.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odd\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'0\' name=\'price[]\' value=\'', IFNULL((ODD.Price - IFNULL(ODD.discount, 0)), ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'><br>') opt_price
+								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODD.OD_ID, '\'><input type=\'hidden\' name=\'odd_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'0\' name=\'price[]\' value=\'', IFNULL((ODD.Price - IFNULL(ODD.discount, 0)), ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'><br>') opt_price
 
 								,CONCAT('<input ".($num_rows > 0 ? "readonly" : "")." type=\'number\' min=\'0\' name=\'discount[]\' value=\'', IFNULL(ODD.discount, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'><br>') discount
 
@@ -754,8 +676,6 @@ case "invoice":
 									END,
 								'\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
 
-								,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', ST.Size * 30, 'px;\' title=\'', ST.Step, ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', ST.Short, '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
-
 							FROM OrdersDataDetail ODD
 							LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 							LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -764,39 +684,7 @@ case "invoice":
 							LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 							WHERE ODD.Del = 0
 							GROUP BY ODD.ODD_ID
-							UNION ALL
-							SELECT ODB.OD_ID
-								,0 PT_ID
-								,ODB.ODB_ID itemID
-
-								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODB.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odb\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODB.ODB_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'', IFNULL(ODB.min_price, 0), '\' name=\'price[]\' value=\'', IFNULL(ODB.Price, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODB.Amount, '\'', IF(IFNULL(ODB.min_price, 0) > 0, CONCAT(' title=\'Вычисленная стоимость по прайсу: ', IFNULL(ODB.min_price, 0)), ''), '\'><br>') Price
-
-								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODB.OD_ID, '\'><input type=\'hidden\' name=\'tbl[]\' value=\'odb\'><input type=\'hidden\' name=\'tbl_id[]\' value=\'', ODB.ODB_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'0\' name=\'price[]\' value=\'', IFNULL((ODB.Price - IFNULL(ODB.discount, 0)), ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODB.Amount, '\'><br>') opt_price
-
-								,CONCAT('<input ".($num_rows > 0 ? "readonly" : "")." type=\'number\' min=\'0\' name=\'discount[]\' value=\'', IFNULL(ODB.discount, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODB.Amount, '\'><br>') discount
-
-								,CONCAT('<input ".($num_rows > 0 ? "readonly" : "")." type=\'number\' min=\'0\' name=\'discount[]\' value=\'', IF(ODB.opt_price IS NOT NULL, (ODB.Price - IFNULL(ODB.discount, 0) - ODB.opt_price), ''), '\' amount=\'', ODB.Amount, '\'><br>') opt_discount
-
-								,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODB.Amount, '</b> ', ZakazB(ODB.ODB_ID), '</a></b><br>') Zakaz
-
-								,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODB.arrival_date, NOW()) <= 0 AND ODB.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODB.arrival_date, NOW()), ' дн.\'>'), ''), '<span shid=\'', IFNULL(MT.SH_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODB.ODB_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
-									CASE ODB.IsExist
-										WHEN 0 THEN 'bg-red'
-										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODB.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODB.arrival_date, '%d.%m.%y'))
-										WHEN 2 THEN 'bg-green'
-										ELSE 'bg-gray'
-									END,
-								'\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
-
-								,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width: 30px;\' title=\'(', IFNULL(WD.Name, 'Не назначен!'), ')\'><i class=\"fa fa-cog\" aria-hidden=\"true\" style=\"line-height: 1.45em;\"></i></div>')) SEPARATOR ''), '</a><br>') Steps
-
-							FROM OrdersDataBlank ODB
-							LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
-							LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-							LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-							WHERE ODB.Del = 0
-							GROUP BY ODB.ODB_ID
-							ORDER BY PT_ID DESC, itemID
+							ORDER BY PTID DESC, ODD.ODD_ID
 						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 						LEFT JOIN (
 							SELECT OD_ID, SUM(payment_sum) payment_sum
@@ -826,8 +714,6 @@ case "invoice":
 			$html .= "<th width='30%'>Заказ</th>";
 			$html .= "<th width='20%'>Материал</th>";
 			$html .= "<th width='20%'>Цвет</th>";
-//			$html .= "<th width='100'>Этапы</th>";
-//			$html .= "<th width='40'>Принят</th>";
 			$html .= "<th width='20%'>Примечание</th>";
 			$html .= "</tr></thead><tbody>";
 			while( $row = mysqli_fetch_array($res) ) {
@@ -855,17 +741,6 @@ case "invoice":
 				}
 				$html .= "<td><span class='nowrap'>{$row["Material"]}</span></td>";
 				$html .= "<td class='{$class}'>{$row["Color"]}</td>";
-//				$html .= "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
-//					// Если заказ принят
-//					if( $row["confirmed"] == 1 ) {
-//						$class = 'confirmed';
-//						//$title = 'Принят в работу';
-//					}
-//					else {
-//						$class = 'not_confirmed';
-//						//$title = 'Не принят в работу';
-//					}
-//				$html .= "<td class='{$class}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 				$html .= "<td>{$row["Comment"]}</td>";
 				$html .= "</tr>";
 			}
@@ -879,7 +754,6 @@ case "invoice":
 			echo "$('#orders_to_invoice input[name=\"discount[]\"]').attr('placeholder', 'скидка');";
 			echo "$('.button_shops').button();";
 			echo "$('.button_shops').prop('checked', true).change();";
-			//echo "window.top.window.$('.chbox').button();";
 		}
 
 	break;
@@ -1014,7 +888,6 @@ case "add_payment":
 case "update_price":
 	$OD_ID = $_GET["OD_ID"];
 
-	$html = "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 	$html .= "<input type='hidden' name='location'>";
 
 	$html .= "<div class='accordion'>";
@@ -1035,45 +908,27 @@ case "update_price":
 	$html .= "<th width='75'>Сумма</th>";
 	$html .= "</tr></thead><tbody>";
 
-	$query = "SELECT ODD.OD_ID
-					,IFNULL(PM.PT_ID, 2) PT_ID
-					,ODD.ODD_ID itemID
-					,IFNULL(ODD.min_price, 0) min_price
-					,ODD.Price
-					,ODD.discount
-					,ODD.Amount
-					,ODD.PM_ID
-					,ODD.PME_ID
+	$query = "
+		SELECT ODD.OD_ID
+			,ODD.ODD_ID
+			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+			,IFNULL(ODD.min_price, 0) min_price
+			,ODD.Price
+			,ODD.discount
+			,ODD.Amount
 
-					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', Zakaz(ODD.ODD_ID), '</i></b><br>') Zakaz
+			,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', Zakaz(ODD.ODD_ID), '</i></b><br>') Zakaz
 
-			  FROM OrdersDataDetail ODD
-			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			  WHERE ODD.OD_ID = {$OD_ID} AND ODD.Del = 0
-			  GROUP BY ODD.ODD_ID
-			  UNION ALL
-			  SELECT ODB.OD_ID
-					,0 PT_ID
-					,ODB.ODB_ID itemID
-					,IFNULL(ODB.min_price, 0) min_price
-					,ODB.Price
-					,ODB.discount
-					,ODB.Amount
-					,0 PM_ID
-					,0 PME_ID
-
-					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ZakazB(ODB.ODB_ID), '</i></b><br>') Zakaz
-
-			  FROM OrdersDataBlank ODB
-			  WHERE ODB.OD_ID = {$OD_ID} AND ODB.Del = 0
-			  GROUP BY ODB.ODB_ID
-			  ORDER BY PT_ID DESC, itemID";
+		FROM OrdersDataDetail ODD
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+		WHERE ODD.OD_ID = {$OD_ID} AND ODD.Del = 0
+		ORDER BY PTID DESC, ODD.ODD_ID
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	while( $row = mysqli_fetch_array($res) ) {
 		$format_min_price = number_format($row["min_price"], 0, '', ' ');
 		$html .= "<tr>";
-		$html .= "<input type='hidden' name='PT_ID[]' value='{$row["PT_ID"]}'>";
-		$html .= "<input type='hidden' name='itemID[]' value='{$row["itemID"]}'>";
+		$html .= "<input type='hidden' name='ODD_ID[]' value='{$row["ODD_ID"]}'>";
 		$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 		$html .= "<td class='txtright'><span class='price'>{$format_min_price}</span></td>";
 		$html .= "<td class='prod_price'><input type='number' min='{$row["min_price"]}' name='price[]' value='{$row["Price"]}' style='width: 70px; text-align: right;'></td>";
@@ -1342,35 +1197,25 @@ case "order_cut":
 	$html .= "<input type='hidden' name='location'>";
 	$html .= "<div id='slider' style='text-align: center;'>";
 
-	$query = "SELECT ODD.OD_ID
-					,IFNULL(PM.PT_ID, 2) PT_ID
-					,ODD.ODD_ID itemID
-					,ODD.Amount
+	$query = "
+		SELECT ODD.OD_ID
+			,ODD.ODD_ID
+			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+			,ODD.Amount
 
-					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', Zakaz(ODD.ODD_ID), '</i></b><br>') Zakaz
+			,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'prod', ODD.ODD_ID, '\'', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', Zakaz(ODD.ODD_ID), '</i></b><br>') Zakaz
 
-			  FROM OrdersDataDetail ODD
-			  LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			  WHERE ODD.OD_ID = {$OD_ID} AND ODD.Del = 0
-			  GROUP BY ODD.ODD_ID
-			  UNION ALL
-			  SELECT ODB.OD_ID
-					,0 PT_ID
-					,ODB.ODB_ID itemID
-					,ODB.Amount
-
-					,CONCAT('<b style=\'line-height: 1.79em;\'><i id=\'blank', ODB.ODB_ID, '\'', IF(IFNULL(ODB.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODB.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODB.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' ', ZakazB(ODB.ODB_ID), '</i></b><br>') Zakaz
-
-			  FROM OrdersDataBlank ODB
-			  WHERE ODB.OD_ID = {$OD_ID} AND ODB.Del = 0
-			  GROUP BY ODB.ODB_ID
-			  ORDER BY PT_ID DESC, itemID";
+		FROM OrdersDataDetail ODD
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+		WHERE ODD.OD_ID = {$OD_ID} AND ODD.Del = 0
+		ORDER BY PTID DESC, ODD.ODD_ID
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	while( $row = mysqli_fetch_array($res) ) {
 		$html .= "<div>";
 		$html .= "<div>{$row["Zakaz"]}</div>";
 		$html .= "<input type='hidden' name='PT_ID[]' value='{$row["PT_ID"]}'>";
-		$html .= "<input type='hidden' name='itemID[]' value='{$row["itemID"]}'>";
+		$html .= "<input type='hidden' name='ODD_ID[]' value='{$row["ODD_ID"]}'>";
 		$html .= "<input type='hidden' name='prod_amount_left[]' value='{$row["Amount"]}'>";
 		$html .= "<input type='hidden' name='prod_amount_right[]' value='0'>";
 		$html .= "<div><b><left>{$row["Amount"]}</left> - <right>0</right></b></div>";
@@ -1387,15 +1232,9 @@ case "order_cut":
 // Обновление метража
 case "footage":
 	$oddid = $_GET["oddid"];
-	$odbid = $_GET["odbid"];
 	$val = $_GET["val"] ? $_GET["val"] : "NULL";
 
-	if( $oddid != 'undefined' ) {
-		$query = "UPDATE OrdersDataDetail SET MT_amount = {$val} WHERE ODD_ID = {$oddid}";
-	}
-	else {
-		$query = "UPDATE OrdersDataBlank SET MT_amount = {$val} WHERE ODB_ID = {$odbid}";
-	}
+	$query = "UPDATE OrdersDataDetail SET MT_amount = {$val} WHERE ODD_ID = {$oddid}";
 	mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: '".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
 	echo "noty({timeout: 3000, text: 'Метраж обновлен на: <b>\"{$val}\"</b>', type: 'success'});";
@@ -1407,50 +1246,35 @@ case "footage":
 case "material_list":
 	$materials_name = "";
 	$ODD_IDs = 0;
-	$ODB_IDs = 0;
 
 	// Собираем идентификаторы изделий и прочего
 	foreach ($_GET["prod"] as $k => $v) {
 		$ODD_IDs .= ",{$v}";
 	}
-	foreach ($_GET["other"] as $k => $v) {
-		$ODB_IDs .= ",{$v}";
-	}
 
 	// Находим строку с максимальной длиной
-	$query = "SELECT MAX(CHAR_LENGTH(MT.Material)) length
-				FROM Materials MT
-				JOIN (
-					SELECT MT_ID, MT_amount
-					FROM OrdersDataDetail
-					WHERE ODD_ID IN ($ODD_IDs)
-					UNION ALL
-					SELECT MT_ID, MT_amount
-					FROM OrdersDataBlank
-					WHERE ODB_ID IN ($ODB_IDs)
-				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID";
+	$query = "
+		SELECT MAX(CHAR_LENGTH(MT.Material)) length
+		FROM OrdersDataDetail ODD
+		JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+		WHERE ODD.ODD_ID IN ($ODD_IDs)
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	$length = mysqli_result($res,0,'length') ? mysqli_result($res,0,'length') : 0;
 
-	$query = "SELECT RPAD(MT.Material, {$length}, ' ') Material
-					,RPAD(CONCAT('- ', ROUND(ODD_ODB.MT_amount, 1), ' м.п.'), 12, ' ') MT_amount
-					,IF(ODD_ODB.IsExist = 1, DATE_FORMAT(ODD_ODB.order_date, '%d.%m.%y'), '') order_date
-				FROM Materials MT
-				JOIN (
-					SELECT MT_ID, MT_amount, order_date, IsExist
-					FROM OrdersDataDetail
-					WHERE ODD_ID IN ($ODD_IDs)
-					UNION ALL
-					SELECT MT_ID, MT_amount, order_date, IsExist
-					FROM OrdersDataBlank
-					WHERE ODB_ID IN ($ODB_IDs)
-				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
-				ORDER BY MT.Material";
+	$query = "
+		SELECT RPAD(MT.Material, {$length}, ' ') Material
+			,RPAD(CONCAT('- ', ROUND(ODD.MT_amount, 1), ' м.п.'), 12, ' ') MT_amount
+			,IF(ODD.IsExist = 1, DATE_FORMAT(ODD.order_date, '%d.%m.%y'), '') order_date
+		FROM OrdersDataDetail ODD
+		JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+		WHERE ODD.ODD_ID IN ($ODD_IDs)
+		ORDER BY MT.Material
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 	while( $row = mysqli_fetch_array($res) ) {
 		$materials_name .= $row["Material"]."\\t".$row["MT_amount"]."\\t".$row["order_date"]."\\r\\n";
 	}
-	//$materials_name = addslashes( $materials_name );
 	if( $materials_name ) {
 		echo "$('#copy_link').show();";
 		echo "$('#print_btn').show();";
@@ -1560,14 +1384,14 @@ case "blank_dropdown":
 		}
 		$html .= "</optgroup>";
 		$size = ($size < $min_size) ? $min_size : $size;
-		echo "window.top.window.$('#addblank #blank').attr('size', {$size});";
+		echo "$('#addblank #blank').attr('size', {$size});";
 	}
 	else {
-		echo "window.top.window.$('#addblank #blank').attr('size', {$min_size});";
+		echo "$('#addblank #blank').attr('size', {$min_size});";
 	}
 
 	$html = addslashes($html);
-	echo "window.top.window.$('#addblank #blank').html('{$html}');";
+	echo "$('#addblank #blank').html('{$html}');";
 
 	break;
 ///////////////////////////////////////////////////////////////////
@@ -1614,13 +1438,13 @@ case "subblank_dropdown":
 
 	if( $count ) {
 		$html = addslashes($html);
-		echo "window.top.window.$('#addblank #subblank').html('{$html}');";
-		echo "window.top.window.$('#addblank #subblank').prop('disabled', false);";
-		echo "window.top.window.$('#addblank #subblank').show('fast');";
+		echo "$('#addblank #subblank').html('{$html}');";
+		echo "$('#addblank #subblank').prop('disabled', false);";
+		echo "$('#addblank #subblank').show('fast');";
 	}
 	else {
-		echo "window.top.window.$('#addblank #subblank').prop('disabled', true);";
-		echo "window.top.window.$('#addblank #subblank').hide('fast');";
+		echo "$('#addblank #subblank').prop('disabled', true);";
+		echo "$('#addblank #subblank').hide('fast');";
 	}
 
 	break;
@@ -1732,22 +1556,22 @@ case "start_balance_blank":
 					,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 1, 0)) Painting
 					,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 1, 0)) InPainting
 					,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
-			FROM OrdersDataDetail ODD
+				FROM OrdersDataDetail ODD
 				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 				JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
 				WHERE ODD.Del = 0
 				GROUP BY PB.BL_ID
 			) SODD ON SODD.BL_ID = BL.BL_ID
 			LEFT JOIN (
-				SELECT ODB.BL_ID
-					,SUM(ODB.Amount * IF(OD.DelDate IS NULL, 1, 0)) Amount
-					,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) Painting
-					,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) InPainting
-					,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
-				FROM OrdersDataBlank ODB
-				JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
-				WHERE ODB.BL_ID IS NOT NULL
-				GROUP BY ODB.BL_ID
+				SELECT ODD.BL_ID
+					,SUM(ODD.Amount * IF(OD.DelDate IS NULL, 1, 0)) Amount
+					,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) Painting
+					,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) InPainting
+					,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
+				FROM OrdersDataDetail ODD
+				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+				WHERE ODD.BL_ID IS NOT NULL AND ODD.Del = 0
+				GROUP BY ODD.BL_ID
 			) SODB ON SODB.BL_ID = BL.BL_ID
 			WHERE BL.BL_ID = {$bl_id}
 		";
@@ -1969,6 +1793,8 @@ case "odd_data":
 			,ODD.Amount
 			,ODD.Price
 			,IFNULL(ODD.PM_ID, 0) PM_ID
+			,ODD.BL_ID
+			,ODD.Other
 			,PM.Model
 			,ODD.PF_ID
 			,ODD.PME_ID
@@ -1985,54 +1811,23 @@ case "odd_data":
 			,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
 			,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
 			,ODD.ptn
+			,SH.mtype
 		FROM OrdersDataDetail ODD
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+		LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 		WHERE ODD.ODD_ID = {$odd_id}
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$odd_data = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "model_name"=>$row["Model"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "box"=>$row["box"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "color"=>$row["Color"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["Shipper"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "ptn"=>$row["ptn"] );
+		$odd_data = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "model_name"=>$row["Model"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "box"=>$row["box"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "color"=>$row["Color"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["Shipper"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "ptn"=>$row["ptn"], "mtype"=>$row["mtype"] );
 	}
 
 	echo json_encode($odd_data);
 
 	break;
 /////////////////////////////////////////////////////////////////////
-
-// Получаем информацию по прочему чтобы заполнить форму для редактирования
-case "odb_data":
-	$odb_id = $_GET["id"];
-
-	$query = "SELECT ODB.ODB_ID
-					,ODB.Amount
-					,ODB.Price
-					,ODB.BL_ID
-					,ODB.Other
-					,ODB.Comment
-					,IFNULL(MT.Material, '') Material
-					,IFNULL(MT.SH_ID, '') Shipper
-					,ODB.IsExist
-					,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
-					,DATE_FORMAT(ODB.order_date, '%d.%m.%Y') order_date
-					,DATE_FORMAT(ODB.arrival_date, '%d.%m.%Y') arrival_date
-					,SH.mtype
-					,ODB.ptn
-			  FROM OrdersDataBlank ODB
-			  LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1
-			  LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-			  LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-			  WHERE ODB.ODB_ID = {$odb_id}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	while( $row = mysqli_fetch_array($res) )
-	{
-		$odb_data = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["Shipper"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "mtype"=>$row["mtype"], "ptn"=>$row["ptn"] );
-	}
-
-	echo json_encode($odb_data);
-
-	break;
 }
 ?>

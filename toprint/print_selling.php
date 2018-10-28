@@ -41,8 +41,6 @@
 		}
 		.coupon {
 			page-break-inside: avoid;
-			border: 2px solid black;
-			border-bottom: none;
 		}
 		.nowrap {
 			white-space: nowrap;
@@ -53,10 +51,7 @@
 <?
 
 	// Формируем список строк для печати
-	$id_list = '0';
-	foreach ($_GET["OD_ID"] as $key => $value) {
-		$id_list .= ','.$value;
-	}
+	$id_list = implode(",", $_GET["OD_ID"]);
 
 ?>
 	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
@@ -79,86 +74,43 @@
 				?>
 			</tr>
 	<?
-	// Снимаем ограничение в 1024 на GROUP_CONCAT
-	$query = "SET @@group_concat_max_len = 10000;";
-	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//	// Снимаем ограничение в 1024 на GROUP_CONCAT
+//	$query = "SET @@group_concat_max_len = 10000;";
+//	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	$query = "
 		SELECT OD.OD_ID
-				,IFNULL(OD.Code, '') Code
-				,IFNULL(OD.ClientName, '') ClientName
-				,DATE_FORMAT(OD.StartDate, '%d.%m<br>%Y') StartDate
-				,DATE_FORMAT(OD.ReadyDate, '%d.%m<br>.%Y') ReadyDate
-				,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
-				,OD.OrderNumber
-				,ODD_ODB.Zakaz
-				,ODD_ODB.Amount
-				,Color(OD.CL_ID) Color
-				,ODD_ODB.Material
-				,IFNULL(OD.sell_comment, '') Comment
-				,IF(OD.SH_ID IS NULL, 1, 0) is_free
-		FROM OrdersData OD
-		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-		LEFT JOIN (
-			SELECT ODD.OD_ID
-				,ODD.ODD_ID itemID
-				,IFNULL(PM.PT_ID, 2) PT_ID
 				,CONCAT(Zakaz(ODD.ODD_ID), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
 				,ODD.Amount
-				,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), '')), '') Material
-			FROM OrdersDataDetail ODD
-			LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
-			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-			LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-			LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-			LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-			WHERE ODD.Del = 0
-			GROUP BY ODD.ODD_ID
-
-			UNION ALL
-
-			SELECT ODB.OD_ID
-				,ODB.ODB_ID itemID
-				,0 PT_ID
-				,CONCAT(ZakazB(ODB.ODB_ID), IF(IFNULL(ODB.Comment, '') = '', '', CONCAT(' <b>(', ODB.Comment, ')</b>'))) Zakaz
-				,ODB.Amount
-				,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SH.Shipper, ')'), '')), '') Material
-			FROM OrdersDataBlank ODB
-			LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID AND ODS.Visible = 1 AND ODS.Old = 0
-			LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-			LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-			LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-			WHERE ODB.Del = 0
-			GROUP BY ODB.ODB_ID
-		) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+				,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SHP.Shipper, ')'), '')), '') Material
+				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+		FROM OrdersData OD
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+		LEFT JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
 		WHERE OD.OD_ID IN ({$id_list})
-		#ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC
-		ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.OD_ID ASC
+		ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.OD_ID ASC, PTID DESC, ODD.ODD_ID
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	// Получаем количество изделий в заказе для группировки ячеек
 	$query = "
-		SELECT IFNULL(COUNT(1), 1) Cnt, OD.OD_ID, IF(OD.SH_ID IS NULL, 1, 0) is_free
+		SELECT IFNULL(COUNT(1), 1) Cnt
+			,IFNULL(OD.Code, '') Code
+			,IFNULL(OD.ClientName, '') ClientName
+			,DATE_FORMAT(OD.StartDate, '%d.%m<br>%Y') StartDate
+			,DATE_FORMAT(OD.ReadyDate, '%d.%m<br>.%Y') ReadyDate
+			,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
+			,OD.OrderNumber
+			,Color(OD.CL_ID) Color
+			,IFNULL(OD.sell_comment, '') Comment
 		FROM OrdersData OD
-		LEFT JOIN (
-			SELECT ODD.OD_ID, IFNULL(PM.PT_ID, 2) PT_ID
-			FROM OrdersDataDetail ODD
-			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			WHERE ODD.Del = 0
-			UNION ALL
-			SELECT ODB.OD_ID, 0 PT_ID
-			FROM OrdersDataBlank ODB
-			WHERE ODB.Del = 0
-		) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		WHERE OD.OD_ID IN ({$id_list})
 		GROUP BY OD.OD_ID
-		#ORDER BY IFNULL(OD.ReadyDate, '9999-01-01') ASC, SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID ASC
 		ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.OD_ID ASC
 	";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -170,11 +122,9 @@
 			$cnt = $subrow["Cnt"];
 			$odid = $row["OD_ID"];
 			$span = 1;
-			//$border = "border-top: 3px solid black;";
 		}
 		else {
 			$span = 0;
-			$border = "";
 		}
 
 		if( $span ) {
@@ -184,16 +134,16 @@
 			echo "<tr>";
 		}
 
-		if($span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["ReadyDate"]}</td>";
-		if($span) echo "<td width='50' style='{$border}' rowspan='{$cnt}' class='nowrap'><b>{$row["Code"]}</b></td>";
-		if($span) echo "<td width='9%' style='{$border}' rowspan='{$cnt}'>{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></td>";
-		echo "<td width='20%' style='{$border} font-size: 16px;'>{$row["Zakaz"]}</td>";
-		echo "<td width='15%' style='{$border}'>{$row["Material"]}</td>";
-		if($span) echo "<td width='10%' style='{$border}' rowspan='{$cnt}'>{$row["Color"]}</td>";
-		echo "<td width='30' style='{$border} font-size: 16px; text-align: right;'><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
-		if($span) echo "<td width='7%' style='{$border}' rowspan='{$cnt}'>{$row["Shop"]}</td>";
-		if($span) echo "<td width='10%' style='{$border}' rowspan='{$cnt}'>{$row["Comment"]}</td>";
-		if($span) echo "<td width='4%' style='{$border}' rowspan='{$cnt}'>{$row["StartDate"]}</td>";
+		if($span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["ReadyDate"]}</td>";
+		if($span) echo "<td width='50' rowspan='{$cnt}' class='nowrap'><b>{$subrow["Code"]}</b></td>";
+		if($span) echo "<td width='9%' rowspan='{$cnt}'>{$subrow["ClientName"]}<br><b>{$subrow["OrderNumber"]}</b></td>";
+		echo "<td width='20%' style='font-size: 16px;'>{$row["Zakaz"]}</td>";
+		echo "<td width='15%'>{$row["Material"]}</td>";
+		if($span) echo "<td width='10%' rowspan='{$cnt}'>{$subrow["Color"]}</td>";
+		echo "<td width='30' style='font-size: 16px; text-align: right;'><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
+		if($span) echo "<td width='7%' rowspan='{$cnt}'>{$subrow["Shop"]}</td>";
+		if($span) echo "<td width='10%' rowspan='{$cnt}'>{$subrow["Comment"]}</td>";
+		if($span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["StartDate"]}</td>";
 		echo "</tr>";
 	}
 	?>

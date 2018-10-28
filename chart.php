@@ -5,25 +5,18 @@
 	include "header.php";
 
 	// Проверка прав на доступ к экрану
-//	if( !in_array('chart', $Rights) ) {
-//		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-//		die('Недостаточно прав для совершения операции');
-//	}
+	if( !in_array('chart', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
 
 //Средняя мощность производства за год
 $query = "
-	SELECT ROUND(SUM(ODD_ODB.Amount)/52) Amount
+	SELECT IFNULL(ROUND(SUM(ODD.Amount)/52), 0) Amount
 	FROM OrdersData OD
-	JOIN (
-		SELECT ODD.OD_ID, ODD.Amount
-		FROM OrdersDataDetail ODD
-		WHERE ODD.Del = 0
-		UNION ALL
-		SELECT ODB.OD_ID, ODB.Amount
-		FROM OrdersDataBlank ODB
-		WHERE ODB.Del = 0
-	) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) <= 364
+		AND OD.DelDate IS NULL
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $average_power = mysqli_result($res,0,'Amount');
@@ -31,18 +24,11 @@ $normal = "$average_power, $average_power, $average_power";
 
 //Мощность производства за прошедшую неделю
 $query = "
-	SELECT IFNULL(SUM(ODD_ODB.Amount), 0) Amount
+	SELECT IFNULL(ROUND(SUM(ODD.Amount)/4), 0) Amount
 	FROM OrdersData OD
-	JOIN (
-		SELECT ODD.OD_ID, ODD.Amount
-		FROM OrdersDataDetail ODD
-		WHERE ODD.Del = 0
-		UNION ALL
-		SELECT ODB.OD_ID, ODB.Amount
-		FROM OrdersDataBlank ODB
-		WHERE ODB.Del = 0
-	) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-	WHERE DATEDIFF(NOW(), OD.ReadyDate) < 7
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	WHERE DATEDIFF(NOW(), OD.ReadyDate) < 28
+		AND OD.DelDate IS NULL
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $current_power = mysqli_result($res,0,'Amount');
@@ -86,17 +72,9 @@ while( $row = mysqli_fetch_array($res) ) {
 
 	// Получаем количество уже выполненных изделий в очередную неделю (из запланированных в эту неделю)
 	$query = "
-		SELECT IFNULL(SUM(ODD_ODB.Amount), 0) Amount
+		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
-		JOIN (
-			SELECT ODD.OD_ID, ODD.Amount
-			FROM OrdersDataDetail ODD
-			WHERE ODD.Del = 0
-			UNION ALL
-			SELECT ODB.OD_ID, ODB.Amount
-			FROM OrdersDataBlank ODB
-			WHERE ODB.Del = 0
-		) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		WHERE OD.ReadyDate IS NOT NULL
 			AND OD.DelDate IS NULL
@@ -114,13 +92,14 @@ while( $row = mysqli_fetch_array($res) ) {
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-		JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
 			AND OD.DelDate IS NULL
 			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 			AND OD.EndDate IS NOT NULL
 			AND YEARWEEK(OD.EndDate, 1) = '$yearweek'
+			AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 1
 	";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $subrow = mysqli_fetch_array($subres) ) {
@@ -132,13 +111,14 @@ while( $row = mysqli_fetch_array($res) ) {
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-		JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
 			AND OD.DelDate IS NULL
 			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 			AND OD.EndDate IS NOT NULL
 			AND YEARWEEK(OD.EndDate, 1) = '$yearweek'
+			AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 1
 	";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $subrow = mysqli_fetch_array($subres) ) {
@@ -150,13 +130,15 @@ while( $row = mysqli_fetch_array($res) ) {
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-		JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
 			AND OD.DelDate IS NULL
 			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 			AND OD.EndDate IS NOT NULL
 			AND YEARWEEK(OD.EndDate, 1) = '$yearweek'
+			AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 2
+
 	";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $subrow = mysqli_fetch_array($subres) ) {
@@ -168,13 +150,14 @@ while( $row = mysqli_fetch_array($res) ) {
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-		JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
 			AND OD.DelDate IS NULL
 			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 			AND OD.EndDate IS NOT NULL
 			AND YEARWEEK(OD.EndDate, 1) = '$yearweek'
+			AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 2
 	";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $subrow = mysqli_fetch_array($subres) ) {
@@ -183,15 +166,17 @@ while( $row = mysqli_fetch_array($res) ) {
 
 	// Получаем план производства по ПРОЧЕМУ розница
 	$query = "
-		SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
-		JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
 			AND OD.DelDate IS NULL
 			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 			AND OD.EndDate IS NOT NULL
 			AND YEARWEEK(OD.EndDate, 1) = '$yearweek'
+			AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 0
 	";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $subrow = mysqli_fetch_array($subres) ) {
@@ -200,15 +185,17 @@ while( $row = mysqli_fetch_array($res) ) {
 
 	// Получаем план производства по ПРОЧЕМУ опт
 	$query = "
-		SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
-		JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
 			AND OD.DelDate IS NULL
 			AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 			AND OD.EndDate IS NOT NULL
 			AND YEARWEEK(OD.EndDate, 1) = '$yearweek'
+			AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 0
 	";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $subrow = mysqli_fetch_array($subres) ) {
@@ -221,13 +208,14 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 		AND OD.EndDate IS NOT NULL
 		AND OD.EndDate < NOW()
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 1
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $outdated_chairs_retail = mysqli_result($res,0,'Amount');
@@ -237,13 +225,14 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 		AND OD.EndDate IS NOT NULL
 		AND OD.EndDate < NOW()
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 1
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $outdated_chairs_opt = mysqli_result($res,0,'Amount');
@@ -253,13 +242,14 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 		AND OD.EndDate IS NOT NULL
 		AND OD.EndDate < NOW()
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 2
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $outdated_tables_retail = mysqli_result($res,0,'Amount');
@@ -269,43 +259,48 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 		AND OD.EndDate IS NOT NULL
 		AND OD.EndDate < NOW()
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 2
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $outdated_tables_opt = mysqli_result($res,0,'Amount');
 
 //Просроченное прочее розница
 $query = "
-	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 		AND OD.EndDate IS NOT NULL
 		AND OD.EndDate < NOW()
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 0
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $outdated_others_retail = mysqli_result($res,0,'Amount');
 
 //Просроченное прочее опт
 $query = "
-	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND NOT(SH.KA_ID IS NULL AND OD.StartDate IS NULL)
 		AND OD.EndDate IS NOT NULL
 		AND OD.EndDate < NOW()
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 0
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $outdated_others_opt = mysqli_result($res,0,'Amount');
@@ -315,11 +310,12 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 1
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $show_chairs_retail = mysqli_result($res,0,'Amount');
@@ -329,11 +325,12 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 1
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $show_chairs_opt = mysqli_result($res,0,'Amount');
@@ -343,11 +340,12 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 2
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $show_tables_retail = mysqli_result($res,0,'Amount');
@@ -357,37 +355,42 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 2
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $show_tables_opt = mysqli_result($res,0,'Amount');
 
 //Выставочное ПРОЧЕЕ розница
 $query = "
-	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 0
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $show_others_retail = mysqli_result($res,0,'Amount');
 
 //Выставочное ПРОЧЕЕ опт
 $query = "
-	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 0
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $show_others_opt = mysqli_result($res,0,'Amount');
@@ -397,12 +400,13 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND OD.EndDate IS NULL
 		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 1
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $hold_chairs_retail = mysqli_result($res,0,'Amount');
@@ -412,12 +416,13 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 1
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND OD.EndDate IS NULL
 		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 1
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $hold_chairs_opt = mysqli_result($res,0,'Amount');
@@ -427,12 +432,13 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND OD.EndDate IS NULL
 		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 2
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $hold_tables_retail = mysqli_result($res,0,'Amount');
@@ -442,46 +448,51 @@ $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND OD.EndDate IS NULL
 		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 2
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $hold_tables_opt = mysqli_result($res,0,'Amount');
 
 //Отложенное ПРОЧЕЕ розница
 $query = "
-	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND OD.EndDate IS NULL
 		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 0
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $hold_others_retail = mysqli_result($res,0,'Amount');
 
 //Отложенное ПРОЧЕЕ опт
 $query = "
-	SELECT IFNULL(SUM(ODB.Amount), 0) Amount
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataBlank ODB ON ODB.OD_ID = OD.OD_ID AND ODB.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
 		AND OD.DelDate IS NULL
 		AND OD.EndDate IS NULL
 		AND NOT (SH.KA_ID IS NULL AND OD.StartDate IS NULL)
+		AND IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) = 0
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $hold_others_opt = mysqli_result($res,0,'Amount');
 
 ?>
-<h2>Загруженность производства: <font color="red"><?=$load?>%</font> <i class="fa fa-question-circle" title="Количество отгруженной продукции за последние семь дней относительно среднегодового показателя"></i></h2>
+<h2>Загруженность производства: <font color="red"><?=$load?>%</font> <i class="fa fa-question-circle" title="Количество отгруженной продукции за последние 4 недели (средний производственный цикл) относительно среднегодового показателя"></i></h2>
 <canvas id="myChart" width="400" height="130"></canvas>
 <script>
 	var barChartData = {

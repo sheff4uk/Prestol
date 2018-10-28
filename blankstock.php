@@ -225,18 +225,18 @@
 						GROUP BY PB.BL_ID
 					) SODD ON SODD.BL_ID = BL.BL_ID
 					LEFT JOIN (
-						SELECT ODB.BL_ID
-								,SUM(ODB.Amount * IF(OD.DelDate IS NULL, 1, 0)) Amount
-								,SUM(ODB.Amount * IF(OD.DelDate IS NULL, 1, 0) * IFNULL(CL.clear, 0)) ClearAmount
-								,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) Painting
-								,SUM(IF(OD.IsPainting IN(2,3), ODB.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0) * IFNULL(CL.clear, 0)) ClearPainting
-								,SUM(IF(OD.IsPainting = 2, ODB.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) InPainting
-								,SUM(IF(OD.IsPainting = 3, ODB.Amount, 0) * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
-						FROM OrdersDataBlank ODB
-						JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
+						SELECT ODD.BL_ID
+								,SUM(ODD.Amount * IF(OD.DelDate IS NULL, 1, 0)) Amount
+								,SUM(ODD.Amount * IF(OD.DelDate IS NULL, 1, 0) * IFNULL(CL.clear, 0)) ClearAmount
+								,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) Painting
+								,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0) * IFNULL(CL.clear, 0)) ClearPainting
+								,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) InPainting
+								,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
+						FROM OrdersDataDetail ODD
+						JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 						LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
-						WHERE ODB.BL_ID IS NOT NULL
-						GROUP BY ODB.BL_ID
+						WHERE ODD.BL_ID IS NOT NULL
+						GROUP BY ODD.BL_ID
 					) SODB ON SODB.BL_ID = BL.BL_ID
 					WHERE BL.Name NOT LIKE 'Клей'
 					GROUP BY BL.BL_ID

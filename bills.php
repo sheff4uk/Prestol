@@ -13,18 +13,14 @@ if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !
 // Обработка полученных данных из формы
 if( $_GET["add_bill"] ) {
 
-	// Сохраняем цены и скидки изделий в ODD/ODB
+	// Сохраняем цены и скидки изделий в ODD
 	$summa = 0;
-	foreach ($_POST["tovar_cena"] as $key => $value) {
-		$tbl_id = $_POST["item"][$key];
+	foreach ($_POST["item"] as $key => $value) {
+		//$odd_id = $_POST["item"][$key];
+		$tovar_cena = $_POST["tovar_cena"][$key];
 		$discount = ($_POST["tovar_skidka"][$key] > 0) ? $_POST["tovar_skidka"][$key] : "NULL";
 
-		if( $_POST["pt"][$key] == "1" or $_POST["pt"][$key] == "2" ) {
-			$query = "UPDATE OrdersDataDetail SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$tbl_id}";
-		}
-		elseif( $_POST["pt"][$key] == "0" ) {
-			$query = "UPDATE OrdersDataBlank SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODB_ID = {$tbl_id}";
-		}
+		$query = "UPDATE OrdersDataDetail SET Price = {$tovar_cena}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$value}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		// Если товар из заказа - приписываем вначале код
@@ -363,9 +359,9 @@ while( $row = mysqli_fetch_array($res) ) {
 				</tr>
 				<tr>
 					<th width="60">Код</th>
-					<th width="50%">Наименование товара</th>
+					<th width="45%">Наименование товара</th>
 					<th width="40">Ед. измерения</th>
-					<th width="60">Кол-во</th>
+					<th width="40">Кол-во</th>
 					<th width="80">Цена за шт.</th>
 					<th width="80">Скидка за шт.</th>
 					<th width="20"><p>&nbsp;</p></th>
@@ -383,7 +379,7 @@ while( $row = mysqli_fetch_array($res) ) {
 		</table>
 
 <script type="text/javascript">
-	function addRow(ed, name, amount, min_price, price, discount, item, pt, code, odid)
+	function addRow(ed, name, amount, min_price, price, discount, item, code, odid)
 	{
 
 		// Находим нужную таблицу
@@ -432,9 +428,6 @@ while( $row = mysqli_fetch_array($res) ) {
 		if( typeof item === "undefined" ) {
 			item = '';
 		}
-		if( typeof pt === "undefined" ) {
-			pt = '';
-		}
 		if( typeof code === "undefined" ) {
 			code = '';
 		}
@@ -446,11 +439,11 @@ while( $row = mysqli_fetch_array($res) ) {
 		td2.html('<input required type="text" autocomplete="off" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />');
 		td3.html('<input required type="number" autocomplete="off" min="1" value="'+amount+'" name="tovar_kol[]" id="tovar_kol"/>');
 		if( min_price > 0 ) {
-			td4.html('<input required type="number" autocomplete="off" min="'+min_price+'" value="'+price+'" name="tovar_cena[]" id="tovar_cena" title="Вычисленная стоимость по прайсу: '+min_price+'"><input type="hidden" name="item[]" id="item" value="'+item+'"><input type="hidden" name="pt[]" id="pt" value="'+pt+'">');
+			td4.html('<input required type="number" autocomplete="off" min="'+min_price+'" value="'+price+'" name="tovar_cena[]" id="tovar_cena" title="Вычисленная стоимость по прайсу: '+min_price+'"><input type="hidden" name="item[]" id="item" value="'+item+'">');
 
 		}
 		else {
-			td4.html('<input required type="number" autocomplete="off" min="'+min_price+'" value="'+price+'" name="tovar_cena[]" id="tovar_cena"/><input type="hidden" name="item[]" id="item" value="'+item+'"><input type="hidden" name="pt[]" id="pt" value="'+pt+'">');
+			td4.html('<input required type="number" autocomplete="off" min="'+min_price+'" value="'+price+'" name="tovar_cena[]" id="tovar_cena"/><input type="hidden" name="item[]" id="item" value="'+item+'">');
 		}
 		td5.html('<input type="number" autocomplete="off" min="0" value="'+discount+'" name="tovar_skidka[]" id="tovar_skidka"/>');
 		td6.html('<i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i>');
@@ -463,7 +456,6 @@ while( $row = mysqli_fetch_array($res) ) {
 				$(this).parents('tr').find('#icode').val(ui.item.code);
 				$(this).parents('tr').find('#odid').val(ui.item.odid);
 				$(this).parents('tr').find('#item').val(ui.item.id);
-				$(this).parents('tr').find('#pt').val(ui.item.PT);
 				$(this).parents('tr').find('#tovar_cena').attr('min', ui.item.min_price);
 				if( ui.item.min_price > 0 ) {
 					$(this).parents('tr').find('#tovar_cena').attr('title', 'Вычисленная стоимость по прайсу: '+ui.item.min_price);
@@ -480,7 +472,6 @@ while( $row = mysqli_fetch_array($res) ) {
 				$(this).parents('tr').find('#icode').val('');
 				$(this).parents('tr').find('#odid').val('');
 				$(this).parents('tr').find('#item').val('');
-				$(this).parents('tr').find('#pt').val('');
 				$(this).parents('tr').find('#tovar_cena').attr('min', '0');
 				$(this).parents('tr').find('#tovar_cena').attr('title', '');
 				$(this).parents('tr').find('#tovar_cena').val('');
@@ -542,46 +533,25 @@ while( $row = mysqli_fetch_array($res) ) {
 		if(isset($_GET["Chairs"])) $product_types .= ",1";
 		if(isset($_GET["Others"])) $product_types .= ",0";
 
-		$query = "SELECT ODD_ODB.OD_ID
-						,ODD_ODB.ItemID
-						,ODD_ODB.PT_ID
-						,ODD_ODB.Amount
-						,ODD_ODB.min_price
-						,ODD_ODB.Price
-						,ODD_ODB.discount
-						,ODD_ODB.Zakaz
-						,OD.Code
-				  FROM (SELECT ODD.OD_ID
-							  ,ODD.ODD_ID ItemID
-							  ,IFNULL(PM.PT_ID, 2) PT_ID
-							  ,ODD.Amount
-							  ,IFNULL(ODD.min_price, 0) min_price
-							  ,ODD.Price
-							  ,ODD.discount
-							  ,Zakaz(ODD.ODD_ID) Zakaz
-						FROM OrdersDataDetail ODD
-						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-						WHERE ODD.Del = 0
-						UNION ALL
-						SELECT ODB.OD_ID
-							  ,ODB.ODB_ID ItemID
-							  ,0 PT_ID
-							  ,ODB.Amount
-							  ,IFNULL(ODB.min_price, 0) min_price
-							  ,ODB.Price
-							  ,ODB.discount
-							  ,ZakazB(ODB.ODB_ID) Zakaz
-						FROM OrdersDataBlank ODB
-						WHERE ODB.Del = 0
-						) ODD_ODB
-				  JOIN OrdersData OD ON OD.OD_ID = ODD_ODB.OD_ID
-				  WHERE ODD_ODB.OD_ID IN ({$id_list})
-				  AND ODD_ODB.PT_ID IN({$product_types})
-				  GROUP BY ODD_ODB.itemID
-				  ORDER BY ODD_ODB.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
+		$query = "
+			SELECT OD.OD_ID
+				,OD.Code
+				,ODD.ODD_ID
+				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+				,ODD.Amount
+				,IFNULL(ODD.min_price, 0) min_price
+				,ODD.Price
+				,ODD.discount
+				,Zakaz(ODD.ODD_ID) Zakaz
+			FROM OrdersData OD
+			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+			WHERE ODD.OD_ID IN ({$id_list})
+			HAVING PTID IN({$product_types})
+			ORDER BY OD.OD_ID, PTID DESC, ODD.ODD_ID";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
-			echo "addRow('шт', escapeHtml('{$row["Zakaz"]}'), '{$row["Amount"]}', '{$row["min_price"]}', '{$row["Price"]}', '{$row["discount"]}', '{$row["ItemID"]}', '{$row["PT_ID"]}', '{$row["Code"]}', '{$row["OD_ID"]}');";
+			echo "addRow('шт', escapeHtml('{$row["Zakaz"]}'), '{$row["Amount"]}', '{$row["min_price"]}', '{$row["Price"]}', '{$row["discount"]}', '{$row["ODD_ID"]}', '{$row["Code"]}', '{$row["OD_ID"]}');";
 		}
 		echo "$('#add_bill_btn').click();";
 	}

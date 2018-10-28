@@ -7,8 +7,7 @@ $return = $_POST["num_rows"] ? 1 : 0;
 
 // Сохраняем цены изделий в ODD/ODB
 foreach ($_POST["price"] as $key => $value) {
-	$tbl = $_POST["tbl"][$key];
-	$tbl_id = $_POST["tbl_id"][$key];
+	$odd_id = $_POST["odd_id"][$key];
 	$discount = ($_POST["discount"][$key] > 0) ? $_POST["discount"][$key] : "NULL";
 	$odid = $_POST["odid"][$key];
 
@@ -35,20 +34,10 @@ foreach ($_POST["price"] as $key => $value) {
 
 	// Если Клен или Горизонт - цену записываем в opt_price
 	if( $shop == 36 or $shop == 85 ) {
-		if( $tbl == "odd" ) {
-			$query = "UPDATE OrdersDataDetail SET opt_price = ".($value - $discount).", author = {$_SESSION["id"]} WHERE ODD_ID = {$tbl_id}";
-		}
-		elseif( $tbl == "odb" ) {
-			$query = "UPDATE OrdersDataBlank SET opt_price = ".($value - $discount).", author = {$_SESSION["id"]} WHERE ODB_ID = {$tbl_id}";
-		}
+		$query = "UPDATE OrdersDataDetail SET opt_price = ".($value - $discount).", author = {$_SESSION["id"]} WHERE ODD_ID = {$odd_id}";
 	}
 	else {
-		if( $tbl == "odd" ) {
-			$query = "UPDATE OrdersDataDetail SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$tbl_id}";
-		}
-		elseif( $tbl == "odb" ) {
-			$query = "UPDATE OrdersDataBlank SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODB_ID = {$tbl_id}";
-		}
+		$query = "UPDATE OrdersDataDetail SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$odd_id}";
 	}
 
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -133,39 +122,21 @@ foreach ($_POST["ord"] as $key => $value) {
 }
 
 //Записываем в массив POST данные по товарам
-$query = "SELECT ODD_ODB.OD_ID
-				,ODD_ODB.ItemID
-				,ODD_ODB.PT_ID
-				,OD.Code
-				,ODD_ODB.Amount
-				#Исключение для Клена и Горизонта
-				,IF(OD.SH_ID IN (36,85), ODD_ODB.opt_price, ODD_ODB.Price) Price
-				,ODD_ODB.Zakaz
-		  FROM (SELECT ODD.OD_ID
-					  ,ODD.ODD_ID ItemID
-					  ,IFNULL(PM.PT_ID, 2) PT_ID
-					  ,ODD.Amount
-					  ,(ODD.Price - IFNULL(ODD.discount, 0)) Price
-					  ,ODD.opt_price
-					  ,Zakaz(ODD.ODD_ID) Zakaz
-				FROM OrdersDataDetail ODD
-				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-				WHERE ODD.Del = 0
-				UNION ALL
-				SELECT ODB.OD_ID
-					  ,ODB.ODB_ID ItemID
-					  ,0 PT_ID
-					  ,ODB.Amount
-					  ,(ODB.Price - IFNULL(ODB.discount, 0)) Price
-					  ,ODB.opt_price
-					  ,ZakazB(ODB.ODB_ID) Zakaz
-				FROM OrdersDataBlank ODB
-				WHERE ODB.Del = 0
-				) ODD_ODB
-		  JOIN OrdersData OD ON OD.OD_ID = ODD_ODB.OD_ID
-		  WHERE ODD_ODB.OD_ID IN ({$id_list})
-		  GROUP BY ODD_ODB.itemID
-		  ORDER BY ODD_ODB.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
+$query = "
+	SELECT OD.OD_ID
+		,OD.Code
+		,ODD.ODD_ID
+		,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+		,ODD.Amount
+		#Исключение для Клена и Горизонта
+		,IF(OD.SH_ID IN (36,85), ODD.opt_price, (ODD.Price - IFNULL(ODD.discount, 0))) Price
+		,Zakaz(ODD.ODD_ID) Zakaz
+	FROM OrdersData OD
+	LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+	WHERE OD.OD_ID IN ({$id_list})
+	ORDER BY OD.OD_ID, PTID DESC, ODD.ODD_ID
+";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $Counter = 0;
 while( $row = mysqli_fetch_array($res) ) {

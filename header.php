@@ -1,9 +1,6 @@
 <?
 //ini_set('display_errors', 1);
 //error_reporting(E_ALL);
-	// Снимаем ограничение в 1024 на GROUP_CONCAT
-	$query = "SET @@group_concat_max_len = 10000;";
-	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	include_once "checkrights.php";
 
@@ -157,7 +154,7 @@
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=53'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=54'>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 <!--	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>-->
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
@@ -171,7 +168,7 @@
 	<script src="js/ui/jquery-ui.js"></script>
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
 	<script src="js/modal.js?v=8"></script>
-	<script src="js/script.js?v=35" type="text/javascript"></script>
+	<script src="js/script.js?v=36" type="text/javascript"></script>
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
 	<script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript"></script>

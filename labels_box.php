@@ -77,7 +77,7 @@
 					<th width="25%">Материал</th>
 					<th width="20%">Цвет</th>
 					<th width="20%">Кол-во</th>
-					<th width="7%">Номер упаковки</th>
+					<th width="7%">Код</th>
 					<th width="40"></th>
 				</tr>
 			</thead>
@@ -197,58 +197,42 @@
 
 $(document).ready(function() {
 <?
-	$query = "SELECT Color(OD.CL_ID) Color
-					,OD.Code
-					,ODD_ODB.ItemID
-					,ODD_ODB.PT_ID
-					,ODD_ODB.mat_label
-					,ODD_ODB.Material
-					,ODD_ODB.amount_label
-					,ODD_ODB.Amount
-					,ODD_ODB.InTheBox
-					,ODD_ODB.BoxOnItem
-					,ODD_ODB.Zakaz
-			  FROM OrdersData OD
-			  JOIN (SELECT ODD.OD_ID
-						  ,ODD.ODD_ID ItemID
-						  ,IFNULL(PM.PT_ID, 2) PT_ID
-						  ,IF(PM.PT_ID = 1, 'Ткань', 'Пластик') mat_label
-						  ,IF(PM.PT_ID = 1, 'Кол-во в упаковке', 'Упаковка №') amount_label
-						  ,MT.Material
-						  ,ODD.Amount
-						  ,IFNULL(PM.InTheBox, 0) InTheBox
-						  ,IF(ODD.PME_ID = 2, 3, IFNULL(PM.BoxOnItem, 0)) BoxOnItem
-						  ,Zakaz(ODD.ODD_ID) Zakaz
-					FROM OrdersDataDetail ODD
-					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-					LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-					WHERE ODD.Del = 0
-					UNION ALL
-					SELECT ODB.OD_ID
-						  ,ODB.ODB_ID ItemID
-						  ,0 PT_ID
-						  ,'' mat_label
-						  ,'Кол-во в упаковке' amount_label
-						  ,MT.Material
-						  ,ODB.Amount
-						  ,1 InTheBox
-						  ,1 BoxOnItem
-						  ,ZakazB(ODB.ODB_ID) Zakaz
-					FROM OrdersDataBlank ODB
-					LEFT JOIN Materials MT ON MT.MT_ID = ODB.MT_ID
-					WHERE ODB.Del = 0
-					) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-			  WHERE OD.DelDate IS NULL AND OD.OD_ID IN ({$id_list})
-			  AND ODD_ODB.PT_ID IN({$product_types})
-			  GROUP BY ODD_ODB.itemID
-			  ORDER BY ODD_ODB.OD_ID, ODD_ODB.PT_ID DESC, ODD_ODB.itemID";
+	$query = "
+		SELECT Color(OD.CL_ID) Color
+			,OD.Code
+			,ODD.ODD_ID
+			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+			,IF(SHP.mtype = 1, 'Ткань', IF(SHP.mtype = 2, 'Пластик', '')) mat_label
+			,IF(PM.PT_ID = 2, 'Упаковка №', 'Кол-во в упаковке') amount_label
+			,CONCAT(MT.Material, IFNULL(CONCAT(' (', SHP.Shipper, ')'), '')) Material
+			,ODD.Amount
+			,IFNULL(PM.InTheBox, 1) InTheBox
+			,IF(ODD.PME_ID = 2, 3, IFNULL(PM.BoxOnItem, 0)) BoxOnItem
+			,Zakaz(ODD.ODD_ID) Zakaz
+		FROM OrdersData OD
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+		LEFT JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
+		WHERE OD.DelDate IS NULL AND OD.OD_ID IN ({$id_list})
+		HAVING PTID IN({$product_types})
+		ORDER BY OD.OD_ID, PTID DESC, ODD.ODD_ID
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
 		$Zakaz = trim(htmlspecialchars($row["Zakaz"]));
 		$Material = trim(htmlspecialchars($row["Material"]));
 		$Color = trim(htmlspecialchars($row["Color"]));
 		$Amount = $row["Amount"];
-		if( $row["InTheBox"] ) {
+
+		if( $row["BoxOnItem"] ) {
+			for ($i = 1; $i <= $Amount; $i++) {
+				for ($j = 1; $j <= $row["BoxOnItem"]; $j++) {
+					echo "addRow('{$Zakaz}', '{$row["mat_label"]}', '{$Material}', '{$Color}', '{$row["amount_label"]}', '{$j} (из {$row["BoxOnItem"]})', '{$row["Code"]}');";
+				}
+			}
+		}
+		elseif( $row["InTheBox"] ) {
 			$d = $Amount / $row["InTheBox"];
 			$b = $Amount % $row["InTheBox"];
 			for ($i = 1; $i <= $d; $i++) {
@@ -256,13 +240,6 @@ $(document).ready(function() {
 			}
 			if( $b ) {
 				echo "addRow('{$Zakaz}', '{$row["mat_label"]}', '{$Material}', '{$Color}', '{$row["amount_label"]}', '{$b} шт.', '{$row["Code"]}');";
-			}
-		}
-		elseif( $row["BoxOnItem"] ) {
-			for ($i = 1; $i <= $Amount; $i++) {
-				for ($j = 1; $j <= $row["BoxOnItem"]; $j++) {
-					echo "addRow('{$Zakaz}', '{$row["mat_label"]}', '{$Material}', '{$Color}', '{$row["amount_label"]}', '{$j} (всего {$row["BoxOnItem"]})', '{$row["Code"]}');";
-				}
 			}
 		}
 	}

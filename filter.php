@@ -47,7 +47,8 @@ switch( $_GET["do"] )
 		$_SESSION["f_EndDate"] = $_GET["f_EndDate"];		// Дата сдачи в работе
 		$_SESSION["f_SH"] = trim($_GET["f_SH"]);			// Салон
 		$_SESSION["f_N"] = trim($_GET["f_N"]);			// Примечание
-		$_SESSION["f_Z"] = trim($_GET["f_Z"]);			// Заказ
+		$_SESSION["f_Models"] = $_GET["f_Models"];			// Модель
+//		$_SESSION["f_Z"] = trim($_GET["f_Z"]);			// Заказ
 		$_SESSION["f_X"] = $_GET["f_X"];			// Пометка X
 		$_SESSION["f_IP"] = $_GET["f_IP"];			// Cтатус лакировки
 		$_SESSION["f_CR"] = trim($_GET["f_CR"]);			// Цвет

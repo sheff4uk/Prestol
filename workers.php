@@ -69,8 +69,7 @@
 				<th>Тариф</th>
 				<th>Готовность</th>
 				<th>Заказ</th>
-				<th>Цвет</th>
-				<th>Ткань/Пластик</th>
+				<th>Материал</th>
 				<th>Заказчик</th>
 				<th>Дата приема</th>
 				<th>Дата испонения</th>
@@ -91,7 +90,7 @@
 						,OD.Comment
 						,ODS.ST_ID
 						,COUNT(1) Count
-						,GROUP_CONCAT(CONCAT('<span ', IF(ODS.IsReady = 1, 'class=\'isready\' title=\'Готово\'', ''), '>', ST.Step, '</span><br>') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') Steps
+						,GROUP_CONCAT(CONCAT('<span ', IF(ODS.IsReady = 1, 'class=\'isready\' title=\'Готово\'', ''), '>', IFNULL(ST.Step, ''), '</span><br>') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') Steps
 						,GROUP_CONCAT(CONCAT('s:', CHAR_LENGTH(ODS.ODD_ID)+CHAR_LENGTH(ODS.ST_ID)+1, ':\"', ODS.ODD_ID, '_', ODS.ST_ID, '\";', 's:', CHAR_LENGTH(ODS.Tariff), ':\"', ODS.Tariff, '\";') ORDER BY PM.PT_ID, ODD.ODD_ID SEPARATOR '') arrTariff
 						,GROUP_CONCAT(
 							CONCAT('s:'

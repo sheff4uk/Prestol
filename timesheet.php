@@ -320,15 +320,9 @@
 				$total = $sigmamoney + $premium;
 
 				// Получаем кол-во изделий по работнику за месяц
-				$query = "SELECT SUM(ODD_ODB.Amount) amount
+				$query = "SELECT SUM(ODD.Amount) amount
 							FROM OrdersData OD
-							JOIN (
-								SELECT OD_ID, Amount
-								FROM OrdersDataDetail
-								UNION ALL
-								SELECT OD_ID, Amount
-								FROM OrdersDataBlank
-							) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
+							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 							WHERE YEAR(OD.paint_date) = {$year} AND MONTH(OD.paint_date) = {$month} AND OD.WD_ID = {$row["WD_ID"]}";
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				$sigma_amount = mysqli_result($subres,0,'amount');		// Общее кол-во отлакированных изделий

@@ -651,9 +651,8 @@
 			return true;
 		};
 
-		// Массив куда будут записыапться данные по изделиям
+		// Массив куда будут записываться данные по изделиям
 		odd_data = new Array();
-		odb_data = new Array();
 
 		// Глобальные переменные для хранения выбранных модели и формы
 		var model;
@@ -957,10 +956,10 @@
 		});
 
 		// Форма добавления заготовок
-		$('.edit_order_blank').click(function() {
+		$('.edit_product0').click(function() {
 			id = $(this).attr('id');
 			if( typeof id !== "undefined" ) {
-				id = id.replace('blank', '');
+				id = id.replace('prod', '');
 			}
 			var location = $(this).attr("location");
 			var odid = $(this).attr("odid");
@@ -997,62 +996,62 @@
 			if( id > 0 )
 			{
 				// Через ajax получаем данные об изделии
-				$.ajax({ url: "ajax.php?do=odb_data&id=" + id, success:function(msg){ odb_data = msg; }, dataType: "json", async: false });
+				$.ajax({ url: "ajax.php?do=odd_data&id=" + id, success:function(msg){ odd_data = msg; }, dataType: "json", async: false });
 
-				$('#addblank input[name="Amount"]').val(odb_data['amount']);
-				$('#addblank input[name="Price"]').val(odb_data['price']);
-				if( odb_data['blank'] > 0 ) {
-					$('#addblank select[name="Blanks"]').val(odb_data['blank']).trigger('change');
+				$('#addblank input[name="Amount"]').val(odd_data['amount']);
+				$('#addblank input[name="Price"]').val(odd_data['price']);
+				if( odd_data['blank'] > 0 ) {
+					$('#addblank select[name="Blanks"]').val(odd_data['blank']).trigger('change');
 					$('#addblank input[name="Other"]').prop('disabled', true);
 					$('#addblank input[name="Other"]').prop("required", false);
 				}
 				else {
-					$('#addblank input[name="Other"]').val(odb_data['other']);
+					$('#addblank input[name="Other"]').val(odd_data['other']);
 					$('#addblank select[name="Blanks"]').prop('disabled', true);
 					$('#addblank select[name="Blanks"]').prop('required', false);
 				}
-				$('#addblank textarea[name="Comment"]').val(odb_data['comment']);
+				$('#addblank textarea[name="Comment"]').val(odd_data['comment']);
 
 				// Заполняем ткань/пластик
-				if( odb_data['mtype'] == 1 ) {
-					$('#addblank input[name="Material"]:eq(0)').val(odb_data['material']);
-					$('#addblank select[name="Shipper"]:eq(0)').val(odb_data['shipper']);
+				if( odd_data['mtype'] == 1 ) {
+					$('#addblank input[name="Material"]:eq(0)').val(odd_data['material']);
+					$('#addblank select[name="Shipper"]:eq(0)').val(odd_data['shipper']);
 					$('#addblank input[name="Material"]:eq(1)').attr('disabled', true);
 					$('#addblank select[name="Shipper"]:eq(1)').attr('disabled', true);
 					$('#addblank input[name="mtype"]').val('1');
 				}
-				else if( odb_data['mtype'] == 2 ) {
-					$('#addblank input[name="Material"]:eq(1)').val(odb_data['material']);
-					$('#addblank select[name="Shipper"]:eq(1)').val(odb_data['shipper']);
+				else if( odd_data['mtype'] == 2 ) {
+					$('#addblank input[name="Material"]:eq(1)').val(odd_data['material']);
+					$('#addblank select[name="Shipper"]:eq(1)').val(odd_data['shipper']);
 					$('#addblank input[name="Material"]:eq(0)').attr('disabled', true);
 					$('#addblank select[name="Shipper"]:eq(0)').attr('disabled', true);
 					$('#addblank input[name="mtype"]').val('2');
 				}
 
-				$('#0ptn'+odb_data['ptn']).prop('checked', true);
-				$('#0radio'+odb_data['isexist']).prop('checked', true);
+				$('#0ptn'+odd_data['ptn']).prop('checked', true);
+				$('#0radio'+odd_data['isexist']).prop('checked', true);
 				$('#addblank input[type="radio"]').button('refresh');
-				if( odb_data['isexist'] == 1 ) {
+				if( odd_data['isexist'] == 1 ) {
 					$('#addblank .order_material').show('fast');
 					$('#addblank .order_material input').attr("required", true);
-					$('#addblank .order_material input.from').val( odb_data['order_date'] );
-					$('#addblank .order_material input.to' ).val( odb_data['arrival_date'] );
+					$('#addblank .order_material input.from').val( odd_data['order_date'] );
+					$('#addblank .order_material input.to' ).val( odd_data['arrival_date'] );
 				}
 
 				// Если изделие в работе, то выводятся предупреждения
-				if( odb_data['inprogress'] == 1 )
+				if( odd_data['inprogress'] == 1 )
 				{
 					$('#addblank img[id="Amount"]').show();
 					$('#addblank input[name="Amount"]').prop('readonly', true);
-					$('#addblank input[name="Amount"]').attr('max', odb_data['amount']);
+					$('#addblank input[name="Amount"]').attr('max', odd_data['amount']);
 				}
 
 				materialonoff('#addblank');
-				$("#addblank form").attr("action", "datasave.php?odbid="+id+"&location="+location);
+				$("#addblank form").attr("action", "datasave.php?oddid="+id+"&location="+location);
 			}
 			else // Иначе добавляем новую заготовку
 			{
-				$('#addblank form').attr('action', 'orderdetail.php?id='+odid+'&addblank=1');
+				$('#addblank form').attr('action', 'orderdetail.php?id='+odid+'&add=1');
 			}
 
 			// Если нет материала, то кнопка наличия не активна

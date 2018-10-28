@@ -48,62 +48,29 @@
 </head>
 <body>
 <?
-	// Собираем идентификаторы изделий и прочего
-	$ODD_IDs = 0;
-	$ODB_IDs = 0;
-
-	foreach ($_GET["prod"] as $k => $v) {
-		$ODD_IDs .= ",{$v}";
-	}
-	foreach ($_GET["other"] as $k => $v) {
-		$ODB_IDs .= ",{$v}";
-	}
+	// Собираем идентификаторы изделий
+    $ODD_IDs = implode(",", $_GET["prod"]);
 ?>
 	<table>
 		<tbody>
 	<?
-	$query = "SELECT MT.Material
-					,CONCAT('<i>', IF(SH.mtype = 1, CONCAT(ROUND(ODD_ODB.MT_amount, 1), '<br>м.п.'), ODD_ODB.Name), '</i>') MT_amount
-					,ODD_ODB.Amount
-					,ODD_ODB.zakaz
-					,ODD_ODB.Code
-				FROM Materials MT
-				JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-				JOIN (
-					SELECT ODD.MT_ID
-							,ODD.MT_amount
-							,ODD.Amount
-							,Zakaz(ODD.ODD_ID) Zakaz
-							,OD.Code
-							,WD.Name
-					FROM OrdersDataDetail ODD
-					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
-					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-					LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
-					LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
-					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
-									AND ODS.Visible = 1
-									AND ODS.Old != 1
-									AND ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE '%Ст%')
-					LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-					WHERE ODD.ODD_ID IN ($ODD_IDs)
-					UNION ALL
-					SELECT ODB.MT_ID
-							,ODB.MT_amount
-							,ODB.Amount
-							,ZakazB(ODB.ODB_ID) Zakaz
-							,OD.Code
-							,WD.Name
-					FROM OrdersDataBlank ODB
-					JOIN OrdersData OD ON OD.OD_ID = ODB.OD_ID
-					LEFT JOIN BlankList BL ON BL.BL_ID = ODB.BL_ID
-					LEFT JOIN OrdersDataSteps ODS ON ODS.ODB_ID = ODB.ODB_ID
-									AND ODS.Visible = 1
-									AND ODS.Old != 1
-					LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-					WHERE ODB.ODB_ID IN ($ODB_IDs)
-				) ODD_ODB ON ODD_ODB.MT_ID = MT.MT_ID
-				ORDER BY MT.Material";
+	$query = "
+        SELECT CONCAT(MT.Material, IFNULL(CONCAT(' (', SHP.Shipper, ')'), '')) Material
+            ,CONCAT('<i>', IF(SHP.mtype = 1, CONCAT(ROUND(ODD.MT_amount, 1), '<br>м.п.'), WD.Name), '</i>') MT_amount
+            ,ODD.Amount
+            ,Zakaz(ODD.ODD_ID) Zakaz
+            ,OD.Code
+        FROM OrdersData OD
+        JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.ODD_ID IN ($ODD_IDs)
+        JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+        JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
+        LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+                        AND ODS.Visible = 1
+                        AND ODS.Old != 1
+                        AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ст%') OR ODS.ST_ID IS NULL)
+        LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+        ORDER BY OD.OD_ID
+    ";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
@@ -114,14 +81,16 @@
 				</td>
 				<td>
 					<div style='font-size: 1.5em;'>{$row["Material"]}</div><br>
-					<b><b style='font-size: 1.3em;'>{$row["Amount"]}</b> {$row["zakaz"]}</b>
+					<b><b style='font-size: 1.3em;'>{$row["Amount"]}</b> {$row["Zakaz"]}</b>
 				</td>
 				<td>
 					{$row["MT_amount"]}
 				</td>
+                <!--
 				<td>
 					<img src='https://chart.googleapis.com/chart?chs=82x82&cht=qr&chl=https://kis.fabrikaprestol.ru/orderdetail.php?id=3409&choe=UTF-8' alt='QR code'>
 				</td>
+                -->
 			</tr>
 		";
 	}
