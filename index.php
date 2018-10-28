@@ -647,8 +647,8 @@
 						FROM OrdersData OD
 						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 						WHERE OD.SHP_ID = {$_GET["shpid"]}
-							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-							".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
+							".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."
+							".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
 						GROUP BY OD.SH_ID";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$check_shops = 1; // Если при выходе из цикла будет 1, то выбраны все салоны

@@ -4,15 +4,14 @@ include "config.php";
 include "header.php";
 
 // Обновление параметров изделия
-if( $_GET["oddid"] and isset($_POST["Amount"]) )
-{
-	if( !in_array('order_add', $Rights) ) {
+if ($_GET["oddid"] and isset($_POST["Amount"])) {
+	if (!in_array('order_add', $Rights)) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 		die('Недостаточно прав для совершения операции');
 	}
 
 	// Узнаем возможен ли ящик для этой модели с таким механизмом
-	if( $_POST["Mechanism"] and $_POST["Model"] ) {
+	if ($_POST["Mechanism"] and $_POST["Model"]) {
 		$query = "
 			SELECT box
 			FROM ProductModelsMechanism
@@ -50,7 +49,7 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 
 	// Сохраняем в таблицу материалов полученный материал и узнаем его ID
-	if( $Material != '' ) {
+	if ($Material != '') {
 		$Material = mysqli_real_escape_string($mysqli, $Material);
 		$query = "INSERT INTO Materials
 					SET
@@ -88,7 +87,7 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 			,ptn = $ptn
 		WHERE ODD_ID = {$_GET["oddid"]}
 	";
-	if( !mysqli_query( $mysqli, $query ) ) {
+	if (!mysqli_query( $mysqli, $query )) {
 		$_SESSION["error"][] = mysqli_error( $mysqli );
 	}
 
@@ -100,16 +99,28 @@ if( $_GET["oddid"] and isset($_POST["Amount"]) )
 	die;
 }
 
+// Обновление цены изделий в заказе
+elseif (isset($_GET["add_price"])) {
+	foreach ($_POST["ODD_ID"] as $key => $value) {
+		$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
+		$discount = $_POST["discount"][$key] ? $_POST["discount"][$key] : "NULL";
+		$query = "UPDATE OrdersDataDetail SET Price = {$price}, discount = {$discount}, author = {$_SESSION['id']} WHERE ODD_ID = {$value}";
+		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
+	}
+	exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'#ord'.$OD_ID.'">');
+	die;
+}
+
 // Обновление в базе производственных этапов
-elseif( isset($_POST["ODD_ID"]) )
+elseif (isset($_POST["ODD_ID"]))
 {
-	if( !in_array('step_update', $Rights) ) {
+	if (!in_array('step_update', $Rights)) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 		die('Недостаточно прав для совершения операции');
 	}
-	foreach( $_POST as $k => $v) 
+	foreach ($_POST as $k => $v)
 	{
-		if( strpos($k,"Tariff") === 0 ) {
+		if (strpos($k,"Tariff") === 0) {
 			$sid = (int)str_replace( "Tariff", "", $k ); // ID этапа
 			$tariff = $v ? "$v" : "NULL";
 			$worker = $_POST["WD_ID".$sid] ? $_POST["WD_ID".$sid] : "NULL";
@@ -129,18 +140,6 @@ elseif( isset($_POST["ODD_ID"]) )
 	}
 
 	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#prod'.$_POST["ODD_ID"].'">');
-	die;
-}
-
-// Обновление цены изделий в заказе
-elseif( isset($_GET["add_price"]) ) {
-	foreach ($_POST["ODD_ID"] as $key => $value) {
-		$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
-		$discount = $_POST["discount"][$key] ? $_POST["discount"][$key] : "NULL";
-		$query = "UPDATE OrdersDataDetail SET Price = {$price}, discount = {$discount}, author = {$_SESSION['id']} WHERE ODD_ID = {$value}";
-		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
-	}
-	exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'#ord'.$OD_ID.'">');
 	die;
 }
 
