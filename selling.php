@@ -916,7 +916,7 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
-			$format_price = number_format($row["Price"], 0, '', ' ');
+			$format_price = number_format($row["Price"] - $row['discount'], 0, '', ' ');
 			$format_opt_price = number_format($row["opt_price"], 0, '', ' ');
 			$format_payment = number_format($row["payment_sum"], 0, '', ' ');
 			$format_discount = number_format($row['discount'], 0, '', ' ');
