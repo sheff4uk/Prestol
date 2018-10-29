@@ -107,7 +107,7 @@ elseif (isset($_GET["add_price"])) {
 		$query = "UPDATE OrdersDataDetail SET Price = {$price}, discount = {$discount}, author = {$_SESSION['id']} WHERE ODD_ID = {$value}";
 		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 	}
-	exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'#ord'.$OD_ID.'">');
+	exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'#ord'.$_GET["OD_ID"].'">');
 	die;
 }
 
