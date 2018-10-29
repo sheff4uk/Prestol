@@ -1057,13 +1057,13 @@
 				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}" : "not_edit_product")."'><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
 			}
 
-			if ($subrow["IsExist"] == 0) {
+			if ($subrow["IsExist"] == "0") {
 				$color = "bg-red";
 			}
-			elseif ($subrow["IsExist"] == 1) {
+			elseif ($subrow["IsExist"] == "1") {
 				$color = "bg-yellow' title='Ожидается: {$subrow["arrival_date"]}";
 			}
-			elseif ($subrow["IsExist"] == 2) {
+			elseif ($subrow["IsExist"] == "2") {
 				$color = "bg-green";
 			}
 			else {
