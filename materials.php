@@ -152,6 +152,7 @@
 			<?=($product == 1 ? "<th width='50'>Метраж</th>" : "")?>
 			<th>Код</th>
 			<th>Принят</th>
+			<th>Работник</th>
 			<th>Заказ</th>
 			<th>Цвет</th>
 			<th>Заказчик<br>Дата продажи - Дата сдачи<br>Подразделение (№ квитанции)</th>
@@ -218,6 +219,7 @@
 			) Checkbox
 
 			,OD.confirmed
+			,GROUP_CONCAT(CONCAT('<span class=\'', IF(ODS.IsReady = 1, 'ready', 'inwork'), '\'>', WD.Name, '</span><br>') SEPARATOR '') worker
 		FROM OrdersData OD
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -228,6 +230,11 @@
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 		JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID AND SHP.mtype = {$product}
+		LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+										AND ODS.Visible = 1
+										AND ODS.Old != 1
+										AND ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE '%Ст%' OR Short LIKE '%Об%')
+		LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 		WHERE OD.DelDate IS NULL AND OD.ReadyDate IS NULL
 		GROUP BY OD.OD_ID
 		ORDER BY OD.OD_ID
@@ -249,6 +256,7 @@
 			$class = 'not_confirmed';
 		}
 		echo "<td class='{$class}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
+		echo "<td><span class='nowrap'>{$row["worker"]}</span></td>";
 		echo "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
 
 		switch ($row["IsPainting"]) {
