@@ -27,13 +27,13 @@ foreach ($_POST["price"] as $key => $value) {
 		die;
 	}
 
-	// Делаем исключение для Клена и Горизонта
+	// Исключение для Клена
 	$query = "SELECT OD.SH_ID FROM OrdersData OD WHERE OD.OD_ID = {$odid}";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$shop = mysqli_result($res,0,'SH_ID') ? mysqli_result($res,0,'SH_ID') : 1;
 
-	// Если Клен или Горизонт - цену записываем в opt_price
-	if( $shop == 36 or $shop == 85 ) {
+	// Если Клен - цену записываем в opt_price
+	if ($shop == 36) {
 		$query = "UPDATE OrdersDataDetail SET opt_price = ".($value - $discount).", author = {$_SESSION["id"]} WHERE ODD_ID = {$odd_id}";
 	}
 	else {
@@ -128,8 +128,8 @@ $query = "
 		,ODD.ODD_ID
 		,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 		,ODD.Amount
-		#Исключение для Клена и Горизонта
-		,IF(OD.SH_ID IN (36,85), ODD.opt_price, (ODD.Price - IFNULL(ODD.discount, 0))) Price
+		#Исключение для Клена
+		,IF(OD.SH_ID IN (36), ODD.opt_price, (ODD.Price - IFNULL(ODD.discount, 0))) Price
 		,Zakaz(ODD.ODD_ID) Zakaz
 	FROM OrdersData OD
 	LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
