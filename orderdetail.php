@@ -183,6 +183,8 @@
 		$IsExist = isset($_POST["IsExist"]) ? "{$_POST["IsExist"]}" : "NULL";
 		$Material = trim($_POST["Material"]);
 		$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
+		$edge = trim($_POST["edge"]);
+		$edge = ($edge != '') ? "'".mysqli_real_escape_string( $mysqli, $edge )."'" : "NULL";
 		$Comment = trim($_POST["Comment"]);
 		$Comment = ($Comment != '') ? "'".mysqli_real_escape_string( $mysqli, $Comment )."'" : "NULL";
 		$ptn = $_POST["ptn"];
@@ -206,8 +208,8 @@
 			$mt_id = "NULL";
 		}
 
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, box, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, author, ptn)
-				  VALUES ({$id}, {$Model}, {$Blank}, {$Other}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, edge, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, box, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, author, ptn)
+				  VALUES ({$id}, {$Model}, {$Blank}, {$Other}, {$edge}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$odd_id = mysqli_insert_id( $mysqli );
 
@@ -323,14 +325,13 @@
 			,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
 			,PFI.count
 			,PFI.platelshik_id
-			,SUM(ODD.Price * ODD.Amount) - SUM(IFNULL(ODD.discount, 0) * ODD.Amount) Price
+			,Ord_price(OD.OD_ID) - Ord_discount(OD.OD_ID) Price
 		FROM OrdersData OD
 		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
-		LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 		WHERE OD.OD_ID = {$id}
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

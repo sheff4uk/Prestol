@@ -42,6 +42,8 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$IsExist = $_POST["IsExist"];
 	$Material = trim($_POST["Material"]);
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
+	$edge = trim($_POST["edge"]);
+	$edge = ($edge != '') ? "'".mysqli_real_escape_string( $mysqli, $edge )."'" : "NULL";
 	$Comment = trim($_POST["Comment"]);
 	$Comment = ($Comment != '') ? "'".mysqli_real_escape_string( $mysqli, $Comment )."'" : "NULL";
 	$ptn = $_POST["ptn"];
@@ -70,6 +72,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 		SET PM_ID = {$Model}
 			,BL_ID = {$Blank}
 			,Other = {$Other}
+			,edge = {$edge}
 			,Length = {$Length}
 			,Width = {$Width}
 			,PieceAmount = {$PieceAmount}

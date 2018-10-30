@@ -294,6 +294,10 @@
 		}
 		?>
 		<div>
+			<label>Кромка ПВХ:</label>
+			<input type='text' name='edge' style="width: 300px;" autocomplete='off' placeholder="Название кромки">
+		</div>
+		<div>
 			<label>Примечание:</label>
 			<textarea name='Comment' rows='3' cols='38'></textarea>
 		</div>
@@ -873,6 +877,7 @@
 				$('#addtable textarea[name="Comment"]').val(odd_data['comment']);
 				$('#addtable input[name="Material"]').val(odd_data['material']);
 				$('#addtable select[name="Shipper"]').val(odd_data['shipper']);
+				$('#addtable input[name="edge"]').val(odd_data['edge']);
 				$('#2radio'+odd_data['isexist']).prop('checked', true);
 				$('#addtable input[type="radio"]').button('refresh');
 				if( odd_data['isexist'] == 1 ) {
