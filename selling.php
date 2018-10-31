@@ -583,7 +583,7 @@
 							,IF(OP.SH_ID != OD.SH_ID, 1, 0) attention
 						FROM OrdersPayment OP
 						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
-						JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
+						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 						LEFT JOIN (
 							SELECT OP.OD_ID
 								,SUM(OP.payment_sum) payment_sum
@@ -621,7 +621,7 @@
 							,IF(OP.SH_ID != OD.SH_ID, 1, 0) attention
 						FROM OrdersPayment OP
 						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
-						JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
+						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 						WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OP.send IS NULL
 						ORDER BY OP.payment_date DESC
 					";
