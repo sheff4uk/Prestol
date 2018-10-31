@@ -192,7 +192,7 @@
 		if(isset($_GET["Z"])) echo "<td width='20' style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
 		if(isset($_GET["Z"])) echo "<td width='20%' style='font-size: 16px;'>{$row["Zakaz"]}</td>";
 		if(isset($_GET["M"])) echo "<td width='15%'>{$row["Material"]}</td>";
-		if(isset($_GET["CR"]) and $span) echo "<td width='10%' rowspan='{$cnt}'>{$subrow["Color"]}</td>";
+		if(isset($_GET["CR"]) and $span) echo "<td width='10%' rowspan='{$cnt}'>{$subrow["Colors"]}</td>";
 		if(isset($_GET["CR"])) echo "<td width='5%'>{$row["Patina"]}</td>";
 		if(isset($_GET["PR"])) echo "<td width='8%'><span class='nowrap'>{$row["Steps"]}</span></td>";
 		if(isset($_GET["N"]) and $span) echo "<td width='15%' rowspan='{$cnt}'>{$subrow["Comment"]}</td>";
