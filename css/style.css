@@ -72,10 +72,6 @@ th {
 	background: #fdc;
 }
 
-img.attention {
-	vertical-align: middle;
-}
-
 tr:target td {
 //	background: #dfb;
 }

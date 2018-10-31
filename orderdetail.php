@@ -587,16 +587,17 @@
 			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PT_ID
 			,Zakaz(ODD.ODD_ID) Zakaz
 			,IFNULL(MT.Material, '') Material
+			,DATEDIFF(ODD.arrival_date, NOW()) outdate
 			,ODD.MT_ID
 			,IF(MT.removed=1, 'removed ', '') removed
 			,IF(ODD.MT_ID IS NULL, '', SH.Shipper) Shipper
-			,IFNULL(MT.SH_ID, '') SH_ID
+			,MT.SH_ID
 			,SH.mtype
 			,ODD.IsExist
 			,ODD.Comment
 			,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
 			,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
-			,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
+			#,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
 			,Steps_button(ODD.ODD_ID, 0) Steps
 			,ODD.Del
 			,IF(CL.clear = 1 AND PM.enamel = 1, 1, 0) enamel_error
@@ -614,6 +615,22 @@
 
 	while( $row = mysqli_fetch_array($res) )
 	{
+		if ($row["IsExist"] == "0") {
+			$color = "bg-red";
+		}
+		elseif ($row["IsExist"] == "1") {
+			$color = "bg-yellow' title='Ожидается: {$subrow["arrival_date"]}";
+		}
+		elseif ($row["IsExist"] == "2") {
+			$color = "bg-green";
+		}
+		else {
+			$color = "bg-gray";
+		}
+		$material .= "<span class='wr_mt'>".(($row["outdate"] <= 0 and $row["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$row["outdate"]} дн.'></i>" : "")."<span shid='{$row["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}</span><input type='text' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' style='display: none;' title='Выведен'></span><br>";
+
+		$steps .= "<a id='{$subrow["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$subrow["Steps"]}</a><br>";
+
 		$format_old_price = ($row["old_Price"] != '') ? '<p class="old_price">'.number_format($row["old_Price"], 0, '', ' ').'</p>' : '';
 		$format_price = ($row["Price"] != '') ? '<p class="price">'.number_format($row["Price"], 0, '', ' ').'</p>' : '';
 		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
@@ -862,7 +879,7 @@ if( $id != "NULL" ) {
 <!-- Конец формы добавления сообщения к заказу -->
 
 <script>
-	$(document).ready(function(){
+	$(function(){
 //		// Select2 для выбора салона
 //		$('select[name="Shop"]').select2({
 //			placeholder: "Выберите салон",
@@ -920,7 +937,7 @@ if( $id != "NULL" ) {
 			$('.ord_log_row[lnk="'+lnk+'"] td').css('background', 'none');
 		});
 
-		$('.attention img').show();
+//		$('.attention img').show();
 	});
 </script>
 
