@@ -83,9 +83,9 @@
 				?>
 			</tr>
 	<?
-//	// Снимаем ограничение в 1024 на GROUP_CONCAT
-//	$query = "SET @@group_concat_max_len = 10000;";
-//	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	// Снимаем ограничение в 1024 на GROUP_CONCAT
+	$query = "SET @@group_concat_max_len = 10000;";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	$query = "
 		SELECT OD.OD_ID
@@ -132,7 +132,7 @@
 
 	// Получаем количество изделий в заказе для группировки ячеек
 	$query = "
-		SELECT COUNT(IF(IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) IN ({$product_types}), 1, 0)) Cnt
+		SELECT SUM(IF(IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) IN ({$product_types}), 1, 0)) Cnt
 			,IFNULL(OD.Code, '') Code
 			,IFNULL(OD.ClientName, '') ClientName
 			,CONCAT('<br>', OD.mtel) mtel
@@ -150,6 +150,7 @@
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		WHERE OD.OD_ID IN ({$id_list})
 		GROUP BY OD.OD_ID
+		HAVING Cnt > 0
 	";
 
 	if($archive == "2") {
@@ -198,9 +199,9 @@
 		if(isset($_GET["N"]) and $span) echo "<td width='15%' rowspan='{$cnt}'>{$subrow["Comment"]}</td>";
 		echo "</tr>";
 	}
-    ?>
-        </tbody>
-    </table>
+	?>
+		</tbody>
+	</table>
 	</div>
 </body>
 </html>
