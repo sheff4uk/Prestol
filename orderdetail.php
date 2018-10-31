@@ -595,9 +595,7 @@
 			,SH.mtype
 			,ODD.IsExist
 			,ODD.Comment
-			,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
 			,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
-			#,IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), '') clock
 			,Steps_button(ODD.ODD_ID, 0) Steps
 			,ODD.Del
 			,IF(CL.clear = 1 AND PM.enamel = 1, 1, 0) enamel_error
@@ -619,7 +617,7 @@
 			$color = "bg-red";
 		}
 		elseif ($row["IsExist"] == "1") {
-			$color = "bg-yellow' title='Ожидается: {$subrow["arrival_date"]}";
+			$color = "bg-yellow' title='Ожидается: {$row["arrival_date"]}";
 		}
 		elseif ($row["IsExist"] == "2") {
 			$color = "bg-green";
@@ -627,34 +625,17 @@
 		else {
 			$color = "bg-gray";
 		}
-		$material .= "<span class='wr_mt'>".(($row["outdate"] <= 0 and $row["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$row["outdate"]} дн.'></i>" : "")."<span shid='{$row["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}</span><input type='text' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' style='display: none;' title='Выведен'></span><br>";
+		$material = "<span class='wr_mt'>".(($row["outdate"] <= 0 and $row["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$row["outdate"]} дн.'></i>" : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' id='m{$row["ODD_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$row["Material"]}</span><input type='text' class='materialtags_{$row["mtype"]}' style='display: none;'><input type='checkbox' style='display: none;' title='Выведен'></span>";
 
-		$steps .= "<a id='{$subrow["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$subrow["Steps"]}</a><br>";
+		$steps = "<a id='{$row["ODD_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."' location='{$location}'>{$row["Steps"]}</a>";
 
 		$format_old_price = ($row["old_Price"] != '') ? '<p class="old_price">'.number_format($row["old_Price"], 0, '', ' ').'</p>' : '';
 		$format_price = ($row["Price"] != '') ? '<p class="price">'.number_format($row["Price"], 0, '', ' ').'</p>' : '';
 		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
 		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
 		echo "<td><span>{$row["Zakaz"]}</span></td>";
-		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><a id='{$row["ODD_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps" : "")."' location='{$location}'>{$row["Steps"]}</a></td>";
-		echo "<td><div class='wr_mt'>".($row["IsExist"] == 1 ? $row["clock"] : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".((in_array('screen_materials', $Rights) and $row["Del"] == 0) ? " mt_edit " : "");
-		switch ($row["IsExist"]) {
-			case "0":
-				echo "bg-red'>";
-				break;
-			case "1":
-				echo "bg-yellow' title='Заказано: {$row["order_date"]} Ожидается: {$row["arrival_date"]}'>";
-				break;
-			case "2":
-				echo "bg-green'>";
-				break;
-			default:
-				echo "bg-gray'>";
-		}
-		echo "{$row["Material"]}</span>";
-		echo "<input type='text' class='materialtags_{$row["mtype"]}' style='display: none;'>";
-		echo "<input type='checkbox' style='display: none;' title='Выведен'>";
-		echo "</div></td>";
+		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'>{$steps}</td>";
+		echo "<td>{$material}</td>";
 		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td class='txtright'>{$format_old_price}{$format_price}</td>";
