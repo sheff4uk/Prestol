@@ -1365,25 +1365,25 @@
 
 		$('#counter').html('<?=$orders_count?>');
 
-		// Select2 для выбора салона
-		$('select[name="Shop"]').select2({
-			placeholder: "Выберите подразделение",
-			language: "ru"
-		});
+//		// Select2 для выбора салона
+//		$('select[name="Shop"]').select2({
+//			placeholder: "Выберите подразделение",
+//			language: "ru"
+//		});
 		// Костыль для Select2 чтобы работал поиск
 //		$.ui.dialog.prototype._allowInteraction = function (e) {
 //			return true;
 //		};
 
-		// Фильтр по материалам (инициализация)
-		$('#MT_filter select').html('<?=$MT_filter?>');
-		$('#MT_filter input').val('<?=$MT_string?>');
-		$('#MT_filter select').select2({
-			placeholder: "Материалы",
-			allowClear: true,
-			closeOnSelect: false,
-			language: "ru"
-		});
+//		// Фильтр по материалам (инициализация)
+//		$('#MT_filter select').html('<?=$MT_filter?>');
+//		$('#MT_filter input').val('<?=$MT_string?>');
+//		$('#MT_filter select').select2({
+//			placeholder: "Материалы",
+//			allowClear: true,
+//			closeOnSelect: false,
+//			language: "ru"
+//		});
 
 		$('#MT_filter').click(function() {
 			$('#material-select').show('fast');
@@ -1399,7 +1399,7 @@
 		// Проверяем можно ли отгружать
 		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?> ,<?=(($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0?>);
 
-		new Clipboard('#copy-button'); // Копирование ссылки в буфер
+//		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 
 //		$('.print_products').button();
 		$('.print_col, .print_row, .print_products').change( function() { changelink(); });
