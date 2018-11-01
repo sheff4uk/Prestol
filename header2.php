@@ -150,8 +150,8 @@
 <!DOCTYPE html>
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title><?=$title?></title>
-<!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
-	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">
+<!--	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">-->
 	<link rel='stylesheet' type='text/css' href='css/style.css?v=54'>
 <!--	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">-->
 <!--	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>-->
@@ -161,9 +161,9 @@
 	<link rel='stylesheet' type='text/css' href='css/loading.css'>
 	<link rel='stylesheet' type='text/css' href='js/timepicker/jquery-ui-timepicker-addon.css'>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<!--	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>-->
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <!--	<script src="js/jquery-1.11.3.min.js"></script>-->
-	<script src="js/ui/jquery-ui.js"></script>
+<!--	<script src="js/ui/jquery-ui.js"></script>-->
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
 	<script src="js/modal.js?v=8"></script>
 	<script src="js/script.js?v=36" type="text/javascript"></script>
