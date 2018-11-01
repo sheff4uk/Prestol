@@ -1373,15 +1373,15 @@
 //			return true;
 //		};
 
-//		// Фильтр по материалам (инициализация)
-//		$('#MT_filter select').html('<?=$MT_filter?>');
-//		$('#MT_filter input').val('<?=$MT_string?>');
-//		$('#MT_filter select').select2({
-//			placeholder: "Материалы",
-//			allowClear: true,
-//			closeOnSelect: false,
-//			language: "ru"
-//		});
+		// Фильтр по материалам (инициализация)
+		$('#MT_filter select').html('<?=$MT_filter?>');
+		$('#MT_filter input').val('<?=$MT_string?>');
+		$('#MT_filter select').select2({
+			placeholder: "Материалы",
+			allowClear: true,
+			closeOnSelect: false,
+			language: "ru"
+		});
 
 		$('#MT_filter').click(function() {
 			$('#material-select').show('fast');
