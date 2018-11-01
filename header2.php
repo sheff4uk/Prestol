@@ -261,11 +261,6 @@
 			?>
 		</div>
 
-		<script>
-			$(document).ready(function() {
-				$( "#tabs_workflow" ).tabs();
-			});
-		</script>
 <?
 	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {
 		$menu = array ("Вход" => "login.php"
