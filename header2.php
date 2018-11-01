@@ -155,11 +155,11 @@
 	<link rel='stylesheet' type='text/css' href='css/style.css?v=54'>
 <!--	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">-->
 <!--	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>-->
-	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
-	<link rel='stylesheet' type='text/css' href='css/animate.css'>
-	<link rel='stylesheet' type='text/css' href='plugins/jReject-master/css/jquery.reject.css'>
-	<link rel='stylesheet' type='text/css' href='css/loading.css'>
-	<link rel='stylesheet' type='text/css' href='js/timepicker/jquery-ui-timepicker-addon.css'>
+<!--	<link rel='stylesheet' type='text/css' href='css/buttons.css'>-->
+<!--	<link rel='stylesheet' type='text/css' href='css/animate.css'>-->
+<!--	<link rel='stylesheet' type='text/css' href='plugins/jReject-master/css/jquery.reject.css'>-->
+<!--	<link rel='stylesheet' type='text/css' href='css/loading.css'>-->
+<!--	<link rel='stylesheet' type='text/css' href='js/timepicker/jquery-ui-timepicker-addon.css'>-->
 <!--	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>-->
 <!--	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>-->
 	<script src="js/jquery-1.11.3.min.js"></script>
