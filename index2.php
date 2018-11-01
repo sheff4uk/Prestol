@@ -1365,25 +1365,25 @@
 
 		$('#counter').html('<?=$orders_count?>');
 
-//		// Select2 для выбора салона
-//		$('select[name="Shop"]').select2({
-//			placeholder: "Выберите подразделение",
-//			language: "ru"
-//		});
+		// Select2 для выбора салона
+		$('select[name="Shop"]').select2({
+			placeholder: "Выберите подразделение",
+			language: "ru"
+		});
 		// Костыль для Select2 чтобы работал поиск
 //		$.ui.dialog.prototype._allowInteraction = function (e) {
 //			return true;
 //		};
 
-		// Фильтр по материалам (инициализация)
-		$('#MT_filter select').html('<?=$MT_filter?>');
-		$('#MT_filter input').val('<?=$MT_string?>');
-		$('#MT_filter select').select2({
-			placeholder: "Материалы",
-			allowClear: true,
-			closeOnSelect: false,
-			language: "ru"
-		});
+//		// Фильтр по материалам (инициализация)
+//		$('#MT_filter select').html('<?=$MT_filter?>');
+//		$('#MT_filter input').val('<?=$MT_string?>');
+//		$('#MT_filter select').select2({
+//			placeholder: "Материалы",
+//			allowClear: true,
+//			closeOnSelect: false,
+//			language: "ru"
+//		});
 
 		$('#MT_filter').click(function() {
 			$('#material-select').show('fast');
