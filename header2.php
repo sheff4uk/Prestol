@@ -200,23 +200,23 @@
 //			$('#loading').hide();
 
 			//Проверка браузера
-			$.reject({
-				reject: {
-					safari: true, // Apple Safari
-					//chrome: true, // Google Chrome
-					//firefox: true, // Mozilla Firefox
-					msie: true, // Microsoft Internet Explorer
-					//opera: true, // Opera
-					konqueror: true, // Konqueror (Linux)
-					unknown: true // Everything else
-				},
-				close: false,
-				display: ['chrome','firefox','opera'],
-				header: 'Ваш браузер устарел',
-				paragraph1: 'Вы пользуетесь устаревшим браузером, который не поддерживает современные веб-стандарты и представляет угрозу безопасности Ваших данных.',
-				paragraph2: 'Пожалуйста, установите современный браузер:',
-				closeMessage: ''
-			});
+//			$.reject({
+//				reject: {
+//					safari: true, // Apple Safari
+//					//chrome: true, // Google Chrome
+//					//firefox: true, // Mozilla Firefox
+//					msie: true, // Microsoft Internet Explorer
+//					//opera: true, // Opera
+//					konqueror: true, // Konqueror (Linux)
+//					unknown: true // Everything else
+//				},
+//				close: false,
+//				display: ['chrome','firefox','opera'],
+//				header: 'Ваш браузер устарел',
+//				paragraph1: 'Вы пользуетесь устаревшим браузером, который не поддерживает современные веб-стандарты и представляет угрозу безопасности Ваших данных.',
+//				paragraph2: 'Пожалуйста, установите современный браузер:',
+//				closeMessage: ''
+//			});
 
 			// Принудительное перемещение к якорю после перезагрузки страницы
 			var loc = window.location.hash.replace("#","");
