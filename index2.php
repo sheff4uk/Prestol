@@ -1399,7 +1399,7 @@
 		// Проверяем можно ли отгружать
 		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?> ,<?=(($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0?>);
 
-//		new Clipboard('#copy-button'); // Копирование ссылки в буфер
+		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 
 //		$('.print_products').button();
 		$('.print_col, .print_row, .print_products').change( function() { changelink(); });
