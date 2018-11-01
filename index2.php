@@ -6,7 +6,7 @@
 	else {
 		$title = 'Престол главная';
 	}
-	include "header2.php";
+	include "header.php";
 
 	$datediff = 60; // Максимальный период отображения данных
 
@@ -161,9 +161,7 @@
 
 	<div id="overlay"></div>
 	<div id="filter_overlay" style="z-index: 10; position: fixed; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; display: none;"></div>
-	<?
-		//include "forms.php";
-	?>
+	<? include "forms.php"; ?>
 
 	<div style="position: absolute; top: 75px; width: 300px; left: calc(50% - 150px); font-size: 16px; text-align: center;">
 		Найдено <b id="counter"></b> результатов.
@@ -1401,7 +1399,7 @@
 
 		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 
-//		$('.print_products').button();
+		$('.print_products').button();
 		$('.print_col, .print_row, .print_products').change( function() { changelink(); });
 
 		$('#print_btn').click( function() { changelink(); });
@@ -1425,11 +1423,11 @@
 		});
 
 		// Открытие диалога печати
-//		$("#toprint").printPage();
+		$("#toprint").printPage();
 
 		// Ограничение дат продажи и сдачи
-//		$( '#order_form fieldset input[name="StartDate"]' ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
-//		$( '#order_form fieldset input[name="EndDate"]' ).datepicker( "option", "minDate", "<?=( date('d.m.Y') )?>" );
+		$( '#order_form fieldset input[name="StartDate"]' ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
+		$( '#order_form fieldset input[name="EndDate"]' ).datepicker( "option", "minDate", "<?=( date('d.m.Y') )?>" );
 
 		// Кнопка добавления заказа
 		$('#add_btn').click( function() {
@@ -1457,13 +1455,13 @@
 			// Деактивация кнопок типа покраски
 			clearonoff('#paint_color');
 
-//			$('#order_form').dialog({
-//				width: 500,
-//				modal: true,
-//				show: 'blind',
-//				hide: 'explode',
-//				closeText: 'Закрыть'
-//			});
+			$('#order_form').dialog({
+				width: 500,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
 
 			// Автокомплит поверх диалога
 			$( ".colortags" ).autocomplete( "option", "appendTo", "#order_form" );
@@ -1546,15 +1544,15 @@
 			}
 			?>
 
-//			$('#add_shipment_form').dialog({
-//				position: { my: "center top", at: "center top", of: window },
-//				draggable: false,
-//				width: 1000,
-//				modal: true,
-//				show: 'blind',
-//				hide: 'explode',
-//				closeText: 'Закрыть'
-//			});
+			$('#add_shipment_form').dialog({
+				position: { my: "center top", at: "center top", of: window },
+				draggable: false,
+				width: 1000,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
 		});
 
 		// Динамическая подгрузка заказов при выборе города (в форме отгрузки)
