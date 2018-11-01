@@ -10,172 +10,173 @@
 		return $src;
 	}
 
-//	if( in_array('order_add', $Rights) ) {
-//		// Генерируем таблицу workflow
-//		$query = "
-//			SELECT OM.OM_ID
-//				,OM.OD_ID
-//				,OD.Code
-//				,OM.Message
-//				,OM.priority
-//				,1 is_read
-//				,USR_Icon(OM.author) Name
-//			FROM OrdersMessage OM
-//			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
-//			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-//			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
-//			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
-//			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
-//
-//			UNION ALL
-//
-//			SELECT OM.OM_ID
-//				,OM.OD_ID
-//				,OD.Code
-//				,OM.Message
-//				,OM.priority
-//				,0 is_read
-//				,USR_Icon(OM.author) Name
-//			FROM OrdersMessage OM
-//			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
-//			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-//			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NOT NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
-//			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
-//			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
-//			ORDER BY is_read DESC, OM_ID DESC
-//		";
-//		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//
-//		$workflow_color = "green";
-//		$workflow_table = "
-//			<table class='main_table'>
-//				<thead>
-//					<tr>
-//						<th width='60'>Код</th>
-//						<th>Сообщение</th>
-//						<th width='100'>Автор</th>
-//					</tr>
-//				</thead>
-//				<tbody>
-//		";
-//
-//		while( $row = mysqli_fetch_array($res) )
-//		{
-//			$workflow_table .= "
-//				<tr onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' style='".($row["priority"] ? "font-weight: bold;" : "")." ".($row["is_read"] == 0 ? "opacity: .3;" : "")."'>
-//					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></td>
-//					<td>{$row["Message"]}</td>
-//					<td>{$row["Name"]}</td>
-//				</tr>
-//			";
-//			if( $row["is_read"] ) {
-//				if( $row["priority"] == 0 and $workflow_color != 'red' ) {
-//					$workflow_color = "yellow";
-//				}
-//				else {
-//					$workflow_color = "red";
-//				}
-//			}
-//		}
-//		$workflow_table .= "</tbody></table>";
-//
-//		$query = "
-//			SELECT OM.OM_ID
-//				,OM.OD_ID
-//				,OD.Code
-//				,OM.Message
-//				,OM.priority
-//				,1 is_read
-//				,IF(OM.read_user IS NULL, '', USR_Icon(OM.read_user)) Name
-//			FROM OrdersMessage OM
-//			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
-//			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-//			WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
-//			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
-//			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
-//
-//			UNION ALL
-//
-//			SELECT OM.OM_ID
-//				,OM.OD_ID
-//				,OD.Code
-//				,OM.Message
-//				,OM.priority
-//				,0 is_read
-//				,IF(OM.read_user IS NULL, '', USR_Icon(OM.read_user)) Name
-//			FROM OrdersMessage OM
-//			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
-//			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-//			WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NOT NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
-//			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
-//			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
-//			ORDER BY is_read DESC, OM_ID DESC
-//		";
-//		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//
-//		$workflow_table_outcoming = "
-//			<table class='main_table'>
-//				<thead>
-//					<tr>
-//						<th width='60'>Код</th>
-//						<th>Сообщение</th>
-//						<th width='100'>Прочитано</th>
-//					</tr>
-//				</thead>
-//				<tbody>
-//		";
-//
-//		while( $row = mysqli_fetch_array($res) )
-//		{
-//			$workflow_table_outcoming .= "
-//				<tr onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' style='".($row["priority"] ? "font-weight: bold;" : "")." ".($row["is_read"] == 0 ? "opacity: .3;" : "")."'>
-//					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></td>
-//					<td>{$row["Message"]}</td>
-//					<td>{$row["Name"]}</td>
-//				</tr>
-//			";
-//		}
-//		$workflow_table_outcoming .= "</tbody></table>";
-//
-//		// Проверяем отметку об изменении суммы заказа и выводим сообщение
-//		$query = "SELECT OD.Code FROM OrdersData OD WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
-//		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//		while( $row = mysqli_fetch_array($res) ) {
-//			$_SESSION['error'][] = "Внимание! Ваши действия вызвали изменение суммы заказа {$row['Code']}.";
-//		}
-//		$query = "UPDATE OrdersData OD SET OD.change_price = 0 WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
-//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//	}
+	if( in_array('order_add', $Rights) ) {
+		// Генерируем таблицу workflow
+		$query = "
+			SELECT OM.OM_ID
+				,OM.OD_ID
+				,OD.Code
+				,OM.Message
+				,OM.priority
+				,1 is_read
+				,USR_Icon(OM.author) Name
+			FROM OrdersMessage OM
+			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
+			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
+
+			UNION ALL
+
+			SELECT OM.OM_ID
+				,OM.OD_ID
+				,OD.Code
+				,OM.Message
+				,OM.priority
+				,0 is_read
+				,USR_Icon(OM.author) Name
+			FROM OrdersMessage OM
+			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
+			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NOT NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
+			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
+			ORDER BY is_read DESC, OM_ID DESC
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		$workflow_color = "green";
+		$workflow_table = "
+			<table class='main_table'>
+				<thead>
+					<tr>
+						<th width='60'>Код</th>
+						<th>Сообщение</th>
+						<th width='100'>Автор</th>
+					</tr>
+				</thead>
+				<tbody>
+		";
+
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$workflow_table .= "
+				<tr onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' style='".($row["priority"] ? "font-weight: bold;" : "")." ".($row["is_read"] == 0 ? "opacity: .3;" : "")."'>
+					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></td>
+					<td>{$row["Message"]}</td>
+					<td>{$row["Name"]}</td>
+				</tr>
+			";
+			if( $row["is_read"] ) {
+				if( $row["priority"] == 0 and $workflow_color != 'red' ) {
+					$workflow_color = "yellow";
+				}
+				else {
+					$workflow_color = "red";
+				}
+			}
+		}
+		$workflow_table .= "</tbody></table>";
+
+		$query = "
+			SELECT OM.OM_ID
+				,OM.OD_ID
+				,OD.Code
+				,OM.Message
+				,OM.priority
+				,1 is_read
+				,IF(OM.read_user IS NULL, '', USR_Icon(OM.read_user)) Name
+			FROM OrdersMessage OM
+			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
+			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
+
+			UNION ALL
+
+			SELECT OM.OM_ID
+				,OM.OD_ID
+				,OD.Code
+				,OM.Message
+				,OM.priority
+				,0 is_read
+				,IF(OM.read_user IS NULL, '', USR_Icon(OM.read_user)) Name
+			FROM OrdersMessage OM
+			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
+			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NOT NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
+			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
+			ORDER BY is_read DESC, OM_ID DESC
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		$workflow_table_outcoming = "
+			<table class='main_table'>
+				<thead>
+					<tr>
+						<th width='60'>Код</th>
+						<th>Сообщение</th>
+						<th width='100'>Прочитано</th>
+					</tr>
+				</thead>
+				<tbody>
+		";
+
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$workflow_table_outcoming .= "
+				<tr onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' style='".($row["priority"] ? "font-weight: bold;" : "")." ".($row["is_read"] == 0 ? "opacity: .3;" : "")."'>
+					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></td>
+					<td>{$row["Message"]}</td>
+					<td>{$row["Name"]}</td>
+				</tr>
+			";
+		}
+		$workflow_table_outcoming .= "</tbody></table>";
+
+		// Проверяем отметку об изменении суммы заказа и выводим сообщение
+		$query = "SELECT OD.Code FROM OrdersData OD WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) ) {
+			$_SESSION['error'][] = "Внимание! Ваши действия вызвали изменение суммы заказа {$row['Code']}.";
+		}
+		$query = "UPDATE OrdersData OD SET OD.change_price = 0 WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	}
 ?>
 <!DOCTYPE html>
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title><?=$title?></title>
-	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-	<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<!--	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">-->
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
 	<link rel='stylesheet' type='text/css' href='css/style.css?v=54'>
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+<!--	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">-->
 <!--	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>-->
+<!--
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
 	<link rel='stylesheet' type='text/css' href='plugins/jReject-master/css/jquery.reject.css'>
 	<link rel='stylesheet' type='text/css' href='css/loading.css'>
 	<link rel='stylesheet' type='text/css' href='js/timepicker/jquery-ui-timepicker-addon.css'>
+-->
 <!--	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>-->
 <!--	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>-->
 	<script src="js/jquery-1.11.3.min.js"></script>
 	<script src="js/ui/jquery-ui.js"></script>
-	<script src="js/jquery.ui.datepicker-ru.js"></script>
-	<script src="js/modal.js?v=8"></script>
+<!--	<script src="js/jquery.ui.datepicker-ru.js"></script>-->
+<!--	<script src="js/modal.js?v=8"></script>-->
 	<script src="js/script.js?v=36" type="text/javascript"></script>
-	<script src="js/jquery.printPage.js" type="text/javascript"></script>
-	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
-	<script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript"></script>
-	<script src="js/Chart.min.js" type="text/javascript"></script>
-	<script src="plugins/jReject-master/js/jquery.reject.js" type="text/javascript"></script>
-	<script src="js/timepicker/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
-	<script src="js/timepicker/jquery-ui-timepicker-ru.js" type="text/javascript"></script>
+<!--	<script src="js/jquery.printPage.js" type="text/javascript"></script>-->
+<!--	<script src="js/jquery.columnhover.js" type="text/javascript"></script>-->
+<!--	<script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript"></script>-->
+<!--	<script src="js/Chart.min.js" type="text/javascript"></script>-->
+<!--	<script src="plugins/jReject-master/js/jquery.reject.js" type="text/javascript"></script>-->
+<!--	<script src="js/timepicker/jquery-ui-timepicker-addon.js" type="text/javascript"></script>-->
+<!--	<script src="js/timepicker/jquery-ui-timepicker-ru.js" type="text/javascript"></script>-->
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.4.0/clipboard.min.js"></script>
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
