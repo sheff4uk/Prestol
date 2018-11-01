@@ -972,64 +972,64 @@
 		// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информацию заказа.
 		$editable = (!($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and !($row["SH_ID"] == 0 and !in_array('order_add_confirm', $Rights)));
 
-		// Получаем содержимое заказа
-		$query = "
-			SELECT ODD.ODD_ID
-				,ODD.Amount
-				,Zakaz(ODD.ODD_ID) zakaz
-				,".((!isset($_GET["shpid"]) and $_SESSION["f_Models"] != "") ? "IF(IFNULL(ODD.PM_ID, 0) = {$_SESSION["f_Models"]}, 'ss', '')" : "''")." PMfilter
-				,ODD.Comment
-				,DATEDIFF(ODD.arrival_date, NOW()) outdate
-				,ODD.IsExist
-				,DATE_FORMAT(ODD.arrival_date, '%d.%m.%y') arrival_date
-				,IFNULL(MT.Material, '') Material
-				,".( $MT_IDs != "" ? "IF(ODD.MT_ID IN ({$MT_IDs}), 'ss', '')" : "''" )." MTfilter
-				,ODD.MT_ID
-				,MT.SH_ID
-				,SH.mtype
-				,IF(MT.removed=1, 'removed', '') removed
-				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
-				,Steps_button(ODD.ODD_ID, ".((!isset($_GET["shpid"]) and ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "")) ? "1" : "0").") Steps
-			FROM OrdersDataDetail ODD
-			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-			WHERE ODD.Del = 0 AND ODD.OD_ID = {$row["OD_ID"]}
-			ORDER BY PTID DESC, ODD.ODD_ID
-		";
-		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		// Формируем подробности заказа
-		$zakaz = '';
-		$item = '';
-		$material = '';
-		$color = '';
-		$steps = '';
-		while( $subrow = mysqli_fetch_array($subres) ) {
-			// Если есть примечание
-			if ($subrow["Comment"]) {
-				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}" : "not_edit_product")."' title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
-			}
-			else {
-				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}" : "not_edit_product")."'><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
-			}
-
-			if ($subrow["IsExist"] == "0") {
-				$color = "bg-red";
-			}
-			elseif ($subrow["IsExist"] == "1") {
-				$color = "bg-yellow' title='Ожидается: {$subrow["arrival_date"]}";
-			}
-			elseif ($subrow["IsExist"] == "2") {
-				$color = "bg-green";
-			}
-			else {
-				$color = "bg-gray";
-			}
-			$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span shid='{$subrow["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}</span><input type='text' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' style='display: none;' title='Выведен'></span><br>";
-
-			$steps .= "<a id='{$subrow["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$subrow["Steps"]}</a><br>";
-		}
+//		// Получаем содержимое заказа
+//		$query = "
+//			SELECT ODD.ODD_ID
+//				,ODD.Amount
+//				,Zakaz(ODD.ODD_ID) zakaz
+//				,".((!isset($_GET["shpid"]) and $_SESSION["f_Models"] != "") ? "IF(IFNULL(ODD.PM_ID, 0) = {$_SESSION["f_Models"]}, 'ss', '')" : "''")." PMfilter
+//				,ODD.Comment
+//				,DATEDIFF(ODD.arrival_date, NOW()) outdate
+//				,ODD.IsExist
+//				,DATE_FORMAT(ODD.arrival_date, '%d.%m.%y') arrival_date
+//				,IFNULL(MT.Material, '') Material
+//				,".( $MT_IDs != "" ? "IF(ODD.MT_ID IN ({$MT_IDs}), 'ss', '')" : "''" )." MTfilter
+//				,ODD.MT_ID
+//				,MT.SH_ID
+//				,SH.mtype
+//				,IF(MT.removed=1, 'removed', '') removed
+//				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+//				,Steps_button(ODD.ODD_ID, ".((!isset($_GET["shpid"]) and ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "")) ? "1" : "0").") Steps
+//			FROM OrdersDataDetail ODD
+//			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+//			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+//			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+//			WHERE ODD.Del = 0 AND ODD.OD_ID = {$row["OD_ID"]}
+//			ORDER BY PTID DESC, ODD.ODD_ID
+//		";
+//		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//
+//		// Формируем подробности заказа
+//		$zakaz = '';
+//		$item = '';
+//		$material = '';
+//		$color = '';
+//		$steps = '';
+//		while( $subrow = mysqli_fetch_array($subres) ) {
+//			// Если есть примечание
+//			if ($subrow["Comment"]) {
+//				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}" : "not_edit_product")."' title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+//			}
+//			else {
+//				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}" : "not_edit_product")."'><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+//			}
+//
+//			if ($subrow["IsExist"] == "0") {
+//				$color = "bg-red";
+//			}
+//			elseif ($subrow["IsExist"] == "1") {
+//				$color = "bg-yellow' title='Ожидается: {$subrow["arrival_date"]}";
+//			}
+//			elseif ($subrow["IsExist"] == "2") {
+//				$color = "bg-green";
+//			}
+//			else {
+//				$color = "bg-gray";
+//			}
+//			$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span shid='{$subrow["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}</span><input type='text' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' style='display: none;' title='Выведен'></span><br>";
+//
+//			$steps .= "<a id='{$subrow["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$subrow["Steps"]}</a><br>";
+//		}
 
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>";
