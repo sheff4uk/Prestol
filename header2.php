@@ -186,18 +186,17 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.js"></script>
 -->
 
-<!--
 	<script>
-		$(document).ready(function(){
-			$('.aside-nav-control').click(function() {
-				$('.aside-nav').addClass('opened');
-				$('body').css('overflow', 'hidden');
-			});
-
-			$('.aside-nav .close_btn').click(function() {
-				$('.aside-nav').removeClass('opened');
-				$('body').css('overflow', '');
-			});
+//		$(document).ready(function(){
+//			$('.aside-nav-control').click(function() {
+//				$('.aside-nav').addClass('opened');
+//				$('body').css('overflow', 'hidden');
+//			});
+//
+//			$('.aside-nav .close_btn').click(function() {
+//				$('.aside-nav').removeClass('opened');
+//				$('body').css('overflow', '');
+//			});
 
 //			$('#body_wraper').show();
 //			$('#loading').hide();
@@ -221,113 +220,112 @@
 //				closeMessage: ''
 //			});
 
-			// Принудительное перемещение к якорю после перезагрузки страницы
-			var loc = window.location.hash.replace("#","");
-			if (loc != "") {
-				location.replace(document.URL);
-			}
-
-			$( 'input[type=submit], input[type=button], .button, button' ).button();
-
-			// Календарь
-			$( "input.date" ).datepicker({
-				dateFormat: 'dd.mm.yy',
-				onClose: function( selectedDate ) {
-					if( $(this).hasClass( "from" ) ) {
-						$(this).parents( "form" ).find( ".to" ).datepicker( "option", "minDate", selectedDate );
-					}
-					if( $(this).hasClass( "to" ) ) {
-						$(this).parents( "form" ).find( ".from" ).datepicker( "option", "maxDate", selectedDate );
-					}
-				}
-			});
-
-			// Плавная прокрутка к якорю
-			var loc = window.location.hash.replace("#","");
-			if (loc == "") {loc = "main"}
-
-			var nav = $("#"+loc);
-			if (nav.length) {
-				var destination = nav.offset().top - 200;
-				$("body:not(:animated)").animate({ scrollTop: destination }, 200);
-				$("html").animate({ scrollTop: destination }, 200);
-			}
-		});
-
-		// Диалог подтверждения действия
-		function confirm(text, href) {
-			var self = this;
-			self.dfd = $.Deferred();
-			var n = noty({
-				text		: text,
-				dismissQueue: false,
-				modal		: true,
-				buttons		: [
-					{addClass: 'btn btn-primary', text: 'Ok', onClick: function ($noty) {
-						$noty.close();
-						//noty({timeout: 3000, text: 'Вы нажали кнопку "Ok"', type: 'success'});
-						if(href !== undefined) {window.location.href = href}
-						self.dfd.resolve(true);
-					}
-					},
-					{addClass: 'btn btn-danger', text: 'Отмена', onClick: function ($noty) {
-						$noty.close();
-						noty({timeout: 3000, text: 'Вы нажали кнопку "Отмена"', type: 'error'});
-						self.dfd.resolve(false);
-					}
-					}
-				],
-				closable: false,
-				timeout: false
-			});
-			return self.dfd.promise();
-		}
-
-		// Функция замены в строке спец символов
-		var entityMap = {
-			'&': '&amp;',
-			'<': '&lt;',
-			'>': '&gt;',
-			'"': '&quot;',
-			"'": '&#39;',
-			'/': '&#x2F;',
-			'`': '&#x60;',
-			'=': '&#x3D;'
-		};
-
-		function escapeHtml(string) {
-			return String(string).replace(/[&<>"'`=\/]/g, function (s) {
-				return entityMap[s];
-			});
-		}
+//			// Принудительное перемещение к якорю после перезагрузки страницы
+//			var loc = window.location.hash.replace("#","");
+//			if (loc != "") {
+//				location.replace(document.URL);
+//			}
+//
+//			$( 'input[type=submit], input[type=button], .button, button' ).button();
+//
+//			// Календарь
+//			$( "input.date" ).datepicker({
+//				dateFormat: 'dd.mm.yy',
+//				onClose: function( selectedDate ) {
+//					if( $(this).hasClass( "from" ) ) {
+//						$(this).parents( "form" ).find( ".to" ).datepicker( "option", "minDate", selectedDate );
+//					}
+//					if( $(this).hasClass( "to" ) ) {
+//						$(this).parents( "form" ).find( ".from" ).datepicker( "option", "maxDate", selectedDate );
+//					}
+//				}
+//			});
+//
+//			// Плавная прокрутка к якорю
+//			var loc = window.location.hash.replace("#","");
+//			if (loc == "") {loc = "main"}
+//
+//			var nav = $("#"+loc);
+//			if (nav.length) {
+//				var destination = nav.offset().top - 200;
+//				$("body:not(:animated)").animate({ scrollTop: destination }, 200);
+//				$("html").animate({ scrollTop: destination }, 200);
+//			}
+//		});
+//
+//		// Диалог подтверждения действия
+//		function confirm(text, href) {
+//			var self = this;
+//			self.dfd = $.Deferred();
+//			var n = noty({
+//				text		: text,
+//				dismissQueue: false,
+//				modal		: true,
+//				buttons		: [
+//					{addClass: 'btn btn-primary', text: 'Ok', onClick: function ($noty) {
+//						$noty.close();
+//						//noty({timeout: 3000, text: 'Вы нажали кнопку "Ok"', type: 'success'});
+//						if(href !== undefined) {window.location.href = href}
+//						self.dfd.resolve(true);
+//					}
+//					},
+//					{addClass: 'btn btn-danger', text: 'Отмена', onClick: function ($noty) {
+//						$noty.close();
+//						noty({timeout: 3000, text: 'Вы нажали кнопку "Отмена"', type: 'error'});
+//						self.dfd.resolve(false);
+//					}
+//					}
+//				],
+//				closable: false,
+//				timeout: false
+//			});
+//			return self.dfd.promise();
+//		}
+//
+//		// Функция замены в строке спец символов
+//		var entityMap = {
+//			'&': '&amp;',
+//			'<': '&lt;',
+//			'>': '&gt;',
+//			'"': '&quot;',
+//			"'": '&#39;',
+//			'/': '&#x2F;',
+//			'`': '&#x60;',
+//			'=': '&#x3D;'
+//		};
+//
+//		function escapeHtml(string) {
+//			return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+//				return entityMap[s];
+//			});
+//		}
 	</script>
--->
 
 <?
 	// Выводим собранные в сесии сообщения через noty
-	if( isset($_SESSION["error"]) ) {
-		foreach ($_SESSION["error"] as $value) {
-			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
-			echo "<script>$(document).ready(function() {noty({text: '{$value}', type: 'error'});});</script>";
-		}
-		unset($_SESSION["error"]);
-	}
-
-	if( isset($_SESSION["alert"]) ) {
-		foreach ($_SESSION["alert"] as $value) {
-			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
-			echo "<script>$(document).ready(function() {noty({timeout: 10000, text: '{$value}', type: 'alert'});});</script>";
-		}
-		unset($_SESSION["alert"]);
-	}
-
-	if( isset($_SESSION["success"]) ) {
-		foreach ($_SESSION["success"] as $value) {
-			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
-			echo "<script>$(document).ready(function() {noty({timeout: 3000, text: '{$value}', type: 'success'});});</script>";
-		}
-		unset($_SESSION["success"]);
-	}
+//	if( isset($_SESSION["error"]) ) {
+//		foreach ($_SESSION["error"] as $value) {
+//			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
+//			echo "<script>$(document).ready(function() {noty({text: '{$value}', type: 'error'});});</script>";
+//		}
+//		unset($_SESSION["error"]);
+//	}
+//
+//	if( isset($_SESSION["alert"]) ) {
+//		foreach ($_SESSION["alert"] as $value) {
+//			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
+//			echo "<script>$(document).ready(function() {noty({timeout: 10000, text: '{$value}', type: 'alert'});});</script>";
+//		}
+//		unset($_SESSION["alert"]);
+//	}
+//
+//	if( isset($_SESSION["success"]) ) {
+//		foreach ($_SESSION["success"] as $value) {
+//			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
+//			echo "<script>$(document).ready(function() {noty({timeout: 3000, text: '{$value}', type: 'success'});});</script>";
+//		}
+//		unset($_SESSION["success"]);
+//	}
 
 	//Получаем статус заказов (В работе, Свободные, Отгруженные, Удаленные)
 	$archive = $_GET["archive"] ? $_GET["archive"] : 0;
