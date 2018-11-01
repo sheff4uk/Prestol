@@ -1620,5 +1620,5 @@
 </script>
 
 <?
-	include "footer.php";
+//	include "footer.php";
 ?>
