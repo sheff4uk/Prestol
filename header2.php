@@ -186,6 +186,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.js"></script>
 -->
 
+<!--
 	<script>
 		$(document).ready(function(){
 			$('.aside-nav-control').click(function() {
@@ -300,6 +301,7 @@
 			});
 		}
 	</script>
+-->
 
 <?
 	// Выводим собранные в сесии сообщения через noty
