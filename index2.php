@@ -1207,23 +1207,23 @@
 	});
 </script>
 <?
-//	// Генерируем Select2 для фильтра материалов
-//	$MT_filter = '';
-//	$MT_string = '';
-//	$query = "
-//		SELECT MT.MT_ID, CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
-//		FROM Materials MT
-//		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-//		ORDER BY MT.Material
-//	";
-//	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//	while( $row = mysqli_fetch_array($res) ) {
-//		$selected = in_array($row["MT_ID"], $_SESSION["f_M"]) ? "selected" : "";
-//		$MT_filter .= "<option {$selected} value='{$row["MT_ID"]}'>{$row["Material"]}</option>";
-//		$MT_string .= ($selected) ? $row["Material"].", " : "";
-//	}
-//	$MT_filter = addslashes($MT_filter);
-//	$MT_string = addslashes($MT_string);
+	// Генерируем Select2 для фильтра материалов
+	$MT_filter = '';
+	$MT_string = '';
+	$query = "
+		SELECT MT.MT_ID, CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
+		FROM Materials MT
+		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+		ORDER BY MT.Material
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) ) {
+		$selected = in_array($row["MT_ID"], $_SESSION["f_M"]) ? "selected" : "";
+		$MT_filter .= "<option {$selected} value='{$row["MT_ID"]}'>{$row["Material"]}</option>";
+		$MT_string .= ($selected) ? $row["Material"].", " : "";
+	}
+	$MT_filter = addslashes($MT_filter);
+	$MT_string = addslashes($MT_string);
 
 ?>
 
@@ -1364,10 +1364,10 @@
 		$('#counter').html('<?=$orders_count?>');
 
 		// Select2 для выбора салона
-//		$('select[name="Shop"]').select2({
-//			placeholder: "Выберите подразделение",
-//			language: "ru"
-//		});
+		$('select[name="Shop"]').select2({
+			placeholder: "Выберите подразделение",
+			language: "ru"
+		});
 		// Костыль для Select2 чтобы работал поиск
 //		$.ui.dialog.prototype._allowInteraction = function (e) {
 //			return true;
