@@ -6,7 +6,7 @@
 	else {
 		$title = 'Престол главная';
 	}
-	include "header.php";
+	include "header2.php";
 
 	$datediff = 60; // Максимальный период отображения данных
 
