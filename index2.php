@@ -259,50 +259,6 @@
 	<?
 	}
 
-	if( in_array('shipment_view', $Rights) or in_array('shipment_view_city', $Rights) ) {
-	?>
-	<div id="shipment_list">
-		<a class="button" href="#">Отгрузки</a>
-		<div>
-			<table class="main_table">
-				<thead>
-					<tr>
-						<th width="20%">Город</th>
-						<th width="40%">Комментарий</th>
-						<th width="20%">Дата отгрузки</th>
-<!--						<th width="20%">Дата поступления</th>-->
-						<th width="30"></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?
-					$query = "SELECT SHP.SHP_ID
-					,				CT.City
-									,CT.Color
-									,SHP.title
-									,DATE_FORMAT(SHP.shipping_date, '%d.%m.%y') shipping_date_format
-									,DATE_FORMAT(SHP.arrival_date, '%d.%m.%y') arrival_date_format
-								FROM Shipment SHP
-								JOIN Cities CT ON CT.CT_ID = SHP.CT_ID".(in_array('shipment_view_city', $Rights) ? " AND CT.CT_ID = {$USR_City}" : "")."
-								WHERE SHP.shipping_date IS NULL OR DATEDIFF(NOW(), SHP.shipping_date) <= {$datediff}
-								ORDER BY SHP.SHP_ID DESC";
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					while( $row = mysqli_fetch_array($res) ) {
-						echo "<tr>";
-						echo "<td><span style='background: {$row["Color"]}'>{$row["City"]}</span></td>";
-						echo "<td>{$row["title"]}</td>";
-						echo "<td><span>{$row["shipping_date_format"]}</span></td>";
-//						echo "<td><span>{$row["arrival_date_format"]}</span></td>";
-						echo "<td><a href='/?shpid={$row["SHP_ID"]}'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a></td>";
-						echo "</tr>";
-					}
-					?>
-				</tbody>
-			</table>
-		</div>
-	</div>
-	<?
-	}
 	// Отсчитываем дату сдачи - 30 раб. дней и записываем в сессию
 	if( !isset($_SESSION["end_date"]) or $_SESSION["today"] != date('d.m.Y') ) {
 		$_SESSION["today"] = date('d.m.Y');
