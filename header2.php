@@ -163,7 +163,7 @@
 <!--	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>-->
 <!--	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>-->
 	<script src="js/jquery-1.11.3.min.js"></script>
-	<script src="js/ui/jquery-ui.js"></script>
+<!--	<script src="js/ui/jquery-ui.js"></script>-->
 <!--	<script src="js/jquery.ui.datepicker-ru.js"></script>-->
 <!--	<script src="js/modal.js?v=8"></script>-->
 <!--	<script src="js/script.js?v=36" type="text/javascript"></script>-->
