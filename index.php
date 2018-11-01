@@ -748,6 +748,7 @@
 
 	$is_orders_ready = 1;	// Собираем готовые заказы чтобы можно ставить дату отгрузки (когда все готовы должна получиться 1)
 	$orders_count = 0;		// Счетчик видимых заказов
+	$orders_IDs = "0";		// Список ID заказов для Select2 материалов
 
 	// Получаем основные сведения по заказу
 	$query = "
@@ -1015,6 +1016,8 @@
 		// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информацию заказа.
 		$editable = (!($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and !($row["SH_ID"] == 0 and !in_array('order_add_confirm', $Rights)));
 
+		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
+
 		// Получаем содержимое заказа
 		$query = "
 			SELECT ODD.ODD_ID
@@ -1214,8 +1217,16 @@
 		SELECT MT.MT_ID, CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
 		FROM Materials MT
 		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+		JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD.OD_ID IN ({$orders_IDs}) AND ODD.Del = 0
+		GROUP BY MT.MT_ID
 		ORDER BY MT.Material
 	";
+//	$query = "
+//		SELECT MT.MT_ID, CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
+//		FROM Materials MT
+//		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+//		ORDER BY MT.Material
+//	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
 		$selected = in_array($row["MT_ID"], $_SESSION["f_M"]) ? "selected" : "";
