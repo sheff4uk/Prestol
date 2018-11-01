@@ -5,10 +5,10 @@
 	include_once "checkrights.php";
 
 	// Функция делает ссылки кликабельными
-	function src_url($src) {
-		$src = preg_replace('/((?:\w+:\/\/|www\.)[\w.\/%\d&?#+=-]+)/i', '<a href="\1" target="_blank" class="button">\1</a>', $src);
-		return $src;
-	}
+//	function src_url($src) {
+//		$src = preg_replace('/((?:\w+:\/\/|www\.)[\w.\/%\d&?#+=-]+)/i', '<a href="\1" target="_blank" class="button">\1</a>', $src);
+//		return $src;
+//	}
 
 	if( in_array('order_add', $Rights) ) {
 		// Генерируем таблицу workflow
@@ -382,9 +382,9 @@
 		</div>
 
 		<script>
-			$(document).ready(function() {
-				$( "#tabs_workflow" ).tabs();
-			});
+//			$(document).ready(function() {
+//				$( "#tabs_workflow" ).tabs();
+//			});
 		</script>
 <?
 	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {
