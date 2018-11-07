@@ -476,9 +476,6 @@ case "shipment":
 							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
 							,Color(OD.CL_ID) Color
 							,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-							,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
-							,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
-							,GROUP_CONCAT(ODD_ODB.Steps SEPARATOR '') Steps
 							,IF(OD.SHP_ID IS NULL, '', 'checked') checked
 							,OD.SH_ID
 							,SH.Shop
@@ -486,32 +483,6 @@ case "shipment":
 							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
 						FROM OrdersData OD
 						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
-						LEFT JOIN (
-							SELECT ODD.OD_ID
-								,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
-								,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', Zakaz(ODD.ODD_ID), '</a></b><br>') Zakaz
-
-								,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span shid=\'', IFNULL(MT.SH_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
-									CASE ODD.IsExist
-										WHEN 0 THEN 'bg-red'
-										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%y'))
-										WHEN 2 THEN 'bg-green'
-										ELSE 'bg-gray'
-									END,
-								'\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
-
-								,CONCAT('<a class=\'nowrap shadow', IF(SUM(ODS.Old) > 0, ' attention', ''), '\'>', GROUP_CONCAT(IF(IFNULL(ODS.Old, 1) = 1, '', CONCAT('<div class=\'step ', IF(ODS.IsReady, 'ready', IF(ODS.WD_ID IS NULL, 'notready', 'inwork')), IF(ODS.Visible = 1, '', ' unvisible'), '\' style=\'width:', IFNULL(ST.Size, 1) * 30, 'px;\' title=\'', IFNULL(ST.Step, ''), ' (', IFNULL(WD.Name, 'Не назначен!'), ')\'>', IFNULL(ST.Short, '<i class=\"fa fa-cog\" style=\"line-height: 1.45em;\"></i>'), '</div>')) ORDER BY ST.Sort SEPARATOR ''), '</a><br>') Steps
-
-							FROM OrdersDataDetail ODD
-							LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
-							LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-							LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-							LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-							LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-							WHERE ODD.Del = 0
-							GROUP BY ODD.ODD_ID
-							ORDER BY PTID DESC, ODD.ODD_ID
-						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
 						WHERE OD.DelDate IS NULL
 							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 							".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "");
@@ -538,41 +509,87 @@ case "shipment":
 			$html .= "<th width='20%'>Примечание</th>";
 			$html .= "</tr></thead><tbody>";
 			while( $row = mysqli_fetch_array($res) ) {
+				// Получаем содержимое заказа
+				$query = "
+					SELECT ODD.ODD_ID
+						,ODD.Amount
+						,Zakaz(ODD.ODD_ID) zakaz
+						,REPLACE(ODD.Comment, '\r\n', ' ') Comment
+						,DATEDIFF(ODD.arrival_date, NOW()) outdate
+						,ODD.IsExist
+						,DATE_FORMAT(ODD.arrival_date, '%d.%m.%y') arrival_date
+						,IFNULL(MT.Material, '') Material
+						,IF(MT.removed=1, 'removed', '') removed
+						,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+						,Steps_button(ODD.ODD_ID, 0) Steps
+					FROM OrdersDataDetail ODD
+					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+					LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+					WHERE ODD.Del = 0 AND ODD.OD_ID = {$row["OD_ID"]}
+					ORDER BY PTID DESC, ODD.ODD_ID
+				";
+				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+				// Формируем подробности заказа
+				$zakaz = '';
+				$material = '';
+				$color = '';
+				$steps = '';
+				while( $subrow = mysqli_fetch_array($subres) ) {
+					// Если есть примечание
+					if ($subrow["Comment"]) {
+						$zakaz .= "<b class='material'><a title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+					}
+					else {
+						$zakaz .= "<b class='material'><a><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+					}
+
+					if ($subrow["IsExist"] == "0") {
+						$color = "bg-red";
+					}
+					elseif ($subrow["IsExist"] == "1") {
+						$color = "bg-yellow' title='Ожидается: {$subrow["arrival_date"]}";
+					}
+					elseif ($subrow["IsExist"] == "2") {
+						$color = "bg-green";
+					}
+					else {
+						$color = "bg-gray";
+					}
+					$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span class='{$subrow["removed"]} material {$color}'>{$subrow["Material"]}</span></span><br>";
+
+					$steps .= "<a>{$subrow["Steps"]}</a><br>";
+				}
+
 				$html .= "<tr class='shop{$row["SH_ID"]}' style='display: none;'>";
 				$html .= "<td><input {$row["checked"]} type='checkbox' name='ord_sh[]' id='ord_sh{$row["OD_ID"]}' class='chbox hide' value='{$row["OD_ID"]}'>";
 				$html .= "<label for='ord_sh{$row["OD_ID"]}'".($row["checked"] == 'checked' ? "style='color: red;'" : "")."><b class='code'>{$row["Code"]}</b></label><br><span>{$row["AddDate"]}</span></td>";
 				$html .= "<td><span class='nowrap'><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["Shop"]}</span></td>";
-				$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
+				$html .= "<td><span class='nowrap'>{$zakaz}</span></td>";
 				switch ($row["IsPainting"]) {
 					case 0:
 						$class = "empty";
-						//$title = "Без покраски";
 						break;
 					case 1:
 						$class = "notready";
-						//$title = "Не в работе";
 						break;
 					case 2:
 						$class = "inwork";
-						//$title = "В работе";
 						break;
 					case 3:
 						$class = "ready";
-						//$title = "Готово";
 						break;
 				}
-				$html .= "<td><span class='nowrap'>{$row["Material"]}</span></td>";
+				$html .= "<td><span class='nowrap'>{$material}</span></td>";
 				$html .= "<td class='{$class}'>{$row["Color"]}</td>";
-				$html .= "<td><span class='nowrap material'>{$row["Steps"]}</span></td>";
+				$html .= "<td><span class='nowrap material'>{$steps}</span></td>";
 					// Если заказ принят
 					if( $row["confirmed"] == 1 ) {
 						$class = 'confirmed';
-						//$title = 'Принят в работу';
 					}
 					else {
 						$class = 'not_confirmed';
-						//$title = 'Не принят в работу';
 					}
 				$html .= "<td class='{$class}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 				$html .= "<td>{$row["Comment"]}</td>";
@@ -605,7 +622,7 @@ case "shipment":
 case "invoice":
 		$KA_ID = $_GET["KA_ID"] ? $_GET["KA_ID"] : 0;
 		$CT_ID = $_GET["CT_ID"] ? $_GET["CT_ID"] : 0;
-		$num_rows = $_GET["num_rows"];
+		$num_rows = $_GET["num_rows"]; // Если не пусто, то это накладная на возврат
 
 		// Проверяем права на акты сверок
 		if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !in_array('sverki_opt', $Rights) ) {
@@ -639,66 +656,21 @@ case "invoice":
 							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
 							,Color(OD.CL_ID) Color
 							,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-							,GROUP_CONCAT(ODD_ODB.Zakaz SEPARATOR '') Zakaz
-							,GROUP_CONCAT(ODD_ODB.Material SEPARATOR '') Material
 							,OD.SH_ID
 							,SH.Shop
-							# Исключение для Клена
-							,IF(OD.SH_ID IN (36), GROUP_CONCAT(ODD_ODB.opt_price SEPARATOR ''), GROUP_CONCAT(ODD_ODB.Price SEPARATOR '')) Price
-							,IF(OD.SH_ID IN (36), GROUP_CONCAT(ODD_ODB.opt_discount SEPARATOR ''), GROUP_CONCAT(ODD_ODB.discount SEPARATOR '')) discount
 							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
-							,IFNULL(OP.payment_sum, 0) payment_sum
 							,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
 						FROM OrdersData OD
 						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 						LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 						LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 AND PFI.rtrn != 1
-						JOIN (
-							SELECT ODD.OD_ID
-								,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
-
-								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODD.OD_ID, '\'><input type=\'hidden\' name=\'odd_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'', IFNULL(ODD.min_price, 0), '\' name=\'price[]\' value=\'', IFNULL(ODD.Price, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'', IF(IFNULL(ODD.min_price, 0) > 0, CONCAT(' title=\'Вычисленная стоимость по прайсу: ', IFNULL(ODD.min_price, 0)), ''), '\'><br>') Price
-
-								,CONCAT('<input type=\'hidden\' name=\'odid[]\' value=\'', ODD.OD_ID, '\'><input type=\'hidden\' name=\'odd_id[]\' value=\'', ODD.ODD_ID, '\'><input ".($num_rows > 0 ? "readonly" : "")." required type=\'number\' min=\'0\' name=\'price[]\' value=\'', IFNULL((ODD.Price - IFNULL(ODD.discount, 0)), ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'><br>') opt_price
-
-								,CONCAT('<input ".($num_rows > 0 ? "readonly" : "")." type=\'number\' min=\'0\' name=\'discount[]\' value=\'', IFNULL(ODD.discount, ".($num_rows > 0 ? "0" : "''")."), '\' amount=\'', ODD.Amount, '\'><br>') discount
-
-								,CONCAT('<input ".($num_rows > 0 ? "readonly" : "")." type=\'number\' min=\'0\' name=\'discount[]\' value=\'', IF(ODD.opt_price IS NOT NULL, (ODD.Price - IFNULL(ODD.discount, 0) - ODD.opt_price), ''), '\' amount=\'', ODD.Amount, '\'><br>') opt_discount
-
-								,CONCAT('<b style=\'line-height: 1.79em;\'><a', IF(IFNULL(ODD.Comment, '') <> '', CONCAT(' title=\'', REPLACE(ODD.Comment, '\r\n', ' '), '\''), ''), '>', IF(IFNULL(ODD.Comment, '') <> '', CONCAT('<i class=\'fa fa-comment\' aria-hidden=\'true\'></i>'), ''), ' <b style=\'font-size: 1.3em;\'>', ODD.Amount, '</b> ', Zakaz(ODD.ODD_ID), '</a></b><br>') Zakaz
-
-								,CONCAT('<span class=\'wr_mt\'>', IF(DATEDIFF(ODD.arrival_date, NOW()) <= 0 AND ODD.IsExist = 1, CONCAT('<img src=\'/img/attention.png\' class=\'attention\' title=\'', DATEDIFF(ODD.arrival_date, NOW()), ' дн.\'>'), ''), '<span shid=\'', IFNULL(MT.SH_ID, ''), '\' mtid=\'', IFNULL(MT.MT_ID, ''), '\' id=\'m', ODD.ODD_ID, '\' class=\'mt', IFNULL(MT.MT_ID, ''), IF(MT.removed=1, ' removed', ''), ' material ',
-									CASE ODD.IsExist
-										WHEN 0 THEN 'bg-red'
-										WHEN 1 THEN CONCAT('bg-yellow\' title=\'Заказано: ', DATE_FORMAT(ODD.order_date, '%d.%m.%y'), ' Ожидается: ', DATE_FORMAT(ODD.arrival_date, '%d.%m.%y'))
-										WHEN 2 THEN 'bg-green'
-										ELSE 'bg-gray'
-									END,
-								'\'>', IFNULL(MT.Material, ''), '</span></span><br>') Material
-
-							FROM OrdersDataDetail ODD
-							LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
-							LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-							LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-							LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-							LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
-							WHERE ODD.Del = 0
-							GROUP BY ODD.ODD_ID
-							ORDER BY PTID DESC, ODD.ODD_ID
-						) ODD_ODB ON ODD_ODB.OD_ID = OD.OD_ID
-						LEFT JOIN (
-							SELECT OD_ID, SUM(payment_sum) payment_sum
-							FROM OrdersPayment
-							GROUP BY OD_ID
-						) OP ON OP.OD_ID = OD.OD_ID
 						WHERE SH.CT_ID = {$CT_ID}
 							".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.KA_ID IS NULL AND OD.ul = 1")."
 							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 							AND OD.DelDate IS NULL
-							#".($num_rows > 0 ? "AND PFI.PFI_ID IS NOT NULL" : "AND PFI.PFI_ID IS NULL")."
 							".($num_rows > 0 ? "AND (OD.StartDate IS NOT NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NOT NULL))" : "AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))")."
 							AND OD.ReadyDate IS NOT NULL
-							AND IFNULL(OP.payment_sum, 0) = 0
+							AND Payment_sum(OD.OD_ID) = 0
 							AND NOT (OS.locking_date IS NOT NULL AND SH.KA_ID IS NULL)
 						GROUP BY OD.OD_ID
 						ORDER BY OD.ReadyDate ".($num_rows > 0 ? "DESC LIMIT {$num_rows}" : "ASC");
@@ -717,14 +689,79 @@ case "invoice":
 			$html .= "<th width='20%'>Примечание</th>";
 			$html .= "</tr></thead><tbody>";
 			while( $row = mysqli_fetch_array($res) ) {
+				// Получаем содержимое заказа
+				$query = "
+					SELECT ODD.ODD_ID
+						,ODD.Amount
+						,Zakaz(ODD.ODD_ID) zakaz
+						,REPLACE(ODD.Comment, '\r\n', ' ') Comment
+						,DATEDIFF(ODD.arrival_date, NOW()) outdate
+						,ODD.IsExist
+						,DATE_FORMAT(ODD.arrival_date, '%d.%m.%y') arrival_date
+						,IFNULL(MT.Material, '') Material
+						,IF(MT.removed=1, 'removed', '') removed
+						,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+						,IFNULL(ODD.min_price, 0) min_price
+						,IFNULL(ODD.Price, ".($num_rows > 0 ? "0" : "''").") price
+						,IFNULL((ODD.Price - IFNULL(ODD.discount, 0)), ".($num_rows > 0 ? "0" : "''").") opt_price
+						,IFNULL(ODD.discount, ".($num_rows > 0 ? "0" : "''").") discount
+						,IF(ODD.opt_price IS NOT NULL, (ODD.Price - IFNULL(ODD.discount, 0) - ODD.opt_price), '') opt_discount
+					FROM OrdersDataDetail ODD
+					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+					LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+					WHERE ODD.Del = 0 AND ODD.OD_ID = {$row["OD_ID"]}
+					ORDER BY PTID DESC, ODD.ODD_ID
+				";
+				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+				// Формируем подробности заказа
+				$zakaz = '';
+				$material = '';
+				$color = '';
+				$price = '';
+				$discount = '';
+				while( $subrow = mysqli_fetch_array($subres) ) {
+					// Если есть примечание
+					if ($subrow["Comment"]) {
+						$zakaz .= "<b class='material'><a title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+					}
+					else {
+						$zakaz .= "<b class='material'><a><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+					}
+
+					if ($subrow["IsExist"] == "0") {
+						$color = "bg-red";
+					}
+					elseif ($subrow["IsExist"] == "1") {
+						$color = "bg-yellow' title='Ожидается: {$subrow["arrival_date"]}";
+					}
+					elseif ($subrow["IsExist"] == "2") {
+						$color = "bg-green";
+					}
+					else {
+						$color = "bg-gray";
+					}
+					$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span class='{$subrow["removed"]} material {$color}'>{$subrow["Material"]}</span></span><br>";
+
+					// Исключение для клена
+					if ($row["SH_ID"] == 36) {
+						$price .= "<input type='hidden' name='odid[]' value='{$row["OD_ID"]}'><input type='hidden' name='odd_id[]' value='{$subrow["ODD_ID"]}'><input ".($num_rows > 0 ? "readonly" : "")." required type='number' min='0' name='price[]' value='{$subrow["opt_price"]}' amount='{$subrow["Amount"]}'><br>";
+						$discount .= "<input ".($num_rows > 0 ? "readonly" : "")." type='number' min='0' name='discount[]' value='{$subrow["opt_discount"]}' amount='{$subrow["Amount"]}'><br>";
+					}
+					else {
+						$price .= "<input type='hidden' name='odid[]' value='{$row["OD_ID"]}'><input type='hidden' name='odd_id[]' value='{$subrow["ODD_ID"]}'><input ".($num_rows > 0 ? "readonly" : "")." required type='number' min='{$subrow["min_price"]}' name='price[]' value='{$subrow["price"]}' amount='{$subrow["Amount"]}' ".(($subrow["min_price"] > 0) ? "title='Вычисленная стоимость по прайсу: {$subrow["min_price"]}'" : "")."><br>";
+						$discount .= "<input ".($num_rows > 0 ? "readonly" : "")." type='number' min='0' name='discount[]' value='{$subrow["discount"]}' amount='{$subrow["Amount"]}'><br>";
+					}
+				}
+
 				$html .= "<tr class='shop{$row["SH_ID"]}'>";
 				$html .= "<td><input type='checkbox' name='ord[]' id='ord_{$row["OD_ID"]}' class='chbox' value='{$row["OD_ID"]}'>";
 				$html .= "<label for='ord_{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></label><br><span>{$row["AddDate"]}</span></td>";
 				$html .= "<td><span class='nowrap'><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
 				$html .= "<td><span class='nowrap'>{$row["Shop"]}</span></td>";
-				$html .= "<td>{$row["Price"]}</td>";
-				$html .= "<td>{$row["discount"]}</td>";
-				$html .= "<td><span class='nowrap'>{$row["Zakaz"]}</span></td>";
+				$html .= "<td>{$price}</td>";
+				$html .= "<td>{$discount}</td>";
+				$html .= "<td><span class='nowrap'>{$zakaz}</span></td>";
 				switch ($row["IsPainting"]) {
 					case 0:
 						$class = "empty";
@@ -739,7 +776,7 @@ case "invoice":
 						$class = "ready";
 						break;
 				}
-				$html .= "<td><span class='nowrap'>{$row["Material"]}</span></td>";
+				$html .= "<td><span class='nowrap'>{$material}</span></td>";
 				$html .= "<td class='{$class}'>{$row["Color"]}</td>";
 				$html .= "<td>{$row["Comment"]}</td>";
 				$html .= "</tr>";
