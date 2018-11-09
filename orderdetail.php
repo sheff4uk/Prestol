@@ -515,7 +515,7 @@
 <?
 			// Если есть право редактирования и заказ не чужой - показываем кнопку клонирования
 			if( in_array('order_add', $Rights) and $editable ) {
-				echo "<p><a href='#' onclick='if(confirm(\"<b>Подтвердите клонирование заказа!</b>\", \"clone_order.php?id={$id}&confirmed=".(in_array('order_add_confirm', $Rights) ? 1 : 0)."\")) return false;' title='Клонировать'><span class='fa-li'><i class='fas fa-clone fa-2x' aria-hidden='true'></i></span></a></p>";
+				echo "<p><a href='#' onclick='if(confirm(\"<b>Подтвердите клонирование заказа!</b>\", \"clone_order.php?id={$id}&confirmed=".(in_array('order_add_confirm', $Rights) ? 1 : 0)."\")) return false;' title='Клонировать'><span class='fa-li'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></span></a></p>";
 			}
 			// Если розничный заказ - показываем кнопку перехода в реализацию
 			if( $retail and $editable ) {
