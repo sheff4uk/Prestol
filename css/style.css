@@ -963,19 +963,12 @@ td.tscell > i {
 	right: 5px !important;
 	font-size: 1.5em !important;
 	margin-right: 0 !important;
-}
-
-.select2-selection__clear {
-	position: absolute !important;
-	right: 5px !important;
-	font-size: 1.5em !important;
-	margin-right: 0 !important;
 	background: white;
 	box-shadow: 0 0 3px 3px white;
 }
 
-.del td { /*Удаленные позиции*/
-	opacity: .5;
+.del>td, .code.del { /*Удаленные позиции*/
+	opacity: .7;
 	text-decoration: line-through;
 }
 .del td:last-child:before {

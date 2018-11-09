@@ -807,6 +807,7 @@ case "add_payment":
 					,SH.Shop
 					,SH.FA_ID
 					,IF(OS.locking_date IS NOT NULL, 1, 0) is_lock
+					,IF(OD.DelDate IS NOT NULL, 1, 0) is_del
 				FROM OrdersData OD
 				JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 				LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
@@ -817,6 +818,7 @@ case "add_payment":
 	$Shop = mysqli_result($res,0,'Shop');
 	$FA_ID = mysqli_result($res,0,'FA_ID');
 	$is_lock = mysqli_result($res,0,'is_lock');
+	$is_del = mysqli_result($res,0,'is_del');
 
 	$html .= "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 
@@ -873,7 +875,13 @@ case "add_payment":
 		$html .= "<td>{$row["Name"]}</td>";
 		$html .= "</tr>";
 	}
-	if( !$is_lock ) { // Если заказ не закрыт то можно добавить оплату
+	if ($is_del) {
+		$html .= "<tr style='background: #6f6;'><td colspan='6'><b>Заказ удалён. Внесение оплаты невозможно.</b></td></tr>";
+	}
+	elseif ($is_lock) {
+		$html .= "<tr style='background: #6f6;'><td colspan='6'><b>Отчетный период закрыт. Внесение оплаты невозможно.</b></td></tr>";
+	}
+	else { // Если заказ не закрыт и не удален то можно добавить оплату
 		$payment_date = date('d.m.Y');
 		$html .= "<tr style='background: #6f6;'>";
 		$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'>";
@@ -907,9 +915,6 @@ case "add_payment":
 
 		$html .= "<td>{$USR_Icon}</td>";
 		$html .= "</tr>";
-	}
-	else {
-		$html .= "<tr style='background: #6f6;'><td colspan='6'><b>Отчетный период закрыт. Внесение оплаты невозможно.</b></td></tr>";
 	}
 	$html .= "</tbody></table>";
 

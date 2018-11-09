@@ -899,6 +899,7 @@
 				,CheckPayment(OD.OD_ID) attention
 				,Items_count(OD.OD_ID) items
 				,IF(OS.locking_date IS NOT NULL, 1, 0) is_lock
+				,IF(OD.DelDate IS NOT NULL, 1, 0) is_del
 				,OD.confirmed
 				,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
 				,PFI.count
@@ -909,13 +910,14 @@
 				".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
 			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 			LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-			WHERE OD.DelDate IS NULL AND SH.CT_ID = {$CT_ID}
+			WHERE SH.CT_ID = {$CT_ID}
 			".(($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year)."
 			ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.AddDate ASC, OD.OD_ID ASC
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
+			$is_del = $row["is_del"];			// Заказ удален
 			$format_price = number_format($row["Price"] - $row['discount'], 0, '', ' ');
 			$format_opt_price = number_format($row["opt_price"], 0, '', ' ');
 			$format_payment = number_format($row["payment_sum"], 0, '', ' ');
@@ -929,7 +931,7 @@
 			else {$discount_bg = "";}
 
 			echo "
-				<tr id='ord{$row["OD_ID"]}'>
+				<tr id='ord{$row["OD_ID"]}' ".($is_del ? "class='del'" : "").">
 					<td>
 						<input type='hidden' name='OD_ID[]' form='print_selling' value='{$row["OD_ID"]}'>
 						<span>{$row["ReadyDate"]}</span>
@@ -943,7 +945,7 @@
 				else {
 					$class = 'not_confirmed';
 				}
-				if( $row["StartDate"] and in_array('order_add', $Rights) and !$is_lock ) {
+				if( $row["StartDate"] and in_array('order_add', $Rights) and !$is_lock and !$is_del) {
 					$class = $class." taken_confirmed";
 				}
 				echo "<span val='{$row["taken"]}' class='{$class}'><i class='fas fa-handshake fa-2x'></i></td>";
@@ -997,7 +999,7 @@
 				<td><span class='nowrap'>{$zakaz}</span></td>
 				<td><span class='nowrap material'>{$material}</span></td>
 				<td>{$row["Color"]}</td>
-				<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
+				<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $is_del or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
 				<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
 			";
 
@@ -1015,7 +1017,7 @@
 				$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}' location='{$location}'>{$format_price}</button>";
 			}
 
-			echo "<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
+			echo "<td id='{$row["OD_ID"]}'><input ".(($is_lock or $is_del) ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock and !$is_del) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
 					<td class='txtright'>{$price}</td>
 					<td class='txtright nowrap'>{$format_discount} p.<br><b class='{$discount_bg}'>{$percent} %</b></td>
 					<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
@@ -1029,8 +1031,8 @@
 					}
 					echo "<td>";
 
-			// Если есть права на редактирование заказа и заказ не закрыт, то показываем карандаш, кнопку разделения и отказа
-			if( in_array('order_add', $Rights) and !$is_lock ) {
+			// Если есть права на редактирование заказа и заказ не закрыт и не удален, то показываем карандаш, кнопку разделения и отказа
+			if( in_array('order_add', $Rights) and !$is_lock and !$is_del) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' invoice={$row["PFI_ID"]} location='{$location}' payment='{$row["payment_sum"]}' old_sum='{$row["Price"]}' title='Пометить как отказ/замена.'><i class='fa fa-hand-paper fa-lg' aria-hidden='true'></i></a>";

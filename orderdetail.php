@@ -518,7 +518,7 @@
 				echo "<p><a href='#' onclick='if(confirm(\"<b>Подтвердите клонирование заказа!</b>\", \"clone_order.php?id={$id}&confirmed=".(in_array('order_add_confirm', $Rights) ? 1 : 0)."\")) return false;' title='Клонировать'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></a></p>";
 			}
 			// Если розничный заказ - показываем кнопку перехода в реализацию
-			if( $retail and !$Del and $editable ) {
+			if( $retail and $editable ) {
 				echo "<p><a href='/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$id}' title='Перейти в реализацию'><i class='fa fa-money-bill-alt fa-2x' aria-hidden='true'></i></a></p>";
 			}
 			// Если заказ в отгрузке и заказ не чужой - показываем кнопку перехода в отгрузку
