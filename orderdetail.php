@@ -210,7 +210,7 @@
 		}
 
 		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, edge, Length, Width, PieceAmount, PieceSize, piece_stored, PF_ID, PME_ID, box, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, author, ptn)
-				  VALUES ({$id}, {$Model}, {$Blank}, {$Other}, {$edge}, {$Length}, {$Width}, {$PieceAmount}, {$piece_stored}, {$PieceSize}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
+				  VALUES ({$id}, {$Model}, {$Blank}, {$Other}, {$edge}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$piece_stored}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$odd_id = mysqli_insert_id( $mysqli );
 
