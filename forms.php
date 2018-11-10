@@ -64,10 +64,10 @@
 	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($result) ) {
 		$query = "
-			SELECT PSS.Length
-				,PSS.Width
-				,PSS.PieceAmount
-				,PSS.PieceSize
+			SELECT IF(PSS.Length > 0, PSS.Length, '') Length
+				,IF(PSS.Width > 0, PSS.Width, '') Width
+				,IF(PSS.PieceAmount > 0, PSS.PieceAmount, 2) PieceAmount
+				,IF(PSS.PieceSize > 0, PSS.PieceSize, '') PieceSize
 				,CONCAT(IF(PSS.Width > 0, '', 'Ø'), PSS.Length, IF(PSS.PieceSize, CONCAT('(+', IF(PSS.PieceAmount, CONCAT(PSS.PieceAmount, 'x'), ''), PSS.PieceSize, ')'), ''), IF(PSS.Width > 0, CONCAT('х', PSS.Width), '')) size
 			FROM ProductStandartSize PSS
 			WHERE PSS.PMM_ID IN ({$row["PMMs"]})
@@ -599,7 +599,6 @@
 	function standart_model_list(model, form, mech) {
 		var stn_form = $('#addtable input[name="Form"][value="'+form+'"]').attr('standart');
 		if( stn_form == 1 ) {
-//		if( typeof ModelStandart[model] !== "undefined" ) {
 			var standart = ModelStandart[model][mech];	// Список стандартных размеров для модели
 		}
 		else {
