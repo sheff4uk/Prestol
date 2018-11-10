@@ -39,6 +39,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 	$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
 	$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
+	$piece_stored = $_POST["piece_stored"] ? "{$_POST["piece_stored"]}" : "NULL";
 	$IsExist = $_POST["IsExist"];
 	$Material = trim($_POST["Material"]);
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
@@ -77,6 +78,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 			,Width = {$Width}
 			,PieceAmount = {$PieceAmount}
 			,PieceSize = {$PieceSize}
+			,piece_stored = {$piece_stored}
 			,PF_ID = {$Form}
 			,PME_ID = {$Mechanism}
 			,box = {$box}

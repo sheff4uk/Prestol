@@ -180,6 +180,7 @@
 		$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 		$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
 		$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
+		$piece_stored = $_POST["piece_stored"] ? "{$_POST["piece_stored"]}" : "NULL";
 		$IsExist = isset($_POST["IsExist"]) ? "{$_POST["IsExist"]}" : "NULL";
 		$Material = trim($_POST["Material"]);
 		$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
@@ -208,8 +209,8 @@
 			$mt_id = "NULL";
 		}
 
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, edge, Length, Width, PieceAmount, PieceSize, PF_ID, PME_ID, box, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, author, ptn)
-				  VALUES ({$id}, {$Model}, {$Blank}, {$Other}, {$edge}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, edge, Length, Width, PieceAmount, PieceSize, piece_stored, PF_ID, PME_ID, box, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, author, ptn)
+				  VALUES ({$id}, {$Model}, {$Blank}, {$Other}, {$edge}, {$Length}, {$Width}, {$PieceAmount}, {$piece_stored}, {$PieceSize}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$odd_id = mysqli_insert_id( $mysqli );
 

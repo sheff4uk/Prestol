@@ -17,8 +17,8 @@ if( !in_array('order_add', $Rights) ) {
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$id = mysqli_insert_id( $mysqli );
 
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, MT_ID, Amount, Comment, author, ptn)
-				  SELECT {$id}, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, MT_ID, Amount, Comment, {$_SESSION['id']}, ptn
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, MT_ID, Amount, Comment, author, ptn)
+				  SELECT {$id}, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, MT_ID, Amount, Comment, {$_SESSION['id']}, ptn
 				  FROM OrdersDataDetail
 				  WHERE OD_ID = {$_GET["id"]} AND Del = 0";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

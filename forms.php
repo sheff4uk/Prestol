@@ -256,9 +256,16 @@
 				</div>
 				<input type="number" name="PieceSize" required min="200" max="650" step="10" style='width: 70px;' autocomplete="off" title="Размер вставки" placeholder="Вставка">
 				<span>)</span>
+				<br>
+				<label style="position: absolute;">
+					<input type="checkbox" name="piece_stored" value="1">
+					Хранятся отдельно
+				</label>
 			</div>
 			<span id="second_x">x</span>
 			<input id='width' required type='number' min='500' max='1500' step='10' name='Width' style='width: 70px;' autocomplete='off' title="Ширина" placeholder="Ширина">
+			<br>
+			<br>
 		</div>
 		<div>
 			<label>Патина:</label>
@@ -544,11 +551,12 @@
 	function piece_from_mechanism(mech) {
 		if( mech == 1 || mech == 2 || mech == 5 ) {
 			$('#addtable #sliding').show('fast');
-			$('#addtable #sliding input').attr('required', true);
+			$('#addtable #sliding input[type="number"]').attr('required', true);
 		}
 		else {
 			$('#addtable #sliding').hide('fast');
-			$('#addtable #sliding input').attr('required', false);
+			$('#addtable #sliding input[type="number"]').attr('required', false);
+			$('#addtable input[name="piece_stored"]').prop('checked', false);
 		}
 
 		if( mech == 2 || mech == 5 ) {
@@ -837,6 +845,7 @@
 			$('#addtable input[name="Length"]').val('');
 			$('#addtable input[name="Width"]').val('');
 			$('#addtable input[name="PieceSize"]').val('');
+			$('#addtable input[name="piece_stored"]').prop('checked', false);
 			$('#2radio').prop('checked', true);
 			$('#2ptn0').prop('checked', true);
 			$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
@@ -907,6 +916,10 @@
 				$('#addtable input[name="Width"]').val(odd_data['width']);
 				$('#addtable select[name="PieceAmount"]').val(odd_data['PieceAmount']);
 				$('#addtable input[name="PieceSize"]').val(odd_data['PieceSize']);
+				// Если вставки хранятся отдельно
+				if( odd_data['piece_stored'] == 1 ) {
+					$('#addtable input[name="piece_stored"]').prop('checked', true);
+				}
 				$('#addtable textarea[name="Comment"]').val(odd_data['comment']);
 				$('#addtable input[name="Material"]').val(odd_data['material']);
 				$('#addtable select[name="Shipper"]').val(odd_data['shipper']);
