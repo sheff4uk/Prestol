@@ -1,10 +1,21 @@
 <?
 	// Массив форм столешниц в зависимости от модели
 	$ModelForm = array();
-	$query = "(SELECT 0 PM_ID, PF_ID, Form FROM ProductForms) UNION (SELECT PMF.PM_ID, PMF.PF_ID, PF.Form FROM ProductModelsForms PMF LEFT JOIN ProductForms PF ON PF.PF_ID = PMF.PF_ID)";
+	$ModelForm_standart = array();
+	$query = "
+		SELECT PMF.PM_ID
+			,PMF.PF_ID
+			,IF(PMF.standart, UPPER(PF.Form), PF.Form) Form
+			,PMF.standart
+		FROM ProductModelsForms PMF
+		LEFT JOIN ProductForms PF ON PF.PF_ID = PMF.PF_ID
+		UNION
+		SELECT 0, PF_ID, Form, 0 FROM ProductForms
+	";
 	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($result) ) {
 		$ModelForm[$row["PM_ID"]][$row["PF_ID"]] = [$row["Form"]];
+		$ModelForm_standart[$row["PM_ID"]][$row["PF_ID"]] = [$row["standart"]];
 	}
 
 	// Массив механизмов в зависимости от модели
@@ -27,7 +38,14 @@
 	// Массив наличия патины и дефолтная форма в зависимости от модели
 	$ModelPatina = array();
 	$ModelDefForm = array();
-	$query = "(SELECT 0 PM_ID, 0 ptn, 1 PF_ID) UNION (SELECT PM_ID, ptn, PF_ID FROM ProductModels)";
+	$query = "
+		SELECT PM.PM_ID, PM.ptn, MIN(PMF.PF_ID) PF_ID
+		FROM ProductModels PM
+		LEFT JOIN ProductModelsForms PMF ON PMF.PM_ID = PM.PM_ID AND PMF.standart = 1
+		GROUP BY PM.PM_ID
+		UNION
+		SELECT 0, 0, 1
+	";
 	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($result) ) {
 		$ModelPatina[$row["PM_ID"]] = [$row["ptn"]];
@@ -37,19 +55,36 @@
 	// Массив стандартных размеров
 	$ModelStandart = array();
 	$query = "
-		SELECT PMM.PM_ID, PMM.PME_ID, CONCAT(PME.Mechanism'(', PSS.sizes, ')<br>') sizes
+		SELECT PMM.PM_ID
+			,PMM.PME_ID
+			,GROUP_CONCAT(PMM.PMM_ID) PMMs
 		FROM ProductModelsMechanism PMM
-		JOIN ProductMechanism PME ON PME.PME_ID = PMM.PME_ID
-		JOIN (
-			SELECT PMM_ID, GROUP_CONCAT(CONCAT(CONCAT('<a href=\"#\">', IF(Width > 0, '', 'Ø'), Length), IF(PieceSize, CONCAT('(+', IF(PieceAmount, CONCAT(PieceAmount, 'x'), ''), PieceSize, ')'), ''), IF(Width, CONCAT('х', Width), ''), '</a>') SEPARATOR ' ') sizes
-			FROM ProductStandartSize
-			GROUP BY PMM_ID
-		) PSS ON PSS.PMM_ID = PMM.PMM_ID
+		GROUP BY PMM.PM_ID, PMM.PME_ID
 	";
+	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($result) ) {
+		$query = "
+			SELECT PSS.Length
+				,PSS.Width
+				,PSS.PieceAmount
+				,PSS.PieceSize
+				,CONCAT(IF(PSS.Width > 0, '', 'Ø'), PSS.Length, IF(PSS.PieceSize, CONCAT('(+', IF(PSS.PieceAmount, CONCAT(PSS.PieceAmount, 'x'), ''), PSS.PieceSize, ')'), ''), IF(PSS.Width > 0, CONCAT('х', PSS.Width), '')) size
+			FROM ProductStandartSize PSS
+			WHERE PSS.PMM_ID IN ({$row["PMMs"]})
+		";
+		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$sizes = "";
+		while( $subrow = mysqli_fetch_array($subres) ) {
+			$sizes .= "<a href='#' length='{$subrow["Length"]}' width='{$subrow["Width"]}' pa='{$subrow["PieceAmount"]}' ps='{$subrow["PieceSize"]}'>{$subrow["size"]}</a>";
+		}
+
+		$ModelStandart[$row["PM_ID"]][$row["PME_ID"]] = [$sizes];
+	}
 ?>
 	<script>
 		// Передаем в JavaScript массивы
 		ModelForm = <?= json_encode($ModelForm); ?>;
+		ModelForm_standart = <?= json_encode($ModelForm_standart); ?>;
 		ModelPatina = <?= json_encode($ModelPatina); ?>;
 		ModelDefForm = <?= json_encode($ModelDefForm); ?>;
 		ModelMech = <?= json_encode($ModelMech); ?>;
@@ -65,8 +100,6 @@
 		<div>
 			<label>Kол-во:</label>
 			<input required type='number' min='1' value='1' style='width: 70px; font-size: 2em;' name='Amount' autocomplete="off">
-			&nbsp;&nbsp;&nbsp;
-			<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Изменение кол-ва невозможно.'>
 		</div>
 		<div>
 			<label>Модель:</label>
@@ -82,8 +115,6 @@
 				}
 			?>
 			</select>
-			&nbsp;&nbsp;&nbsp;
-			<img src='/img/attention.png' class='attention' id='Model' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 		</div>
 		<div>
 			<label>Патина:</label>
@@ -174,15 +205,9 @@
 				}
 			?>
 			</select>
-			&nbsp;&nbsp;&nbsp;
-			<img src='/img/attention.png' class='attention' id='Model' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 		</div>
 		<div>
-			<label>Стандарт:</label>
-			<div id="standart"></div><br>
-		</div>
-		<div>
-			<label>Форма:</label>
+			<label title="Стандартная форма для выбранной модели выделена заглавными буквами."><i class='fa fa-question-circle'></i>Форма:</label>
 			<div class="btnset" id="forms">
 				<!--Список формируется в js-->
 			</div>
@@ -192,17 +217,7 @@
 			<label>Механизм:</label>
 			<div class="btnset" id="mechanisms">
 				<!--Список формируется в js-->
-			<?
-//				$query = "SELECT PME_ID, Mechanism FROM ProductMechanism";
-//				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//				while( $row = mysqli_fetch_array($result) ) {
-//					echo "<input type='radio' id='mechanism{$row["PME_ID"]}' name='Mechanism' value='{$row["PME_ID"]}'>";
-//					echo "<label for='mechanism{$row["PME_ID"]}'>{$row["Mechanism"]}</label>";
-//				}
-			?>
 			</div>
-			&nbsp;&nbsp;&nbsp;
-			<img src='/img/attention.png' class='attention' id='Mechanism' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 			<br>
 		</div>
 		<style>
@@ -220,9 +235,14 @@
 			<br>
 		</div>
 		<div>
+			<label title="Используйте стандартные размеры для автозаполнения. Эти размеры соответствуют выбранной модели и механизму. Они доступны только если выбрана стандартная форма."><i class='fa fa-question-circle'></i>Стандарт:</label>
+			<div id="standart" style="display: table;">
+				<!--Список формируется в js-->
+			</div>
+		</div>
+		<div>
 			<label>Размер:</label>
 			<input id="length" required type='number' min='500' max='3000' step='10' name='Length' style='width: 70px;' autocomplete='off' title="Длина" placeholder="Длина">
-			<img src='/img/attention.png' class='attention' id='Length' title='Изделие в работе. При редактировании произойдут изменения в этапах.'>
 			<div id="sliding" style="display: inline-block;">
 				<span>(</span>
 				<span>+</span>
@@ -317,8 +337,6 @@
 			<div>
 				<label>Kол-во:</label>
 				<input required type='number' min='1' value='1' style='width: 70px; font-size: 2em;' name='Amount' autocomplete="off">
-				&nbsp;&nbsp;&nbsp;
-				<img src='/img/attention.png' class='attention' id='Amount' title='Изделие в работе. Изменение кол-ва невозможно.'>
 			</div>
 			<h3 style="color: #911;">Внимание! Каркасы стульев и другие заготовки нужно выбирать из списка ниже, а не писать вручную.</h3>
 			<div>
@@ -545,10 +563,12 @@
 	function form_model_list(model, form) {
 		var forms = "";
 		var arr_model = ModelForm[model];	// Список форм для модели
+		var arr_standart = ModelForm_standart[model];	// Список стандартных форм для модели
 		var informs = 0;
+//		var standart = 0;
 		if( typeof arr_model !== "undefined" ) {
 			$.each(arr_model, function(key, val){
-				forms += "<input type='radio' id='form" + key + "' name='Form' value='" + key + "'>";
+				forms += "<input type='radio' id='form" + key + "' name='Form' value='" + key + "' standart='"+arr_standart[key]+"'>";
 				forms += "<label for='form" + key + "'>" + val + "</label>";
 				if( form == key ) { informs = 1; }
 			});
@@ -565,6 +585,20 @@
 		}
 		var val = $('#addtable input[name="Form"]:checked').val();
 		size_from_form(val);
+	}
+
+	// Функция формирования списка стандартных размеров в зависимости от модели и механизма стола
+	function standart_model_list(model, form, mech) {
+		var stn_form = $('#addtable input[name="Form"][value="'+form+'"]').attr('standart');
+		if( stn_form == 1 ) {
+//		if( typeof ModelStandart[model] !== "undefined" ) {
+			var standart = ModelStandart[model][mech];	// Список стандартных размеров для модели
+		}
+		else {
+			var standart = "<br>";
+		}
+		$('#addtable #standart').html(standart);
+		$('#addtable #standart a').button();
 	}
 
 	// Функция формирования списка механизмов в зависимости от модели стола
@@ -588,9 +622,11 @@
 				$('#addtable input[name="Mechanism"]:nth-child(1)').prop('checked', true);
 			}
 			$('#addtable #mechanisms').buttonset();
-			var val = $('#addtable input[name="Mechanism"]:checked').val();
-			mech_model_box(model, val);
-			piece_from_mechanism(val);
+			var form_val = $('#addtable input[name="Form"]:checked').val();
+			var mech_val = $('#addtable input[name="Mechanism"]:checked').val();
+			mech_model_box(model, mech_val);
+			piece_from_mechanism(mech_val);
+			standart_model_list(model, form_val, mech_val);
 		}
 	}
 
@@ -658,7 +694,7 @@
 		// Массив куда будут записываться данные по изделиям
 		odd_data = new Array();
 
-		// Глобальные переменные для хранения выбранных модели и формы
+		// Глобальные переменные для хранения выбранных модели, формы, механизма
 		var model;
 		var form;
 		var mechanism;
@@ -730,13 +766,10 @@
 					$('#addchair .order_material input.to' ).val( odd_data['arrival_date'] );
 				}
 
-				// Если изделие в работе, то выводим предупреждения
+				// Если изделие в работе, то кол-во не редактируется
 				if( odd_data['inprogress'] == 1 )
 				{
-					$('#addchair img[id="Amount"]').show();
 					$('#addchair input[name="Amount"]').prop('readonly', true);
-					$('#addchair img[id="Model"]').show();
-					$('#addchair input[name="Amount"]').attr('max', odd_data['amount']);
 				}
 
 				materialonoff('#addchair');
@@ -842,7 +875,7 @@
 					// Деактивируем список моделей в дропдауне
 					$('#addtable select[name="Model"] option').attr('disabled', true);
 					$('#addtable select[name="Model"] option[value="0"]').attr('disabled', false);		// Включаем столешницу
-					$('#addtable select[name=Model] option[value='+model+']').attr('disabled', false);	// Включаем эту модель
+					$('#addtable select[name="Model"] option[value='+model+']').attr('disabled', false);	// Включаем эту модель
 					$('#addtable select[name="Model"]').select2();
 				}
 
@@ -872,7 +905,7 @@
 
 				$('#addtable input[name="Length"]').val(odd_data['length']);
 				$('#addtable input[name="Width"]').val(odd_data['width']);
-				$('#addtable input[name="PieceAmount"]').val(odd_data['PieceAmount']);
+				$('#addtable select[name="PieceAmount"]').val(odd_data['PieceAmount']);
 				$('#addtable input[name="PieceSize"]').val(odd_data['PieceSize']);
 				$('#addtable textarea[name="Comment"]').val(odd_data['comment']);
 				$('#addtable input[name="Material"]').val(odd_data['material']);
@@ -885,14 +918,6 @@
 					$('#addtable .order_material input').attr("required", true);
 					$('#addtable .order_material input.from').val( odd_data['order_date'] );
 					$('#addtable .order_material input.to' ).val( odd_data['arrival_date'] );
-				}
-
-				// Если изделие в работе, то выводятся предупреждения
-				if( odd_data['inprogress'] == 1 )
-				{
-					$('#addtable img[id="Model"]').show();
-					$('#addtable img[id="Mechanism"]').show();
-					$('#addtable img[id="Length"]').show();
 				}
 
 				materialonoff('#addtable');
@@ -927,7 +952,7 @@
 			return false;
 		});
 
-		// При выборе модели стола предлагаются формы столешниц и включается патина
+		// При выборе модели стола предлагаются формы столешниц, выводятся стандартные размеры и включается патина
 		$('#addtable select[name="Model"]').on('change', function() {
 			model = $(this).val();
 			if( model == "" ) {
@@ -940,12 +965,28 @@
 				mech_model_list($(this).val(), mechanism);
 				patina_model_list($(this).val(), 2);
 			}
+			// Очищаем размеры
+			$('#addtable input[name="Length"]').val('');
+			$('#addtable input[name="Width"]').val('');
+			$('#addtable select[name="PieceAmount"]').val('2');
+			$('#addtable input[name="PieceSize"]').val('');
 		});
 
 		// При смене формы - записываем значение в переменную form
 		$('#addtable').on('change', 'input[name="Form"]', function() {
 			form = $(this).val();
 			size_from_form(form);
+			var mech_val = $('#addtable input[name="Mechanism"]:checked').val();
+			standart_model_list(model, form, mech_val);
+			// Если форма меняется на нестандартную - очищаем размеры
+			var stn_form = $('#addtable input[name="Form"][value="'+form+'"]').attr('standart');
+			if( stn_form != 1 ) {
+				$('#addtable input[name="Length"]').val('');
+				$('#addtable input[name="Width"]').val('');
+				$('#addtable select[name="PieceAmount"]').val('2');
+				$('#addtable input[name="PieceSize"]').val('');
+			}
+
 		});
 
 		// При выборе механизма - задействуются инпуты для вставок, показывается или прячется чекбокс ящика
@@ -953,6 +994,21 @@
 			mechanism = $(this).val();
 			piece_from_mechanism(mechanism);
 			mech_model_box(model, mechanism);
+			var form_val = $('#addtable input[name="Form"]:checked').val();
+			standart_model_list(model, form_val, mechanism);
+			// Очищаем размеры
+			$('#addtable input[name="Length"]').val('');
+			$('#addtable input[name="Width"]').val('');
+			$('#addtable select[name="PieceAmount"]').val('2');
+			$('#addtable input[name="PieceSize"]').val('');
+		});
+
+		// Автоматическое заполнение стандартных размеров
+		$('#addtable').on('click', '#standart a', function() {
+			$('#addtable input[name="Length"]').val($(this).attr('length'));
+			$('#addtable input[name="Width"]').val($(this).attr('width'));
+			$('#addtable select[name="PieceAmount"]').val($(this).attr('pa'));
+			$('#addtable input[name="PieceSize"]').val($(this).attr('ps'));
 		});
 
 		// Если нет пластика, то кнопка наличия не активна
@@ -1043,12 +1099,10 @@
 					$('#addblank .order_material input.to' ).val( odd_data['arrival_date'] );
 				}
 
-				// Если изделие в работе, то выводятся предупреждения
+				// Если изделие в работе, то кол-во не редактируется
 				if( odd_data['inprogress'] == 1 )
 				{
-					$('#addblank img[id="Amount"]').show();
 					$('#addblank input[name="Amount"]').prop('readonly', true);
-					$('#addblank input[name="Amount"]').attr('max', odd_data['amount']);
 				}
 
 				materialonoff('#addblank');
