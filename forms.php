@@ -259,7 +259,7 @@
 				<br>
 				<label style="position: absolute;">
 					<input type="checkbox" name="piece_stored" value="1">
-					Хранятся отдельно
+					Вставки хранятся отдельно
 				</label>
 			</div>
 			<span id="second_x">x</span>
