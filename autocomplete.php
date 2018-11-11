@@ -48,28 +48,22 @@ case "colortags":
 
 case "textiletags":
 	// Автокомплит тканей
-	$query = "SELECT MT.Material
-					,MT.SH_ID
-					,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
-					,MT.removed
-					,MT.Count
-			  FROM Materials MT
-			  JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 1
-			  WHERE MT.Material LIKE '%{$_GET["term"]}%'
-			  ".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
-
-			  UNION
-
-			  SELECT MT.Material
-					,MT.SH_ID
-					,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
-					,MT.removed
-					,MT.Count
-			  FROM Materials MT
-			  JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 1
-			  WHERE MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$_GET["term"]}%')
-
-			  ORDER BY Count DESC";
+	$query = "
+		SELECT MT.Material
+			,MT.SH_ID
+			,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
+			,MT.removed
+			,MT.Count
+		FROM Materials MT
+		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 1
+		WHERE (
+			MT.Material LIKE '%{$_GET["term"]}%'
+			OR
+			MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$_GET["term"]}%' AND PMT_ID IS NOT NULL)
+		)
+		".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
+		ORDER BY Count DESC
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
@@ -80,28 +74,22 @@ case "textiletags":
 
 case "plastictags":
 	// Автокомплит пластиков
-	$query = "SELECT MT.Material
-					,MT.SH_ID
-					,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
-					,MT.removed
-					,MT.Count
-			  FROM Materials MT
-			  JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 2
-			  WHERE MT.Material LIKE '%{$_GET["term"]}%'
-			  ".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
-
-			  UNION
-
-			  SELECT MT.Material
-					,MT.SH_ID
-					,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
-					,MT.removed
-					,MT.Count
-			  FROM Materials MT
-			  JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 2
-			  WHERE MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$_GET["term"]}%')
-
-			  ORDER BY Count DESC";
+	$query = "
+		SELECT MT.Material
+			,MT.SH_ID
+			,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
+			,MT.removed
+			,MT.Count
+		FROM Materials MT
+		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 2
+		WHERE (
+			MT.Material LIKE '%{$_GET["term"]}%'
+			OR
+			MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$_GET["term"]}%' AND PMT_ID IS NOT NULL)
+		)
+		".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
+		ORDER BY Count DESC
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
