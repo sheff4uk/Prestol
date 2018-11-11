@@ -53,16 +53,17 @@ case "textiletags":
 			,MT.SH_ID
 			,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
 			,MT.removed
-			,MT.Count
 		FROM Materials MT
 		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 1
+		LEFT JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID
 		WHERE (
 			MT.Material LIKE '%{$_GET["term"]}%'
 			OR
 			MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$_GET["term"]}%' AND PMT_ID IS NOT NULL)
 		)
 		".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
-		ORDER BY Count DESC
+		GROUP BY MT.MT_ID
+		ORDER BY SUM(IFNULL(ODD.Amount, 0)) DESC
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
@@ -79,16 +80,17 @@ case "plastictags":
 			,MT.SH_ID
 			,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
 			,MT.removed
-			,MT.Count
 		FROM Materials MT
 		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 2
+		LEFT JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID
 		WHERE (
 			MT.Material LIKE '%{$_GET["term"]}%'
 			OR
 			MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$_GET["term"]}%' AND PMT_ID IS NOT NULL)
 		)
 		".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
-		ORDER BY Count DESC
+		GROUP BY MT.MT_ID
+		ORDER BY SUM(IFNULL(ODD.Amount, 0)) DESC
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )

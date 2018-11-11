@@ -195,15 +195,21 @@
 		// Сохраняем в таблицу материалов полученный материал и узнаем его ID
 		if( $Material != '' ) {
 			$Material = mysqli_real_escape_string($mysqli, $Material);
-			$query = "INSERT INTO Materials
-						SET
-							Material = '{$Material}',
-							SH_ID = {$Shipper},
-							Count = 0
-						ON DUPLICATE KEY UPDATE
-							Count = Count + 1";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$mt_id = mysqli_insert_id( $mysqli );
+			$query = "
+				SELECT MT_ID FROM Materials WHERE Material LIKE '{$Material}' AND SH_ID = {$Shipper}
+			";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$row = mysqli_fetch_array($res);
+			if ($row["MT_ID"]) {
+				$mt_id = $row["MT_ID"];
+			}
+			else {
+				$query = "
+					INSERT INTO Materials SET Material = '{$Material}', SH_ID = {$Shipper}
+				";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$mt_id = mysqli_insert_id( $mysqli );
+			}
 		}
 		else {
 			$mt_id = "NULL";

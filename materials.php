@@ -60,15 +60,21 @@
 						WHERE ODD.ODD_ID IN($ODD_IDs)";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
-				$query = "INSERT INTO Materials
-							SET
-								Material = '{$row["Material"]}',
-								SH_ID = $Shipper,
-								Count = 0
-							ON DUPLICATE KEY UPDATE
-								Count = Count + 1";
-				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				$mt_id = mysqli_insert_id( $mysqli );
+				$query = "
+					SELECT MT_ID FROM Materials WHERE Material LIKE '{$row["Material"]}' AND SH_ID = {$Shipper}
+				";
+				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$subrow = mysqli_fetch_array($subres);
+				if ($subrow["MT_ID"]) {
+					$mt_id = $subrow["MT_ID"];
+				}
+				else {
+					$query = "
+						INSERT INTO Materials SET Material = '{$row["Material"]}', SH_ID = {$Shipper}
+					";
+					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					$mt_id = mysqli_insert_id( $mysqli );
+				}
 
 				$query = "UPDATE OrdersDataDetail SET MT_ID = $mt_id, author = {$_SESSION['id']} WHERE ODD_ID = {$row["ODD_ID"]}";
 				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -234,9 +240,9 @@
 		JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 		JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID AND SHP.mtype = {$product}
 		LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
-										AND ODS.Visible = 1
-										AND ODS.Old != 1
-										AND ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE '%Ст%' OR Short LIKE '%Об%')
+						AND ODS.Visible = 1
+						AND ODS.Old != 1
+						AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ст%' OR Short LIKE '%Об%') OR ODS.ST_ID IS NULL)
 		LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 		WHERE OD.DelDate IS NULL AND OD.ReadyDate IS NULL
 		GROUP BY OD.OD_ID

@@ -409,10 +409,6 @@ case "materials":
 			$query = "UPDATE Materials SET PMT_ID = {$mtid} WHERE PMT_ID = {$oldmtid}";
 			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
 
-			// Меняем в заказах старый id материала на новый
-			$query = "UPDATE OrdersDataDetail SET MT_ID = {$mtid}, author = {$_SESSION['id']} WHERE MT_ID = {$oldmtid}";
-			mysqli_query( $mysqli, $query ) or die("noty({timeout: 10000, text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'alert'});");
-
 			// Меняем на экране старый id материала на новый
 			echo "$('.mt{$oldmtid}').addClass('mt{$mtid}');";
 			echo "$('.mt{$oldmtid}').attr('mtid', '{$mtid}');";

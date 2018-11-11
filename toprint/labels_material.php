@@ -49,28 +49,28 @@
 <body>
 <?
 	// Собираем идентификаторы изделий
-    $ODD_IDs = implode(",", $_GET["prod"]);
+	$ODD_IDs = implode(",", $_GET["prod"]);
 ?>
 	<table>
 		<tbody>
 	<?
 	$query = "
-        SELECT CONCAT(MT.Material, IFNULL(CONCAT(' (', SHP.Shipper, ')'), '')) Material
-            ,CONCAT('<i>', IF(SHP.mtype = 1, CONCAT(ROUND(ODD.MT_amount, 1), '<br>м.п.'), WD.Name), '</i>') MT_amount
-            ,ODD.Amount
-            ,Zakaz(ODD.ODD_ID) Zakaz
-            ,OD.Code
-        FROM OrdersData OD
-        JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.ODD_ID IN ($ODD_IDs)
-        JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-        JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
-        LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
-                        AND ODS.Visible = 1
-                        AND ODS.Old != 1
-                        AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ст%') OR ODS.ST_ID IS NULL)
-        LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-        ORDER BY OD.OD_ID
-    ";
+		SELECT CONCAT(MT.Material, IFNULL(CONCAT(' (', SHP.Shipper, ')'), '')) Material
+			,CONCAT('<i>', IF(SHP.mtype = 1, CONCAT(ROUND(ODD.MT_amount, 1), '<br>м.п.'), WD.Name), '</i>') MT_amount
+			,ODD.Amount
+			,Zakaz(ODD.ODD_ID) Zakaz
+			,OD.Code
+		FROM OrdersData OD
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.ODD_ID IN ($ODD_IDs)
+		JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+		JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
+		LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
+						AND ODS.Visible = 1
+						AND ODS.Old != 1
+						AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ст%') OR ODS.ST_ID IS NULL)
+		LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+		ORDER BY OD.OD_ID
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
@@ -86,11 +86,11 @@
 				<td>
 					{$row["MT_amount"]}
 				</td>
-                <!--
+				<!--
 				<td>
 					<img src='https://chart.googleapis.com/chart?chs=82x82&cht=qr&chl=https://kis.fabrikaprestol.ru/orderdetail.php?id=3409&choe=UTF-8' alt='QR code'>
 				</td>
-                -->
+				-->
 			</tr>
 		";
 	}
