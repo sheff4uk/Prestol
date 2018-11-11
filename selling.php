@@ -846,7 +846,7 @@
 				<th width="70">Скидка</th>
 				<th width="65">Оплата</th>
 <!--				<th width="20">Т</th>-->
-				<th width="65">Остаток</th>
+				<th width="65">Доплата</th>
 <!--				<th width="65">Отказ</th>-->
 				<th width="70">Действие</th>
 			</tr>

@@ -134,15 +134,19 @@
 	$query = "
 		SELECT SUM(IF(IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) IN ({$product_types}), 1, 0)) Cnt
 			,IFNULL(OD.Code, '') Code
-			,IFNULL(OD.ClientName, '') ClientName
-			,CONCAT('<br>', OD.mtel) mtel
-			,CONCAT('<br>', OD.address) address
+			,IF(IFNULL(OD.ClientName, '') != '', CONCAT(OD.ClientName, '<br>'), '') ClientName
+			,IF(IFNULL(OD.OrderNumber, '') != '', CONCAT(OD.OrderNumber, '<br>'), '') OrderNumber
+			,IF(IFNULL(OD.mtel, '') != '', CONCAT('+', OD.mtel, '<br>'), '') mtel
+			,IF(IFNULL(OD.address, '') != '', CONCAT(OD.address, '<br>'), '') address
 			,DATE_FORMAT(OD.StartDate, '%d.%m<br>%Y') StartDate
 			,DATE_FORMAT(IFNULL(OD.DelDate, IFNULL(OD.ReadyDate, OD.EndDate)), '%d.%m<br>%Y') EndDate
 			,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
-			,OD.OrderNumber
 			,Color(OD.CL_ID) Colors
 			,IFNULL(OD.Comment, '') Comment
+			,Ord_price(OD.OD_ID) Price
+			,Ord_discount(OD.OD_ID) discount
+			,Payment_sum(OD.OD_ID) payment_sum
+			,IF(OD.StartDate, SH.retail, 0) retail
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -166,13 +170,19 @@
 	$query .= "SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID";
 	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$odid = 0;
-	while( $row = mysqli_fetch_array($res) )
-	{
+	while( $row = mysqli_fetch_array($res) ) {
 		if( $odid != $row["OD_ID"] ) {
 			$subrow = mysqli_fetch_array($subres);
 			$cnt = $subrow["Cnt"];
 			$odid = $row["OD_ID"];
 			$span = 1;
+			// Сумма доплаты
+			if ($subrow["retail"]) {
+				$format_diff = "Доплата: ".number_format($subrow["Price"] - $subrow['discount'] - $subrow["payment_sum"], 0, '', ' ');
+			}
+			else {
+				$format_diff = "";
+			}
 		}
 		else {
 			$span = 0;
@@ -186,7 +196,7 @@
 		}
 
 		if(isset($_GET["CD"]) and $span) echo "<td width='50' rowspan='{$cnt}' class='nowrap'><b>{$subrow["Code"]}</b></td>";
-		if(isset($_GET["CN"]) and $span) echo "<td width='9%' rowspan='{$cnt}'>{$row["ClientName"]}<br><b>{$subrow["OrderNumber"]}</b>{$subrow["mtel"]}{$subrow["address"]}</td>";
+		if(isset($_GET["CN"]) and $span) echo "<td width='9%' rowspan='{$cnt}'>{$subrow["ClientName"]}<b>{$subrow["OrderNumber"]}</b>{$subrow["mtel"]}{$subrow["address"]}<b>{$format_diff}</b></td>";
 		if(isset($_GET["SD"]) and $span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["StartDate"]}</td>";
 		if(isset($_GET["ED"]) and $span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["EndDate"]}</td>";
 		if(isset($_GET["SH"]) and $span) echo "<td width='7%' rowspan='{$cnt}'>{$subrow["Shop"]}</td>";
