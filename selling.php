@@ -759,7 +759,7 @@
 							,PFI.count
 							,PFI.platelshik_id
 						FROM OrdersData OD
-						JOIN Shops SH ON SH.SH_ID = OD.SH_ID ".($SH_ID ? "AND SH.SH_ID = {$SH_ID}" : "AND SH.CT_ID = {$CT_ID}")."
+						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 ".($SH_ID ? "AND SH.SH_ID = {$SH_ID}" : "AND SH.CT_ID = {$CT_ID}")."
 						LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 						WHERE YEAR(OD.StartDate) = {$year}
 							AND MONTH(OD.StartDate) = {$month}
