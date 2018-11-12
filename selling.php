@@ -661,7 +661,7 @@
 			</table>
 			</div>
 
-			<h3 id="section3"></h3>
+			<h3 id="section2"></h3>
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
@@ -699,7 +699,7 @@
 			</table>
 			</div>
 
-			<h3 id="section4"></h3>
+			<h3 id="section3"></h3>
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
@@ -736,6 +736,59 @@
 					}
 					$format_sum_send = number_format($sum_send, 0, '', ' ');
 				?>
+				</tbody>
+			</table>
+			</div>
+
+			<h3 id="section4"></h3>
+			<div>
+			<table class="main_table" style="margin: 0; display: table;">
+				<tbody>
+					<?
+					$query = "
+						SELECT DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
+							,OD.OD_ID
+							,OD.Code
+							,IFNULL(YEAR(OD.StartDate), 0) year
+							,IFNULL(MONTH(OD.StartDate), 0) month
+							,SH.Shop
+							,Ord_price(OD.OD_ID) Price
+							,Ord_discount(OD.OD_ID) discount
+							,Payment_sum(OD.OD_ID) payment_sum
+							,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
+							,PFI.count
+							,PFI.platelshik_id
+						FROM OrdersData OD
+						JOIN Shops SH ON SH.SH_ID = OD.SH_ID ".($SH_ID ? "AND SH.SH_ID = {$SH_ID}" : "AND SH.CT_ID = {$CT_ID}")."
+						LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
+						WHERE YEAR(OD.StartDate) = {$year}
+							AND MONTH(OD.StartDate) = {$month}
+							AND OD.DelDate IS NULL
+							AND OD.ReadyDate IS NOT NULL
+							AND IFNULL(OD.taken, 0) != 1
+						ORDER BY OD.StartDate, OD.OD_ID
+					";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					$not_taken_count = 0;
+					while( $row = mysqli_fetch_array($res) ) {
+						$format_old_price = number_format($row["old_sum"], 0, '', ' ');
+						++$not_taken_count;
+						echo "<tr>";
+						echo "<td width='49'><span class='nowrap'>{$row["ReadyDate"]}</span></td>";
+						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
+						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></b></td>";
+						// Если в накладной - выводим ссылку на сверки
+						if( $row["PFI_ID"] ) {
+							echo "<td width='65'><a href='sverki.php?payer={$row["platelshik_id"]}' target='_blank' title='Перейти в сверки'><b>Сверки</b></a></td>";
+						}
+						else {
+							$format_diff = number_format($row["Price"] - $row['discount'] - $row["payment_sum"], 0, '', ' ');
+							$diff_color = (($row["Price"] - $row['discount']) == $row["payment_sum"]) ? "#6f6" : ((($row["Price"] - $row['discount']) < $row["payment_sum"]) ? "#f66" : "#fff");
+							echo "<td width='65' class='txtright' style='background: {$diff_color}'>{$format_diff}</td>";
+						}
+						echo "</tr>";
+					}
+					?>
 				</tbody>
 			</table>
 			</div>
@@ -786,10 +839,11 @@
 			$(document).ready(function() {
 				$('.wr_main_table_body').css('height', 'calc(100vh - 435px)');
 				$('#MT_header').css('margin-top','210px');
-				$('#section1').html('<i class=\'fa fa-money-bill-alt fa-lg\'></i> Наличные: {$format_cache_sum} {$attention}');
-				$('#section3').html('<i class=\'fa fa-credit-card fa-lg\'></i> Эквайринг: {$format_terminal_sum}');
-				$('#section4').html('<i class=\'fa fa-exchange-alt fa-lg\'></i> Инкассация: {$format_sum_send}');
-				$('#section5').html('<i class=\'fa fa-hand-paper fa-lg\'></i> Отказы/замены: {$reject_count}');
+				$('#section1').html('<i class=\'fas fa-money-bill-alt fa-lg\'></i> Наличные: {$format_cache_sum} {$attention}');
+				$('#section2').html('<i class=\'fas fa-credit-card fa-lg\'></i> Эквайринг: {$format_terminal_sum}');
+				$('#section3').html('<i class=\'fas fa-exchange-alt fa-lg\'></i> Инкассация: {$format_sum_send}');
+				$('#section4').html('<i class=\'fas fa-handshake fa-lg\'></i> Неврученные заказы: {$not_taken_count}');
+				$('#section5').html('<i class=\'fas fa-hand-paper fa-lg\'></i> Отказы/замены: {$reject_count}');
 			});
 		</script>";
 	}
