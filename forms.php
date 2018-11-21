@@ -573,7 +573,6 @@
 		var arr_model = ModelForm[model];	// Список форм для модели
 		var arr_standart = ModelForm_standart[model];	// Список стандартных форм для модели
 		var informs = 0;
-//		var standart = 0;
 		if( typeof arr_model !== "undefined" ) {
 			$.each(arr_model, function(key, val){
 				forms += "<input type='radio' id='form" + key + "' name='Form' value='" + key + "' standart='"+arr_standart[key]+"'>";
@@ -879,13 +878,13 @@
 				form = odd_data['form'];
 				mechanism = odd_data['mechanism'];
 
-				if( model > 0 ) { // Если не столешница
-					// Деактивируем список моделей в дропдауне
-					$('#addtable select[name="Model"] option').attr('disabled', true);
-					$('#addtable select[name="Model"] option[value="0"]').attr('disabled', false);		// Включаем столешницу
-					$('#addtable select[name="Model"] option[value='+model+']').attr('disabled', false);	// Включаем эту модель
-					$('#addtable select[name="Model"]').select2();
-				}
+//				if( model > 0 ) { // Если не столешница
+//					// Деактивируем список моделей в дропдауне
+//					$('#addtable select[name="Model"] option').attr('disabled', true);
+//					$('#addtable select[name="Model"] option[value="0"]').attr('disabled', false);		// Включаем столешницу
+//					$('#addtable select[name="Model"] option[value='+model+']').attr('disabled', false);	// Включаем эту модель
+//					$('#addtable select[name="Model"]').select2();
+//				}
 
 				$('#addtable #amount').text(odd_data['amount']);
 				$('#addtable input[name="Amount"]').val(odd_data['amount']);
