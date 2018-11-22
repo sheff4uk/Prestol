@@ -150,13 +150,10 @@
 <!DOCTYPE html>
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title><?=$title?></title>
-	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=55'>
-<!--	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">-->
-	<link rel='stylesheet' type='text/css' href='css/all.css'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=56'>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 <!--	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>-->
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
 	<link rel='stylesheet' type='text/css' href='css/animate.css'>
@@ -320,7 +317,7 @@
 	if( isset($_SESSION["success"]) ) {
 		foreach ($_SESSION["success"] as $value) {
 			$value = str_replace("\n", "", addslashes(htmlspecialchars($value)));
-			echo "<script>$(document).ready(function() {noty({timeout: 3000, text: '{$value}', type: 'success'});});</script>";
+			echo "<script>$(document).ready(function() {noty({timeout: 10000, text: '{$value}', type: 'success'});});</script>";
 		}
 		unset($_SESSION["success"]);
 	}

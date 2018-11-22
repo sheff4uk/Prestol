@@ -574,38 +574,26 @@ td.tscell > i {
 }
 
 #login {
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	-ms-border-radius: 5px;
-	-o-border-radius: 5px;
-	border-radius: 5px;
-	border-color: transparent;
-	-webkit-box-shadow: 0 0 2px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2);
-	-moz-box-shadow: 0 0 2px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2);
-	-ms-box-shadow: 0 0 2px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2);
-	-o-box-shadow: 0 0 2px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2);
-	box-shadow: 0 0 2px rgba(0,0,0,0.3),0 3px 5px rgba(0,0,0,0.2);
-	padding: 25px 30px 25px;
-	background: #FAFAFA;
-	margin-top: 2em;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);	padding: 25px 30px 25px;
 	width: 400px;
-	margin-left: auto;
-	margin-right: auto;
-	color: #666;
+	color: #000;
+	box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+	background: rgba(255, 255, 255, .5);
 }
 #login H1, #login h3, #login p, #login a {
 	text-align: center;
 	display: block;
 }
 #login form div {
-	margin: 15px 0;
-	text-align: right;
-	white-space: nowrap;
+	margin: 15px auto;
+	width: 260px;
 }
-#login input {
-	width: 235px;
+#login input[type="text"], #login input[type="password"], #login input[type="email"] {
+	width: 100%;
 	padding: 3px;
-	margin-left: 10px;
 	font-size: 1.2em;
 }
 #login label {
