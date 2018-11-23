@@ -868,9 +868,8 @@
 			<tr>
 				<th width="60">Отгружен <i class="fa fa-question-circle" html="<b>Статус получения заказа:</b><br><i class='fas fa-handshake fa-2x not_confirmed'></i> - Клиент НЕ забрал заказ<br><i class='fas fa-handshake fa-2x confirmed'></i> - Клиент забрал заказ"></i></th>
 				<th width="80">Код<br>Создан</th>
-				<th width="5%">Заказчик<br>Квитанция</th>
-				<th width="40">Кол-во</th>
-				<th width="25%">Наименование</th>
+				<th width="10%">Заказчик<br>Квитанция</th>
+				<th width="25%">Заказ</th>
 				<th width="15%">Материал</th>
 				<th width="15%">Цвет</th>
 				<th width="10%">Салон<br>
@@ -914,8 +913,7 @@
 			<tr>
 				<th width="60"></th>
 				<th width="80"></th>
-				<th width="5%"></th>
-				<th width="40"></th>
+				<th width="10%"></th>
 				<th width="25%"></th>
 				<th width="15%"></th>
 				<th width="15%"></th>
@@ -946,6 +944,8 @@
 				,SH.SH_ID
 				,OD.OrderNumber
 				,Color(OD.CL_ID) Color
+				,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
+				,WD.Name
 				,Ord_price(OD.OD_ID) Price
 				,Ord_discount(OD.OD_ID) discount
 				,Ord_opt_price(OD.OD_ID) opt_price
@@ -963,6 +963,7 @@
 			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
 				".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
 			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
+			LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
 			LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 			WHERE SH.CT_ID = {$CT_ID}
 			".(($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year)."
@@ -1011,7 +1012,15 @@
 					,ODD.Amount
 					,Zakaz(ODD.ODD_ID) zakaz
 					,ODD.Comment
-					,CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
+					,DATEDIFF(ODD.arrival_date, NOW()) outdate
+					,ODD.IsExist
+					,DATE_FORMAT(ODD.arrival_date, '%d.%m.%y') arrival_date
+					,IFNULL(MT.Material, '') Material
+					,CONCAT(' <b>', SH.Shipper, '</b>') Shipper
+					,ODD.MT_ID
+					,MT.SH_ID
+					,SH.mtype
+					,IF(MT.removed=1, 'removed', '') removed
 					,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 				FROM OrdersDataDetail ODD
 				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -1023,12 +1032,11 @@
 			$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			// Формируем подробности заказа
-			$amount = '';
 			$zakaz = '';
 			$material = '';
+			$color = '';
 			$cnt = 0;
 			while( $subrow = mysqli_fetch_array($subres) ) {
-				$amount .= "<b style='font-size: 1.3em;'>{$subrow["Amount"]}</b><br>";
 
 				// Если в свободных - добавляем чекбокс для печати ценников, узнаем сколько изделий в заказе для ценника на гарнитур
 				if ($year == 0 and $month == 0) {
@@ -1036,23 +1044,53 @@
 					$cnt = $cnt + $subrow["Amount"];
 				}
 				if ($subrow["Comment"]) {
-					$zakaz .= "<b class='material'><i id='prod{$subrow["ODD_ID"]}' title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> {$subrow["zakaz"]}</i></b><br>";
+					$zakaz .= "<b class='material'><i id='prod{$subrow["ODD_ID"]}' title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</i></b><br>";
 				}
 				else {
-					$zakaz .= "<b class='material'><i id='prod{$subrow["ODD_ID"]}'>{$subrow["zakaz"]}</i></b><br>";
+					$zakaz .= "<b class='material'><i id='prod{$subrow["ODD_ID"]}'><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</i></b><br>";
 				}
 
-				$material .= "{$subrow["Material"]}<br>";
+				if ($subrow["IsExist"] == "0") {
+					$color = "bg-red";
+				}
+				elseif ($subrow["IsExist"] == "1") {
+					$color = "bg-yellow' title='Ожидается: {$subrow["arrival_date"]}";
+				}
+				elseif ($subrow["IsExist"] == "2") {
+					$color = "bg-green";
+				}
+				else {
+					$color = "bg-gray";
+				}
+				$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span shid='{$subrow["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}{$subrow["Shipper"]}</span><input type='text' value='{$subrow["Material"]}' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' ".($subrow["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span><br>";
 			}
 
 			echo "
 				</td>
 				<td><span><b class='code'>{$row["Code"]}</b>".(($cnt > 1) ? "<input type='checkbox' value='{$row["OD_ID"]}' name='od[]' class='chbox'>" : "")."<br>{$row["AddDate"]}</span></td>
 				<td><span><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b></span></td>
-				<td>{$amount}</td>
 				<td><span class='nowrap'>{$zakaz}</span></td>
 				<td><span class='nowrap material'>{$material}</span></td>
-				<td>{$row["Color"]}</td>
+			";
+
+			echo "<td val='{$row["IsPainting"]}'";
+				switch ($row["IsPainting"]) {
+					case 0:
+						$class = "empty";
+						break;
+					case 1:
+						$class = "notready";
+						break;
+					case 2:
+						$class = "inwork";
+						break;
+					case 3:
+						$class = "ready";
+						break;
+				}
+			echo " class='painting_cell {$class}'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
+
+			echo "
 				<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $is_del or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
 				<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
 			";
