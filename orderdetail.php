@@ -288,7 +288,8 @@
 	// Добавление в базу нового сообщения
 	if( isset($_GET["add_message"]) )
 	{
-		$Message = mysqli_real_escape_string( $mysqli,$_POST["message"] );
+		$Message = convert_str($_POST["message"]);
+		$Message = mysqli_real_escape_string($mysqli, $Message);
 		$query = "INSERT INTO OrdersMessage
 					 SET OD_ID = {$id}
 						,Message = '{$Message}'
@@ -299,7 +300,6 @@
 			$_SESSION["error"][] = mysqli_error( $mysqli );
 		}
 
-		//exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
