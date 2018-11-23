@@ -44,7 +44,7 @@
 		$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date_add"]) );
 		$payment_sum = $_POST["payment_sum_add"];
 		$terminal = $_POST["terminal_add"];
-		$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, $_POST["terminal_payer_add"] ).'\'' : 'NULL';
+		$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, convert_str($_POST["terminal_payer_add"]) ).'\'' : 'NULL';
 		$FA_ID_add = $_POST["FA_ID_add"] ? $_POST["FA_ID_add"] : 'NULL';
 		$SH_ID_add = $_POST["FA_ID_add"] ? 'NULL' : $_POST["SH_ID_add"];
 
@@ -77,7 +77,7 @@
 	{
 		$OP_ID = $_POST["OP_ID"];
 		$SH_ID = $_POST["SH_ID"];
-		$cost_name = mysqli_real_escape_string( $mysqli, $_POST["cost_name"] );
+		$cost_name = mysqli_real_escape_string( $mysqli, convert_str($_POST["cost_name"]) );
 		$cost_date = date( 'Y-m-d', strtotime($_POST["cost_date"]) );
 		$cost = $_POST["cost"] ? $_POST["cost"] : 0;
 		$cost = ($_POST["sign"] == '-') ? $cost * -1 : $cost;
