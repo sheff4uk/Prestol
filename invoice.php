@@ -1,11 +1,12 @@
 <?
 include "config.php";
+include "checkrights.php";
 session_start();
 
 // Узнаем тип накладной ОТГРУЗКА/ВОЗВРАТ
 $return = $_POST["num_rows"] ? 1 : 0;
 
-// Сохраняем цены изделий в ODD/ODB
+// Сохраняем цены изделий в ODD
 foreach ($_POST["price"] as $key => $value) {
 	$odd_id = $_POST["odd_id"][$key];
 	$discount = ($_POST["discount"][$key] > 0) ? $_POST["discount"][$key] : "NULL";
