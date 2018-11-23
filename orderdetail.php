@@ -57,7 +57,6 @@
 	{
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
 		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
-		$ClientName = mysqli_real_escape_string( $mysqli,$_POST["ClientName"] );
 		if( $_POST["ul"] ) {
 			if( $_POST["ClientName"] ) {
 				$ul = "1";
@@ -70,18 +69,18 @@
 		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
 		$chars = array("+", " ", "(", ")"); // Символы, которые трубуется удалить из строки с телефоном
 		$mtel = $_POST["mtel"] ? '\''.str_replace($chars, "", $_POST["mtel"]).'\'' : 'NULL';
-		$address = mysqli_real_escape_string( $mysqli,$_POST["address"] );
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
-		$OrderNumber = mysqli_real_escape_string( $mysqli,$_POST["OrderNumber"] );
-		$Color = mysqli_real_escape_string( $mysqli,$_POST["Color"] );
-		//$IsPainting = $_POST["IsPainting"];
-		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
-		// Удаляем лишние пробелы
-		$ClientName = trim($ClientName);
-		$OrderNumber = trim($OrderNumber);
-		$Color = trim($Color);
-		$Comment = trim($Comment);
-		$address = trim($address);
+		// Обработка строк
+		$ClientName = convert_str($_POST["ClientName"]);
+		$ClientName = mysqli_real_escape_string($mysqli, $ClientName);
+		$OrderNumber = convert_str($_POST["OrderNumber"]);
+		$OrderNumber = mysqli_real_escape_string($mysqli, $OrderNumber);
+		$Color = convert_str($_POST["Color"]);
+		$Color = mysqli_real_escape_string($mysqli, $Color);
+		$Comment = convert_str($_POST["Comment"]);
+		$Comment = mysqli_real_escape_string($mysqli, $Comment);
+		$address = convert_str($_POST["address"]);
+		$address = mysqli_real_escape_string($mysqli, $address);
 
 		// Сохраняем в таблицу цветов полученный цвет и узнаем его ID
 		if( $Color != '' ) {
@@ -165,8 +164,9 @@
 		// Добавление в базу нового изделия
 		if (isset($_POST["Blanks"]) or isset($_POST["Other"])) {
 			$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
-			$Other = trim($_POST["Other"]);
-			$Other = ($Other != '') ? "'".mysqli_real_escape_string( $mysqli, $Other )."'" : "NULL";
+			$Other = convert_str($_POST["Other"]);
+			$Other = mysqli_real_escape_string($mysqli, $Other);
+			$Other = ($Other != '') ? $Other : "NULL";
 		}
 		else {
 			$Blank = "NULL";
@@ -182,15 +182,19 @@
 		$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
 		$piece_stored = $_POST["piece_stored"] ? "{$_POST["piece_stored"]}" : "NULL";
 		$IsExist = isset($_POST["IsExist"]) ? "{$_POST["IsExist"]}" : "NULL";
-		$Material = trim($_POST["Material"]);
 		$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
-		$edge = trim($_POST["edge"]);
-		$edge = ($edge != '') ? "'".mysqli_real_escape_string( $mysqli, $edge )."'" : "NULL";
-		$Comment = trim($_POST["Comment"]);
-		$Comment = ($Comment != '') ? "'".mysqli_real_escape_string( $mysqli, $Comment )."'" : "NULL";
 		$ptn = $_POST["ptn"];
 		$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 		$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
+		// Обработка строк
+		$Material = convert_str($_POST["Material"]);
+		$Material = mysqli_real_escape_string($mysqli, $Material);
+		$edge = convert_str($_POST["edge"]);
+		$edge = mysqli_real_escape_string($mysqli, $edge);
+		$Comment = convert_str($_POST["Comment"]);
+		$Comment = mysqli_real_escape_string($mysqli, $Comment);
+		$edge = ($edge != '') ? $edge : "NULL";
+		$Comment = ($Comment != '') ? $Comment : "NULL";
 
 		// Сохраняем в таблицу материалов полученный материал и узнаем его ID
 		if( $Material != '' ) {
@@ -577,7 +581,6 @@
 			<th width="120">Изделие</th>
 			<th width="100">Этапы</th>
 			<th width="">Материал</th>
-			<th width="">Поставщик</th>
 			<th width="">Примечание</th>
 			<th width="60">Цена</th>
 			<th width="75">Действие</th>
@@ -594,10 +597,10 @@
 			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PT_ID
 			,Zakaz(ODD.ODD_ID) Zakaz
 			,IFNULL(MT.Material, '') Material
+			,CONCAT(' <b>', SH.Shipper, '</b>') Shipper
 			,DATEDIFF(ODD.arrival_date, NOW()) outdate
 			,ODD.MT_ID
 			,IF(MT.removed=1, 'removed ', '') removed
-			,IF(ODD.MT_ID IS NULL, '', SH.Shipper) Shipper
 			,MT.SH_ID
 			,SH.mtype
 			,ODD.IsExist
@@ -632,7 +635,7 @@
 		else {
 			$color = "bg-gray";
 		}
-		$material = "<span class='wr_mt'>".(($row["outdate"] <= 0 and $row["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$row["outdate"]} дн.'></i>" : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' id='m{$row["ODD_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$row["Material"]}</span><input type='text' class='materialtags_{$row["mtype"]}' style='display: none;'><input type='checkbox' style='display: none;' title='Выведен'></span>";
+		$material = "<span class='wr_mt'>".(($row["outdate"] <= 0 and $row["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$row["outdate"]} дн.'></i>" : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' id='m{$row["ODD_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$row["Material"]}{$row["Shipper"]}</span><input type='text' value='{$row["Material"]}' class='materialtags_{$row["mtype"]}' style='display: none;'><input type='checkbox' ".($row["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span>";
 
 		$steps = "<a id='{$row["ODD_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."' location='{$location}'>{$row["Steps"]}</a>";
 
@@ -643,7 +646,6 @@
 		echo "<td><span>{$row["Zakaz"]}</span></td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'>{$steps}</td>";
 		echo "<td>{$material}</td>";
-		echo "<td>{$row["Shipper"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td class='txtright'>{$format_old_price}{$format_price}</td>";
 		echo "<td>";

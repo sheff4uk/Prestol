@@ -44,17 +44,18 @@ foreach ($_POST["price"] as $key => $value) {
 }
 
 // Обновляем информацию о плательщике
-$platelshik_name = trim(mysqli_real_escape_string( $mysqli,$_POST["platelshik_name"] ));
-$platelshik_adres = trim(mysqli_real_escape_string( $mysqli,$_POST["platelshik_adres"] ));
-$platelshik_tel = trim(mysqli_real_escape_string( $mysqli,$_POST["platelshik_tel"] ));
-$platelshik_inn = trim(mysqli_real_escape_string( $mysqli,$_POST["platelshik_inn"] ));
-$platelshik_okpo = trim(mysqli_real_escape_string( $mysqli,$_POST["platelshik_okpo"] ));
-$platelshik_kpp = trim(mysqli_real_escape_string( $mysqli,$_POST["platelshik_kpp"] ));
-$platelshik_schet = trim(mysqli_real_escape_string( $mysqli,$_POST["platelshik_schet"] ));
-$platelshik_bank = trim(mysqli_real_escape_string( $mysqli,$_POST["platelshik_bank"] ));
-$platelshik_bik = trim(mysqli_real_escape_string( $mysqli,$_POST["platelshik_bik"] ));
-$platelshik_ks = trim(mysqli_real_escape_string( $mysqli,$_POST["platelshik_ks"] ));
-$platelshik_bank_adres = trim(mysqli_real_escape_string( $mysqli,$_POST["platelshik_bank_adres"] ));
+$platelshik_name = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_name"]));
+$platelshik_adres = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_adres"]));
+$platelshik_tel = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_tel"]));
+$platelshik_inn = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_inn"]));
+$platelshik_okpo = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_okpo"]));
+$platelshik_kpp = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_kpp"]));
+$platelshik_schet = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_schet"]));
+$platelshik_bank = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_bank"]));
+$platelshik_bik = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_bik"]));
+$platelshik_ks = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_ks"]));
+$platelshik_bank_adres = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_bank_adres"]));
+
 if( $_POST["platelshik_id"] ) {
 	$query = "UPDATE Kontragenty SET
 				 Naimenovanie = '{$platelshik_name}'
@@ -140,7 +141,7 @@ $query = "
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $Counter = 0;
 while( $row = mysqli_fetch_array($res) ) {
-	$_POST["tovar_name"][$Counter] = trim($row["Zakaz"]);
+	$_POST["tovar_name"][$Counter] = $row["Zakaz"];
 	$_POST["tovar_nn"][$Counter] = $row["Code"];
 	$_POST["tovar_ed"][$Counter] = "шт";
 	$_POST["tovar_okei"][$Counter] = "796";

@@ -24,8 +24,9 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	// Обновляем информацию об изделии
 	if (isset($_POST["Blanks"]) or isset($_POST["Other"])) {
 		$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
-		$Other = trim($_POST["Other"]);
-		$Other = ($Other != '') ? "'".mysqli_real_escape_string( $mysqli, $Other )."'" : "NULL";
+		$Other = convert_str($_POST["Other"]);
+		$Other = mysqli_real_escape_string($mysqli, $Other);
+		$Other = ($Other != '') ? $Other : "NULL";
 	}
 	else {
 		$Blank = "NULL";
@@ -41,15 +42,19 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
 	$piece_stored = $_POST["piece_stored"] ? "{$_POST["piece_stored"]}" : "NULL";
 	$IsExist = $_POST["IsExist"];
-	$Material = trim($_POST["Material"]);
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
-	$edge = trim($_POST["edge"]);
-	$edge = ($edge != '') ? "'".mysqli_real_escape_string( $mysqli, $edge )."'" : "NULL";
-	$Comment = trim($_POST["Comment"]);
-	$Comment = ($Comment != '') ? "'".mysqli_real_escape_string( $mysqli, $Comment )."'" : "NULL";
 	$ptn = $_POST["ptn"];
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
+	// Обработка строк
+	$Material = convert_str($_POST["Material"]);
+	$Material = mysqli_real_escape_string($mysqli, $Material);
+	$edge = convert_str($_POST["edge"]);
+	$edge = mysqli_real_escape_string($mysqli, $edge);
+	$Comment = convert_str($_POST["Comment"]);
+	$Comment = mysqli_real_escape_string($mysqli, $Comment);
+	$edge = ($edge != '') ? $edge : "NULL";
+	$Comment = ($Comment != '') ? $Comment : "NULL";
 
 	// Сохраняем в таблицу материалов полученный материал и узнаем его ID
 	if ($Material != '') {

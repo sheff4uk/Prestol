@@ -6,6 +6,9 @@ switch( $_GET["do"] )
 {
 case "shopstags":
 	// Автокомплит салонов
+	$term = convert_str($_GET["term"]);
+	$term = mysqli_real_escape_string($mysqli, $term);
+
 	$query = "SELECT Shop FROM (
 				SELECT CT.CT_ID, CT.City AS Shop
 				FROM Cities CT JOIN Shops SH ON SH.CT_ID = CT.CT_ID
@@ -19,7 +22,7 @@ case "shopstags":
 				".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR SH.stock = 1)" : "")."
 				UNION
 				SELECT 0, 'Свободные' AS Shop) SHT
-			  WHERE Shop LIKE '%{$_GET["term"]}%'";
+			  WHERE Shop LIKE '%{$term}%'";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
@@ -30,11 +33,14 @@ case "shopstags":
 
 case "colortags":
 	// Автокомплит цветов
+	$term = convert_str($_GET["term"]);
+	$term = mysqli_real_escape_string($mysqli, $term);
+
 	$query = "SELECT color
 					,clear
 					,Color(CL_ID) label
 				FROM Colors
-				WHERE color LIKE '%{$_GET["term"]}%'
+				WHERE color LIKE '%{$term}%'
 					AND clear IS NOT NULL
 					AND count > 0
 				ORDER BY count DESC";
@@ -48,6 +54,9 @@ case "colortags":
 
 case "textiletags":
 	// Автокомплит тканей
+	$term = convert_str($_GET["term"]);
+	$term = mysqli_real_escape_string($mysqli, $term);
+
 	$query = "
 		SELECT MT.Material
 			,MT.SH_ID
@@ -57,9 +66,9 @@ case "textiletags":
 		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 1
 		LEFT JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID
 		WHERE (
-			MT.Material LIKE '%{$_GET["term"]}%'
+			MT.Material LIKE '%{$term}%'
 			OR
-			MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$_GET["term"]}%' AND PMT_ID IS NOT NULL)
+			MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$term}%' AND PMT_ID IS NOT NULL)
 		)
 		".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
 		GROUP BY MT.MT_ID
@@ -75,6 +84,9 @@ case "textiletags":
 
 case "plastictags":
 	// Автокомплит пластиков
+	$term = convert_str($_GET["term"]);
+	$term = mysqli_real_escape_string($mysqli, $term);
+
 	$query = "
 		SELECT MT.Material
 			,MT.SH_ID
@@ -84,9 +96,9 @@ case "plastictags":
 		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 2
 		LEFT JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID
 		WHERE (
-			MT.Material LIKE '%{$_GET["term"]}%'
+			MT.Material LIKE '%{$term}%'
 			OR
-			MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$_GET["term"]}%' AND PMT_ID IS NOT NULL)
+			MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$term}%' AND PMT_ID IS NOT NULL)
 		)
 		".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
 		GROUP BY MT.MT_ID
@@ -102,7 +114,10 @@ case "plastictags":
 
 case "clienttags":
 	// Автокомплит заказчиков
-	$query = "SELECT ClientName FROM OrdersData WHERE IFNULL(ClientName, '') != '' AND ClientName LIKE '%{$_GET["term"]}%' GROUP BY ClientName";
+	$term = convert_str($_GET["term"]);
+	$term = mysqli_real_escape_string($mysqli, $term);
+
+	$query = "SELECT ClientName FROM OrdersData WHERE IFNULL(ClientName, '') != '' AND ClientName LIKE '%{$term}%' GROUP BY ClientName";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
@@ -136,7 +151,10 @@ case "price":
 
 case "passport":
 	// Автокомплит паспортных данных для доверенности
-	$query = "SELECT PD_ID, fio, pasport_seriya, pasport_nomer, pasport_vidan_kem, pasport_vidan_data FROM PassportData WHERE fio LIKE '%{$_GET["term"]}%'";
+	$term = convert_str($_GET["term"]);
+	$term = mysqli_real_escape_string($mysqli, $term);
+
+	$query = "SELECT PD_ID, fio, pasport_seriya, pasport_nomer, pasport_vidan_kem, pasport_vidan_data FROM PassportData WHERE fio LIKE '%{$term}%'";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{

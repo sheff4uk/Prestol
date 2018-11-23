@@ -12,11 +12,17 @@
 
 	if( isset($_GET["add_doverennost"]) ) {
 		// Обновляем на кого выдана доверенность
-		$fio = trim(mysqli_real_escape_string( $mysqli,$_POST["fio"] ));
-		$pasport_seriya = trim(mysqli_real_escape_string( $mysqli,$_POST["pasport_seriya"] ));
-		$pasport_nomer = trim(mysqli_real_escape_string( $mysqli,$_POST["pasport_nomer"] ));
-		$pasport_vidan_kem = trim(mysqli_real_escape_string( $mysqli,$_POST["pasport_vidan_kem"] ));
-		$pasport_vidan_data = trim(mysqli_real_escape_string( $mysqli,$_POST["pasport_vidan_data"] ));
+		$fio = convert_str($_POST["fio"]);
+		$fio = mysqli_real_escape_string($mysqli, $fio);
+		$pasport_seriya = convert_str($_POST["pasport_seriya"]);
+		$pasport_seriya = mysqli_real_escape_string($mysqli, $pasport_seriya);
+		$pasport_nomer = convert_str($_POST["pasport_nomer"]);
+		$pasport_nomer = mysqli_real_escape_string($mysqli, $pasport_nomer);
+		$pasport_vidan_kem = convert_str($_POST["pasport_vidan_kem"]);
+		$pasport_vidan_kem = mysqli_real_escape_string($mysqli, $pasport_vidan_kem);
+		$pasport_vidan_data = convert_str($_POST["pasport_vidan_data"]);
+		$pasport_vidan_data = mysqli_real_escape_string($mysqli, $pasport_vidan_data);
+
 		if( $_POST["PD_ID"] ) {
 			$query = "UPDATE PassportData SET
 						 fio = '{$fio}'

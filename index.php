@@ -23,22 +23,22 @@
 		$AddDate = date("Y-m-d");
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
 		$EndDate = $_POST["Shop"] ? ($_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : '\''.date( "Y-m-d", strtotime($_SESSION["end_date"]) ).'\'') : "NULL";
-		$ClientName = mysqli_real_escape_string( $mysqli, $_POST["ClientName"] );
 		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
 		$chars = array("+", " ", "(", ")"); // Символы, которые трубуется удалить из строки с телефоном
 		$mtel = $_POST["mtel"] ? '\''.str_replace($chars, "", $_POST["mtel"]).'\'' : 'NULL';
-		$address = mysqli_real_escape_string( $mysqli,$_POST["address"] );
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
-		$OrderNumber = mysqli_real_escape_string( $mysqli, $_POST["OrderNumber"] );
-		$Color = mysqli_real_escape_string( $mysqli, $_POST["Color"] );
 		$clear = isset($_POST["clear"]) ? $_POST["clear"] : "NULL";
-		$Comment = mysqli_real_escape_string( $mysqli, $_POST["Comment"] );
-		// Удаляем лишние пробелы
-		$ClientName = trim($ClientName);
-		$OrderNumber = trim($OrderNumber);
-		$Color = trim($Color);
-		$Comment = trim($Comment);
-		$address = trim($address);
+		// Обработка строк
+		$ClientName = convert_str($_POST["ClientName"]);
+		$ClientName = mysqli_real_escape_string($mysqli, $ClientName);
+		$OrderNumber = convert_str($_POST["OrderNumber"]);
+		$OrderNumber = mysqli_real_escape_string($mysqli, $OrderNumber);
+		$Color = convert_str($_POST["Color"]);
+		$Color = mysqli_real_escape_string($mysqli, $Color);
+		$Comment = convert_str($_POST["Comment"]);
+		$Comment = mysqli_real_escape_string($mysqli, $Comment);
+		$address = convert_str($_POST["address"]);
+		$address = mysqli_real_escape_string($mysqli, $address);
 
 		$confirmed = in_array('order_add_confirm', $Rights) ? 1 : 0;
 
@@ -1029,6 +1029,7 @@
 				,ODD.IsExist
 				,DATE_FORMAT(ODD.arrival_date, '%d.%m.%y') arrival_date
 				,IFNULL(MT.Material, '') Material
+				,CONCAT(' <b>', SH.Shipper, '</b>') Shipper
 				,".( $MT_IDs != "" ? "IF(ODD.MT_ID IN ({$MT_IDs}), 'ss', '')" : "''" )." MTfilter
 				,ODD.MT_ID
 				,MT.SH_ID
@@ -1071,7 +1072,7 @@
 			else {
 				$color = "bg-gray";
 			}
-			$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span shid='{$subrow["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}</span><input type='text' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' style='display: none;' title='Выведен'></span><br>";
+			$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span shid='{$subrow["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}{$subrow["Shipper"]}</span><input type='text' value='{$subrow["Material"]}' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' ".($subrow["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span><br>";
 
 			$steps .= "<a id='{$subrow["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$subrow["Steps"]}</a><br>";
 		}

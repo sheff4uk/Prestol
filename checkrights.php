@@ -2,6 +2,13 @@
 	ini_set("session.gc_maxlifetime",10);
 	session_start();
 
+	// Функция обрабатывает строки перед сохранением в БД
+	function convert_str($src) {
+		$src = trim($src);
+		$src = str_replace('\\', '/', $src);
+		return $src;
+	}
+
 	// Проверяем, пусты ли переменные логина и id пользователя
 	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {
 		if( !strpos($_SERVER["REQUEST_URI"], 'login.php') and !strpos($_SERVER["REQUEST_URI"], 'reg.php') and !strpos($_SERVER["REQUEST_URI"], 'save_user.php') and !strpos($_SERVER["REQUEST_URI"], 'mailconfirm.php') and !strpos($_SERVER["REQUEST_URI"], 'activation.php') ) {

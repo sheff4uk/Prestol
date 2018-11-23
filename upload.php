@@ -41,7 +41,8 @@ $uploadfile = $uploaddir.basename($filename);
 if (copy($_FILES['uploadfile']['tmp_name'], $uploadfile))
 {
 	// Записываем в БД информацию о файле
-	$comment = trim(mysqli_real_escape_string( $mysqli, $_POST["comment"] ));
+	$comment = convert_str($_POST["comment"]);
+	$comment = mysqli_real_escape_string($mysqli, $comment);
 	$query = "INSERT INTO OrdersAttachments SET OD_ID = {$_POST["odid"]}, filename = '{$filename}', comment = '{$comment}'";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 

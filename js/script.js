@@ -214,18 +214,14 @@ $(function(){
 /////////////////////////////////////////////
 	// Изменение материала аяксом
 		$('.mt_edit').on('dblclick', function() {
-			var t = $(this).html();
+			noty({timeout: 5000, text: 'Для отмены изменений нажмите клавишу <b>[Esc]</b>', type: 'alert'});
 			var inpt = $(this).parent('.wr_mt').children('input[type="text"]');
 			var chbx = $(this).parent('.wr_mt').children('input[type="checkbox"]');
-			$(inpt).val(t);
 			$(this).hide('fast');
 			$(inpt).show('fast');
-			if( $(this).hasClass('removed') )
-				$(chbx).prop('checked', true);
-			else
-				$(chbx).prop('checked', false);
 			$(chbx).show('fast');
 			$(inpt).focus();
+			$(this).parents('.wr_mt').addClass('nowrap');
 			// Чтобы автокомплит работал после открытия диалога
 			$( ".materialtags_1" ).autocomplete( "option", "appendTo", ".wr_mt" );
 			$( ".materialtags_2" ).autocomplete( "option", "appendTo", ".wr_mt" );
@@ -242,8 +238,14 @@ $(function(){
 				ESC = 1;
 				$(inpt).hide('fast');
 				$(chbx).hide('fast');
+				$(this).parents('.wr_mt').removeClass('nowrap');
 				$(spn).show('fast');
-				$(spn).css('display' , '');
+				if ($(spn).hasClass('removed')) {
+					$(chbx).prop('checked', true);
+				}
+				else {
+					$(chbx).prop('checked', false);
+				}
 				noty({timeout: 3000, text: 'Изменения отменены.', type: 'error'});
 				return false;
 			}
@@ -264,32 +266,22 @@ $(function(){
 
 		function releaseTheHounds(th) {
 			timeoutID = setTimeout(function () {
-				var t = $(th).parent('.wr_mt').children('input[type="text"]').val();
+				var val = $(th).parent('.wr_mt').children('input[type="text"]').val();
 				var spn = $(th).parent('.wr_mt').children('span');
 				var inpt = $(th).parent('.wr_mt').children('input[type="text"]');
 				var chbx = $(th).parent('.wr_mt').children('input[type="checkbox"]');
-				var oldt = $(spn).html();
-				var mtid = $(spn).attr('mtid');
 				var shid = $(spn).attr('shid');
+				var mtid = $(spn).attr('mtid');
 				var removed = $(chbx).prop('checked');
-				if( t != '') {
+				if( val != '') {
 					$(inpt).hide('fast');
 					$(chbx).hide('fast');
-					$.ajax({ url: "ajax.php?do=materials&val="+t+"&oldval="+oldt+"&removed="+removed+"&shid="+shid, dataType: "script", async: true });
-					if( t != oldt || $(spn).hasClass('removed') != removed ) {
-						$('.mt'+mtid).hide('fast');
-						$('.mt'+mtid).html(t);
-						if( removed ) {
-							$('.mt'+mtid).addClass('removed');
-						}
-						else {
-							$('.mt'+mtid).removeClass('removed');
-						}
-					}
-					$('.mt'+mtid).show('fast');
+					$(th).parents('.wr_mt').removeClass('nowrap');
+					$.ajax({ url: "ajax.php?do=materials&val="+val+"&mtid="+mtid+"&removed="+removed+"&shid="+shid, dataType: "script", async: true });
 				}
 				else {
 					noty({timeout: 3000, text: 'Название материала не может быть пустым!', type: 'error'});
+					$(inpt).effect( 'highlight', {color: 'red'}, 1000 );
 				}
 			}, 1);
 		}

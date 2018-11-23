@@ -1345,7 +1345,7 @@
 				noty({timeout: 3000, text: 'Прежде чем пометить заказ как "отказной", анулируйте накладную в актах сверки.', type: 'error'});
 			}
 			else if( payment != 0 ) {
-				$(this).parents('tr').find('.add_payment_btn span').effect( 'shake', 1000 );
+				$(this).parents('tr').find('.add_payment_btn span').effect( 'highlight', {color: 'red'}, 1000 );
 				noty({timeout: 3000, text: 'Прежде чем пометить заказ как "отказной", обнулите приход по нему.', type: 'error'});
 			}
 			else {

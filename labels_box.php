@@ -220,9 +220,9 @@ $(document).ready(function() {
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
-		$Zakaz = trim(htmlspecialchars($row["Zakaz"]));
-		$Material = trim(htmlspecialchars($row["Material"]));
-		$Color = trim(htmlspecialchars($row["Color"]));
+		$Zakaz = htmlspecialchars($row["Zakaz"]);
+		$Material = htmlspecialchars($row["Material"]);
+		$Color = htmlspecialchars($row["Color"]);
 		$Amount = $row["Amount"];
 
 		if( $row["BoxOnItem"] ) {

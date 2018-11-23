@@ -38,33 +38,61 @@ if( $_GET["add_bill"] ) {
 	$count = mysqli_result($res,0,'Cnt');
 	$nomer = str_pad($count, 8, '0', STR_PAD_LEFT); // Дописываем нули к номеру накладной
 
-	// Обновляем информацию по контрагенту
-	$pokupatel = trim(mysqli_real_escape_string( $mysqli,$_POST["pokupatel"] ));
-	$pokupatel_adres = trim(mysqli_real_escape_string( $mysqli,$_POST["pokupatel_adres"] ));
-	$pokupatel_inn = trim(mysqli_real_escape_string( $mysqli,$_POST["pokupatel_inn"] ));
-	$pokupatel_kpp = trim(mysqli_real_escape_string( $mysqli,$_POST["pokupatel_kpp"] ));
-	if( $_POST["pokupatel_id"] ) {
+	// Обновляем информацию о плательщике
+	$platelshik_name = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_name"]));
+	$platelshik_adres = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_adres"]));
+	$platelshik_tel = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_tel"]));
+	$platelshik_inn = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_inn"]));
+	$platelshik_okpo = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_okpo"]));
+	$platelshik_kpp = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_kpp"]));
+	$platelshik_schet = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_schet"]));
+	$platelshik_bank = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_bank"]));
+	$platelshik_bik = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_bik"]));
+	$platelshik_ks = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_ks"]));
+	$platelshik_bank_adres = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_bank_adres"]));
+
+	if( $_POST["platelshik_id"] ) {
 		$query = "UPDATE Kontragenty SET
-					 Naimenovanie = '{$pokupatel}'
-					,Jur_adres = '{$pokupatel_adres}'
-					,INN = '{$pokupatel_inn}'
-					,KPP = '{$pokupatel_kpp}'
-					WHERE KA_ID = {$_POST["pokupatel_id"]}";
+					 Naimenovanie = '{$platelshik_name}'
+					,Jur_adres = IF('{$platelshik_adres}' = '', NULL, '{$platelshik_adres}')
+					,Telefony = IF('{$platelshik_tel}' = '', NULL, '{$platelshik_tel}')
+					,INN = IF('{$platelshik_inn}' = '', NULL, '{$platelshik_inn}')
+					,OKPO = IF('{$platelshik_okpo}' = '', NULL, '{$platelshik_okpo}')
+					,KPP = IF('{$platelshik_kpp}' = '', NULL, '{$platelshik_kpp}')
+					,Schet = IF('{$platelshik_schet}' = '', NULL, '{$platelshik_schet}')
+					,Bank = IF('{$platelshik_bank}' = '', NULL, '{$platelshik_bank}')
+					,BIK = IF('{$platelshik_bik}' = '', NULL, '{$platelshik_bik}')
+					,KS = IF('{$platelshik_ks}' = '', NULL, '{$platelshik_ks}')
+					,Bank_adres = IF('{$platelshik_bank_adres}' = '', NULL, '{$platelshik_bank_adres}')
+					WHERE KA_ID = {$_POST["platelshik_id"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$pokupatel_id = $_POST["pokupatel_id"];
+		$platelshik_id = $_POST["platelshik_id"];
 	}
 	else {
 		$query = "INSERT INTO Kontragenty SET
-					 Naimenovanie = '{$pokupatel}'
-					,Jur_adres = '{$pokupatel_adres}'
-					,INN = '{$pokupatel_inn}'
-					,KPP = '{$pokupatel_kpp}'";
+					 Naimenovanie = '{$platelshik_name}'
+					,Jur_adres = IF('{$platelshik_adres}' = '', NULL, '{$platelshik_adres}')
+					,Telefony = IF('{$platelshik_tel}' = '', NULL, '{$platelshik_tel}')
+					,INN = IF('{$platelshik_inn}' = '', NULL, '{$platelshik_inn}')
+					,OKPO = IF('{$platelshik_okpo}' = '', NULL, '{$platelshik_okpo}')
+					,KPP = IF('{$platelshik_kpp}' = '', NULL, '{$platelshik_kpp}')
+					,Schet = IF('{$platelshik_schet}' = '', NULL, '{$platelshik_schet}')
+					,Bank = IF('{$platelshik_bank}' = '', NULL, '{$platelshik_bank}')
+					,BIK = IF('{$platelshik_bik}' = '', NULL, '{$platelshik_bik}')
+					,KS = IF('{$platelshik_ks}' = '', NULL, '{$platelshik_ks}')
+					,Bank_adres = IF('{$platelshik_bank_adres}' = '', NULL, '{$platelshik_bank_adres}')";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$pokupatel_id = mysqli_insert_id($mysqli);
+		$platelshik_id = mysqli_insert_id($mysqli);
 	}
 
+	// Сохраняем в POST необходимую информацию о покупателе
+	$_POST["pokupatel"] = convert_str($_POST["platelshik_name"]);
+	$_POST["pokupatel_adres"] = convert_str($_POST["platelshik_adres"]);
+	$_POST["pokupatel_inn"] = convert_str($_POST["platelshik_inn"]);
+	$_POST["pokupatel_kpp"] = convert_str($_POST["platelshik_kpp"]);
+
 	// Сохраняем в таблицу информацию по счёту, узнаем его ID.
-	$query = "INSERT INTO PrintFormsBill SET count = {$count}, date = '{$date}', pokupatel_id = {$pokupatel_id}, summa = {$summa}, USR_ID = {$_SESSION["id"]}";
+	$query = "INSERT INTO PrintFormsBill SET count = {$count}, date = '{$date}', pokupatel_id = {$platelshik_id}, summa = {$summa}, USR_ID = {$_SESSION["id"]}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$id = mysqli_insert_id($mysqli);
 
@@ -321,32 +349,60 @@ while( $row = mysqli_fetch_array($res) ) {
 <div id='add_bill_form' style='display:none' title="Счёт на оплату">
 	<h1>Счёт на оплату</h1>
 	<form action="?add_bill=1" method="post" id="formdiv">
-		<table width="100%" border="0" cellspacing="4" class="forms">
-			<tbody>
-				<tr align="left">
-					<td colspan="2"><strong>Информация о покупателе:</strong></td>
-				</tr>
-				<tr>
-					<td class="left">Название ООО или ФИО:</td>
-					<td>
-						<input type="hidden" name="pokupatel_id" id="pokupatel_id" class="forminput">
-						<input type="text" required autocomplete="off" name="pokupatel" id="pokupatel" class="forminput" placeholder="Введите минимум 2 символа для поиска контрагента">
-					</td>
-				</tr>
-				<tr>
-					<td class="left">Адрес:</td>
-					<td><input type="text" autocomplete="off" name="pokupatel_adres" id="pokupatel_adres" class="forminput" placeholder=""></td>
-				</tr>
-				<tr>
-					<td class="left">ИНН:</td>
-					<td><input type="text" autocomplete="off" name="pokupatel_inn" id="pokupatel_inn" class="forminput" placeholder=""></td>
-				</tr>
-				<tr>
-					<td class="left">КПП:</td>
-					<td><input type="text" autocomplete="off" name="pokupatel_kpp" id="pokupatel_kpp" class="forminput" placeholder=""></td>
-				</tr>
-			</tbody>
-		</table>
+		<fieldset style="text-align: left;">
+			<legend>Информация о плательщике:</legend>
+			<table width="100%" class="forms">
+				<tbody>
+					<tr>
+						<td width="200" align="left" valign="top">Название ООО или ИП:</td>
+						<td align="left" valign="top">
+							<input type="hidden" name="platelshik_id" id="platelshik_id" class="forminput">
+							<input required type="text" autocomplete="off" name="platelshik_name" id="platelshik_name" class="forminput" placeholder="Введите минимум 2 символа для поиска контрагента">
+						</td>
+					</tr>
+					<tr>
+						<td align="left" valign="top">ИНН:</td>
+						<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_inn" id="platelshik_inn" class="forminput" placeholder=""></td>
+					</tr>
+					<tr>
+						<td align="left" valign="top">КПП:</td>
+						<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_kpp" id="platelshik_kpp" class="forminput" placeholder=""></td>
+					</tr>
+					<tr>
+						<td align="left" valign="top">ОКПО:</td>
+						<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_okpo" id="platelshik_okpo" class="forminput" placeholder=""></td>
+					</tr>
+					<tr>
+						<td align="left" valign="top">Адрес:</td>
+						<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_adres" id="platelshik_adres" class="forminput" placeholder=""></td>
+					</tr>
+					<tr>
+						<td align="left" valign="top">Телефоны:</td>
+						<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_tel" id="platelshik_tel" class="forminput" placeholder=""></td>
+					</tr>
+					<tr>
+						<td width="200" align="left" valign="top">Расчетный счет:</td>
+						<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_schet" id="platelshik_schet" class="forminput" placeholder=""></td>
+					</tr>
+					<tr>
+						<td align="left" valign="top">Наименование банка:</td>
+						<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank" id="platelshik_bank" class="forminput" placeholder=""></td>
+					</tr>
+					<tr>
+						<td align="left" valign="top">БИК:</td>
+						<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bik" id="platelshik_bik" class="forminput" placeholder=""></td>
+					</tr>
+					<tr>
+						<td align="left" valign="top">Корреспондентский счет:</td>
+						<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_ks" id="platelshik_ks" class="forminput" placeholder=""></td>
+					</tr>
+					<tr>
+						<td align="left" valign="top">Местонахождение банка:</td>
+						<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank_adres" id="platelshik_bank_adres" class="forminput" placeholder=""></td>
+					</tr>
+				</tbody>
+			</table>
+		</fieldset>
 
 		<input type="hidden" name="nds" value="0">
 
@@ -560,24 +616,39 @@ while( $row = mysqli_fetch_array($res) ) {
 	}
 ?>
 
-		$( "#pokupatel" ).autocomplete({
+		// Автокомплит плательщика
+		$( "#platelshik_name" ).autocomplete({
 			source: "kontragenty.php",
 			minLength: 2,
 			autoFocus: true,
 			select: function( event, ui ) {
-				$('#pokupatel_id').val(ui.item.id);
-				$('#pokupatel_adres').val(ui.item.Jur_adres);
-				$('#pokupatel_inn').val(ui.item.INN);
-				$('#pokupatel_kpp').val(ui.item.KPP);
+				$('#platelshik_id').val(ui.item.id);
+				$('#platelshik_inn').val(ui.item.INN);
+				$('#platelshik_kpp').val(ui.item.KPP);
+				$('#platelshik_okpo').val(ui.item.OKPO);
+				$('#platelshik_adres').val(ui.item.Jur_adres);
+				$('#platelshik_tel').val(ui.item.Telefony);
+				$('#platelshik_schet').val(ui.item.Schet);
+				$('#platelshik_bank').val(ui.item.Bank);
+				$('#platelshik_bik').val(ui.item.BIK);
+				$('#platelshik_ks').val(ui.item.KS);
+				$('#platelshik_bank_adres').val(ui.item.Bank_adres);
 			}
 		});
 
-		$( "#pokupatel" ).on("keyup", function() {
-			if( $( "#pokupatel" ).val().length < 2 ) {
-				$('#pokupatel_id').val('');
-				$('#pokupatel_adres').val('');
-				$('#pokupatel_inn').val('');
-				$('#pokupatel_kpp').val('');
+		$( "#platelshik_name" ).on("keyup", function() {
+			if( $( "#platelshik_name" ).val().length < 2 ) {
+				$('#platelshik_id').val('');
+				$('#platelshik_inn').val('');
+				$('#platelshik_kpp').val('');
+				$('#platelshik_okpo').val('');
+				$('#platelshik_adres').val('');
+				$('#platelshik_tel').val('');
+				$('#platelshik_schet').val('');
+				$('#platelshik_bank').val('');
+				$('#platelshik_bik').val('');
+				$('#platelshik_ks').val('');
+				$('#platelshik_bank_adres').val('');
 			}
 		});
 

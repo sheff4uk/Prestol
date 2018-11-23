@@ -153,8 +153,8 @@
 // Добавление/редактирование категории
 	if( isset($_GET["add_category"]) )
 	{
-		$name = mysqli_real_escape_string( $mysqli, $_POST["name_add"] );
-		$name = trim($name);
+		$name = convert_str($_POST["name_add"]);
+		$name = mysqli_real_escape_string($mysqli, $name);
 		$type = $_POST["type_add"];
 
 		// Создаем категорию
@@ -171,8 +171,8 @@
 		}
 
 		foreach ($_POST["FC_ID"] as $key => $value) {
-			$name = mysqli_real_escape_string( $mysqli, $_POST["name"][$key] );
-			$name = trim($name);
+			$name = convert_str($_POST["name"][$key]);
+			$name = mysqli_real_escape_string($mysqli, $name);
 			$type = $_POST["type_edit"][$key];
 
 			$query = "UPDATE FinanceCategory
