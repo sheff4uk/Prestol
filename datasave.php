@@ -53,8 +53,8 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$edge = mysqli_real_escape_string($mysqli, $edge);
 	$Comment = convert_str($_POST["Comment"]);
 	$Comment = mysqli_real_escape_string($mysqli, $Comment);
-	$edge = ($edge != '') ? $edge : "NULL";
-	$Comment = ($Comment != '') ? $Comment : "NULL";
+	$edge = ($edge != '') ? "'$edge'" : "NULL";
+	$Comment = ($Comment != '') ? "'$Comment'" : "NULL";
 
 	// Сохраняем в таблицу материалов полученный материал и узнаем его ID
 	if ($Material != '') {
