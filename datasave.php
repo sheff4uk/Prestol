@@ -26,7 +26,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 		$Blank = $_POST["Blanks"] ? "{$_POST["Blanks"]}" : "NULL";
 		$Other = convert_str($_POST["Other"]);
 		$Other = mysqli_real_escape_string($mysqli, $Other);
-		$Other = ($Other != '') ? $Other : "NULL";
+		$Other = ($Other != '') ? "'$Other'" : "NULL";
 	}
 	else {
 		$Blank = "NULL";
