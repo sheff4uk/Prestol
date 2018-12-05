@@ -57,6 +57,7 @@ case "steps":
 	{
 		// Формирование дропдауна со списком рабочих. Сортировка по релевантности.
 		$selectworker = $ready_date ? "" : "<option value=\'\'>-=Выберите работника=-</option>";
+		$selectworker .= "<optgroup label=\'Работающие\'>";
 		$query = "
 			SELECT WD.WD_ID
 				,WD.Name
@@ -70,7 +71,7 @@ case "steps":
 				ORDER BY ODS.ODD_ID DESC
 				LIMIT 100
 			) ODS ON ODS.WD_ID = WD.WD_ID
-			WHERE WD.Type = 1
+			WHERE WD.Type = 1 AND WD.IsActive = 1
 			GROUP BY WD.WD_ID
 			ORDER BY CNT DESC
 		";
@@ -80,6 +81,22 @@ case "steps":
 			$selected = ( $row["WD_ID"] == $subrow["WD_ID"] ) ? "selected" : "";
 			$selectworker .= "<option {$selected} value=\'{$subrow["WD_ID"]}\'>{$subrow["Name"]}</option>";
 		}
+		$selectworker .= "</optgroup>";
+		$selectworker .= "<optgroup label=\'Уволенные\'>";
+		$query = "
+			SELECT WD.WD_ID
+				,WD.Name
+			FROM WorkersData WD
+			WHERE WD.Type = 1 AND WD.IsActive = 0
+			ORDER BY WD.Name
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		while( $subrow = mysqli_fetch_array($res) )
+		{
+			$selected = ( $row["WD_ID"] == $subrow["WD_ID"] ) ? "selected" : "";
+			$selectworker .= "<option {$selected} value=\'{$subrow["WD_ID"]}\'>{$subrow["Name"]}</option>";
+		}
+		$selectworker .= "</optgroup>";
 		// Конец дропдауна со списком рабочих
 		
 		if( $row["Old"] == 1 ) {
@@ -188,6 +205,7 @@ case "ispainting":
 		// Формирование дропдауна со списком лакировщиков. Сортировка по релевантности.
 		$painting_workers = "<select id='painting_workers' size='10'>";
 		$painting_workers .= "<option selected value='0'>-=Выберите работника=-</option>";
+		$painting_workers .= "<optgroup label='Работающие'>";
 		$query = "
 			SELECT WD.WD_ID, WD.Name, SUM(1) CNT
 			FROM WorkersData WD
@@ -198,16 +216,29 @@ case "ispainting":
 				ORDER BY OD.OD_ID DESC
 				LIMIT 100
 			) SOD ON SOD.WD_ID = WD.WD_ID
-			WHERE WD.Type = 2
+			WHERE WD.Type = 2 AND WD.IsActive = 1
 			GROUP BY WD.WD_ID
 			ORDER BY CNT DESC
 		";
-
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
 			$painting_workers .= "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
 		}
+		$painting_workers .= "</optgroup>";
+		$painting_workers .= "<optgroup label='Уволенные'>";
+		$query = "
+			SELECT WD.WD_ID ,WD.Name
+			FROM WorkersData WD
+			WHERE WD.Type = 2 AND WD.IsActive = 0
+			ORDER BY WD.Name
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$painting_workers .= "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+		}
+		$painting_workers .= "</optgroup>";
 		$painting_workers .= "</select>";
 		// Конец дропдауна со списком лакировщиков
 		$painting_workers = addslashes($painting_workers);

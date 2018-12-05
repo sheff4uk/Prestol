@@ -67,11 +67,14 @@
 						<option value="0">Без работника</option>
 						<optgroup label="Частые">
 							<?
-							$query = "SELECT WD.WD_ID, WD.Name, COUNT(1) cnt
-										FROM WorkersData WD
-										JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 90
-										GROUP BY BS.WD_ID
-										ORDER BY cnt DESC";
+							$query = "
+								SELECT WD.WD_ID, WD.Name, COUNT(1) cnt
+								FROM WorkersData WD
+								JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 90
+								WHERE WD.IsActive = 1
+								GROUP BY BS.WD_ID
+								ORDER BY cnt DESC
+							";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) )
 							{
@@ -81,11 +84,28 @@
 						</optgroup>
 						<optgroup label="Остальные">
 							<?
-							$query = "SELECT WD.WD_ID, WD.Name
-										FROM WorkersData WD
-										LEFT JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 90
-										WHERE WD.Type = 1 AND BS.WD_ID IS NULL
-										ORDER BY WD.Name;";
+							$query = "
+								SELECT WD.WD_ID, WD.Name
+								FROM WorkersData WD
+								LEFT JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 90
+								WHERE WD.IsActive = 1 AND WD.Type = 1 AND BS.WD_ID IS NULL
+								ORDER BY WD.Name
+							";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+							}
+							?>
+						</optgroup>
+						<optgroup label="Уволенные">
+							<?
+							$query = "
+								SELECT WD.WD_ID, WD.Name
+								FROM WorkersData WD
+								WHERE WD.IsActive = 0 AND WD.Type = 1
+								ORDER BY WD.Name
+							";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) )
 							{

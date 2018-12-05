@@ -41,14 +41,26 @@
 				<label>Работник:</label>
 				<select required name="Worker" id="worker" style="width: 200px;">
 					<option value="">-=Выберите работника=-</option>
-					<?
-					$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE IsActive = 1 ORDER BY WD.Name";
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					while( $row = mysqli_fetch_array($res) )
-					{
-						echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
-					}
-					?>
+					<optgroup label="Работающие">
+						<?
+						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE IsActive = 1 ORDER BY WD.Name";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+						}
+						?>
+					</optgroup>
+					<optgroup label="Уволенные">
+						<?
+						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE IsActive = 0 ORDER BY WD.Name";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+						}
+						?>
+					</optgroup>
 				</select>
 			</div>
 			<div>
