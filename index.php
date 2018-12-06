@@ -920,18 +920,6 @@
 		if( $_SESSION["f_CN"] != "" ) {
 			$query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%' OR OD.mtel LIKE '%{$_SESSION["f_CN"]}%' OR OD.address LIKE '%{$_SESSION["f_CN"]}%')";
 		}
-		if ($_SESSION["f_ED"] != "") {
-			if ($archive == "2") {
-				$query .= "
-					AND OD.ReadyDate LIKE '%{$_SESSION["f_ED"]}%'
-				";
-			}
-			elseif ($archive == "3") {
-				$query .= "
-					AND OD.DelDate LIKE '%{$_SESSION["f_ED"]}%'
-				";
-			}
-		}
 		if( $_SESSION["f_EndDate"] != "" and $archive == "0") {
 			if( $_SESSION["f_EndDate"] == "0" ) {
 				$query .= " AND IF((SH.KA_ID IS NULL AND OD.StartDate IS NULL), NULL, OD.EndDate) IS NULL";
@@ -961,13 +949,18 @@
 				AND StartDate LIKE '%{$_SESSION["f_SD"]}%'
 			";
 		}
+		if ($_SESSION["f_ED"] != "" and ($archive == "2" or $archive == "3")) {
+			$query .= "
+				AND EndDate LIKE '%{$_SESSION["f_ED"]}%'
+			";
+		}
 		if ($_SESSION["f_SH"] != "") {
 			$query .= "
 				AND Shop LIKE '%{$_SESSION["f_SH"]}%'
 			";
 		}
 	}
-	else {  // Если в отгрузке - показываем список этой отгрузки
+	else { // Если в отгрузке - показываем список этой отгрузки
 		$query .= "
 			AND OD.SHP_ID = {$_GET["shpid"]}
 		";
