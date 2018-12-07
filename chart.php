@@ -22,19 +22,43 @@ $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $
 $average_power = mysqli_result($res,0,'Amount');
 $normal = "$average_power, $average_power, $average_power";
 
-//Мощность производства за прошедшую неделю
+//Мощность производства за прошедшую неделю (7)
+$query = "
+	SELECT IFNULL(ROUND(SUM(ODD.Amount)/1), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 1 AND 7
+		AND OD.DelDate IS NULL
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$current_power_week = mysqli_result($res,0,'Amount');
+
+//Мощность производства за прошедший месяц (28)
 $query = "
 	SELECT IFNULL(ROUND(SUM(ODD.Amount)/4), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
-	WHERE DATEDIFF(NOW(), OD.ReadyDate) < 28
+	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 1 AND 28
 		AND OD.DelDate IS NULL
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$current_power = mysqli_result($res,0,'Amount');
+$current_power_month = mysqli_result($res,0,'Amount');
+
+//Мощность производства за прошедший квартал (91)
+$query = "
+	SELECT IFNULL(ROUND(SUM(ODD.Amount)/13), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 1 AND 91
+		AND OD.DelDate IS NULL
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$current_power_quarter = mysqli_result($res,0,'Amount');
 
 // Вычисляем текущую на грузку на производство
-$load = round(($current_power/$average_power)*100);
+$load_week = round(($current_power_week/$average_power)*100);
+$load_month = round(($current_power_month/$average_power)*100);
+$load_quarter = round(($current_power_quarter/$average_power)*100);
 
 // Получаем последовательность недель для отчета и цвета
 $query = "
@@ -492,7 +516,25 @@ $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $
 $hold_others_opt = mysqli_result($res,0,'Amount');
 
 ?>
-<h2>Загруженность производства: <font color="red"><?=$load?>%</font> <i class="fa fa-question-circle" title="Количество отгруженной продукции за последние 4 недели (средний производственный цикл) относительно среднегодового показателя"></i></h2>
+<table>
+	<thead>
+		<tr>
+			<th></th>
+			<th>неделя</th>
+			<th>месяц</th>
+			<th>квартал</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><b>Загруженность производства:</b></td>
+			<td><b><font color="red"><?=$load_week?>%</font> <i class="fas fa-question-circle" title="Количество отгруженной продукции за последние 7 дней относительно среднегодового показателя"></i></b></td>
+			<td><b><font color="goldenrod"><?=$load_month?>%</font> <i class="fas fa-question-circle" title="Количество отгруженной продукции за последние 28 дней относительно среднегодового показателя"></i></b></td>
+			<td><b><font color="green"><?=$load_quarter?>%</font> <i class="fas fa-question-circle" title="Количество отгруженной продукции за последние 91 дней относительно среднегодового показателя"></i></b></td>
+		</tr>
+	</tbody>
+</table>
+
 <canvas id="myChart" width="400" height="130"></canvas>
 <script>
 	var barChartData = {
