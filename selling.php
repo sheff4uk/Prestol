@@ -300,17 +300,7 @@
 			SELECT OS.year
 				,OS.month
 			FROM OstatkiShops OS
-			WHERE OS.CT_ID = {$CT_ID} AND ( OS.pay_in > 0 OR OS.pay_out > 0 ) AND OS.locking_date IS NOT NULL
-
-			UNION
-
-			SELECT IFNULL(YEAR(OD.StartDate), 0) year
-				,IFNULL(MONTH(OD.StartDate), 0) month
-			FROM OrdersData OD
-			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
-			LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = {$CT_ID}
-			WHERE OD.DelDate IS NULL AND OS.locking_date IS NOT NULL AND SH.CT_ID = {$CT_ID}
-			GROUP BY year, month
+			WHERE OS.CT_ID = {$CT_ID} AND OS.locking_date IS NOT NULL
 			ORDER BY year DESC, month DESC
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -323,20 +313,12 @@
 		echo "</div></div>";
 
 		$query = "
-			SELECT OS.year
-				,OS.month
-			FROM OstatkiShops OS
-			WHERE OS.CT_ID = {$CT_ID} AND ( OS.pay_in > 0 OR OS.pay_out > 0 ) AND OS.locking_date IS NULL
-
-			UNION
-
 			SELECT IFNULL(YEAR(OD.StartDate), 0) year
 				,IFNULL(MONTH(OD.StartDate), 0) month
 			FROM OrdersData OD
-			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
-			LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = {$CT_ID}
-			WHERE OD.DelDate IS NULL AND OS.locking_date IS NULL AND SH.CT_ID = {$CT_ID}
-			GROUP BY YEAR(OD.StartDate), MONTH(OD.StartDate)
+			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 AND SH.CT_ID = {$CT_ID}
+			WHERE OD.is_lock = 0
+			GROUP BY IFNULL(YEAR(OD.StartDate), 0), IFNULL(MONTH(OD.StartDate), 0)
 
 			UNION
 
@@ -952,7 +934,7 @@
 				,Payment_sum(OD.OD_ID) payment_sum
 				,CheckPayment(OD.OD_ID) attention
 				,Items_count(OD.OD_ID) items
-				,IF(OS.locking_date IS NOT NULL, 1, 0) is_lock
+				,OD.is_lock
 				,IF(OD.DelDate IS NOT NULL, 1, 0) is_del
 				,OD.confirmed
 				,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
@@ -960,12 +942,11 @@
 				,PFI.platelshik_id
 				,OD.taken
 			FROM OrdersData OD
-			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.KA_ID IS NULL
+			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 AND SH.CT_ID = {$CT_ID}
 				".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
 			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 			LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
-			LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-			WHERE SH.CT_ID = {$CT_ID}
+			WHERE 1
 			".(($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year)."
 			ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.AddDate ASC, OD.OD_ID ASC
 		";

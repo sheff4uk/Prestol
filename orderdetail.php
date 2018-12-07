@@ -11,15 +11,14 @@
 				,OD.Code
 				,IFNULL(YEAR(OD.StartDate), 0) start_year
 				,IFNULL(MONTH(OD.StartDate), 0) start_month
-				,IF(OS.locking_date IS NOT NULL AND SH.retail, 1, 0) is_lock
+				,OD.is_lock
 				,OD.confirmed
 				,IF(OD.DelDate IS NULL, 0, 1) Del
 				,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
 			FROM OrdersData OD
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-			LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 			WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}
-				".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
+				".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."
 				".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")
 		;
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

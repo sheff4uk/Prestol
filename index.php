@@ -796,7 +796,7 @@
 			,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 			,OD_IsReady(OD.OD_ID) IsReady
 			,IFNULL(OD.SHP_ID, 0) SHP_ID
-			,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
+			,OD.is_lock
 			,OD.confirmed
 			,IF(OD.DelDate IS NULL, 0, 1) Del
 			,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
@@ -871,7 +871,6 @@
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
-		LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 		WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
 		".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."

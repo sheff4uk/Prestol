@@ -694,19 +694,16 @@ case "invoice":
 							,OD.SH_ID
 							,SH.Shop
 							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
-							,IF(OS.locking_date IS NOT NULL AND IF(SH.KA_ID IS NULL, 1, 0), 1, 0) is_lock
 						FROM OrdersData OD
-						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-						LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
+						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
 						LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 AND PFI.rtrn != 1
-						WHERE SH.CT_ID = {$CT_ID}
+						WHERE OD.DelDate IS NULL
 							".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.KA_ID IS NULL AND OD.ul = 1")."
 							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-							AND OD.DelDate IS NULL
 							".($num_rows > 0 ? "AND (OD.StartDate IS NOT NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NOT NULL))" : "AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))")."
 							AND OD.ReadyDate IS NOT NULL
 							AND Payment_sum(OD.OD_ID) = 0
-							AND NOT (OS.locking_date IS NOT NULL AND SH.KA_ID IS NULL)
+							AND OD.is_lock = 0
 						GROUP BY OD.OD_ID
 						ORDER BY OD.ReadyDate ".($num_rows > 0 ? "DESC LIMIT {$num_rows}" : "ASC");
 
@@ -841,11 +838,10 @@ case "add_payment":
 					,SH.SH_ID
 					,SH.Shop
 					,SH.FA_ID
-					,IF(OS.locking_date IS NOT NULL, 1, 0) is_lock
+					,OD.is_lock
 					,IF(OD.DelDate IS NOT NULL, 1, 0) is_del
 				FROM OrdersData OD
 				JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-				LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
 				WHERE OD.OD_ID = {$OD_ID}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	$ClientName = mysqli_result($res,0,'ClientName');
