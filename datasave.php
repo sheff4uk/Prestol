@@ -56,6 +56,21 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$edge = ($edge != '') ? "'$edge'" : "NULL";
 	$Comment = ($Comment != '') ? "'$Comment'" : "NULL";
 
+	// Узнаем прошлого поставщика и ID заказа
+	$query = "
+		SELECT ODD.OD_ID
+			,IFNULL(MT.SH_ID, 'NULL') SH_ID
+			,ODD.Price - IFNULL(ODD.discount, 0) price
+		FROM OrdersDataDetail ODD
+		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+		WHERE ODD.ODD_ID = {$_GET["oddid"]}
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$row = mysqli_fetch_array($res);
+	$old_Shipper = $row["SH_ID"];
+	$od_id = $row["OD_ID"];
+	$price = $row["price"];
+
 	// Сохраняем в таблицу материалов полученный материал и узнаем его ID
 	if ($Material != '') {
 		$Material = mysqli_real_escape_string($mysqli, $Material);
@@ -79,37 +94,58 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 		$mt_id = "NULL";
 	}
 
+	// Обновляем записи не влияющие на цену
 	$query = "
 		UPDATE OrdersDataDetail
-		SET PM_ID = {$Model}
-			,BL_ID = {$Blank}
+		SET BL_ID = {$Blank}
 			,Other = {$Other}
 			,edge = {$edge}
-			,Length = {$Length}
-			,Width = {$Width}
-			,PieceAmount = {$PieceAmount}
-			,PieceSize = {$PieceSize}
 			,piece_stored = {$piece_stored}
-			,PF_ID = {$Form}
-			,PME_ID = {$Mechanism}
-			,box = {$box}
 			,MT_ID = {$mt_id}
 			,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
-			,Amount = {$_POST["Amount"]}
 			,Comment = {$Comment}
 			,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
 			,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 			,author = {$_SESSION['id']}
+		WHERE ODD_ID = {$_GET["oddid"]}
+	";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+	// Обновляем количество
+	$query = "
+		UPDATE OrdersDataDetail
+		SET Amount = {$_POST["Amount"]}
+		WHERE ODD_ID = {$_GET["oddid"]}
+	";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	if (mysqli_affected_rows($mysqli) and $price) {
+		$query = "
+			UPDATE OrdersData SET change_price = 1, author = {$_SESSION['id']} WHERE OD_ID = {$od_id}
+		";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	}
+
+	//Обновляем записи, влияющие на цену
+	$query = "
+		UPDATE OrdersDataDetail
+		SET PM_ID = {$Model}
+			,Length = {$Length}
+			,Width = {$Width}
+			,PieceAmount = {$PieceAmount}
+			,PieceSize = {$PieceSize}
+			,PF_ID = {$Form}
+			,PME_ID = {$Mechanism}
+			,box = {$box}
 			,ptn = $ptn
 		WHERE ODD_ID = {$_GET["oddid"]}
 	";
-	if (!mysqli_query( $mysqli, $query )) {
-		$_SESSION["error"][] = mysqli_error( $mysqli );
-	}
-
-	// Вычисляем и обновляем стоимость по прайсу
-	$query = "CALL Price({$_GET["oddid"]})";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+	// Если были изменения обновляем цену
+	if (mysqli_affected_rows($mysqli) or $old_Shipper != $Shipper) {
+		$query = "CALL Price({$_GET["oddid"]})";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	}
 
 	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#prod'.$_GET["oddid"].'">');
 	die;

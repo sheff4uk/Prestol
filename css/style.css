@@ -28,8 +28,8 @@ body, td {
 	margin: 0 20px;
 	color: #333;
 	font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
-	//font-family: Verdana, Trebuchet MS, Tahoma, Arial, sans-serif;
-	//font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+/*	font-family: Verdana, Trebuchet MS, Tahoma, Arial, sans-serif;*/
+/*	font-family: Helvetica Neue, Helvetica, Arial, sans-serif;*/
 	font-size: 10pt;
 }
 
@@ -73,7 +73,7 @@ th {
 }
 
 tr:target td {
-//	background: #dfb;
+/*	background: #dfb;*/
 }
 
 tr:target {
@@ -90,7 +90,7 @@ tbody tr:nth-child(odd){ /* Задаем стили для нечетных ря
  
 tbody tr:nth-child(even){ /* Задаем стили для четных рядов таблицы */
 	background: #fff;
-//	background: #e2f6f8;
+/*	background: #e2f6f8;*/
 }
 
 .code {
@@ -162,10 +162,7 @@ pre {
 .addproduct > form > fieldset > div {
 	width: 100%;
 	margin: 1em 0;
-	//display: flex;
-}
-.edit_product0, .edit_product1, .edit_product2 {
-	cursor: pointer;
+/*	display: flex;*/
 }
 .not_edit_product {
 	color: #333;
@@ -176,7 +173,7 @@ pre {
 }
 
 :required {
-	//box-shadow: 0px 0px 10px #911;
+/*	box-shadow: 0px 0px 10px #911;*/
 	box-shadow: 0px 0px 8px 0px #f00;
 }
 
@@ -185,10 +182,10 @@ pre {
 }
 
 .step {
-//	margin: 0 !important;
+/*	margin: 0 !important;*/
 	display: inline-block;
 	text-align: center;
-//	border: 1px solid #999;
+/*	border: 1px solid #999;*/
 	color: #333;
 }
 
@@ -204,21 +201,27 @@ pre {
 	cursor: pointer;
 }
 
-//#formsteps label {
-//	width: 80px;
-//}
+/*
+#formsteps label {
+	width: 80px;
+}
+*/
 
 input[type="checkbox"].isready + label {
 	width: 80px;
 }
 
-//#formsteps input[type="checkbox"]:checked + label:before {
-//	content: "Готово";
-//}
+/*
+#formsteps input[type="checkbox"]:checked + label:before {
+	content: "Готово";
+}
+*/
 
-//#formsteps label:before {
-//	content: "В работе";
-//}
+/*
+#formsteps label:before {
+	content: "В работе";
+}
+*/
 
 input[type="checkbox"].isready:checked + label:before {
 	content: "Готово";
@@ -244,9 +247,9 @@ input[type="checkbox"].nightshift + label {
 }
 
 .edit_steps label{
-//	width: 100px;
+/*	width: 100px;*/
 	text-align: left;
-//	font-size: .9em;
+/*	font-size: .9em;*/
 }
 
 .nowrap {
@@ -325,55 +328,61 @@ input[type="checkbox"].nightshift + label {
 
 .bg-red {
 	background-color: lightcoral;
-//	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+/*	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);*/
 	border-radius: 20%;
 }
 
 .bg-yellow {
 	background-color: #eded00;
-//	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+/*	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);*/
 	border-radius: 20%;
 }
 
 .bg-green {
 	background-color: chartreuse;
-//	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+/*	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);*/
 	border-radius: 20%;
 }
 
 .bg-gray {
 	background-color: #ddd;
-//	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+/*	box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);*/
 	border-radius: 20%;
 }
 
-//.b-string {
-//    position: relative;
-//    width: 100px;
-//    margin-left: 5px;
-//    overflow: hidden;
-//    white-space: nowrap
-// }
-//.b-string:hover {
-//	z-index: 1;
-//	position: absolute;
-//	display: table;
-//	box-shadow: 0px 0px 10px #999;
-//	border-radius: 5px;
-//	background: rgba(255,255,255, .8);
-//}
+/*
+.b-string {
+	position: relative;
+	width: 100px;
+	margin-left: 5px;
+	overflow: hidden;
+	white-space: nowrap
+}
+*/
+/*
+.b-string:hover {
+	z-index: 1;
+	position: absolute;
+	display: table;
+	box-shadow: 0px 0px 10px #999;
+	border-radius: 5px;
+	background: rgba(255,255,255, .8);
+}
+*/
 .printlist {
-    display: inline-block;
-    vertical-align: top;
-    border: 1px solid #777;
-    border-radius: 7px;
-    padding: 10px;
-    margin: 10px;
+	display: inline-block;
+	vertical-align: top;
+	border: 1px solid #777;
+	border-radius: 7px;
+	padding: 10px;
+	margin: 10px;
 }
 
+/*
 .radiostatus {
-	//display: inline-block;
+	display: inline-block;
 }
+*/
 .free-amount input + span {
 	display: none;
 }
@@ -388,11 +397,11 @@ input[type="checkbox"].nightshift + label {
 .print_row + label{
 	position: absolute;
 	display: none;
-//	left: -20px;
+/*	left: -20px;*/
 }
 
 .main_table thead input[type="text"] {
-	//display: block;
+/*	display: block;*/
 	margin: 0 auto;
 	width: 100%;
 }
@@ -401,13 +410,13 @@ input[type="checkbox"].nightshift + label {
 	display: block;
 }
 .navbar {
-    background-color: #222;
-    border-color: #080808;
+	background-color: #222;
+	border-color: #080808;
 	position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 10;
-    margin-left: -20px;
+	top: 0;
+	width: 100%;
+	z-index: 10;
+	margin-left: -20px;
 }
 .navbar a {
 	text-decoration: none;
@@ -418,20 +427,20 @@ input[type="checkbox"].nightshift + label {
 .navbar-brand {
 	color: #9d9d9d;
 	float: left;
-    height: 50px;
-    padding: 15px 15px;
-    font-size: 18px;
-    line-height: 20px;
+	height: 50px;
+	padding: 15px 15px;
+	font-size: 18px;
+	line-height: 20px;
 }
 .navbar-brand:hover, .navbar-brand:focus {
-    color: #fff;
-    background-color: transparent;
+	color: #fff;
+	background-color: transparent;
 }
 .navbar-nav {
 	float: right;
 	padding-left: 0;
-    margin: 0;
-    list-style: none;
+	margin: 0;
+	list-style: none;
 }
 .navbar-nav > li {
 	float: left;
@@ -476,14 +485,14 @@ input.amount {
 	width: 100%;
 }
 .main_table td, .main_table th {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    z-index: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	z-index: 1;
 	transition: .3s;
 }
 .main_table td:hover, .main_table th:hover {
 	overflow: visible;
-//	position: relative;
+/*	position: relative;*/
 }
 .main_table td:hover {
 	position: relative;
@@ -493,9 +502,9 @@ input.amount {
 	transition: .3s;
 }
 .main_table td:hover > span {
-    background: #ffa;
-    padding: 4px 0;
-    box-shadow: 5px 5px 8px #666;
+	background: #ffa;
+	padding: 4px 0;
+	box-shadow: 5px 5px 8px #666;
 }
 .main_table th:not(#MT_filter):hover {
 	color: #fff;
@@ -638,7 +647,7 @@ td.tscell > i {
 	left: 25%;
 	z-index: 12;
 	text-align: center;
-//	box-shadow: 0 0 10px #666;
+/*	box-shadow: 0 0 10px #666;*/
 }
 
 .filtered {
@@ -651,7 +660,7 @@ td.tscell > i {
 
 .wr_main_table_body {
 	height: calc(100vh - 225px);
-//	position: absolute;
+/*	position: absolute;*/
 	overflow-y: scroll;
 	background: #fff;
 	overflow-x: hidden;
@@ -748,7 +757,7 @@ td.tscell > i {
 	white-space: nowrap;
 }
 .removed {
-	//color: #911;
+/*	color: #911;*/
 	text-decoration: line-through;
 }
 
@@ -793,9 +802,9 @@ td.tscell > i {
 	height: 300px;
 	margin-top: 10px;
 	background: #fff;
-	//border: 1px solid #bbb;
+/*	border: 1px solid #bbb;*/
 	padding: 10px;
-	//border-radius: 10px;
+/*	border-radius: 10px;*/
 	position: relative;
 }
 #order_log_table, #order_message, #attachments {
@@ -839,7 +848,7 @@ td.tscell > i {
 }
 
 #MT_filter {
-//	position: relative;
+/*	position: relative;*/
 }
 #MT_filter > div {
 /*
@@ -852,7 +861,7 @@ td.tscell > i {
 */
 }
 #MT_filter:hover > div {
-//	overflow: visible;
+/*	overflow: visible;*/
 }
 
 .aside-nav {

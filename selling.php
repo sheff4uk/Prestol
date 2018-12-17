@@ -146,10 +146,33 @@
 				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 
+			// Обновляем автора
+			$query = "UPDATE OrdersDataDetail SET author = NULL WHERE OD_ID = {$OD_ID} AND Del = 0";
+			mysqli_query( $mysqli, $query );
+
 			// Очищаем скидку
-			$query = "UPDATE OrdersDataDetail SET discount = NULL, author = NULL WHERE OD_ID = {$OD_ID}";
-			if( mysqli_multi_query( $mysqli, $query ) ) {
-				$_SESSION["alert"][] = "Скидка по заказу была обнулена.";
+			$query = "UPDATE OrdersDataDetail SET discount = NULL WHERE OD_ID = {$OD_ID} AND Del = 0";
+			if( mysqli_query( $mysqli, $query ) ) {
+				// Если были изменения
+				if (mysqli_affected_rows($mysqli)) {
+					$_SESSION["alert"][] = "Скидка по заказу была обнулена.";
+				}
+			}
+			else {
+				$_SESSION["error"][] = mysqli_error( $mysqli );
+			}
+
+			// Пересчитываем стоимость по прайсу
+			$query = "UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 1) WHERE OD_ID = {$OD_ID} AND Del = 0";
+			mysqli_query( $mysqli, $query );
+
+			// Ставим цену по прайсу
+			$query = "UPDATE OrdersDataDetail SET Price = IF(IFNULL(min_price, 0) > 0, min_price, Price) WHERE OD_ID = {$OD_ID} AND Del = 0";
+			if( mysqli_query( $mysqli, $query ) ) {
+				// Если были изменения
+				if (mysqli_affected_rows($mysqli)) {
+					$_SESSION["alert"][] = "Была установлена стоимость по прайсу.";
+				}
 			}
 			else {
 				$_SESSION["error"][] = mysqli_error( $mysqli );

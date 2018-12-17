@@ -1046,10 +1046,10 @@
 		while( $subrow = mysqli_fetch_array($subres) ) {
 			// Если есть примечание
 			if ($subrow["Comment"]) {
-				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}" : "not_edit_product")."' title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}' href='#'" : "not_edit_product'")." title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
 			}
 			else {
-				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}" : "not_edit_product")."'><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}' href='#'" : "not_edit_product'")."><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
 			}
 
 			if ($subrow["IsExist"] == "0") {
