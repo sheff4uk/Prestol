@@ -171,11 +171,11 @@
 						<div class="prod" style="font-size: 24px; height: 55px; line-height: 55px;" fontSize="24">&nbsp;&nbsp;&nbsp;<?=$row["product"]?><?=($row["Amount"] > 1 ? " {$row["Amount"]} шт." : "")?>&nbsp;&nbsp;&nbsp;</div>
 					</div>
 					<div style="display: flex; height: 103px;">
-						<div style="width: 19%; text-align: center; color: #C00000; text-shadow: 3px 3px 5px #666;">
+						<div style="width: 18%; text-align: center; color: #C00000; text-shadow: 3px 3px 5px #666;">
 							<?=($row["PieceAmount"] == 2 ? "<br>ДВЕ<br>ВСТАВКИ" : "")?>
 							<?=($row["PieceAmount"] == 3 ? "<br>ТРИ<br>ВСТАВКИ" : "")?>
 						</div>
-						<div style="width: 21%; text-align: right; padding: 5px;">
+						<div style="width: 22%; text-align: right; padding: 5px;">
 							<?=($row["size"] ? "<i>Размер</i><br>" : "")?>
 							<?=($row["mechanism"] ? "<i>Механизм</i><br>" : "")?>
 							<?=($row["materials"] ? "<i>Материалы</i><br>" : "")?>
