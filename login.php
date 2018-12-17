@@ -177,8 +177,8 @@ if (isset($_POST['submit'])) {
 ?>
 	<style>
 		body {
-			background: url(img/curve-wood-texture-tekstura.jpg) center !important;
-			//background: url(img/oboi-ng-2018-7.jpg) center !important;
+			//background: url(img/curve-wood-texture-tekstura.jpg) center !important;
+			background: url(img/oboi-ng-2018-7.jpg) center !important;
 			background-size: cover!important;
 			height: 100vh;
 		}
