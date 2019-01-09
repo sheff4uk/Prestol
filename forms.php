@@ -39,17 +39,18 @@
 	$ModelPatina = array();
 	$ModelDefForm = array();
 	$query = "
-		SELECT PM.PM_ID, PM.ptn, MIN(PMF.PF_ID) PF_ID
+		SELECT PM.PM_ID, PM.ptn, MIN(PMF.PF_ID) PF_ID, SUM(1) cnt
 		FROM ProductModels PM
 		LEFT JOIN ProductModelsForms PMF ON PMF.PM_ID = PM.PM_ID AND PMF.standart = 1
+		WHERE PM.PT_ID = 2
 		GROUP BY PM.PM_ID
-		UNION
-		SELECT 0, 0, 1
 	";
 	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($result) ) {
 		$ModelPatina[$row["PM_ID"]] = [$row["ptn"]];
-		$ModelDefForm[$row["PM_ID"]] = [$row["PF_ID"]];
+		if ($row["cnt"] == 1) {
+			$ModelDefForm[$row["PM_ID"]] = [$row["PF_ID"]];
+		}
 	}
 
 	// Массив стандартных размеров
@@ -575,19 +576,19 @@
 		var informs = 0;
 		if( typeof arr_model !== "undefined" ) {
 			$.each(arr_model, function(key, val){
-				forms += "<input type='radio' id='form" + key + "' name='Form' value='" + key + "' standart='"+arr_standart[key]+"'>";
+				forms += "<input type='radio' required id='form" + key + "' name='Form' value='" + key + "' standart='"+arr_standart[key]+"'>";
 				forms += "<label for='form" + key + "'>" + val + "</label>";
 				if( form == key ) { informs = 1; }
 			});
 		}
 		$('#addtable #forms').html(forms);
 		if( forms != "" ) {
-			if( form > 0 && informs ) {
-				$('#addtable input[name="Form"][value="'+form+'"]').prop('checked', true);
-			}
-			else {
+//			if( form > 0 && informs ) {
+//				$('#addtable input[name="Form"][value="'+form+'"]').prop('checked', true);
+//			}
+//			else {
 				$('#addtable input[name="Form"][value="'+ModelDefForm[model]+'"]').prop('checked', true);
-			}
+//			}
 			$('#addtable #forms').buttonset();
 		}
 		var val = $('#addtable input[name="Form"]:checked').val();
