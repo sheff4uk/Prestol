@@ -22,7 +22,7 @@ if( !in_array('order_add', $Rights) ) {
 		// Узнаем категорию подразделения (розница, опт, региональный опт) чтобы вычислить цену
 		$query = "
 			SELECT IF(SH.retail = 1, 1, IF(SH.reg = 1, 3, IF(SH.retail IS NOT NULL, 2, 0))) type
-			OrdersData OD
+			FROM OrdersData OD
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			WHERE OD.OD_ID = {$id}
 		";
