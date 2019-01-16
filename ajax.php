@@ -876,7 +876,7 @@ case "add_payment":
 	$query = "SELECT OP.OP_ID
 					,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
 					,OP.payment_sum
-					,IF(IFNULL(OP.terminal_payer, '') = '', 0, 1) terminal
+					,IF(OP.terminal_payer IS NOT NULL AND OP.FA_ID IS NOT NULL, 1, 0) terminal
 					,OP.terminal_payer
 					,IFNULL(OP.FA_ID, 0) FA_ID
 					,USR_Icon(OP.author) Name
