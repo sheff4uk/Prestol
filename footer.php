@@ -1,3 +1,7 @@
+<?
+	// Выводим собранные в сесии сообщения через noty
+	include "noty.php";
+?>
 </div>
 <div style="
 	height: 40px;

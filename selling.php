@@ -179,7 +179,7 @@
 			}
 		}
 		else {
-			$_SESSION["alert"][] = "Заказ не продан! Установите дату продажи и повторите попытку.";
+			$_SESSION["error"][] = "Заказ не продан! Установите дату продажи и повторите попытку.";
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
@@ -1141,6 +1141,11 @@
 			echo "<script>";
 			echo "$('#ord{$row["OD_ID"]} select').val('{$row["SH_ID"]}');";
 			echo "</script>";
+
+			// Собираем ошибки если у проданного заказа нет предоплаты
+			if ($row["Price"] - $row['discount'] > 0 and $row["StartDate"] and !$is_del and $row["payment_sum"] == 0 and !$row["PFI_ID"]) {
+				$_SESSION["error"][] = "Заказ <a href='#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a> продан {$row["StartDate"]}, но предоплата не внесена!";
+			}
 		}
 		?>
 		</tbody>
