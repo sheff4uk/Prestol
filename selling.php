@@ -1143,7 +1143,7 @@
 			echo "</script>";
 
 			// Собираем ошибки если у проданного заказа нет предоплаты
-			if ($row["Price"] - $row['discount'] > 0 and $row["StartDate"] and !$is_del and $row["payment_sum"] == 0 and !$row["PFI_ID"]) {
+			if ($row["Price"] - $row['discount'] > 0 and $row["StartDate"] and !$is_del and $row["payment_sum"] == 0 and !$row["PFI_ID"] and $row["ul"] == 0) {
 				$_SESSION["error"][] = "Заказ <a href='#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a> продан {$row["StartDate"]}, но предоплата не внесена!";
 			}
 		}
