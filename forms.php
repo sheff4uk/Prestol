@@ -132,7 +132,7 @@
 			<br>
 		</div>
 		<div>
-			<label>Ткань и поставщик:</label>
+			<label>Ткань:</label>
 			<input type='text' class='materialtags_1 all' name='Material' style='width: 200px;'>
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
 				<?
@@ -283,7 +283,7 @@
 			<br>
 		</div>
 		<div>
-			<label>Пластик и поставщик:</label>
+			<label>Пластик:</label>
 			<input type='text' class="materialtags_2 all" name='Material' style="width: 200px;">
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
 				<?
@@ -402,7 +402,7 @@
 				<br>
 			</div>
 			<div>
-				<label>Ткань и поставщик:</label>
+				<label>Ткань:</label>
 				<input type='text' class='materialtags_1 all' name='Material' style='width: 200px;'>
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
 					<?
@@ -415,7 +415,7 @@
 				</select>
 			</div>
 			<div>
-				<label>Пластик и поставщик:</label>
+				<label>Пластик:</label>
 				<input type='text' class="materialtags_2 all" name='Material' style="width: 200px;">
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
 					<?
@@ -902,6 +902,7 @@
 				}
 
 				$('#2ptn'+odd_data['ptn']).prop('checked', true);
+				$('#form'+form).prop('checked', true);
 				$('#mechanism'+mechanism).prop('checked', true);
 					piece_from_mechanism(mechanism);
 
@@ -945,7 +946,7 @@
 				patina_model_list(0, 2);
 			}
 
-			form_model_list(model, form);
+//			form_model_list(model, form);
 			mech_model_list(model, mechanism);
 
 			$("#addtable").dialog(
