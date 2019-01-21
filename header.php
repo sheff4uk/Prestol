@@ -351,8 +351,12 @@
 			</div>
 			<?
 			}
+			if (!empty($_SESSION['id'])) {
 			?>
 			<a href="calc.php" id="navbar_calc" title="Калькулятор стоимости стола"><i class="fas fa-calculator fa-2x"></i></a>
+			<?
+			}
+			?>
 		</div>
 
 		<script>
