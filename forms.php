@@ -296,7 +296,8 @@
 			</select>
 		</div>
 		<?
-		if( in_array('order_add_confirm', $Rights) ) {
+		if ($page != "calc") {
+			if (in_array('order_add_confirm', $Rights)) {
 		?>
 		<div>
 			<label>Наличие:</label>
@@ -319,7 +320,7 @@
 			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 		</div>
 		<?
-		}
+			}
 		?>
 		<div>
 			<label>Кромка ПВХ:</label>
@@ -329,6 +330,9 @@
 			<label>Примечание:</label>
 			<textarea name='Comment' rows='3' cols='38'></textarea>
 		</div>
+		<?
+		}
+		?>
 		</fieldset>
 		<div>
 			<hr>
@@ -785,7 +789,7 @@
 			}
 			else // Иначе добавляем новый стул
 			{
-				$('#addchair form').attr('action', 'orderdetail.php?id='+odid+'&add=1');
+				$('#addchair form').attr('action', 'orderdetail.php?id='+odid+'&add');
 				patina_model_list(0, 1);
 			}
 
@@ -935,14 +939,24 @@
 
 				materialonoff('#addtable');
 
-				$("#addtable form").attr("action", "datasave.php?oddid="+id+"&location="+location);
+				if (odid == 0) {
+					$("#addtable form").attr("action", "orderdetail.php?id="+odid+"&location="+location+"&add");
+				}
+				else {
+					$("#addtable form").attr("action", "datasave.php?oddid="+id+"&location="+location);
+				}
 			}
 			else // Иначе добавляем новый стол
 			{
 				model = 0;
 				form = 0;
 				mechanism = 0;
-				$("#addtable form").attr("action", "orderdetail.php?id="+odid+"&add=1");
+				if (odid == 0) {
+					$("#addtable form").attr("action", "orderdetail.php?id="+odid+"&location="+location+"&add");
+				}
+				else {
+					$("#addtable form").attr("action", "orderdetail.php?id="+odid+"&add");
+				}
 				patina_model_list(0, 2);
 			}
 
@@ -1123,7 +1137,7 @@
 			}
 			else // Иначе добавляем новую заготовку
 			{
-				$('#addblank form').attr('action', 'orderdetail.php?id='+odid+'&add=1');
+				$('#addblank form').attr('action', 'orderdetail.php?id='+odid+'&add');
 			}
 
 			// Если нет материала, то кнопка наличия не активна

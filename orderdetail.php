@@ -2,7 +2,7 @@
 	include "config.php";
 	include "checkrights.php";
 
-	if( isset($_GET["id"]) and (int)$_GET["id"] > 0 )
+	if( isset($_GET["id"]) )
 	{
 		// Проверка прав на доступ к экрану
 		// Проверка города
@@ -38,7 +38,7 @@
 		// Запрет на редактирование
 		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$is_lock and !$Archive and !$Del );
 
-		if( !$OD_ID ) {
+		if( !$OD_ID and (int)$_GET["id"] > 0) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 			die('Недостаточно прав для совершения операции');
 		}
@@ -147,7 +147,7 @@
 	}
 
 	// Добавление в базу нового изделия. Заполнение этапов.
-	if ( isset($_GET["add"]) and $_GET["add"] == 1 and !$disabled )
+	if ( isset($_GET["add"]) and !$disabled )
 	{
 		// Узнаем возможен ли ящик для этой модели с таким механизмом
 		if( $_POST["Mechanism"] and $_POST["Model"] ) {
@@ -219,17 +219,23 @@
 		}
 
 		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, edge, Length, Width, PieceAmount, PieceSize, piece_stored, PF_ID, PME_ID, box, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, author, ptn)
-				  VALUES ({$id}, {$Model}, {$Blank}, {$Other}, {$edge}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$piece_stored}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$odd_id = mysqli_insert_id( $mysqli );
-
-		$_SESSION["odd_id"] = $odd_id; // Cохраняем в сессию id вставленной записи
-
-		// Вычисляем и записываем стоимость по прайсу
-		$query = "CALL Price({$odd_id})";
+				  VALUES (IF({$id} > 0, {$id}, NULL), {$Model}, {$Blank}, {$Other}, {$edge}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$piece_stored}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#'.$odd_id.'">');
+		if ($id > 0) {
+			$odd_id = mysqli_insert_id( $mysqli );
+
+			$_SESSION["odd_id"] = $odd_id; // Cохраняем в сессию id вставленной записи
+
+			// Вычисляем и записываем стоимость по прайсу
+			$query = "CALL Price({$odd_id})";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			exit ('<meta http-equiv="refresh" content="0; url='.$location.'#'.$odd_id.'">');
+		}
+		else {
+			exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
+		}
 		die;
 	}
 	else {
@@ -743,7 +749,6 @@ if( $id != "NULL" ) {
 			</table>
 		</div>
 		<div id="order_message">
-<!--			<p style='color: #911;'>Занимательный факт:</p>-->
 			<p style='color: #911;'>Если нажать на красный конверт слева от сообщения, то конверт станет зеленым - это означает, что сообщение прочитано. Оно так же исчезнет из уведомлений в верхнем-левом углу и там остануться только самые актуальные сообщения.</p>
 			<table style="width: 100%;">
 				<thead>

@@ -823,6 +823,7 @@ td.tscell > i {
 	border-radius: 50%;
 	cursor: pointer;
 	position: relative;
+	float: left;
 }
 #navbar_workflow > div {
 	width: 10px;
@@ -845,6 +846,15 @@ td.tscell > i {
 	width: 500px;
 	height: 400px;
 	opacity: 1;
+}
+
+#navbar_calc {
+	cursor: pointer;
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	margin: 13px;
+	float: left;
 }
 
 #MT_filter {
