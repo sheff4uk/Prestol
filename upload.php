@@ -32,11 +32,11 @@ if (is_dir($dir)) {
 	}
 }
 
-//// Каталог, в который мы будем принимать файл:
-//$filename = date('U').'_'.$_FILES['uploadfile']['name'];
-//$uploaddir = './uploads/';
-//$uploadfile = $uploaddir.basename($filename);
-//
+// Каталог, в который мы будем принимать файл:
+$filename = date('U').'_'.$_FILES['uploadfile']['name'];
+$uploaddir = './uploads/';
+$uploadfile = $uploaddir.basename($filename);
+
 //// Копируем файл из каталога для временного хранения файлов:
 //if (copy($_FILES['uploadfile']['tmp_name'], $uploadfile))
 //{
