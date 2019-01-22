@@ -46,7 +46,7 @@ if (copy($_FILES['uploadfile']['tmp_name'], $uploadfile))
 //	$comment = convert_str($_POST["comment"]);
 //	$comment = mysqli_real_escape_string($mysqli, $comment);
 	$query = "INSERT INTO OrdersAttachments SET OD_ID = {$_POST["odid"]}, filename = '{$filename}', comment = '{$comment}'";
-	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	$_SESSION["success"][] = "Файл ".$_FILES['uploadfile']['name']." успешно загружен на сервер.";
 }
