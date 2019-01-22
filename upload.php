@@ -1,7 +1,6 @@
 <?
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 include "config.php";
+include "checkrights.php";
 session_start();
 
 // Удаляем старые файлы
@@ -45,10 +44,8 @@ if (copy($_FILES['uploadfile']['tmp_name'], $uploadfile))
 	// Записываем в БД информацию о файле
 	$comment = convert_str($_POST["comment"]);
 	$comment = mysqli_real_escape_string($mysqli, $comment);
-//	$comment = convert_str($_POST["comment"]);
-//	$comment = mysqli_real_escape_string($mysqli, $comment);
 	$query = "INSERT INTO OrdersAttachments SET OD_ID = {$_POST["odid"]}, filename = '{$filename}', comment = '{$comment}'";
-//	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	$_SESSION["success"][] = "Файл ".$_FILES['uploadfile']['name']." успешно загружен на сервер.";
 }
