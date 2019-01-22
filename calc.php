@@ -17,8 +17,8 @@
 				<th width="100">Розница</th>
 				<th width="100">Опт</th>
 				<th width="100">Рег. опт</th>
-				<th width="85">Дата<br>Время</th>
 				<th width="55">Автор</th>
+				<th width="85">Дата<br>Время</th>
 				<th width="70">Действие</th>
 			</tr>
 		</thead>
@@ -32,8 +32,8 @@
 				<th width="100"></th>
 				<th width="100"></th>
 				<th width="100"></th>
-				<th width="85"></th>
 				<th width="55"></th>
+				<th width="85"></th>
 				<th width="70"></th>
 			</tr>
 		</thead>
@@ -72,8 +72,8 @@
 					<td class='txtright'><p class='price'>{$row["rozn"]}</p></td>
 					<td class='txtright'><p class='price'>{$row["opt"]}</p></td>
 					<td class='txtright'><p class='price'>{$row["reg"]}</p></td>
-					<td>{$row["friendly_date"]}<br>{$row["Time"]}</td>
 					<td>{$row["Name"]}</td>
+					<td>{$row["friendly_date"]}<br>{$row["Time"]}</td>
 					<td><a href='#' title='Редактировать стол' id='{$row["ODD_ID"]}' odid='0' class='edit_product2' location='calc.php'><i class='fa fa-pencil-alt fa-lg'></i></a></td>
 				</tr>
 			";
