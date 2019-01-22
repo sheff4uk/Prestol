@@ -40,7 +40,8 @@
 		$category = ( $_POST["category"] and ( $type == -1 or $type == 1) ) ? $_POST["category"] : "NULL";
 		$to_account = ( $_POST["to_account"] and $type == 0 ) ? $_POST["to_account"] : "NULL";
 		$KA_ID = ( $_POST["kontragent"] and $category == 9 ) ? $_POST["kontragent"] : "NULL";
-		$coment = mysqli_real_escape_string( $mysqli, $_POST["comment"] );
+		$comment = convert_str($_POST["comment"]);
+		$coment = mysqli_real_escape_string( $mysqli, $comment );
 
 		if( $F_ID != 'add_operation_btn' ) { // Редактируем операцию
 			$query = "UPDATE Finance
