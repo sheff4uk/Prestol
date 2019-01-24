@@ -530,7 +530,7 @@
 							echo "<td class='txtright'>{$format_shop_report}</td>";
 						}
 						echo "<td class='txtright'>{$format_shop_price}</td>";
-						echo "<td class='txtright'>{$format_shop_discount}<i class='fa fa-question-circle' aria-hidden='true' title='{$shop_percent}%'></i></td>";
+						echo "<td class='txtright'>{$format_shop_discount} ({$shop_percent}%)</td>";
 						echo "<td class='txtright' style='color: #911;'>{$format_shop_otkaz}</td>";
 						echo "<td class='txtright'>{$format_shop_debt}</td>";
 						echo "<td class='txtright'>{$format_shop_cash}</td>";
@@ -550,7 +550,7 @@
 							echo "<td class='txtright'><b>{$format_city_report}</b></td>";
 						}
 						echo "<td class='txtright'><b>{$format_city_price}</b></td>";
-						echo "<td class='txtright'><b>{$format_city_discount}</b><i class='fa fa-question-circle' aria-hidden='true' title='{$city_percent}%'></td>";
+						echo "<td class='txtright'><b>{$format_city_discount} ({$city_percent}%)</b></td>";
 						echo "<td class='txtright' style='color: #911;'><b>{$format_city_otkaz}</b></td>";
 						echo "<td class='txtright'><b>{$format_city_debt}</b></td>";
 						echo "<td class='txtright'><b>{$format_city_cash}</b></td>";
