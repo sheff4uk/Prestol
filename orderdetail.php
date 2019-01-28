@@ -471,13 +471,13 @@
 			<td val='{$IsPainting}' class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $Archive == 0 and $Del == 0 and $IsPainting != 0 ) ? "painting " : "")." {$class}'>
 				<div class='painting_workers'>{$Name}</div>
 				<div style='background: lightgrey; cursor: auto;'>
-					<input type='text' id='paint_color' class='colortags' name='Color' style='width: 160px;' ".((!$disabled and $editable) ? "" : "disabled")." value='{$Color}'>
 					<div class='btnset'>
 						<input type='radio' id='clear1' name='clear' value='1' ".($clear == "1" ? "checked" : "").">
 							<label for='clear1'>Прозрачный</label>
 						<input type='radio' id='clear0' name='clear' value='0' ".($clear == "0" ? "checked" : "").">
 							<label for='clear0'>Эмаль</label>
 					</div>
+					<input type='text' id='paint_color' class='colortags' name='Color' style='width: 160px;' ".((!$disabled and $editable) ? "" : "disabled")." value='{$Color}'>
 					<i class='fa fa-question-circle' style='margin: 5px;' title='Прозрачное поктытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'>Подсказка</i>
 				</div>
 			</td>
