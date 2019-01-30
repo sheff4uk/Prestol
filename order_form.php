@@ -23,9 +23,13 @@
 									".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 								ORDER BY CT.City, SH.Shop";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+					$num_rows = 0;
 					while( $row = mysqli_fetch_array($res) )
 					{
 						echo "<option value='{$row["SH_ID"]}' retail='{$row["retail"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
+						++$num_rows;
+						$sh_id = $row["SH_ID"];
 					}
 					?>
 				</select>
@@ -114,6 +118,8 @@
 			$('#order_form #StartDate').hide('fast');
 				$('#order_form #StartDate input').attr('disabled', true);
 
+			<?=(($num_rows == 1) ? "$('#order_form select[name=Shop]').val('{$sh_id}').trigger('change');" : "")?>
+//$('#order_form select[name="Shop"]').val('2').trigger('change');
 			// Деактивация кнопок типа покраски
 			clearonoff('#paint_color');
 
