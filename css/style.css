@@ -21,7 +21,10 @@ body {
 	padding-top: 60px;
 }
 a {
-	transition: .3s;
+	transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-webkit-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
 	outline-color: #428bca;
 }
 body, td {
@@ -411,7 +414,7 @@ input[type="checkbox"].nightshift + label {
 }
 .navbar {
 	background-color: #222;
-	border-color: #080808;
+	border-color: #000;
 	position: fixed;
 	top: 0;
 	width: 100%;
@@ -436,7 +439,7 @@ input[type="checkbox"].nightshift + label {
 	color: #fff;
 	background-color: transparent;
 }
-.navbar-nav {
+ul.navbar-nav, .navbar-nav ul {
 	float: right;
 	padding-left: 0;
 	margin: 0;
@@ -444,15 +447,17 @@ input[type="checkbox"].nightshift + label {
 }
 .navbar-nav > li {
 	float: left;
-	display: flex;
+/*	display: flex;*/
+	position: relative;
 }
-.navbar-nav > li > a {
+.navbar-nav li > a {
 	color: #9d9d9d;
 	line-height: 20px;
 	position: relative;
 	display: block;
 	padding: 15px 15px;
 	font-size: 14px;
+	background: #222;
 }
 .navbar-nav > li > div {
 	color: #fff;
@@ -462,14 +467,29 @@ input[type="checkbox"].nightshift + label {
 	padding: 15px 0px 15px 15px;
 	font-size: 14px;
 }
-.navbar-nav > li > a:hover, .navbar-nav > li > a:hover {
+.navbar-nav li > a:hover {
 	color: #fff;
-	background-color: transparent;
 }
-.navbar-nav > .active > a, .navbar-nav > .active > a:hover, .navbar-nav > .active > a:focus {
+.navbar-nav .active > a, .navbar-nav .active > a:hover, .navbar-nav .active > a:focus {
 	color: #fff;
-	background-color: #080808;
+	background-color: #000;
 }
+.navbar-nav .parent > ul {
+	position: absolute;
+	z-index: 1;
+}
+.navbar-nav .parent > ul > li {
+	height: 0px;
+	overflow: hidden;
+	transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-webkit-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+}
+.navbar-nav .parent:hover > ul > li {
+	height: 50px;
+}
+
 select {
 	background: #ffffff;
 }
@@ -946,8 +966,11 @@ td.tscell > i {
 	text-overflow: ellipsis;
 	text-decoration: none;
 }
+.aside-nav .parent ul a {
+	padding-left: 30px;
+}
 
-.aside-nav li.active a {
+.aside-nav li.active > a {
 	color: #D65C4F;
 }
 

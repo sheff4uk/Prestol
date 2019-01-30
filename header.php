@@ -152,7 +152,7 @@
 	<title><?=$title?></title>
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=58'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=59'>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 <!--	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>-->
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
@@ -378,14 +378,14 @@
 			$month = date("n");
 			$menu["Реализация"] = "selling.php?CT_ID={$USR_City}&year={$year}&month={$month}";
 		}
-		if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
-			$menu["Счета"] = "bills.php";
-		}
-		if( in_array('doverennost', $Rights) ) {
-			$menu["Доверенность"] = "doverennost.php";
-		}
-		if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
-			$menu["Сверки"] = "sverki.php";
+		if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) or in_array('doverennost', $Rights) ) {
+			if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
+				$menu["Документы"]["Сверки"] = "sverki.php";
+				$menu["Документы"]["Счета"] = "bills.php";
+			}
+			if( in_array('doverennost', $Rights) ) {
+				$menu["Документы"]["Доверенности"] = "doverennost.php";
+			}
 		}
 		if( in_array('screen_materials', $Rights) ) {
 			$menu["Материалы"] = "materials.php";
@@ -393,11 +393,13 @@
 		if( in_array('screen_blanks', $Rights) ) {
 			$menu["Заготовки"] = "blankstock.php";
 		}
-		if( in_array('screen_timesheet', $Rights) ) {
-			$menu["Табель"] = "timesheet.php";
-		}
-		if( in_array('screen_paylog', $Rights) ) {
-			$menu["Платежи"] = "paylog.php";
+		if( in_array('screen_paylog', $Rights) or in_array('screen_timesheet', $Rights) ) {
+			if( in_array('screen_paylog', $Rights) ) {
+				$menu["Рабочие"]["Зарплата"] = "paylog.php";
+			}
+			if( in_array('screen_timesheet', $Rights) ) {
+				$menu["Рабочие"]["Табель"] = "timesheet.php";
+			}
 		}
 		if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
 			$menu["Касса"] = "cash.php";
@@ -408,9 +410,28 @@
 	// Формируем элементы меню
 	$nav_buttons = "";
 	foreach ($menu as $title=>$url) {
-		$pieces = explode("?", $url);
-		$class = strpos($_SERVER["REQUEST_URI"], $pieces[0]) !== false ? "active" : "";
-		$nav_buttons .= "<li class='{$class}'><a href='{$url}'>{$title}</a></li>";
+		// Если содержится подменю
+		if (is_array($url)) {
+			$sub_buttons = "";
+			$class = "";
+			foreach ($url as $sub_title=>$sub_url) {
+				$pieces = explode("?", $sub_url);
+				if (strpos($_SERVER["REQUEST_URI"], $pieces[0])) {
+					$sub_class = "active";
+					$class = "active";
+				}
+				else {
+					$sub_class = "";
+				}
+				$sub_buttons .= "<li class='{$sub_class}'><a href='{$sub_url}'>{$sub_title}</a></li>";
+			}
+			$nav_buttons .= "<li class='parent {$class}'><a href='#'>{$title} <i class='fas fa-angle-down'></i></a><ul>{$sub_buttons}</ul></li>";
+		}
+		else {
+			$pieces = explode("?", $url);
+			$class = strpos($_SERVER["REQUEST_URI"], $pieces[0]) ? "active" : "";
+			$nav_buttons .= "<li class='{$class}'><a href='{$url}'>{$title}</a></li>";
+		}
 	}
 
 	echo "<ul class='navbar-nav'>";

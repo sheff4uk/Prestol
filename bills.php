@@ -1,7 +1,7 @@
 <?
 include "config.php";
 
-$title = 'Счета на оплату';
+$title = 'Счета';
 include "header.php";
 
 // Проверка прав на доступ к экрану

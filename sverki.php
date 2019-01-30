@@ -1,7 +1,7 @@
 <?
 include "config.php";
 
-$title = 'Акты сверок';
+$title = 'Сверки';
 include "header.php";
 
 // Проверка прав на доступ к экрану
