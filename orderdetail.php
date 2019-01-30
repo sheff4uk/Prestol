@@ -342,6 +342,7 @@
 			,PFI.count
 			,PFI.platelshik_id
 			,Ord_price(OD.OD_ID) - Ord_discount(OD.OD_ID) Price
+			,Ord_opt_price(OD.OD_ID) opt_price
 		FROM OrdersData OD
 		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
@@ -380,6 +381,7 @@
 	$count = $row['count'];
 	$platelshik_id = $row['platelshik_id'];
 	$format_price = number_format($row['Price'], 0, '', ' ');
+	$format_opt_price = number_format($row["opt_price"], 0, '', ' ');
 
 	// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информацию заказа.
 	$editable = (!($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and !($SH_ID == 0 and !in_array('order_add_confirm', $Rights)));
