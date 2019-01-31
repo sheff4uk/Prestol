@@ -584,7 +584,8 @@
 	<table class="main_table">
 		<thead>
 		<tr>
-			<th width="60">Кол-во</th>
+			<th width="50"></th>
+			<th width="40">Кол-во</th>
 			<th width="120">Изделие</th>
 			<th width="100">Этапы</th>
 			<th width="">Материал</th>
@@ -599,6 +600,7 @@
 		SELECT ODD.ODD_ID
 			,ODD.Amount
 			,PM.Model
+			,PM.code
 			,IF(ODD.discount, ODD.Price, '') old_Price
 			,(ODD.Price - IFNULL(ODD.discount, 0)) Price
 			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PT_ID
@@ -649,6 +651,7 @@
 		$format_old_price = ($row["old_Price"] != '') ? '<p class="old_price">'.number_format($row["old_Price"], 0, '', ' ').'</p>' : '';
 		$format_price = ($row["Price"] != '') ? '<p class="price">'.number_format($row["Price"], 0, '', ' ').'</p>' : '';
 		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
+		echo "<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."</td>";
 		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
 		echo "<td><span>{$row["Zakaz"]}</span></td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'>{$steps}</td>";

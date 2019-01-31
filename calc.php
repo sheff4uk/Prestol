@@ -13,6 +13,7 @@
 	<table class="main_table" id="MT_header">
 		<thead>
 			<tr>
+				<th width="50"></th>
 				<th>Стол</th>
 				<th>Пластик</th>
 				<th width="100">Розница</th>
@@ -28,6 +29,7 @@
 	<table class="main_table">
 		<thead>
 			<tr>
+				<th width="50"></th>
 				<th></th>
 				<th></th>
 				<th width="100"></th>
@@ -42,6 +44,7 @@
 		<?
 		$query = "
 			SELECT ODD.ODD_ID
+				,PM.code
 				,Zakaz(ODD.ODD_ID) Zakaz
 				,IFNULL(MT.Material, '') Material
 				,CONCAT(' <b>', SH.Shipper, '</b>') Shipper
@@ -68,6 +71,7 @@
 
 			echo "
 				<tr>
+					<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."</td>
 					<td><b>{$row["Zakaz"]}</b></td>
 					<td>{$material}</td>
 					<td class='txtright'><p class='price'>{$row["rozn"]}</p></td>
