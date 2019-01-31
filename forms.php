@@ -112,7 +112,7 @@
 				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($result) )
 				{
-					echo "<option value='{$row["PM_ID"]}'>{$row["Model"]}</option>";
+					echo "<option value='{$row["PM_ID"]}' data-foo='{$row["code"]}'>{$row["Model"]}</option>";
 				}
 			?>
 			</select>
@@ -202,7 +202,7 @@
 				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($result) )
 				{
-					echo "<option value='{$row["PM_ID"]}'>{$row["Model"]}</option>";
+					echo "<option value='{$row["PM_ID"]}' data-foo='{$row["code"]}'>{$row["Model"]}</option>";
 				}
 			?>
 			</select>
@@ -688,10 +688,18 @@
 	//////////////////////////////////////////////////////////////////////////
 	$(function() {
 		// Select2
+		function format (state) {
+			var originalOption = state.element;
+			if (!state.id || !$(originalOption).data('foo')) return state.text; // optgroup
+			return "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/" + $(originalOption).data('foo') + ".jpg'/> " + state.text;
+		};
 		$('select[name="Model"]').select2({
 			placeholder: "Выберите модель",
-			language: "ru"
+			language: "ru",
+			templateResult: format,
+			escapeMarkup: function(m) { return m; }
 		});
+
 		$('select[name="Blanks"]').select2({
 			placeholder: "Выберите заготовку",
 			language: "ru"
@@ -836,8 +844,8 @@
 			var odid = $(this).attr("odid");
 
 			// Очистка диалога
-			$('#addtable select[name="Model"] option').attr('disabled', false);
-			$('#addtable select[name="Model"]').select2();
+//			$('#addtable select[name="Model"] option').attr('disabled', false);
+//			$('#addtable select[name="Model"]').select2();
 
 			$('#addtable select').val('').trigger('change');
 			$('#addtable input[type="text"]').val('');
