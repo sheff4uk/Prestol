@@ -165,7 +165,7 @@ pre {
 .addproduct > form > fieldset > div {
 	width: 100%;
 	margin: 1em 0;
-/*	display: flex;*/
+	display: flex;
 }
 .not_edit_product {
 	color: #333;
@@ -972,6 +972,14 @@ td.tscell > i {
 
 .aside-nav li.active > a {
 	color: #D65C4F;
+}
+
+img.form {
+	height: 24px;
+	filter: grayscale(100%);
+}
+img.form.standart {
+	filter: drop-shadow(2px 2px 3px black);
 }
 
 @media (max-width: 1024px) {

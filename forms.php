@@ -5,7 +5,7 @@
 	$query = "
 		SELECT PMF.PM_ID
 			,PMF.PF_ID
-			,IF(PMF.standart, UPPER(PF.Form), PF.Form) Form
+			,PF.Form
 			,PMF.standart
 		FROM ProductModelsForms PMF
 		LEFT JOIN ProductForms PF ON PF.PF_ID = PMF.PF_ID
@@ -208,7 +208,7 @@
 			</select>
 		</div>
 		<div>
-			<label title="Стандартная форма для выбранной модели выделена заглавными буквами."><i class='fa fa-question-circle'></i>Форма:</label>
+			<label title="Стандартная форма для выбранной модели выделена красным цветом."><i class='fa fa-question-circle'></i>Форма:</label>
 			<div class="btnset" id="forms">
 				<!--Список формируется в js-->
 			</div>
@@ -245,27 +245,27 @@
 			<label>Размер:</label>
 			<input id="length" required type='number' min='500' max='3000' step='10' name='Length' style='width: 70px;' autocomplete='off' title="Длина" placeholder="Длина">
 			<div id="sliding" style="display: inline-block;">
-				<span>(</span>
-				<span>+</span>
+				<b>(</b>
+				<b>+</b>
 				<div id="piece_amount" style="display: inline-block;">
 					<select name="PieceAmount" style="width: 30px;" title="Кол-во вставок">
 						<option value="1">1</option>
 						<option value="2">2</option>
 						<option value="3">3</option>
 					</select>
-					<span>x</span>
+					<b>x</b>
 				</div>
 				<input type="number" name="PieceSize" required min="200" max="650" step="10" style='width: 70px;' autocomplete="off" title="Размер вставки" placeholder="Вставка">
-				<span>)</span>
-				<br>
-				<label style="position: absolute;">
+				<b>)</b>
+			</div>
+			<b id="second_x">x</b>
+			<input id='width' required type='number' min='500' max='1500' step='10' name='Width' style='width: 70px;' autocomplete='off' title="Ширина" placeholder="Ширина">
+			<span id="separately">
+				<label>
 					<input type="checkbox" name="piece_stored" value="1">
 					Вставки хранятся отдельно
 				</label>
-			</div>
-			<span id="second_x">x</span>
-			<input id='width' required type='number' min='500' max='1500' step='10' name='Width' style='width: 70px;' autocomplete='off' title="Ширина" placeholder="Ширина">
-			<br>
+			</span>
 			<br>
 		</div>
 		<div>
@@ -556,10 +556,12 @@
 	function piece_from_mechanism(mech) {
 		if( mech == 1 || mech == 2 || mech == 5 ) {
 			$('#addtable #sliding').show('fast');
+			$('#addtable #separately').show('fast');
 			$('#addtable #sliding input[type="number"]').attr('required', true);
 		}
 		else {
 			$('#addtable #sliding').hide('fast');
+			$('#addtable #separately').hide('fast');
 			$('#addtable #sliding input[type="number"]').attr('required', false);
 			$('#addtable input[name="piece_stored"]').prop('checked', false);
 		}
@@ -580,8 +582,17 @@
 		var informs = 0;
 		if( typeof arr_model !== "undefined" ) {
 			$.each(arr_model, function(key, val){
+				// Выделение цветом стандартных форм
+				if (arr_standart[key] == 1) {
+					var filter = "filter: drop-shadow(2px 2px 3px black);";
+					var standart = "standart";
+				}
+				else {
+					var standart = "";
+					var filter = "filter: grayscale(100%);";
+				}
 				forms += "<input type='radio' required id='form" + key + "' name='Form' value='" + key + "' standart='"+arr_standart[key]+"'>";
-				forms += "<label for='form" + key + "'>" + val + "</label>";
+				forms += "<label for='form" + key + "'><img class='form "+standart+"' src='/img/form"+key+".png'><br>"+val+"</label>";
 				if( form == key ) { informs = 1; }
 			});
 		}
