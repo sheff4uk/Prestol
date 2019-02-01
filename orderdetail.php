@@ -614,7 +614,8 @@
 			,SH.mtype
 			,ODD.IsExist
 			,ODD.Comment
-			,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
+			,Friendly_date(ODD.order_date) order_date
+			,Friendly_date(ODD.arrival_date) arrival_date
 			,Steps_button(ODD.ODD_ID, 0) Steps
 			,ODD.Del
 			,IF(CL.clear = 1 AND PM.enamel = 1, 1, 0) enamel_error
@@ -636,7 +637,7 @@
 			$color = "bg-red";
 		}
 		elseif ($row["IsExist"] == "1") {
-			$color = "bg-yellow' title='Ожидается: {$row["arrival_date"]}";
+			$color = "bg-yellow' html='Заказано:&nbsp;&nbsp;&nbsp;&nbsp;<b>{$row["order_date"]}</b><br>Ожидается:&nbsp;<b>{$row["arrival_date"]}</b>";
 		}
 		elseif ($row["IsExist"] == "2") {
 			$color = "bg-green";

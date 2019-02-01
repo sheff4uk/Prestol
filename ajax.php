@@ -556,7 +556,8 @@ case "shipment":
 						,REPLACE(ODD.Comment, '\r\n', ' ') Comment
 						,DATEDIFF(ODD.arrival_date, NOW()) outdate
 						,ODD.IsExist
-						,DATE_FORMAT(ODD.arrival_date, '%d.%m.%y') arrival_date
+						,Friendly_date(ODD.order_date) order_date
+						,Friendly_date(ODD.arrival_date) arrival_date
 						,IFNULL(MT.Material, '') Material
 						,IF(MT.removed=1, 'removed', '') removed
 						,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
@@ -587,7 +588,7 @@ case "shipment":
 						$color = "bg-red";
 					}
 					elseif ($subrow["IsExist"] == "1") {
-						$color = "bg-yellow' title='Ожидается: {$subrow["arrival_date"]}";
+						$color = "bg-yellow' html='Заказано:&nbsp;&nbsp;&nbsp;&nbsp;<b>{$subrow["order_date"]}</b><br>Ожидается:&nbsp;<b>{$subrow["arrival_date"]}</b>";
 					}
 					elseif ($subrow["IsExist"] == "2") {
 						$color = "bg-green";
@@ -729,7 +730,8 @@ case "invoice":
 						,REPLACE(ODD.Comment, '\r\n', ' ') Comment
 						,DATEDIFF(ODD.arrival_date, NOW()) outdate
 						,ODD.IsExist
-						,DATE_FORMAT(ODD.arrival_date, '%d.%m.%y') arrival_date
+						,Friendly_date(ODD.order_date) order_date
+						,Friendly_date(ODD.arrival_date) arrival_date
 						,IFNULL(MT.Material, '') Material
 						,IF(MT.removed=1, 'removed', '') removed
 						,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
@@ -765,7 +767,7 @@ case "invoice":
 						$color = "bg-red";
 					}
 					elseif ($subrow["IsExist"] == "1") {
-						$color = "bg-yellow' title='Ожидается: {$subrow["arrival_date"]}";
+						$color = "bg-yellow' html='Заказано:&nbsp;&nbsp;&nbsp;&nbsp;<b>{$subrow["order_date"]}</b><br>Ожидается:&nbsp;<b>{$subrow["arrival_date"]}</b>";
 					}
 					elseif ($subrow["IsExist"] == "2") {
 						$color = "bg-green";
