@@ -6,6 +6,18 @@
 	include "forms.php";
 	include "order_form.php";
 
+	// Узнаем какие цены можно показывать пользователю: 0 - все; 1 - розница; 2 - опт; 3 - региональный опт
+	$query = "
+		SELECT if(SH1.retail IS NULL AND SH2.reg IS NULL, 0, if(SH1.retail = 1, 1, if(SH2.reg = 1, 3, 2))) price_type
+		FROM Users USR
+		LEFT JOIN Shops SH1 ON SH1.SH_ID = USR.SH_ID
+		LEFT JOIN Kontragenty KA ON KA.KA_ID = USR.KA_ID
+		LEFT JOIN Shops SH2 ON SH2.KA_ID = KA.KA_ID
+		WHERE USR_ID = {$_SESSION['id']}
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$price_type = mysqli_result($res,0,'price_type');
+
 	// Кнопка добавления стола
 	echo "<div id='add_btn' class='edit_product2' odid='0' location='calc.php' title='Рассчитать стоимость стола'></div>";
 ?>
@@ -16,9 +28,18 @@
 				<th width="50"></th>
 				<th>Стол</th>
 				<th>Пластик</th>
-				<th width="100">Розница</th>
-				<th width="100">Опт</th>
-				<th width="100">Рег. опт</th>
+			<?
+				if ($price_type == 0) {
+					echo "
+						<th width='100'>Розница</th>
+						<th width='100'>Опт</th>
+						<th width='100'>Рег. опт</th>
+					";
+				}
+				else {
+					echo "<th width='100'>Цена</th>";
+				}
+			?>
 				<th width="55">Автор</th>
 				<th width="85">Дата<br>Время</th>
 				<th width="70">Действие</th>
@@ -33,8 +54,14 @@
 				<th></th>
 				<th></th>
 				<th width="100"></th>
-				<th width="100"></th>
-				<th width="100"></th>
+			<?
+				if ($price_type == 0) {
+					echo "
+						<th width='100'></th>
+						<th width='100'></th>
+					";
+				}
+			?>
 				<th width="55"></th>
 				<th width="85"></th>
 				<th width="70"></th>
@@ -74,9 +101,24 @@
 					<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."</td>
 					<td><b>{$row["Zakaz"]}</b></td>
 					<td>{$material}</td>
+			";
+			if ($price_type == 0) {
+				echo "
 					<td class='txtright'><p class='price'>{$row["rozn"]}</p></td>
 					<td class='txtright'><p class='price'>{$row["opt"]}</p></td>
 					<td class='txtright'><p class='price'>{$row["reg"]}</p></td>
+				";
+			}
+			elseif ($price_type == 1) {
+				echo "<td class='txtright'><p class='price'>{$row["rozn"]}</p></td>";
+			}
+			elseif ($price_type == 2) {
+				echo "<td class='txtright'><p class='price'>{$row["opt"]}</p></td>";
+			}
+			else {
+				echo "<td class='txtright'><p class='price'>{$row["reg"]}</p></td>";
+			}
+			echo "
 					<td>{$row["Name"]}</td>
 					<td>{$row["friendly_date"]}<br>{$row["Time"]}</td>
 					<td>
