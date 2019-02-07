@@ -64,8 +64,8 @@
 				<input type='text' name='EndDate' class='date' size='12' <?=(in_array('order_add_confirm', $Rights) ? "" : "disabled")?> autocomplete='off'>
 				<span style='color: #911;'>+30 рабочих дней</span>
 			</div>
+			<p style='color: #911;'>ВНИМАНИЕ! Патина указывается у каждого изделия персонально в специальной графе "патина".</p>
 			<div>
-				<p style='color: #911;'>ВНИМАНИЕ! Патина указывается у каждого изделия персонально в специальной графе "патина".</p>
 				<label>Цвет краски:</label>
 				<div style="display: inline-block;">
 					<input type='text' id='paint_color' class='colortags' name='Color' style='width: 300px;' placeholder='ЗДЕСЬ ПАТИНУ УКАЗЫВАТЬ НЕ НУЖНО'>
