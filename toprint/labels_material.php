@@ -16,7 +16,6 @@
 			font-size: 14pt;
 		}
 		table {
-//			table-layout: fixed;
 			width: 100%;
 			border-collapse: collapse;
 			border-spacing: 0px;
@@ -42,7 +41,6 @@
 		}
 		td > div {
 			display: inline-block;
-//			margin-right: 15px;
 		}
 	</style>
 </head>
@@ -55,7 +53,7 @@
 		<tbody>
 	<?
 	$query = "
-		SELECT CONCAT(MT.Material, IFNULL(CONCAT(' (', SHP.Shipper, ')'), '')) Material
+		SELECT CONCAT(MT.Material, IFNULL(CONCAT(' <b>', SHP.Shipper, '</b>'), '')) Material
 			,CONCAT('<i>', IF(SHP.mtype = 1, CONCAT(ROUND(ODD.MT_amount, 1), '<br>м.п.'), WD.Name), '</i>') MT_amount
 			,ODD.Amount
 			,Zakaz(ODD.ODD_ID) Zakaz
