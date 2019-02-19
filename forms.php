@@ -129,7 +129,6 @@
 				<input type='radio' id='1ptn3' name='ptn' value='3'>
 				<label for='1ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
 			</div>
-			<br>
 		</div>
 		<div>
 			<label>Ткань:</label>
@@ -159,12 +158,13 @@
 				<input type='radio' id='1radio2' name='IsExist' value='2'>
 					<label for='1radio2'>В наличии</label>
 			</div>
-			<br>
 		</div>
 		<div class='order_material' style='text-align: center; display: none;'>
-			<span>Заказано:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Ожидается:</span><br>
+			<label></label>
+			<span>Заказано:</span>
 			<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>" readonly>
-			&nbsp;&nbsp;-&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<span>Ожидается:</span>
 			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 		</div>
 		<?
@@ -312,11 +312,12 @@
 					<label for='2radio2'>В наличии</label>
 			</div>
 		</div>
-		<br>
 		<div class='order_material' style='text-align: center; display: none;'>
-			<span>Заказано:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Ожидается:</span><br>
+			<label></label>
+			<span>Заказано:</span>
 			<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>" readonly>
-			&nbsp;&nbsp;-&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<span>Ожидается:</span>
 			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 		</div>
 		<?
@@ -403,7 +404,6 @@
 					<input type='radio' id='0ptn3' name='ptn' value='3'>
 						<label for='0ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
 				</div>
-				<br>
 			</div>
 			<div>
 				<label>Ткань:</label>
@@ -448,11 +448,12 @@
 						<label for='0radio2'>В наличии</label>
 				</div>
 			</div>
-			<br>
 			<div class='order_material' style='text-align: center; display: none;'>
-				<span>Заказано:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Ожидается:</span><br>
+				<label></label>
+				<span>Заказано:</span>
 				<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>" readonly>
-				&nbsp;&nbsp;-&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<span>Ожидается:</span>
 				<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 			</div>
 			<?
