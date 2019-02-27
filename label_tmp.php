@@ -1,3 +1,8 @@
+<?
+	ini_set('display_errors', 1);
+	error_reporting(E_ALL);
+?>
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -10,7 +15,7 @@
 		font-family: Arial;
 		width: 1200px;
 		margin: auto;
-		//font-size: 0;
+		/*font-size: 0;*/
 	}
 	.label-wr {
 		display: inline-block;
@@ -101,7 +106,7 @@
 					Изготовитель: ООО «Престол», г.Киров ул.Луганская 59<br>
 					8(909)131-77-32<br>
 					fabrikaprestol@gmail.com<br>
-					fabrikaprestol.ru&nbsp;&nbsp;&nbsp;&nbsp;фабрикастульев.рф
+					фабрикастульев.рф
 				</div>
 			</div>
 			<div class="body-wr">
