@@ -89,19 +89,12 @@
 <body>
 <?
 	include "config.php";
-	include "checkrights.php";
-
-	// Проверка прав на доступ к экрану
-	if( !in_array('print_label_box', $Rights) ) {
-		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-		die('Недостаточно прав для совершения операции');
-	}
 
 	foreach ($_POST["prod"] as $key => $value) {
 		?>
 		<div class="label-wr prod<?=$key?>">
 			<div class="head-wr">
-				<img src="/img/logo.png" class="logo">
+				<img src="/img/logo_black.png" class="logo">
 				<div class="mfr">
 					Изготовитель: ООО «Престол», г.Киров ул.Луганская 59<br>
 					8(909)131-77-32<br>
