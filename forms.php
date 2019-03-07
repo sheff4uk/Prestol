@@ -112,7 +112,7 @@
 				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($result) )
 				{
-					echo "<option value='{$row["PM_ID"]}' data-foo='{$row["code"]}'>{$row["Model"]}</option>";
+					echo "<option value='{$row["PM_ID"]}' data-foo='{$row["code"]}' data-comment='{$row["comment"]}'>{$row["Model"]}</option>";
 				}
 			?>
 			</select>
@@ -202,7 +202,7 @@
 				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($result) )
 				{
-					echo "<option value='{$row["PM_ID"]}' data-foo='{$row["code"]}'>{$row["Model"]}</option>";
+					echo "<option value='{$row["PM_ID"]}' data-foo='{$row["code"]}'  data-comment='{$row["comment"]}'>{$row["Model"]}</option>";
 				}
 			?>
 			</select>
@@ -703,7 +703,7 @@
 		function format (state) {
 			var originalOption = state.element;
 			if (!state.id || !$(originalOption).data('foo')) return state.text; // optgroup
-			return "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/" + $(originalOption).data('foo') + ".jpg'/> " + state.text;
+			return "<div style='display: flex;'><img style='width: 50px; height: 50px; margin-right: 5px;' src='https://фабрикастульев.рф/images/prodlist/" + $(originalOption).data('foo') + ".jpg'/><span><b>" + state.text + "</b><br><i>" + $(originalOption).data('comment') + "</i></span><div>";
 		};
 		$('select[name="Model"]').select2({
 			placeholder: "Выберите модель",
