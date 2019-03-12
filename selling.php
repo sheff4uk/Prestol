@@ -524,17 +524,19 @@
 						$format_shop_debt = number_format($shop_debt, 0, '', ' ');
 						$format_shop_cash = number_format($shop_cash, 0, '', ' ');
 
-						echo "<tr>";
-						echo "<td class='nowrap'><a href='{$location}&SH_ID={$row["SH_ID"]}' ".( $SH_ID == $row["SH_ID"] ? "style='color: #D65C4F;'" : "" ).">{$row["Shop"]}:</a></td>";
-						if( in_array('selling_all', $Rights) ) {
-							echo "<td class='txtright'>{$format_shop_report}</td>";
+						if ($shop_cash != 0 or $shop_price != 0 or $shop_discount != 0 or $shop_otkaz != 0 or $shop_debt != 0) {
+							echo "<tr>";
+							echo "<td class='nowrap'><a href='{$location}&SH_ID={$row["SH_ID"]}' ".( $SH_ID == $row["SH_ID"] ? "style='color: #D65C4F;'" : "" ).">{$row["Shop"]}:</a></td>";
+							if( in_array('selling_all', $Rights) ) {
+								echo "<td class='txtright'>{$format_shop_report}</td>";
+							}
+							echo "<td class='txtright'>{$format_shop_price}</td>";
+							echo "<td class='txtright'>{$format_shop_discount} ({$shop_percent}%)</td>";
+							echo "<td class='txtright' style='color: #911;'>{$format_shop_otkaz}</td>";
+							echo "<td class='txtright'>{$format_shop_debt}</td>";
+							echo "<td class='txtright'>{$format_shop_cash}</td>";
+							echo "</tr>";
 						}
-						echo "<td class='txtright'>{$format_shop_price}</td>";
-						echo "<td class='txtright'>{$format_shop_discount} ({$shop_percent}%)</td>";
-						echo "<td class='txtright' style='color: #911;'>{$format_shop_otkaz}</td>";
-						echo "<td class='txtright'>{$format_shop_debt}</td>";
-						echo "<td class='txtright'>{$format_shop_cash}</td>";
-						echo "</tr>";
 					}
 					if( !$USR_Shop ) {
 						$city_percent = round($city_discount / $city_price * 100, 2);

@@ -69,17 +69,6 @@
 		die;
 	}
 
-//	// Обновление/добавление нормы часов за месяц
-//	if( isset($_POST["normhours"]) ) {
-//		$NormHours = ($_POST["normhours"]) ? $_POST["normhours"] : 'NULL';
-//		$query = "REPLACE INTO MonthlyNormHours (Year, Month, Hours)
-//				  VALUES ({$year}, {$month}, {$NormHours})";
-//		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//
-//		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
-//		die;
-//	}
-
 	// Сохранение данных из таблицы табеля
 	if( isset($_POST["TYear"]) and isset($_POST["TMonth"]) )
 	{
@@ -103,12 +92,6 @@
 		exit ('<meta http-equiv="refresh" content="0; url='.$_SERVER['REQUEST_URI'].'">');
 		die;
 	}
-
-//	// Узнаем норму часов на этот месяц
-//	$query = "SELECT IFNULL(Hours, '') Hours FROM MonthlyNormHours WHERE Year = {$year} AND Month = {$month}";
-//	($result = mysqli_query( $mysqli, $query )) or die("Invalid query: " .mysqli_error( $mysqli ));
-//	$myrow = mysqli_fetch_array($result);
-//	$NormHours = $myrow['Hours'];
 
 	// Узнаем кол-во дней в выбранном месяце
 	$strdate = '01.'.$month.'.'.$year;
