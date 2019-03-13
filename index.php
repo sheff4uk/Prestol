@@ -1103,7 +1103,7 @@
 	</div>
 	</form>
 </div>
-<? echo $orders_count ?>
+
 <script>
 	$(function() {
 		<?
@@ -1253,7 +1253,7 @@
 
 	$(function(){
 
-		$('#counter').html('<?=$orders_count?>');
+		$('#counter').text('<?=$orders_count?>');
 
 		// Фильтр по материалам (инициализация)
 		$('#MT_filter select').html('<?=$MT_filter?>');
