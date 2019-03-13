@@ -725,9 +725,8 @@ if( $id != "NULL" ) {
 		<?
 			$query = "SELECT OCL.table_key
 							,OCL.table_value
-							,OCL.field_name
+							,IF(OCL.OFN_ID IS NOT NULL, OFN.field_name, OCL.field_name) field_name
 							,OCL.OFN_ID
-							,OFN.field_name OFN
 							,OCL.old_value
 							,OCL.new_value
 							,USR_Icon(OCL.author) Name
@@ -743,7 +742,7 @@ if( $id != "NULL" ) {
 
 				// Если разделение заказа
 				if ($row["OFN_ID"] == 1) {
-					echo "<td><b>{$row["OFN"]}</b></td>";
+					echo "<td><b>{$row["field_name"]}</b></td>";
 					// Если хранится OD_ID - выводим ссылку на другую часть заказа
 					if (is_numeric($row["old_value"])) {
 						echo "<td colspan='3' style='text-align: center;'><a href='orderdetail.php?id={$row["old_value"]}' class='button' target='_blank'>другая его часть</a></td>";
