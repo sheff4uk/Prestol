@@ -1103,7 +1103,7 @@
 	</div>
 	</form>
 </div>
-
+<? echo $orders_count ?>
 <script>
 	$(function() {
 		<?
