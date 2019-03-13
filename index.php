@@ -1128,7 +1128,6 @@
 	});
 </script>
 <?
-echo $orders_IDs;
 	// Генерируем Select2 для фильтра материалов
 	$MT_filter = '';
 	$MT_string = '';
