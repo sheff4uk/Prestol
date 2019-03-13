@@ -139,9 +139,9 @@
 			$newOD_ID = mysqli_insert_id($mysqli);
 
 			// Записываем в журнал событие разделения заказа
-			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$OD_ID}, field_name = 'Разделение заказа <a href=\'orderdetail.php?id={$newOD_ID}\' class=\'button\' target=\'_blank\'>другая его часть</a>', old_value = '', new_value = '', author = {$_SESSION['id']}";
+			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$OD_ID}, OFN_ID = 1, old_value = '{$newOD_ID}', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, field_name = 'Разделение заказа <a href=\'orderdetail.php?id={$OD_ID}\' class=\'button\' target=\'_blank\'>другая его часть</a>', old_value = '', new_value = '', author = {$_SESSION['id']}";
+			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, OFN_ID = 1, old_value = '{$OD_ID}', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			// Цикл по содержимому заказа (используются данные из формы)

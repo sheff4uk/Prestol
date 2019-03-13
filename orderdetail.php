@@ -726,18 +726,33 @@ if( $id != "NULL" ) {
 			$query = "SELECT OCL.table_key
 							,OCL.table_value
 							,OCL.field_name
+							,OCL.OFN_ID
+							,OFN.field_name OFN
 							,OCL.old_value
 							,OCL.new_value
 							,USR_Icon(OCL.author) Name
 							,Friendly_date(OCL.date_time) friendly_date
 							,TIME(OCL.date_time) Time
 						FROM OrdersChangeLog OCL
+						LEFT JOIN OrdersFieldName OFN ON OFN.OFN_ID = OCL.OFN_ID
 						WHERE (table_key = 'OD_ID' AND table_value = {$id}) OR (table_key = 'ODD_ID' AND table_value IN (SELECT ODD_ID FROM OrdersDataDetail WHERE OD_ID = {$id}))
 						ORDER BY OCL.OCL_ID DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "<tr class='ord_log_row' lnk='*{$row["table_key"]}{$row["table_value"]}*'>";
-				if( $row["old_value"] != "" or $row["new_value"] != "" ) {
+
+				// Если разделение заказа
+				if ($row["OFN_ID"] == 1) {
+					echo "<td><b>{$row["OFN"]}</b></td>";
+					// Если хранится OD_ID - выводим ссылку на другую часть заказа
+					if (is_numeric($row["old_value"])) {
+						echo "<td colspan='3' style='text-align: center;'><a href='orderdetail.php?id={$row["old_value"]}' class='button' target='_blank'>другая его часть</a></td>";
+					}
+					else {
+						echo "<td colspan='3' style='text-align: center;'>{$row["old_value"]}</td>";
+					}
+				}
+				elseif( $row["old_value"] != "" or $row["new_value"] != "" ) {
 					echo "<td><b>{$row["field_name"]}</b></td>";
 					echo "<td style='text-align: right;'><i style='background: #ddd; padding: 2px;'>{$row["old_value"]}</i></td>";
 					echo "<td><i class='fa fa-arrow-right'></i></td>";
