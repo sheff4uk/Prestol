@@ -170,7 +170,7 @@ case "ispainting":
 					FROM OrdersData OD
 					LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
-					WHERE OD.Del = 0 AND OD.SHP_ID = {$shpid}";
+					WHERE OD.DelDate IS NULL AND OD.SHP_ID = {$shpid}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$painting = mysqli_result($res,0,'IsPainting');
 		$ready = mysqli_result($res,0,'IsReady');

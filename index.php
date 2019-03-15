@@ -723,7 +723,7 @@
 			,IFNULL(OD.SHP_ID, 0) SHP_ID
 			,OD.is_lock
 			,OD.confirmed
-			,IF(OD.DelDate IS NULL, 0, 1) Del
+			,IF(OD.DelDate IS NULL, 0, 1) is_del
 			,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
 			,PFI.count
 		FROM OrdersData OD
@@ -923,12 +923,13 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
+		$is_del = $row["is_del"];			// Заказ удален
 		if( !in_array('order_add_confirm', $Rights) and !$row["SH_ID"] ) {
 			$is_lock = 1;
 		}
 		$confirmed = $row["confirmed"];		// Заказ принят в работу
 		// Запрет на редактирование
-		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and $is_lock == 0 and $row["Archive"] == 0 and $row["Del"] == 0 );
+		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and $is_lock == 0 and $row["Archive"] == 0 and $is_del == 0 );
 
 		// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информацию заказа.
 		$editable = (!($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and !($row["SH_ID"] == 0 and !in_array('order_add_confirm', $Rights)));
@@ -1009,7 +1010,7 @@
 
 		echo "<td><span>{$row["StartDate"]}{$invoice}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$row["Del"] and !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"])) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
+		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$is_del and !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"])) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
 		echo "<td><span></span></td>";
 
 		echo "<td><span class='nowrap'>{$zakaz}</span></td>";
@@ -1030,7 +1031,7 @@
 					$class = "ready";
 					break;
 			}
-		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 and $row["IsPainting"] != 0 ) ? "painting " : "")."{$class}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
+		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $is_del == 0 and $row["IsPainting"] != 0 ) ? "painting " : "")."{$class}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
 		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><span class='nowrap material'>{$steps}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		// Если заказ принят
@@ -1040,17 +1041,17 @@
 		else {
 			$class = 'not_confirmed';
 		}
-		if( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $row["Del"] == 0 ) {
+		if( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $is_del == 0 ) {
 			$class = $class." edit_confirmed";
 		}
 		echo "<td val='{$row["confirmed"]}' class='{$class}' style='text-align: center;'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td class='X' style='text-align: center;'><input type='checkbox' {$checkedX} value='1'></td>";
-		echo "<td class='".( (in_array('order_add', $Rights) and $row["Del"] == 0 and $editable) ? "comment_cell" : "" )."' id='{$row["OD_ID"]}'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
+		echo "<td class='".( (in_array('order_add', $Rights) and $is_del == 0 and $editable) ? "comment_cell" : "" )."' id='{$row["OD_ID"]}'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
 		echo "<td>";
 
 		if( $editable ) {
 			// Если заказ не заблокирован и не удален, то показываем карандаш и кнопку разделения. Иначе - глаз.
-			if( !$is_lock and in_array('order_add', $Rights) and !$row["Del"] ) {
+			if( !$is_lock and in_array('order_add', $Rights) and !$is_del ) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
 			}
@@ -1060,7 +1061,7 @@
 
 			echo "<action>";
 			if( $row["SHP_ID"] == 0 ) {
-				if( $row["Archive"] == 0 and $row["Del"] == 0 ) {
+				if( $row["Archive"] == 0 and $is_del == 0 ) {
 					if( $row["IsReady"] and ($row["IsPainting"] == "3" or $row["IsPainting"] == "0") ) {
 						if( in_array('order_ready', $Rights) ) {
 							//echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа.\", \"?ready={$row["OD_ID"]}\")) return false;' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";

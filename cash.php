@@ -228,6 +228,7 @@
 		width: 300px;
 		opacity: .8;
 		transition: .3s;
+		z-index: 10;
 	}
 	#wr_account:hover {
 		left: 0px;
