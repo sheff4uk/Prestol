@@ -1795,7 +1795,7 @@ case "order_del":
 
 		// Если оплата есть, то сообщаем об этом иначе удаляем заказ
 		if( $order_payments == 0 ) {
-			$query = "UPDATE OrdersData SET Del = 1, DelDate = NOW(), IsPainting = IF(IsPainting = 2, 1, IsPainting), author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
+			$query = "UPDATE OrdersData SET DelDate = NOW(), IsPainting = IF(IsPainting = 2, 1, IsPainting), author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
 			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 			echo "window.top.window.$('.main_table #ord{$od_id}').hide('slow');";
 			echo "noty({timeout: 3000, text: 'Заказ удален!', type: 'success'});";
@@ -1816,7 +1816,7 @@ case "order_del":
 			$start_month = mysqli_result($res,0,'start_month');
 
 			$selling_link = "/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$od_id}";
-			echo "noty({text: 'По заказу внесена оплата <b>{$order_payments}р.</b> Проверьте <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b> и повторите попытку удаления.', type: 'alert'});";
+			echo "noty({text: 'Заказ оплачен! Перейдите в <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b> и запишите возврат платежа. Затем повторите попытку удаления.', type: 'alert'});";
 		}
 	}
 
