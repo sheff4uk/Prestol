@@ -37,41 +37,6 @@
 	$location = "selling.php?CT_ID={$CT_ID}&year={$year}&month={$month}";
 	$_SESSION["location"] = $_SERVER['REQUEST_URI'];
 
-	// Добавление в базу нового платежа
-	if( isset($_GET["add_payment"]) and $_POST["payment_sum_add"] )
-	{
-		$OD_ID = $_POST["OD_ID"];
-		$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date_add"]) );
-		$payment_sum = $_POST["payment_sum_add"];
-		$terminal = $_POST["terminal_add"];
-		$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, convert_str($_POST["terminal_payer_add"]) ).'\'' : 'NULL';
-		$FA_ID_add = $_POST["FA_ID_add"] ? $_POST["FA_ID_add"] : 'NULL';
-		$SH_ID_add = $_POST["FA_ID_add"] ? 'NULL' : $_POST["SH_ID_add"];
-
-		if( $payment_sum ) {
-			// Записываем новый платеж в таблицу платежей
-			$query = "INSERT INTO OrdersPayment
-						 SET OD_ID = {$OD_ID}
-							,payment_date = '{$payment_date}'
-							,payment_sum = {$payment_sum}
-							,terminal_payer = {$terminal_payer}
-							,SH_ID = {$SH_ID_add}
-							,FA_ID = ".($terminal ? "(SELECT SH.FA_ID FROM Shops SH JOIN OrdersData OD ON OD.SH_ID = SH.SH_ID AND OD.OD_ID = {$OD_ID})" : $FA_ID_add)."
-							,author = {$_SESSION['id']}";
-			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
-			else {
-				// Записываем дату продажи заказа если ее не было
-				$query = "UPDATE OrdersData SET StartDate = '{$payment_date}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
-				if( !mysqli_query( $mysqli, $query ) ) {
-					$_SESSION["error"][] = mysqli_error( $mysqli );
-				}
-			}
-		}
-
-		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
-		die;
-	}
-
 	// Добавление/редактирование расхода/прихода
 	if( isset($_GET["add_cost"]) )
 	{
@@ -639,7 +604,8 @@
 				while( $row = mysqli_fetch_array($res) ) {
 					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 					$cache_sum = $cache_sum + $row["payment_sum"];
-					$cache_name = ( $row["Code"] ) ? "<b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>" : "<span>{$row["cost_name"]}</span>";
+					$href = ($row["del"]) ? "orderdetail.php?id={$row["OD_ID"]}' target='_blank" : "?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}";
+					$cache_name = ( $row["Code"] ) ? "<b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>" : "<span>{$row["cost_name"]}</span>";
 					$attention = ( $row["attention"] ) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='После внесения оплаты заказ был перенесен в другой салон!'></i>" : "";
 					$attention_sum = $attention_sum + $row["attention"];
 					if( in_array('selling_all', $Rights) ) {
@@ -692,11 +658,12 @@
 					while( $row = mysqli_fetch_array($res) ) {
 						$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 						$terminal_sum = $terminal_sum + $row["payment_sum"];
+						$href = ($row["del"]) ? "orderdetail.php?id={$row["OD_ID"]}' target='_blank" : "?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}";
 						echo "<tr>";
 						echo "<td width='49'>{$row["payment_date"]}</td>";
 						echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
-						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
+						echo "<td width='60'><b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
 						echo "<td width='140' class='nowrap'>{$row["terminal_payer"]}</td>";
 						echo "</tr>";
 					}
@@ -825,11 +792,12 @@
 					while( $row = mysqli_fetch_array($res) ) {
 						$format_old_price = number_format($row["old_sum"], 0, '', ' ');
 						++$reject_count;
+						$href = ($row["del"]) ? "orderdetail.php?id={$row["OD_ID"]}' target='_blank" : "?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}";
 						echo "<tr>";
 						echo "<td width='49'><span class='nowrap'>{$row["reject_date"]}</span></td>";
 						echo "<td width='70' class='txtright'><b>{$format_old_price}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
-						echo "<td width='60'><b><a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
+						echo "<td width='60'><b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
 						echo "<td width='120' style='color: #911;'>{$row["comment"]}</td>";
 						//echo "<td width='25'><a href='#' onclick='if(confirm(\"Убрать заказ <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
@@ -960,7 +928,6 @@
 				,CheckPayment(OD.OD_ID) attention
 				,Items_count(OD.OD_ID) items
 				,OD.is_lock
-				,IF(OD.DelDate IS NOT NULL, 1, 0) is_del
 				,OD.confirmed
 				,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
 				,PFI.count
@@ -971,14 +938,13 @@
 				".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
 			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 			LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
-			WHERE 1
+			WHERE OD.DelDate IS NULL
 			".(($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year)."
 			ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.AddDate ASC, OD.OD_ID ASC
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
-			$is_del = $row["is_del"];			// Заказ удален
 			$format_price = number_format($row["Price"] - $row['discount'], 0, '', ' ');
 			$format_opt_price = number_format($row["opt_price"], 0, '', ' ');
 			$format_payment = number_format($row["payment_sum"], 0, '', ' ');
@@ -992,7 +958,7 @@
 			else {$discount_bg = "";}
 
 			echo "
-				<tr id='ord{$row["OD_ID"]}' ".($is_del ? "class='del'" : "").">
+				<tr id='ord{$row["OD_ID"]}'>
 					<td>
 						<input type='hidden' name='OD_ID[]' form='print_selling' value='{$row["OD_ID"]}'>
 						<span>{$row["ReadyDate"]}</span>
@@ -1006,7 +972,7 @@
 				else {
 					$class = 'not_confirmed';
 				}
-				if( $row["StartDate"] and in_array('order_add', $Rights) and !$is_lock and !$is_del) {
+				if( $row["StartDate"] and in_array('order_add', $Rights) and !$is_lock ) {
 					$class = $class." taken_confirmed";
 				}
 				echo "<span val='{$row["taken"]}' class='{$class}'><i class='fas fa-handshake fa-2x'></i></td>";
@@ -1098,7 +1064,7 @@
 			echo " class='painting_cell {$class}'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
 
 			echo "
-				<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $is_del or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
+				<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
 				<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
 			";
 
@@ -1116,10 +1082,10 @@
 				$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' id='{$row["OD_ID"]}' location='{$location}'>{$format_price}</button>";
 			}
 
-			echo "<td id='{$row["OD_ID"]}'><input ".(($is_lock or $is_del) ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock and !$is_del) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
+			echo "<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
 					<td class='txtright'>{$price}</td>
 					<td class='txtright nowrap'>{$format_discount} p.<br><b class='{$discount_bg}'>{$percent} %</b></td>
-					<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
+					<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' location='{$location}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
 
 					// Если в накладной - выводим ссылку на сверки
 					if( $row["PFI_ID"] ) {
@@ -1130,8 +1096,8 @@
 					}
 					echo "<td>";
 
-			// Если есть права на редактирование заказа и заказ не закрыт и не удален, то показываем карандаш, кнопку разделения и отказа
-			if( in_array('order_add', $Rights) and !$is_lock and !$is_del) {
+			// Если есть права на редактирование заказа и заказ не закрыт, то показываем карандаш, кнопку разделения и отказа
+			if( in_array('order_add', $Rights) and !$is_lock ) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' invoice={$row["PFI_ID"]} location='{$location}' payment='{$row["payment_sum"]}' old_sum='{$row["Price"]}' title='Пометить как отказ/замена.'><i class='fa fa-hand-paper fa-lg' aria-hidden='true'></i></a>";
@@ -1146,7 +1112,7 @@
 			echo "</script>";
 
 			// Собираем ошибки если у проданного заказа нет предоплаты
-			if ($row["Price"] - $row['discount'] > 0 and $row["StartDate"] and !$is_del and $row["payment_sum"] == 0 and !$row["PFI_ID"] and $row["ul"] == 0) {
+			if ($row["Price"] - $row['discount'] > 0 and $row["StartDate"] and $row["payment_sum"] == 0 and !$row["PFI_ID"] and $row["ul"] == 0) {
 				$_SESSION["error"][] = "Заказ <a href='#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a> продан {$row["StartDate"]}, но предоплата не внесена!";
 			}
 		}
@@ -1155,31 +1121,6 @@
 	</table>
 	</form>
 </div>
-
-<!-- Форма добавления оплаты -->
-<style>
-	#add_payment table {
-		text-align: center;
-	}
-	#add_payment input.payment_sum {
-		width: 70px;
-		text-align: right;
-	}
-	#add_payment input.terminal_payer {
-		width: 180px;
-	}
-</style>
-<div id='add_payment' title='Добавление оплаты' style='display:none'>
-	<form method='post' action="<?=$location?>&add_payment=1">
-		<fieldset>
-		</fieldset>
-		<div>
-			<hr>
-			<button style='float: right;'>Сохранить</button>
-		</div>
-	</form>
-</div>
-<!-- Конец формы добавления оплаты -->
 
 <!-- Форма добавления/редактирования расхода/прихода -->
 <div id='add_cost' style='display:none'>
@@ -1287,52 +1228,6 @@
 
 			var data = $('#formdiv').serialize();
 			$("#print_price").attr('href', '/toprint/print_price.php?' + data);
-			return false;
-		});
-
-		// При включении галки "терминал" активируется инпут для фамилии
-		$('#add_payment').on("change", ".terminal", function() {
-			var ch = $(this).prop('checked');
-			var terminal_payer = $(this).parents('tr').find('input[type="text"].terminal_payer');
-			var terminal_payer_hidden = $(this).parents('tr').find('input[type="hidden"].terminal_payer');
-			var account = $(this).parents('tr').find('select.account');
-			var payment_date = $(this).parents('tr').find('.payment_date');
-			if( ch ) {
-				$(terminal_payer).prop('disabled', false);
-				$(terminal_payer).prop('required', true);
-				$(terminal_payer_hidden).val( $(terminal_payer).val() );
-				$(account).prop('disabled', true);
-				$(account).hide('fast');
-				$(payment_date).datepicker();
-				$(payment_date).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
-				$(payment_date).focus();
-			}
-			else {
-				$(terminal_payer).prop('disabled', true);
-				$(terminal_payer).prop('required', false);
-				$(terminal_payer_hidden).val('');
-				$(account).prop('disabled', false);
-				$(account).show('fast');
-				$(payment_date).datepicker('destroy');
-				$(payment_date).val('<?=( date('d.m.Y') )?>');
-			}
-		});
-
-		// Кнопка добавления платежа
-		$('.add_payment_btn').click( function() {
-			var OD_ID = $(this).attr('id');
-			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID, dataType: "script", async: false });
-
-			$('#add_payment').dialog({
-				width: 650,
-				modal: true,
-				show: 'blind',
-				hide: 'explode',
-				closeText: 'Закрыть'
-			});
-			$('input[name=payment_sum_add]').focus();
-
-			$('#add_payment .terminal').change();
 			return false;
 		});
 

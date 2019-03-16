@@ -833,7 +833,8 @@ case "invoice":
 // Форма добавления платежа к заказу
 case "add_payment":
 	$OD_ID = $_GET["OD_ID"];
-	$html = "";
+
+	$html = "<input type='hidden' name='location'>";
 
 	// Узнаем фамилию заказчика, салон, счет терминала в салоне, закрыт ли месяц
 	$query = "SELECT OD.ClientName
@@ -852,8 +853,6 @@ case "add_payment":
 	$FA_ID = mysqli_result($res,0,'FA_ID');
 	$is_lock = mysqli_result($res,0,'is_lock');
 	$is_del = mysqli_result($res,0,'is_del');
-
-	$html .= "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 
 	$html .= "<div class='accordion'>";
 	$html .= "<h3>Памятка по внесению оплаты</h3>";
@@ -963,7 +962,7 @@ case "add_payment":
 case "update_price":
 	$OD_ID = $_GET["OD_ID"];
 
-	$html .= "<input type='hidden' name='location'>";
+	$html = "<input type='hidden' name='location'>";
 
 	$html .= "<div class='accordion'>";
 	$html .= "<h3>Памятка по изменению суммы заказа</h3>";

@@ -163,9 +163,42 @@ elseif (isset($_GET["add_price"])) {
 	die;
 }
 
+// Добавление в базу нового платежа к заказу
+elseif( isset($_GET["add_payment"]) and $_POST["payment_sum_add"] ) {
+	$OD_ID = $_GET["OD_ID"];
+	$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date_add"]) );
+	$payment_sum = $_POST["payment_sum_add"];
+	$terminal = $_POST["terminal_add"];
+	$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, convert_str($_POST["terminal_payer_add"]) ).'\'' : 'NULL';
+	$FA_ID_add = $_POST["FA_ID_add"] ? $_POST["FA_ID_add"] : 'NULL';
+	$SH_ID_add = $_POST["FA_ID_add"] ? 'NULL' : $_POST["SH_ID_add"];
+
+	if( $payment_sum ) {
+		// Записываем новый платеж в таблицу платежей
+		$query = "INSERT INTO OrdersPayment
+					 SET OD_ID = {$OD_ID}
+						,payment_date = '{$payment_date}'
+						,payment_sum = {$payment_sum}
+						,terminal_payer = {$terminal_payer}
+						,SH_ID = {$SH_ID_add}
+						,FA_ID = ".($terminal ? "(SELECT SH.FA_ID FROM Shops SH JOIN OrdersData OD ON OD.SH_ID = SH.SH_ID AND OD.OD_ID = {$OD_ID})" : $FA_ID_add)."
+						,author = {$_SESSION['id']}";
+		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
+		else {
+			// Записываем дату продажи заказа если ее не было
+			$query = "UPDATE OrdersData SET StartDate = '{$payment_date}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
+			if( !mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["error"][] = mysqli_error( $mysqli );
+			}
+		}
+	}
+
+	exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'#ord'.$OD_ID.'">');
+	die;
+}
+
 // Обновление в базе производственных этапов
-elseif (isset($_POST["ODD_ID"]))
-{
+elseif (isset($_POST["ODD_ID"])) {
 	if (!in_array('step_update', $Rights)) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 		die('Недостаточно прав для совершения операции');

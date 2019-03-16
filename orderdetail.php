@@ -343,6 +343,8 @@
 			,PFI.platelshik_id
 			,Ord_price(OD.OD_ID) - Ord_discount(OD.OD_ID) Price
 			,Ord_opt_price(OD.OD_ID) opt_price
+			,Payment_sum(OD.OD_ID) payment_sum
+			,CheckPayment(OD.OD_ID) attention
 		FROM OrdersData OD
 		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
@@ -382,11 +384,12 @@
 	$platelshik_id = $row['platelshik_id'];
 	$format_price = number_format($row['Price'], 0, '', ' ');
 	$format_opt_price = number_format($row["opt_price"], 0, '', ' ');
+	$format_payment = number_format($row["payment_sum"], 0, '', ' ');
 
 	// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информацию заказа.
 	$editable = (!($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and !($SH_ID == 0 and !in_array('order_add_confirm', $Rights)));
 ?>
-	<form method='post' id='order_form' action='<?=$location?>&order_update=1'>
+	<form method='post' id='order_form' action='<?=$location?>&order_update'>
 	<table class="main_table">
 		<thead>
 		<tr class='nowrap'>
@@ -403,6 +406,11 @@
 			<th width="170">Цвет краски</th>
 			<th width="40">Принят</th>
 			<th width="65">Сумма<br>заказа</th>
+			<?
+			if( $retail ) {
+				echo "<th width='65'>Оплата</th>";
+			}
+			?>
 			<th width="20%">Примечание</th>
 			<th width="70">Действие</th>
 		</tr>
@@ -525,6 +533,9 @@
 		}
 
 		echo "<td class='txtright'>{$price}</td>";
+		if( $retail ) {
+			echo "<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' location='{$location}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
+		}
 ?>
 
 		<td><textarea name='Comment' rows='6' <?=( (in_array('order_add', $Rights) and !$Del and $editable) ? "" : "disabled" )?> style='width: 100%;'><?=$Comment?></textarea></td>
@@ -535,8 +546,8 @@
 			if( in_array('order_add', $Rights) and $editable ) {
 				echo "<p><a href='#' onclick='if(confirm(\"<b>Подтвердите клонирование заказа!</b>\", \"clone_order.php?id={$id}&confirmed=".(in_array('order_add_confirm', $Rights) ? 1 : 0)."\")) return false;' title='Клонировать'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></a></p>";
 			}
-			// Если розничный заказ - показываем кнопку перехода в реализацию
-			if( $retail and $editable ) {
+			// Если розничный заказ (и не удален)- показываем кнопку перехода в реализацию
+			if( $retail and $editable and !$Del ) {
 				echo "<p><a href='/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$id}' title='Перейти в реализацию'><i class='fa fa-money-bill-alt fa-2x' aria-hidden='true'></i></a></p>";
 			}
 			// Если заказ в отгрузке и заказ не чужой - показываем кнопку перехода в отгрузку
@@ -867,7 +878,7 @@ if( $id != "NULL" ) {
 ?>
 <!-- Форма добавления сообщения к заказу -->
 <div id='add_message' title='Сообщение' style='display:none'>
-	<form method='post' action='<?=$location?>&add_message=1'>
+	<form method='post' action='<?=$location?>&add_message'>
 		<fieldset>
 			<div>
 				<label for="message">Текст сообщения:</label><br>

@@ -500,7 +500,7 @@
 
 <!-- Форма редактирования суммы заказа -->
 <div id='update_price' title='Изменение суммы заказа' style='display:none'>
-	<form method='post' action="<?=$location?>&add_price=1">
+	<form method='post'>
 		<fieldset>
 		</fieldset>
 		<div>
@@ -510,6 +510,31 @@
 	</form>
 </div>
 <!-- Конец формы редактирования суммы заказа -->
+
+<!-- Форма добавления оплаты к заказу-->
+<style>
+	#add_payment table {
+		text-align: center;
+	}
+	#add_payment input.payment_sum {
+		width: 70px;
+		text-align: right;
+	}
+	#add_payment input.terminal_payer {
+		width: 180px;
+	}
+</style>
+<div id='add_payment' title='Добавление оплаты' style='display:none'>
+	<form method='post'>
+		<fieldset>
+		</fieldset>
+		<div>
+			<hr>
+			<button style='float: right;'>Сохранить</button>
+		</div>
+	</form>
+</div>
+<!-- Конец формы добавления оплаты -->
 
 <script>
 	// Функция активирует/деактивирует кнопки наличия ткани/пластика
@@ -1262,7 +1287,7 @@
 			var location = $(this).attr("location");
 			$.ajax({ url: "ajax.php?do=update_price&OD_ID="+OD_ID, dataType: "script", async: false });
 
-			$("#update_price form").attr("action", "datasave.php?OD_ID="+OD_ID+"&add_price=1");
+			$("#update_price form").attr("action", "datasave.php?OD_ID="+OD_ID+"&add_price");
 			$("#update_price input[name=location]").val(location);
 
 			$('#update_price').dialog({
@@ -1282,5 +1307,56 @@
 
 			return false;
 		});
+
+		// При включении галки "терминал" активируется инпут для фамилии
+		$('#add_payment').on("change", ".terminal", function() {
+			var ch = $(this).prop('checked');
+			var terminal_payer = $(this).parents('tr').find('input[type="text"].terminal_payer');
+			var terminal_payer_hidden = $(this).parents('tr').find('input[type="hidden"].terminal_payer');
+			var account = $(this).parents('tr').find('select.account');
+			var payment_date = $(this).parents('tr').find('.payment_date');
+			if( ch ) {
+				$(terminal_payer).prop('disabled', false);
+				$(terminal_payer).prop('required', true);
+				$(terminal_payer_hidden).val( $(terminal_payer).val() );
+				$(account).prop('disabled', true);
+				$(account).hide('fast');
+				$(payment_date).datepicker();
+				$(payment_date).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
+				$(payment_date).focus();
+			}
+			else {
+				$(terminal_payer).prop('disabled', true);
+				$(terminal_payer).prop('required', false);
+				$(terminal_payer_hidden).val('');
+				$(account).prop('disabled', false);
+				$(account).show('fast');
+				$(payment_date).datepicker('destroy');
+				$(payment_date).val('<?=( date('d.m.Y') )?>');
+			}
+		});
+
+		// Кнопка добавления оплаты к заказу
+		$('.add_payment_btn').click( function() {
+			var OD_ID = $(this).attr('id');
+			var location = $(this).attr("location");
+			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID, dataType: "script", async: false });
+
+			$("#add_payment form").attr("action", "datasave.php?OD_ID="+OD_ID+"&add_payment");
+			$("#add_payment input[name=location]").val(location);
+
+			$('#add_payment').dialog({
+				width: 650,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
+			$('input[name=payment_sum_add]').focus();
+
+			$('#add_payment .terminal').change();
+			return false;
+		});
+
 	});
 </script>
