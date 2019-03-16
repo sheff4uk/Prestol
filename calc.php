@@ -84,7 +84,7 @@
 				,TIME(OCL.date_time) Time
 			FROM OrdersDataDetail ODD
 			JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
-			JOIN OrdersChangeLog OCL ON OCL.table_value = ODD.ODD_ID AND OCL.table_key LIKE 'ODD_ID' AND OCL.field_name LIKE 'Добавлено изделие'
+			JOIN OrdersChangeLog OCL ON OCL.table_value = ODD.ODD_ID AND OCL.table_key LIKE 'ODD_ID' AND OCL.OFN_ID = 3
 			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 			WHERE ODD.OD_ID IS NULL
