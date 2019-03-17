@@ -22,9 +22,20 @@ $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $
 $average_power = mysqli_result($res,0,'Amount');
 $normal = "$average_power, $average_power, $average_power";
 
-//Мощность производства за прошедшую неделю (7)
+//Мощность производства за прошлые 7 дней
 $query = "
-	SELECT IFNULL(ROUND(SUM(ODD.Amount)/1), 0) Amount
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 8 AND 14
+		AND OD.DelDate IS NULL
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$last_power_week = mysqli_result($res,0,'Amount');
+
+//Мощность производства за текущие 7 дней
+$query = "
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 1 AND 7
@@ -33,9 +44,20 @@ $query = "
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $current_power_week = mysqli_result($res,0,'Amount');
 
-//Мощность производства за прошедший месяц (28)
+//Мощность производства за прошлые 28 дней
 $query = "
-	SELECT IFNULL(ROUND(SUM(ODD.Amount)/4), 0) Amount
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 29 AND 56
+		AND OD.DelDate IS NULL
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$last_power_month = mysqli_result($res,0,'Amount');
+
+//Мощность производства за текущие 28 дней
+$query = "
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 1 AND 28
@@ -44,9 +66,20 @@ $query = "
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $current_power_month = mysqli_result($res,0,'Amount');
 
-//Мощность производства за прошедший квартал (91)
+//Мощность производства за прошлые 91 дней
 $query = "
-	SELECT IFNULL(ROUND(SUM(ODD.Amount)/13), 0) Amount
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
+	FROM OrdersData OD
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 92 AND 182
+		AND OD.DelDate IS NULL
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$last_power_quarter = mysqli_result($res,0,'Amount');
+
+//Мощность производства за текущие 91 дней
+$query = "
+	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 1 AND 91
@@ -55,10 +88,48 @@ $query = "
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $current_power_quarter = mysqli_result($res,0,'Amount');
 
-// Вычисляем текущую на грузку на производство
+// Вычисляем текущую нагрузку на производство
 $load_week = round(($current_power_week/$average_power)*100);
-$load_month = round(($current_power_month/$average_power)*100);
-$load_quarter = round(($current_power_quarter/$average_power)*100);
+$load_month = round((($current_power_month/4)/$average_power)*100);
+$load_quarter = round((($current_power_quarter/13)/$average_power)*100);
+
+// Вычисляем относительное изменение периодов
+$diff_week = round($current_power_week/$last_power_week, 3)*100 - 100;
+$diff_month = round($current_power_month/$last_power_month, 3)*100 - 100;
+$diff_quarter = round($current_power_quarter/$last_power_quarter, 3)*100 - 100;
+
+$format_diff_week = ($last_power_week == 0 or $diff_week == 0) ? "<br>" : "<font title='По сравнению с предыдущим периодом' size='-1' color=".($diff_week > 0 ? "'#26a332'>+" : "'#e51616'>").$diff_week."&thinsp;%</font>";
+$format_diff_month = ($last_power_month == 0 or $diff_month == 0) ? "<br>" : "<font title='По сравнению с предыдущим периодом' size='-1' color=".($diff_month > 0 ? "'#26a332'>+" : "'#e51616'>").$diff_month."&thinsp;%</font>";
+$format_diff_quarter = ($last_power_quarter == 0 or $diff_quarter == 0) ? "<br>" : "<font title='По сравнению с предыдущим периодом' size='-1' color=".($diff_quarter > 0 ? "'#26a332'>+" : "'#e51616'>").$diff_quarter."&thinsp;%</font>";
+
+?>
+<table>
+	<thead>
+		<tr>
+			<th></th>
+			<th></th>
+			<th>неделя</th>
+			<th>месяц</th>
+			<th>квартал</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td rowspan="2">Загруженность производства</td>
+			<td>в процентах</td>
+			<td class="txtright"><b><?=$load_week?>% <i class="fas fa-question-circle" title="Количество отгруженной продукции за последние 7 дней относительно среднегодового показателя"></i></b></td>
+			<td class="txtright"><b><?=$load_month?>% <i class="fas fa-question-circle" title="Количество отгруженной продукции за последние 28 дней относительно среднегодового показателя"></i></b></td>
+			<td class="txtright"><b><?=$load_quarter?>% <i class="fas fa-question-circle" title="Количество отгруженной продукции за последние 91 дней относительно среднегодового показателя"></i></b></td>
+		</tr>
+		<tr>
+			<td>в единицах продукции</td>
+			<td class="txtright"><b><?=$current_power_week?> <i class="fas fa-question-circle" title="Количество единиц отгруженной продукции за последние 7 дней"></i></b><br><?=$format_diff_week?></td>
+			<td class="txtright"><b><?=$current_power_month?> <i class="fas fa-question-circle" title="Количество единиц отгруженной продукции за последние 28 дней"></i></b><br><?=$format_diff_month?></td>
+			<td class="txtright"><b><?=$current_power_quarter?> <i class="fas fa-question-circle" title="Количество единиц отгруженной продукции за последние 91 дней"></i></b><br><?=$format_diff_quarter?></td>
+		</tr>
+	</tbody>
+</table>
+<?
 
 // Получаем последовательность недель для отчета и цвета
 $query = "
@@ -516,25 +587,6 @@ $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $
 $hold_others_opt = mysqli_result($res,0,'Amount');
 
 ?>
-<table>
-	<thead>
-		<tr>
-			<th></th>
-			<th>неделя</th>
-			<th>месяц</th>
-			<th>квартал</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td><b>Загруженность производства:</b></td>
-			<td><b><font color="red"><?=$load_week?>%</font> <i class="fas fa-question-circle" title="Количество отгруженной продукции за последние 7 дней относительно среднегодового показателя"></i></b></td>
-			<td><b><font color="goldenrod"><?=$load_month?>%</font> <i class="fas fa-question-circle" title="Количество отгруженной продукции за последние 28 дней относительно среднегодового показателя"></i></b></td>
-			<td><b><font color="green"><?=$load_quarter?>%</font> <i class="fas fa-question-circle" title="Количество отгруженной продукции за последние 91 дней относительно среднегодового показателя"></i></b></td>
-		</tr>
-	</tbody>
-</table>
-
 <canvas id="myChart" width="400" height="130"></canvas>
 <script>
 	var barChartData = {
@@ -545,6 +597,7 @@ $hold_others_opt = mysqli_result($res,0,'Amount');
 			fill: false,
 			backgroundColor: 'rgba(255, 159, 64, 1)',
 			borderWidth: 4,
+			pointRadius: 0,
 			borderColor: 'rgba(255, 159, 64, 1)',
 			data: [<?=$normal?>]
 		}, {
