@@ -397,8 +397,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	echo "<td>{$row["Name"]}</td>";
 
 	if( $row["del"] == "0" and $row["rtrn"] == "0" and !in_array('sverki_opt', $Rights) ) {
-		$Naimenovanie = addslashes($row["Naimenovanie"]);
-		echo "<td><button onclick='if(confirm(\"Удалить накладную <b>№{$row["count"]} ({$Naimenovanie})</b> от <b>{$row["date_format"]}</b>?\", \"?del={$row["PFI_ID"]}&year={$year}&payer={$payer}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></button></td>";
+		echo "<td><button class='del_invoice' pfi_id='{$row["PFI_ID"]}' count='{$row["count"]}' title='Удалить'><i class='fa fa-times fa-lg'></i></button></td>";
 	}
 	else {
 		echo "<td></td>";
@@ -408,6 +407,18 @@ while( $row = mysqli_fetch_array($res) ) {
 ?>
 	</tbody>
 </table>
+
+<script>
+	$(function() {
+		// Удаление накладной
+		$('.del_invoice').on('click', function() {
+			var count = $(this).attr('count');
+			var pfi_id = $(this).attr('pfi_id');
+			confirm("Удалить накладную <b>№"+count+"</b>?", "?del="+pfi_id+"&year=<?=$year?>&payer=<?=$payer?>");
+			return false;
+		});
+	});
+</script>
 
 <!-- Форма подготовки накладной -->
 <div id='add_invoice_form' style='display:none'>

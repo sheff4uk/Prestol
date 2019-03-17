@@ -124,7 +124,6 @@ case "ispainting":
 
 	$id = $_GET["od_id"];
 	$isready = $_GET["isready"];
-	$archive = $_GET["archive"];
 	$val = $_GET["val"];
 	$val = ($val == 3) ? 1 : $val + 1;
 	$shpid = $_GET["shpid"];
@@ -179,27 +178,13 @@ case "ispainting":
 		echo "check_shipping({$is_orders_ready}, 1, {$filter});";
 	}
 	else {
-		$html = "";
-		if( $archive != 1 ) {
-			if( $isready == 1 and $val == 3 ) {
-				if( in_array('order_ready', $Rights) ) {
-					$html .= "<a href='#' class='shipping' ".( $SH_ID == 0 ? "style='display: none;'" : "")." onclick='confirm(\"Пожалуйста, подтвердите <b>отгрузку</b> заказа.\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$id}\", dataType: \"script\", async: false });});' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
-				}
-			}
-			if( in_array('order_add', $Rights) ) {
-				if( in_array('order_add_confirm', $Rights) ) {
-					$message = "<b>Внимание!</b><br>Заказ отмеченный как покрашенный при удалении будет считаться <b>списанным</b> - это означает, что задействованные заготовки, тоже останутся <b>списанными</b>.<br>В остальных случаях заказ будет считаться <b>отмененным</b> и заготовки <b>вернутся</b> на склад.<br>К тому же этапы производства, отмеченные как <b>выполненные</b>, после удаления останутся таковыми <b>с сохранением денежного начисления работнику</b>.";
-				}
-				else {
-					$message = "Пожалуйста, подтвердите <b>удаление</b> заказа.";
-				}
-				$html .= "<a href='#' class='deleting' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$id}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
-			}
+		if( $isready == 1 and $val == 3 ) {
+			echo "$('.main_table tr[id=\"ord{$id}\"] .shipping').show('fast');";
+		}
+		else {
+			echo "$('.main_table tr[id=\"ord{$id}\"] .shipping').hide('fast');";
 		}
 	}
-	// Выводим кнопки удалить и отгрузить
-	$html = addslashes($html);
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] action').html('{$html}');";
 
 	if( $val == 3 ) {
 		// Формирование дропдауна со списком лакировщиков. Сортировка по релевантности.
@@ -1817,6 +1802,24 @@ case "order_del":
 			$selling_link = "/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$od_id}";
 			echo "noty({text: 'Заказ оплачен! Перейдите в <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b> и запишите возврат платежа. Затем повторите попытку удаления.', type: 'alert'});";
 		}
+	}
+
+	break;
+/////////////////////////////////////////////////////////////////////
+
+// Восстановление удаленного заказа
+case "order_del_undo":
+	$od_id = $_GET["od_id"];
+
+	// Проверяем права
+	if( !in_array('order_add', $Rights) ) {
+		echo "noty({timeout: 3000, text: 'Недостаточно прав для совершения операции!', type: 'error'});";
+	}
+	else {
+		$query = "UPDATE OrdersData SET DelDate = NULL, author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
+		mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		echo "$('.main_table #ord{$od_id}').hide('slow');";
+		echo "noty({timeout: 3000, text: 'Заказ восстановлен!', type: 'success'});";
 	}
 
 	break;

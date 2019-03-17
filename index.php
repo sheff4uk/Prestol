@@ -929,7 +929,7 @@
 		}
 		$confirmed = $row["confirmed"];		// Заказ принят в работу
 		// Запрет на редактирование
-		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and $is_lock == 0 and $row["Archive"] == 0 and $is_del == 0 );
+		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and $is_lock == 0 and $row["Archive"] == 0 );
 
 		// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информацию заказа.
 		$editable = (!($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and !($row["SH_ID"] == 0 and !in_array('order_add_confirm', $Rights)));
@@ -973,10 +973,10 @@
 		while( $subrow = mysqli_fetch_array($subres) ) {
 			// Если есть примечание
 			if ($subrow["Comment"]) {
-				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}' href='#'" : "not_edit_product'")." title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and !$is_del and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}' href='#'" : "not_edit_product'")." title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
 			}
 			else {
-				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}' href='#'" : "not_edit_product'")."><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and !$is_del and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}' href='#'" : "not_edit_product'")."><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
 			}
 
 			if ($subrow["IsExist"] == "0") {
@@ -1031,7 +1031,7 @@
 					$class = "ready";
 					break;
 			}
-		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $is_del == 0 and $row["IsPainting"] != 0 ) ? "painting " : "")."{$class}' isready='{$row["IsReady"]}' archive='{$row["Archive"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
+		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $is_del == 0 and $row["IsPainting"] != 0 ) ? "painting " : "")."{$class}' isready='{$row["IsReady"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
 		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><span class='nowrap material'>{$steps}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
 		// Если заказ принят
@@ -1061,23 +1061,16 @@
 
 			echo "<action>";
 			if( $row["SHP_ID"] == 0 ) {
-				if( $row["Archive"] == 0 and $is_del == 0 ) {
-					if( $row["IsReady"] and ($row["IsPainting"] == "3" or $row["IsPainting"] == "0") ) {
-						if( in_array('order_ready', $Rights) ) {
-							//echo "<a href='#' class='' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='if(confirm(\"Пожалуйста, подтвердите готовность заказа.\", \"?ready={$row["OD_ID"]}\")) return false;' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
-							echo "<a href='#' class='shipping' ".(($row["SH_ID"] == 0) ? "style='display: none;'" : "")." onclick='confirm(\"Пожалуйста, подтвердите <b>отгрузку</b> заказа.\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_shp&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
-						}
+				if( $row["Archive"] == 0 ) {
+					if ($row["SH_ID"] and !$is_del and in_array('order_ready', $Rights)) {
+						echo "<a href='#' class='shipping' ".(($row["IsReady"] and ($row["IsPainting"] == "3" or $row["IsPainting"] == "0")) ? "" : "style='display: none;'")." od_id='{$row["OD_ID"]}' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
 					}
-					if( !$disabled ) {
-						//echo "<a href='#' class='' onclick='if(confirm(\"<b>Подтвердите удаление заказа!</b>\", \"?del={$row["OD_ID"]}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
-						if( in_array('order_add_confirm', $Rights) ) {
-							$message = "<b>Внимание!</b><br>Заказ отмеченный как покрашенный при удалении будет считаться <b>списанным</b> - это означает, что задействованные заготовки, тоже останутся <b>списанными</b>.<br>В остальных случаях заказ будет считаться <b>отмененным</b> и заготовки <b>вернутся</b> на склад.<br>К тому же этапы производства, отмеченные как <b>выполненные</b>, после удаления останутся таковыми <b>с сохранением денежного начисления работнику</b>.";
+					if( !$disabled and !$row["PFI_ID"] ) {
+						if ($is_del) {
+							echo "<a href='#' class='undo_deleting' od_id='{$row["OD_ID"]}' title='Восстановить'><i class='fas fa-undo-alt fa-lg'></i></a>";
 						}
 						else {
-							$message = "Пожалуйста, подтвердите <b>удаление</b> заказа.";
-						}
-						if( !$row["PFI_ID"] ) {
-							echo "<a href='#' class='deleting' onclick='confirm(\"{$message}\").then(function(status){if(status) $.ajax({ url: \"ajax.php?do=order_del&od_id={$row["OD_ID"]}\", dataType: \"script\", async: false });});' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+							echo "<a href='#' class='deleting' od_id='{$row["OD_ID"]}' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 						}
 					}
 				}
@@ -1107,6 +1100,28 @@
 
 <script>
 	$(function() {
+		// Отгрузка заказа
+		$('.shipping').on('click', function() {
+			var od_id = $(this).attr('od_id');
+			confirm("Пожалуйста, подтвердите <b>отгрузку</b> заказа.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_shp&od_id="+od_id, dataType: "script", async: false });});
+			return false;
+		});
+
+		// Удаление заказа
+		$('.deleting').on('click', function() {
+			var od_id = $(this).attr('od_id');
+			var message = "<?=((in_array('order_add_confirm', $Rights)) ? "<b>Внимание!</b><br>Заказ отмеченный как покрашенный при удалении будет считаться <b>списанным</b> - это означает, что задействованные заготовки, тоже останутся <b>списанными</b>.<br>В остальных случаях заказ будет считаться <b>отмененным</b> и заготовки <b>вернутся</b> на склад.<br>К тому же этапы производства, отмеченные как <b>выполненные</b>, после удаления останутся таковыми <b>с сохранением денежного начисления работнику</b>." : "Пожалуйста, подтвердите <b>удаление</b> заказа.")?>";
+			confirm(message).then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_del&od_id="+od_id, dataType: "script", async: false });});
+			return false;
+		});
+
+		// Восстановление удаленного заказа
+		$('.undo_deleting').on('click', function() {
+			var od_id = $(this).attr('od_id');
+			confirm("Пожалуйста, подтвердите <b>восстановление</b> удалённого заказа.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_del_undo&od_id="+od_id, dataType: "script", async: false });});
+			return false;
+		});
+
 		<?
 		// Выделяем рамкой отфильтрованные этапы
 		if (!isset($_GET["shpid"]) and ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "")) {
