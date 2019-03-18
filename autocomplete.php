@@ -113,7 +113,7 @@ case "plastictags":
 	break;
 
 case "clienttags":
-	// Автокомплит заказчиков
+	// Автокомплит клиентов
 	$term = convert_str($_GET["term"]);
 	$term = mysqli_real_escape_string($mysqli, $term);
 

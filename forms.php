@@ -484,8 +484,8 @@
 </div>
 <!-- Конец формы добавления этапов производства -->
 
-<!-- Форма разбитя заказа -->
-<div id='order_cut' title='Разделение заказа' style='display:none'>
+<!-- Форма разбитя набора -->
+<div id='order_cut' title='Разделение набора' style='display:none'>
 	<form method="post" action="index.php">
 		<fieldset>
 
@@ -496,10 +496,10 @@
 		</div>
 	</form>
 </div>
-<!-- Конец формы разбитя заказа -->
+<!-- Конец формы разбитя набора -->
 
-<!-- Форма редактирования суммы заказа -->
-<div id='update_price' title='Изменение суммы заказа' style='display:none'>
+<!-- Форма редактирования стоимости набора -->
+<div id='update_price' title='Изменение стоимости набора' style='display:none'>
 	<form method='post'>
 		<fieldset>
 		</fieldset>
@@ -509,9 +509,9 @@
 		</div>
 	</form>
 </div>
-<!-- Конец формы редактирования суммы заказа -->
+<!-- Конец формы редактирования стоимости набора -->
 
-<!-- Форма добавления оплаты к заказу-->
+<!-- Форма добавления оплаты к набору-->
 <style>
 	#add_payment table {
 		text-align: center;
@@ -699,7 +699,7 @@
 		}
 	}
 
-	// Функция пересчитывает итог в форме редактирования суммы заказа
+	// Функция пересчитывает итог в форме редактирования стоимости набора
 	function updtotal() {
 		var total_sum = 0;
 		var total_discount = 0;
@@ -1281,7 +1281,7 @@
 			}
 		});
 
-		// Форма редактирования суммы заказа
+		// Форма редактирования стоимости набора
 		$('.update_price_btn').click( function() {
 			var OD_ID = $(this).attr('id');
 			var location = $(this).attr("location");
@@ -1336,7 +1336,7 @@
 			}
 		});
 
-		// Кнопка добавления оплаты к заказу
+		// Кнопка добавления оплаты к набору
 		$('.add_payment_btn').click( function() {
 			var OD_ID = $(this).attr('id');
 			var location = $(this).attr("location");

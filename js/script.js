@@ -130,7 +130,7 @@ $(function(){
 	$('.edit_steps').click( function()
 	{
 		if( $(this).parents('.td_step').hasClass('step_disabled') ) {
-			noty({timeout: 10000, text: '<b>Заказ не редактируется. Изменение этапов невозможно.</b>', type: 'alert'});
+			noty({timeout: 10000, text: '<b>Набор не редактируется. Изменение этапов невозможно.</b>', type: 'alert'});
 			return false;
 		}
 		else {
@@ -140,13 +140,13 @@ $(function(){
 				makeform(id, location);
 			}
 			else {
-				noty({timeout: 10000, text: 'Заказ не принят в работу. Вы не можете назначать этапы.', type: 'alert'});
+				noty({timeout: 10000, text: 'Набор не принят в работу. Вы не можете назначать этапы.', type: 'alert'});
 			}
 		}
 		return false;
 	});
 
-	// Форма разделения заказа
+	// Форма разделения набора
 	$('.order_cut').click(function() {
 		var OD_ID = $(this).attr('id');
 		var location = $(this).attr("location");
@@ -318,7 +318,7 @@ $(function(){
 			}
 		});
 
-		$( ".clienttags" ).autocomplete({ // Автокомплит заказчиков
+		$( ".clienttags" ).autocomplete({ // Автокомплит клиентов
 			source: "autocomplete.php?do=clienttags"
 		});
 
@@ -389,7 +389,7 @@ $(function(){
 			$.ajax({ url: "ajax.php?do=confirmed&od_id="+id+"&val="+val, dataType: "script", async: false });
 		});
 
-		// Смена статуса получения заказчиком аяксом
+		// Смена статуса получения клиентом
 		$('.taken_confirmed').click(function() {
 			var id = $(this).parents('tr').attr('id');
 			id = id.replace('ord', '');

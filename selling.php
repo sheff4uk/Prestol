@@ -86,7 +86,7 @@
 		$old_sum = $_POST["old_sum"];
 		$type = $_POST["type"];
 
-		// Получаем из базы доп. сведения по заказу
+		// Получаем из базы доп. сведения по набору
 		$query = "SELECT OD.SH_ID, OD.StartDate FROM OrdersData OD WHERE OD.OD_ID = {$OD_ID}";
 		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$SH_ID = mysqli_result($subres,0,'SH_ID');
@@ -102,10 +102,10 @@
 				}
 				else { $_SESSION["alert"][] = mysqli_error( $mysqli ); }
 			}
-			// Очищаем дату продажи и статус получения заказа
+			// Очищаем дату продажи и статус получения набора
 			$query = "UPDATE OrdersData SET StartDate = NULL, taken = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена', ' Отказ')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 			if( mysqli_query( $mysqli, $query ) ) {
-				$_SESSION["alert"][] = "Заказ перемещен в \"Свободные\"";
+				$_SESSION["alert"][] = "Набор перемещен в \"Свободные\"";
 			}
 			else {
 				$_SESSION["error"][] = mysqli_error( $mysqli );
@@ -120,7 +120,7 @@
 			if( mysqli_query( $mysqli, $query ) ) {
 				// Если были изменения
 				if (mysqli_affected_rows($mysqli)) {
-					$_SESSION["alert"][] = "Скидка по заказу была обнулена.";
+					$_SESSION["alert"][] = "Скидка по набору была обнулена.";
 				}
 			}
 			else {
@@ -144,7 +144,7 @@
 			}
 		}
 		else {
-			$_SESSION["error"][] = "Заказ не продан! Установите дату продажи и повторите попытку.";
+			$_SESSION["error"][] = "Набор не продан! Установите дату продажи и повторите попытку.";
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
@@ -370,7 +370,7 @@
 							echo "<th></th>";
 						}
 						?>
-						<th>Продажи<i class="fa fa-question-circle" aria-hidden="true" title="Не включает суммы отказных заказов."></i></th>
+						<th>Продажи<i class="fa fa-question-circle" aria-hidden="true" title="Не включает стоимость отказных наборов."></i></th>
 						<th>Скидки</th>
 						<th>Отказы</th>
 						<th>Дебиторка</th>
@@ -606,10 +606,10 @@
 					$cache_sum = $cache_sum + $row["payment_sum"];
 					$href = ($row["del"]) ? "orderdetail.php?id={$row["OD_ID"]}' target='_blank" : "?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}";
 					$cache_name = ( $row["Code"] ) ? "<b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>" : "<span>{$row["cost_name"]}</span>";
-					$attention = ( $row["attention"] ) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='После внесения оплаты заказ был перенесен в другой салон!'></i>" : "";
+					$attention = ( $row["attention"] ) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='После внесения оплаты набор был перенесен в другой салон!'></i>" : "";
 					$attention_sum = $attention_sum + $row["attention"];
 					if( in_array('selling_all', $Rights) ) {
-						$is_terminal = $row["is_terminal"] == 2 ? " <i class='fa fa-credit-card' title='В оплате содержится эквайринг'></i>" : ($row["is_terminal"] == 1 ? " <i class='fa fa-credit-card' style='opacity: .4;' title='Заказ оплачен не полностью. Возможен эквайринг.'></i>" : "");
+						$is_terminal = $row["is_terminal"] == 2 ? " <i class='fa fa-credit-card' title='В оплате содержится эквайринг'></i>" : ($row["is_terminal"] == 1 ? " <i class='fa fa-credit-card' style='opacity: .4;' title='Набор оплачен не полностью. Возможен эквайринг.'></i>" : "");
 					}
 					else {
 						$is_terminal = "";
@@ -799,7 +799,7 @@
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
 						echo "<td width='60'><b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
 						echo "<td width='120' style='color: #911;'>{$row["comment"]}</td>";
-						//echo "<td width='25'><a href='#' onclick='if(confirm(\"Убрать заказ <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
+						//echo "<td width='25'><a href='#' onclick='if(confirm(\"Убрать набор <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
 					}
 					?>
@@ -817,7 +817,7 @@
 				$('#section1').html('<i class=\'fas fa-money-bill-alt fa-lg\'></i> Наличные: {$format_cache_sum} {$attention}');
 				$('#section2').html('<i class=\'fas fa-credit-card fa-lg\'></i> Эквайринг: {$format_terminal_sum}');
 				$('#section3').html('<i class=\'fas fa-exchange-alt fa-lg\'></i> Инкассация: {$format_sum_send}');
-				$('#section4').html('<i class=\'fas fa-handshake fa-lg\'></i> Неврученные заказы: {$not_taken_count}');
+				$('#section4').html('<i class=\'fas fa-handshake fa-lg\'></i> Неврученные наборы: {$not_taken_count}');
 				$('#section5').html('<i class=\'fas fa-hand-paper fa-lg\'></i> Отказы/замены: {$reject_count}');
 			});
 		</script>";
@@ -841,10 +841,10 @@
 	<table class="main_table" id="MT_header">
 		<thead>
 			<tr>
-				<th width="60">Отгружен <i class="fa fa-question-circle" html="<b>Статус получения заказа:</b><br><i class='fas fa-handshake fa-2x not_confirmed'></i> - Клиент НЕ забрал заказ<br><i class='fas fa-handshake fa-2x confirmed'></i> - Клиент забрал заказ"></i></th>
+				<th width="60">Отгружен <i class="fa fa-question-circle" html="<b>Статус получения набора:</b><br><i class='fas fa-handshake fa-2x not_confirmed'></i> - Клиент НЕ забрал набор<br><i class='fas fa-handshake fa-2x confirmed'></i> - Клиент забрал набор"></i></th>
 				<th width="80">Код<br>Создан</th>
-				<th width="10%">Заказчик<br>Квитанция</th>
-				<th width="25%">Заказ</th>
+				<th width="10%">Клиент<br>Квитанция</th>
+				<th width="25%">Набор</th>
 				<th width="15%">Материал</th>
 				<th width="15%">Цвет</th>
 				<th width="10%">Салон<br>
@@ -870,7 +870,7 @@
 				</th>
 				<th width="100">Примечание</th>
 				<th width="100">Дата продажи</th>
-				<th width="65">Сумма заказа</th>
+				<th width="65">Сумма набора</th>
 				<th width="70">Скидка</th>
 				<th width="65">Оплата</th>
 <!--				<th width="20">Т</th>-->
@@ -964,7 +964,7 @@
 						<span>{$row["ReadyDate"]}</span>
 			";
 
-			// Если заказ у клиента
+			// Если набор у клиента
 			if( $row["ReadyDate"] ) {
 				if( $row["taken"] == 1 ) {
 					$class = 'confirmed';
@@ -978,7 +978,7 @@
 				echo "<span val='{$row["taken"]}' class='{$class}'><i class='fas fa-handshake fa-2x'></i></td>";
 			}
 
-			// Получаем содержимое заказа
+			// Получаем содержимое набора
 			$query = "
 				SELECT ODD.ODD_ID
 					,ODD.Amount
@@ -1004,14 +1004,14 @@
 			";
 			$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-			// Формируем подробности заказа
+			// Формируем подробности набора
 			$zakaz = '';
 			$material = '';
 			$color = '';
 			$cnt = 0;
 			while( $subrow = mysqli_fetch_array($subres) ) {
 
-				// Если в свободных - добавляем чекбокс для печати ценников, узнаем сколько изделий в заказе для ценника на гарнитур
+				// Если в свободных - добавляем чекбокс для печати ценников, узнаем сколько изделий в наборе для ценника на гарнитур
 				if ($year == 0 and $month == 0) {
 					$zakaz .= "<input type='checkbox' value='{$subrow["ODD_ID"]}' name='odd[]' class='chbox'>";
 					$cnt = $cnt + $subrow["Amount"];
@@ -1068,7 +1068,7 @@
 				<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
 			";
 
-			// Если заказ в накладной - сумма заказа ведет в накладную, цена не редактируется
+			// Если набор в накладной - стоимость набора ведет в накладную, цена не редактируется
 			if( $row["PFI_ID"] ) {
 				// Исключение для Клена
 				if ($row["SH_ID"] == 36) {
@@ -1096,10 +1096,10 @@
 					}
 					echo "<td>";
 
-			// Если есть права на редактирование заказа и заказ не закрыт, то показываем карандаш, кнопку разделения и отказа
+			// Если есть права на редактирование набора и набор не закрыт, то показываем карандаш, кнопку разделения и отказа
 			if( in_array('order_add', $Rights) and !$is_lock ) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить набор' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' invoice={$row["PFI_ID"]} location='{$location}' payment='{$row["payment_sum"]}' old_sum='{$row["Price"]}' title='Пометить как отказ/замена.'><i class='fa fa-hand-paper fa-lg' aria-hidden='true'></i></a>";
 			}
 			else {
@@ -1111,9 +1111,9 @@
 			echo "$('#ord{$row["OD_ID"]} select').val('{$row["SH_ID"]}');";
 			echo "</script>";
 
-			// Собираем ошибки если у проданного заказа нет предоплаты
+			// Собираем ошибки если у проданного набора нет предоплаты
 			if ($row["Price"] - $row['discount'] > 0 and $row["StartDate"] and $row["payment_sum"] == 0 and !$row["PFI_ID"] and $row["ul"] == 0) {
-				$_SESSION["error"][] = "Заказ <a href='#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a> продан {$row["StartDate"]}, но предоплата не внесена!";
+				$_SESSION["error"][] = "Набор <a href='#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a> продан {$row["StartDate"]}, но предоплата не внесена!";
 			}
 		}
 		?>
@@ -1287,11 +1287,11 @@
 			$('#order_otkaz input[name="old_sum"]').val(old_sum);
 
 			if( invoice > 0 ) {
-				noty({timeout: 3000, text: 'Прежде чем пометить заказ как "отказной", анулируйте накладную в актах сверки.', type: 'error'});
+				noty({timeout: 3000, text: 'Прежде чем пометить набор как "отказной", анулируйте накладную в актах сверки.', type: 'error'});
 			}
 			else if( payment != 0 ) {
 				$(this).parents('tr').find('.add_payment_btn span').effect( 'highlight', {color: 'red'}, 1000 );
-				noty({timeout: 3000, text: 'Прежде чем пометить заказ как "отказной", обнулите приход по нему.', type: 'error'});
+				noty({timeout: 3000, text: 'Прежде чем пометить набор как "отказной", обнулите приход по нему.', type: 'error'});
 			}
 			else {
 				$('#order_otkaz').dialog({

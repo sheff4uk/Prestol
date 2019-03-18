@@ -137,11 +137,11 @@
 		}
 		$workflow_table_outcoming .= "</tbody></table>";
 
-		// Проверяем отметку об изменении суммы заказа и выводим сообщение
+		// Проверяем отметку об изменении стоимости набора и выводим сообщение
 		$query = "SELECT OD.Code FROM OrdersData OD WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
-			$_SESSION['error'][] = "Внимание! Ваши действия вызвали изменение суммы заказа {$row['Code']}.";
+			$_SESSION['error'][] = "Внимание! Ваши действия вызвали изменение стоимости набора {$row['Code']}.";
 		}
 		$query = "UPDATE OrdersData OD SET OD.change_price = 0 WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -300,7 +300,7 @@
 	// Выводим собранные в сесии сообщения через noty
 	include "noty.php";
 
-	//Получаем статус заказов (В работе, Свободные, Отгруженные, Удаленные)
+	//Получаем статус наборов (В работе, Свободные, Отгруженные, Удаленные)
 	$archive = $_GET["archive"] ? $_GET["archive"] : 0;
 	switch ($archive) {
 		case 0:

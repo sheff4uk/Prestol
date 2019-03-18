@@ -623,11 +623,11 @@ while( $row = mysqli_fetch_array($res) ) {
 					<option value="250">250</option>
 					<option value="500">500</option>
 				</select>
-				отгруженных заказов.
+				отгруженных наборов.
 				<input type="hidden" name="num_rows">
 			</div>
 			<div class="accordion">
-				<h3>Список заказов</h3>
+				<h3>Список наборов</h3>
 				<div id="orders_to_invoice" style='text-align: left;'></div>
 			</div>
 			<br>
@@ -803,7 +803,7 @@ while( $row = mysqli_fetch_array($res) ) {
 			}
 		});
 
-		// Динамическая подгрузка заказов при выборе контрагента (в форме накладной)
+		// Динамическая подгрузка наборов при выборе контрагента (в форме накладной)
 		$('select[name="KA_ID"]').on('change', function() {
 			var KA_ID = $(this).val();
 			var CT_ID = $(this).find('option:selected').attr('CT_ID');
@@ -826,7 +826,7 @@ while( $row = mysqli_fetch_array($res) ) {
 			}
 		});
 
-		// При смене количества строк записываем значение в скрытое поле и вызываем аякс для подгрузки заказов
+		// При смене количества строк записываем значение в скрытое поле и вызываем аякс для подгрузки наборов
 		$('#num_rows select').on('change', function() {
 			$('#num_rows input').val($(this).val());
 			var KA_ID = $('select[name="KA_ID"]').val();

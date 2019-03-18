@@ -23,7 +23,7 @@ if( $_GET["add_bill"] ) {
 		$query = "UPDATE OrdersDataDetail SET Price = {$tovar_cena}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$value}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		// Если товар из заказа - приписываем вначале код
+		// Если товар из набора - приписываем вначале код
 		if( $_POST["code"][$key] ) {
 			$_POST["tovar_name"][$key] = "[{$_POST["code"][$key]}] {$_POST["tovar_name"][$key]}";
 		}
@@ -491,7 +491,7 @@ while( $row = mysqli_fetch_array($res) ) {
 			odid = '';
 		}
 		td0.html('<b id="code">'+code+'</b><input type="hidden" name="odid[]" id="odid" value="'+odid+'"><input type="hidden" name="code[]" id="icode" value="'+code+'">');
-		td1.html('<input required type="text" autocomplete="off" value="'+name+'" name="tovar_name[]" id="tovar_name" class="tovar_name" placeholder="Введите код заказа для поиска товара"/>');
+		td1.html('<input required type="text" autocomplete="off" value="'+name+'" name="tovar_name[]" id="tovar_name" class="tovar_name" placeholder="Введите код набора для поиска товара"/>');
 		td2.html('<input required type="text" autocomplete="off" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />');
 		td3.html('<input required type="number" autocomplete="off" min="1" value="'+amount+'" name="tovar_kol[]" id="tovar_kol"/>');
 		if( min_price > 0 ) {
@@ -575,10 +575,10 @@ while( $row = mysqli_fetch_array($res) ) {
 			});
 		});
 <?
-	// Получаем список заказов из GET и заполняем таблицу в форме
+	// Получаем список наборов из GET и заполняем таблицу в форме
 	if( isset($_GET["Tables"]) or isset($_GET["Chairs"]) or isset($_GET["Others"]) ) {
 
-		// Формируем список id выбранных заказов из $_GET
+		// Формируем список id выбранных наборов из $_GET
 		$id_list = '0';
 		foreach ($_GET["order"] as $k => $v) {
 			$id_list .= ",{$v}";

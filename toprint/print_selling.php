@@ -62,8 +62,8 @@
 				<?
 					echo "<td width='4%'>Дата отгрузки</td>";
 					echo "<td width='50'>Код</td>";
-					echo "<td width='9%'>Заказчик<br>Квитанция</td>";
-					echo "<td width='20%'>Заказ</td>";
+					echo "<td width='9%'>Клиент<br>Квитанция</td>";
+					echo "<td width='20%'>Набор</td>";
 					echo "<td width='15%'>Пластик/ткань</td>";
 					echo "<td width='10%'>Цвет покраски</td>";
 					echo "<td width='30'>Кол-во</td>";
@@ -94,7 +94,7 @@
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	// Получаем количество изделий в заказе для группировки ячеек
+	// Получаем количество изделий в наборе для группировки ячеек
 	$query = "
 		SELECT IFNULL(COUNT(1), 1) Cnt
 			,IFNULL(OD.Code, '') Code

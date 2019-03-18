@@ -1,5 +1,5 @@
-<!-- Форма добавления заказа -->
-<div id='order_form' class='addproduct' title='Новый заказ' style='display:none;'>
+<!-- Форма добавления набора -->
+<div id='order_form' class='addproduct' title='Новый набор' style='display:none;'>
 	<form method='post'>
 		<fieldset>
 			<div>
@@ -35,7 +35,7 @@
 				</select>
 			</div>
 			<div id="ClientName">
-				<label>Заказчик:</label>
+				<label>Клиент:</label>
 				<div>
 					<input type='text' class='clienttags' name='ClientName' autocomplete='off'>
 					<input type="checkbox" id="ul" name='ul' title='Поставьте галочку если требуется накладная.'>
@@ -93,7 +93,7 @@
 
 <script>
 	$(function() {
-		// Кнопка добавления заказа
+		// Кнопка добавления набора
 		$('.add_order').click( function() {
 			odd = $(this).attr('odd');
 
@@ -141,7 +141,7 @@
 			return false;
 		});
 
-		// Если выбран розничный салон - показываем доп поля в форме добавления заказа
+		// Если выбран розничный салон - показываем доп поля в форме добавления набора
 		$('#order_form select[name="Shop"]').on("change", function() {
 			var value = $(this).val();
 			var retail = $('#order_form select[name="Shop"] option:selected').attr('retail');

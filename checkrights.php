@@ -53,7 +53,7 @@
 			$USR_Shop = mysqli_result($res,0,'SH_ID');
 		}
 
-		// Получаем список доступных пользователю городов или салонов чтобы видеть заказы
+		// Получаем список доступных пользователю городов или салонов чтобы видеть наборы
 		$USR_cities = '0';
 		if( in_array('order_view_city', $Rights) ) {
 			$query = "SELECT CT_ID FROM Cities WHERE CT_ID = {$USR_City}";

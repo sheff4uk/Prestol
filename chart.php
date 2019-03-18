@@ -1,7 +1,7 @@
 <?
 	include "config.php";
 
-	$title = 'Понедельный график сдачи заказов';
+	$title = 'Понедельный график сдачи наборов';
 	include "header.php";
 
 	// Проверка прав на доступ к экрану
@@ -650,7 +650,7 @@ var myChart = new Chart(ctx, {
 	options: {
 		title:{
 			display:true,
-			text:"Понедельный график сдачи заказов"
+			text:"Понедельный график сдачи наборов"
 		},
 		tooltips: {
 			mode: 'index',

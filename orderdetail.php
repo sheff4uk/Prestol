@@ -31,7 +31,7 @@
 		$start_month = mysqli_result($res,0,'start_month');
 		$confirmed = mysqli_result($res,0,'confirmed');
 
-		// В заголовке страницы выводим код заказа
+		// В заголовке страницы выводим код набора
 		$title = $Code;
 		include "header.php";
 
@@ -51,7 +51,7 @@
 		die;
 	}
 
-	// Обновление основной информации о заказе
+	// Обновление основной информации о наборе
 	if( isset($_GET["order_update"]) )
 	{
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
@@ -62,7 +62,7 @@
 			}
 			else {
 				$ul = "0";
-				$_SESSION["alert"][] = "Ведите название юр. лица в поле \"Заказчик\".";
+				$_SESSION["alert"][] = "Ведите название юр. лица в поле \"Клиент\".";
 			}
 		}
 		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
@@ -134,7 +134,7 @@
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				$attention = mysqli_result($res,0,'attention');
 				if( $attention ) {
-					$_SESSION["alert"][] = "У этого заказа имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.";
+					$_SESSION["alert"][] = "У этого набора имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.";
 				}
 			}
 			else {
@@ -386,7 +386,7 @@
 	$format_opt_price = number_format($row["opt_price"], 0, '', ' ');
 	$format_payment = number_format($row["payment_sum"], 0, '', ' ');
 
-	// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информацию заказа.
+	// Если пользователю доступен только один салон в регионе или оптовик или свободный набор и нет админских привилегий, то нельзя редактировать общую информацию набора.
 	$editable = (!($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and !($SH_ID == 0 and !in_array('order_add_confirm', $Rights)));
 ?>
 	<form method='post' id='order_form' action='<?=$location?>&order_update'>
@@ -396,7 +396,7 @@
 			<th width="90">Код<br>Создан</th>
 			<?
 			if( $retail ) {
-				echo "<th width='125'>Заказчик<br>Квитанция<br>Телефон</th>";
+				echo "<th width='125'>Клиент<br>Квитанция<br>Телефон</th>";
 				echo "<th width='20%'>Адрес доставки</th>";
 			}
 			?>
@@ -405,7 +405,7 @@
 			<th width="125">Подразделение</th>
 			<th width="170">Цвет краски</th>
 			<th width="40">Принят</th>
-			<th width="65">Сумма<br>заказа</th>
+			<th width="65">Стоимость<br>набора</th>
 			<?
 			if( $retail ) {
 				echo "<th width='65'>Оплата</th>";
@@ -422,7 +422,7 @@
 		if( $retail ) {
 			echo "
 				<td>
-					<input type='text' class='clienttags' name='ClientName' style='width: 120px;' value='$ClientName' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." placeholder='Заказчик'>
+					<input type='text' class='clienttags' name='ClientName' style='width: 120px;' value='$ClientName' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." placeholder='Клиент'>
 					<br>
 					<input type='checkbox' id='ul' name='ul' ".($ul == 1 ? "checked" : "")." ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." title='Поставьте галочку если требуется накладная.' ".($PFI_ID ? "onclick='return false;'" : "").">
 					<label for='ul'>юр. лицо</label>
@@ -437,7 +437,7 @@
 			";
 		}
 
-		// Если заказ в накладной - под датой продажи ссылка на накладную
+		// Если набор в накладной - под датой продажи ссылка на накладную
 		if( $PFI_ID ) {
 			$invoice = "<br><b><a href='open_print_form.php?type=invoice&PFI_ID={$PFI_ID}&number={$count}' target='_blank'>Накладная</a></b>";
 			$title="Чтобы стереть дату продажи анулируйте накладную в актах сверки, затем перейдите в реализацию и нажмите на символ ладошки справа.";
@@ -493,7 +493,7 @@
 			</td>
 		";
 
-		// Если заказ принят
+		// Если набор принят
 		if( $confirmed == 1 ) {
 			$class = 'confirmed';
 			//$title = 'Принят в работу';
@@ -514,7 +514,7 @@
 		}
 		// Если розница и есть доступ к реализации или опт и есть доступ к сверкам то цена редактируемая
 		elseif( ($retail and (in_array('selling_all', $Rights) or in_array('selling_city', $Rights))) or (!$retail and(in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights))) ) {
-			// Если заказ в накладной - сумма заказа ведет в накладную, цена не редактируется
+			// Если набор в накладной - сумма набора ведет в накладную, цена не редактируется
 			if( $row["PFI_ID"] ) {
 				// Исключение для Клена
 				if ($row["SH_ID"] == 36) {
@@ -542,15 +542,15 @@
 		<td style="text-align: center;">
 
 <?
-			// Если есть право редактирования и заказ не чужой - показываем кнопку клонирования
+			// Если есть право редактирования и набор не чужой - показываем кнопку клонирования
 			if( in_array('order_add', $Rights) and $editable ) {
-				echo "<p><a href='#' onclick='if(confirm(\"<b>Подтвердите клонирование заказа!</b>\", \"clone_order.php?id={$id}&confirmed=".(in_array('order_add_confirm', $Rights) ? 1 : 0)."\")) return false;' title='Клонировать'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></a></p>";
+				echo "<p><a href='#' onclick='if(confirm(\"<b>Подтвердите клонирование набора!</b>\", \"clone_order.php?id={$id}&confirmed=".(in_array('order_add_confirm', $Rights) ? 1 : 0)."\")) return false;' title='Клонировать'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></a></p>";
 			}
-			// Если розничный заказ (и не удален)- показываем кнопку перехода в реализацию
+			// Если розничный набор (и не удален)- показываем кнопку перехода в реализацию
 			if( $retail and $editable and !$Del ) {
 				echo "<p><a href='/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$id}' title='Перейти в реализацию'><i class='fa fa-money-bill-alt fa-2x' aria-hidden='true'></i></a></p>";
 			}
-			// Если заказ в отгрузке и заказ не чужой - показываем кнопку перехода в отгрузку
+			// Если набор в отгрузке и набор не чужой - показываем кнопку перехода в отгрузку
 			if( $SHP_ID and $editable ) {
 				echo "<p><a href='/?shpid={$SHP_ID}#ord{$id}' title='Перейти в отгрузку'><i class='fa fa-truck fa-2x' aria-hidden='true'></i></a></p>";
 			}
@@ -576,12 +576,12 @@
 		});
 	</script>
 <?
-		echo "<div id='order_in_work_label' style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em; ".(($confirmed == 1) ? "" : "display: none;")."'>Заказ принят в работу.</div>";
+		echo "<div id='order_in_work_label' style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em; ".(($confirmed == 1) ? "" : "display: none;")."'>Набор принят в работу.</div>";
 		if( $is_lock == 1 ) {
 			echo "<div style='position: absolute; top: 77px; left: 340px; font-weight: bold; color: green; font-size: 1.2em;'>Месяц в реализации закрыт (изменения ограничены).</div>";
 		}
 		if( $Del == 1 ) {
-			echo "<div style='position: absolute; top: 173px; font-weight: bold; color: #911; font-size: 5em; opacity: .3; border: 5px solid;'>Заказ удалён</div>";
+			echo "<div style='position: absolute; top: 173px; font-weight: bold; color: #911; font-size: 5em; opacity: .3; border: 5px solid;'>Набор удалён</div>";
 		}
 ?>
 <div class="halfblock">
@@ -684,7 +684,7 @@
 		if( $row["enamel_error"] ) {
 			echo "
 				<script>
-					noty({text: 'Ошибка в заказе: {$row["Model"]} только ПОД ЭМАЛЬ!', type: 'error'});
+					noty({text: 'Ошибка в наборе: {$row["Model"]} только ПОД ЭМАЛЬ!', type: 'error'});
 				</script
 			";
 		}
@@ -717,7 +717,7 @@ if( $id != "NULL" ) {
 	<div id="wr_order_change_log">
 		<ul>
 			<li><a href="#order_message">Сообщения</a></li>
-			<li><a href="#order_log_table">Журнал изменений в заказе</a></li>
+			<li><a href="#order_log_table">Журнал изменений в наборе</a></li>
 			<li><a href="#attachments" <?=$attacments_color?>>Файлы<?=$attacments?></a></li>
 		</ul>
 		<div id="order_log_table">
@@ -751,10 +751,10 @@ if( $id != "NULL" ) {
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "<tr class='ord_log_row' lnk='*{$row["table_key"]}{$row["table_value"]}*'>";
 
-				// Если разделение заказа
+				// Если разделение набора
 				if ($row["OFN_ID"] == 1) {
 					echo "<td><b>{$row["field_name"]}</b></td>";
-					// Если хранится OD_ID - выводим ссылку на другую часть заказа
+					// Если хранится OD_ID - выводим ссылку на другую часть набора
 					if (is_numeric($row["old_value"])) {
 						echo "<td colspan='3' style='text-align: center;'><a href='orderdetail.php?id={$row["old_value"]}' class='button' target='_blank'>другая его часть</a></td>";
 					}
@@ -876,7 +876,7 @@ if( $id != "NULL" ) {
 <?
 }
 ?>
-<!-- Форма добавления сообщения к заказу -->
+<!-- Форма добавления сообщения к набору -->
 <div id='add_message' title='Сообщение' style='display:none'>
 	<form method='post' action='<?=$location?>&add_message'>
 		<fieldset>
@@ -901,7 +901,7 @@ if( $id != "NULL" ) {
 		</div>
 	</form>
 </div>
-<!-- Конец формы добавления сообщения к заказу -->
+<!-- Конец формы добавления сообщения к набору -->
 
 <script>
 	$(function(){
@@ -915,7 +915,7 @@ if( $id != "NULL" ) {
 		clearonoff('#paint_color');
 
 
-		// Сабмит формы заказа при изменении
+		// Сабмит формы набора при изменении
 		$('#order_form input, #order_form select, #order_form textarea').change(function(){
 			$('#order_form').submit();
 		});
@@ -928,7 +928,7 @@ if( $id != "NULL" ) {
 			$.ajax({ url: "ajax.php?do=read_message&om_id="+id+"&val="+val, dataType: "script", async: false });
 		});
 
-		// Кнопка добавления сообщения к заказу
+		// Кнопка добавления сообщения к набору
 		$('.add_message_btn').click( function() {
 			$('#add_message').dialog({
 				width: 500,

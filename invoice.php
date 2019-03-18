@@ -12,7 +12,7 @@ foreach ($_POST["price"] as $key => $value) {
 	$discount = ($_POST["discount"][$key] > 0) ? $_POST["discount"][$key] : "NULL";
 	$odid = $_POST["odid"][$key];
 
-	// Узнаем нет ли накладной для очередного заказа
+	// Узнаем нет ли накладной для очередного набора
 	$query = "
 		SELECT PFI.PFI_ID
 		FROM OrdersData OD
@@ -21,7 +21,7 @@ foreach ($_POST["price"] as $key => $value) {
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$PFI_ID = mysqli_result($res,0,'PFI_ID');
-	// Если заказ в накладной - останавливаем, выводим сообщение
+	// Если набор в накладной - останавливаем, выводим сообщение
 	if( $PFI_ID ) {
 		$_SESSION["error"][] = "При создании накладной возникла ошибка. Пожалуйста, повторите попытку.";
 		exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_POST["year"]).'&payer='.($_POST["payer"]).'">');
@@ -103,7 +103,7 @@ $query = "INSERT INTO PrintFormsInvoice SET summa = {$_POST["summa"]}, discount 
 mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $id = mysqli_insert_id($mysqli);
 
-// Сохраняем у заказа дату продажи и ID накладной
+// Сохраняем у набора дату продажи и ID накладной
 $id_list = "0";
 foreach ($_POST["ord"] as $key => $value) {
 	// Если возвратная накладная - помечаем исходные отгрузочные накладные как измененные (чтобы их нельзя было удалить)

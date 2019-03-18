@@ -123,7 +123,7 @@
 					<td>{$row["friendly_date"]}<br>{$row["Time"]}</td>
 					<td>
 						<a href='#' title='Редактировать стол' id='{$row["ODD_ID"]}' odid='0' class='edit_product2' location='calc.php'><i class='fa fa-pencil-alt fa-lg'></i></a>
-						<a href='#' title='Новый заказ с этим столом' odd='{$row["ODD_ID"]}' class='add_order'><i class='fas fa-plus-square fa-lg'></i></a>
+						<a href='#' title='Новый набор с этим столом' odd='{$row["ODD_ID"]}' class='add_order'><i class='fas fa-plus-square fa-lg'></i></a>
 					</td>
 				</tr>
 			";

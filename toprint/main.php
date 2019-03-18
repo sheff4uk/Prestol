@@ -51,7 +51,7 @@
 <body>
 <?
 
-	// Формируем список id выбранных заказов из $_GET
+	// Формируем список id выбранных наборов из $_GET
 	$id_list = implode(",", $_GET["order"]);
 
 	$product_types = "-1";
@@ -59,7 +59,7 @@
 	if(isset($_GET["Chairs"])) $product_types .= ",1";
 	if(isset($_GET["Others"])) $product_types .= ",0";
 
-	//Получаем статус заказов (В работе, Свободные, Отгруженные, Удаленные)
+	//Получаем статус наборов (В работе, Свободные, Отгруженные, Удаленные)
 	$archive = $_GET["archive"] ? $_GET["archive"] : 0;
 ?>
 	<h3 style="text-align: center;"><?=$_GET["print_title"]?></h3>
@@ -69,12 +69,12 @@
 			<tr class="thead">
 				<?
 					if(isset($_GET["CD"])) echo "<td width='50'>Код</td>";
-					if(isset($_GET["CN"])) echo "<td width='9%'>Заказчик<br>Квитанция</td>";
+					if(isset($_GET["CN"])) echo "<td width='9%'>Клиент<br>Квитанция</td>";
 					if(isset($_GET["SD"])) echo "<td width='4%'>Дата продажи</td>";
 					if(isset($_GET["ED"])) echo "<td width='4%'>Дата ".($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))."</td>";
 					if(isset($_GET["SH"])) echo "<td width='7%'>Подразде-ление</td>";
 					if(isset($_GET["Z"])) echo "<td width='20'>Кол-во</td>";
-					if(isset($_GET["Z"])) echo "<td width='20%'>Заказ</td>";
+					if(isset($_GET["Z"])) echo "<td width='20%'>Набор</td>";
 					if(isset($_GET["M"])) echo "<td width='15%'>Пластик/ткань</td>";
 					if(isset($_GET["CR"])) echo "<td width='10%'>Цвет покраски</td>";
 					if(isset($_GET["CR"])) echo "<td width='5%'>Патина</td>";
@@ -130,7 +130,7 @@
 	$query .= "SUBSTRING_INDEX(OD.Code, '-', 1) ASC, CONVERT(SUBSTRING_INDEX(OD.Code, '-', -1), UNSIGNED) ASC, OD.OD_ID, PTID DESC, ODD.ODD_ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	// Получаем количество изделий в заказе для группировки ячеек
+	// Получаем количество изделий в наборе для группировки ячеек
 	$query = "
 		SELECT SUM(IF(IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) IN ({$product_types}), 1, 0)) Cnt
 			,IFNULL(OD.Code, '') Code

@@ -158,9 +158,9 @@
 			<th>Код</th>
 			<th>Принят</th>
 			<th>Работник</th>
-			<th>Заказ</th>
+			<th>Набор</th>
 			<th>Цвет</th>
-			<th>Заказчик<br>Дата продажи - Дата сдачи<br>Подразделение (№ квитанции)</th>
+			<th>Клиент<br>Дата продажи - Дата сдачи<br>Подразделение (№ квитанции)</th>
 			<th>Примечание</th>
 		</tr>
 		</thead>
@@ -199,7 +199,7 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		// Получаем содержимое заказа
+		// Получаем содержимое набора
 		$query = "
 			SELECT ODD.ODD_ID
 				,ODD.Amount
@@ -235,7 +235,7 @@
 		";
 		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		// Формируем подробности заказа
+		// Формируем подробности набора
 		$zakaz = '';
 		$material = '';
 		$color = '';
@@ -277,7 +277,7 @@
 		echo "<td><span class='nowrap'>{$material}</span></td>";
 		if( $product == 1 ) echo "<td>{$MT_amount}</td>";
 		echo "<td><a href='orderdetail.php?id={$row["OD_ID"]}' class='nowrap'><b class='code'>{$row["Code"]}</b></a>{$row["showing"]}</td>";
-		// Если заказ принят
+		// Если набор принят
 		if( $row["confirmed"] == 1 ) {
 			$class = 'confirmed';
 		}

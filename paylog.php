@@ -466,9 +466,9 @@
 					echo "<td></td>";
 				}
 				echo "<td class='comment nowrap' style='z-index: 2;'><span>";
-				// Если запись из этапов производства - выводим код заказа
+				// Если запись из этапов производства - выводим код набора
 				if( $row["OD_ID"] ) {
-					echo "<a href='orderdetail.php?id={$row["OD_ID"]}' target='_blank' title='Посмотреть заказ.'><b class='code'>{$row["Code"]}</b></a> ";
+					echo "<a href='orderdetail.php?id={$row["OD_ID"]}' target='_blank' title='Посмотреть набор.'><b class='code'>{$row["Code"]}</b></a> ";
 				}
 				echo "{$row["Comment"]}</span></td>";
 				echo "<td>{$row["Name"]}</td>";

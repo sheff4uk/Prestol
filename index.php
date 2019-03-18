@@ -13,7 +13,7 @@
 	$location = $_SERVER['REQUEST_URI'];
 	$_SESSION["location"] = $location;
 
-	// Добавление в базу нового заказа
+	// Добавление в базу нового набора
 	if( isset($_POST["Shop"]) )
 	{
 		if( !in_array('order_add', $Rights) ) {
@@ -64,7 +64,7 @@
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$id = mysqli_insert_id( $mysqli );
 
-		// Если из калькультора - добавляем стол в этот заказ
+		// Если из калькультора - добавляем стол в этот набор
 		if (isset($_GET["odd"])) {
 			$odd_id = $_GET["odd"];
 
@@ -76,7 +76,7 @@
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 		
-		// Перенаправление на экран деталей заказа
+		// Перенаправление на экран деталей набора
 		exit ('<meta http-equiv="refresh" content="0; url=/orderdetail.php?id='.$id.'">');
 		die;
 	}
@@ -115,7 +115,7 @@
 		$query = "UPDATE Shipment SET shipping_date = {$shipping_date} WHERE SHP_ID = {$_GET["shpid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		// Помечаем заказы как отгруженные
+		// Помечаем наборы как отгруженные
 		$query = "UPDATE OrdersData SET ReadyDate = {$shipping_date}, IsPainting = 3, author = {$_SESSION['id']} WHERE SHP_ID = {$_GET["shpid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -124,7 +124,7 @@
 		die;
 	}
 
-	// Разделение заказа
+	// Разделение набора
 	if( isset($_POST["prod_amount_left"]) ) {
 		$OD_ID = $_POST["OD_ID"];
 		$location = $_POST["location"];
@@ -132,19 +132,19 @@
 		$right_sum = array_sum($_POST["prod_amount_right"]);
 
 		if( $left_sum != 0 and $right_sum != 0 ) {
-			// Создание копии заказа
+			// Создание копии набора
 			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, author, confirmed)
 			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
-			// Записываем в журнал событие разделения заказа
+			// Записываем в журнал событие разделения набора
 			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$OD_ID}, OFN_ID = 1, old_value = '{$newOD_ID}', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, OFN_ID = 1, old_value = '{$OD_ID}', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-			// Цикл по содержимому заказа (используются данные из формы)
+			// Цикл по содержимому набора (используются данные из формы)
 			foreach ($_POST["ODD_ID"] as $key => $value) {
 				$left = $_POST["prod_amount_left"][$key];
 				$right = $_POST["prod_amount_right"][$key];
@@ -153,10 +153,10 @@
 					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				}
 				elseif( $right > 0 ) {
-					// Меняем количество изделий в исходном заказе
+					// Меняем количество изделий в исходном наборе
 					$query = "UPDATE OrdersDataDetail SET Amount = {$left}, author = NULL WHERE ODD_ID = {$value}";
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					// Вставляем в новый заказ переносимые изделия
+					// Вставляем в новый набор переносимые изделия
 					$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, piece_stored, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, min_price, Price, discount, opt_price, sister_ID, author, ptn)
 					SELECT {$newOD_ID}, PM_ID, BL_ID, Other, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, piece_stored, MT_ID, IsExist, {$right}, Comment, order_date, arrival_date, min_price, Price, discount, opt_price, {$value}, {$_SESSION['id']}, ptn FROM OrdersDataDetail WHERE ODD_ID = {$value}";
 					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -184,10 +184,10 @@
 
 	<?
 	if($archive == "2") {
-		echo "<div style='position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: red;'>Внимание! В списке отгруженных заказов отображаются первые 500 записей. Чтобы найти интересующие заказы воспользуйтесь фильтром.</div>";
+		echo "<div style='position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: red;'>Внимание! В списке отгруженных наборов отображаются первые 500 записей. Чтобы найти интересующие наборы воспользуйтесь фильтром.</div>";
 	}
 	elseif($archive == "3") {
-		echo "<div style='position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: red;'>Внимание! В списке удаленных заказов отображаются первые 500 записей. Чтобы найти интересующие заказы воспользуйтесь фильтром.</div>";
+		echo "<div style='position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: red;'>Внимание! В списке удаленных наборов отображаются первые 500 записей. Чтобы найти интересующие наборы воспользуйтесь фильтром.</div>";
 	}
 	?>
 
@@ -353,9 +353,9 @@
 	?>
 
 <?
-	// Кнопка добавления заказа
+	// Кнопка добавления набора
 	if( in_array('order_add', $Rights) and !isset($_GET["shpid"]) ) {
-		echo "<div id='add_btn' class='add_order' title='Добавить новый заказ'></div>";
+		echo "<div id='add_btn' class='add_order' title='Добавить новый набор'></div>";
 	}
 
 	// Кнопка печати
@@ -622,16 +622,16 @@
 		<thead>
 		<tr>
 			<th width="60"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код<br>Создан</label></th>
-			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Заказчик<br>Квитанция</label></th>
+			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Клиент<br>Квитанция</label></th>
 			<th width="60"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
 			<th width="60"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br><?=($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))?></label></th>
 			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Подразделение</label></th>
 			<th width="40"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">Мест</label></th>
-			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Заказ</label></th>
+			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Набор</label></th>
 			<th width="15%"><input type="checkbox" disabled value="8" checked name="M" class="print_col" id="M"><label for="M">Материал <i class="fa fa-question-circle" html="<b>Цветовой статус наличия:</b><br><span class='bg-gray'>Неизвестно</span><br><span class='bg-red'>Нет</span><br><span class='bg-yellow'>Заказано</span><br><span class='bg-green'>В наличии</span><br><span class='bg-red removed'>Выведен</span> - нужно менять"></i></label></th>
 			<th width="10%"><input type="checkbox" disabled value="9" checked name="CR" class="print_col" id="CR"><label for="CR">Цвет краски <i class="fa fa-question-circle" html="<b>Цветовой статус лакировки:</b><br><span class='empty'>Покраска не требуется</span><br><span class='notready'>Не дано в покраску</span><br><span class='inwork'>Дано в покраску</span><br><span class='ready'>Покрашено</span>"></i></label></th>
 			<th width="100"><input type="checkbox" disabled value="10" name="PR" class="print_col" id="PR"><label for="PR">Этапы <i class="fa fa-question-circle" html="<b>Цветовой статус изготовления:</b><br><span class='notready unvisible'>Выполнение не требуется</span><br><span class='notready'>Не дано в работу</span><br><span class='inwork'>Дано в работу</span><br><span class='ready'>Выполнено</span>"></i></label></th>
-			<th width="40"><input type="checkbox" disabled value="11" name="CF" class="print_col" id="CF"><label for="CF">Принят <i class="fa fa-question-circle" html="<b>Статус принятия заказа:</b><br><i class='fa fa-check-circle fa-2x not_confirmed'></i> - Не принят в работу<br><i class='fa fa-check-circle fa-2x confirmed'></i> - Принят в работу (изменение заказа может быть ограничено)"></i></label></th>
+			<th width="40"><input type="checkbox" disabled value="11" name="CF" class="print_col" id="CF"><label for="CF">Принят <i class="fa fa-question-circle" html="<b>Статус принятия набора:</b><br><i class='fa fa-check-circle fa-2x not_confirmed'></i> - Не принят в работу<br><i class='fa fa-check-circle fa-2x confirmed'></i> - Принят в работу (изменение набора может быть ограничено)"></i></label></th>
 			<th width="40"><input type="checkbox" disabled value="12" name="X" class="print_col" id="X"><label for="X">X</label>
 			<?
 				if( isset($_GET["shpid"]) ) {
@@ -671,11 +671,11 @@
 <?
 	$MT_IDs = (!isset($_GET["shpid"]) and $_SESSION["f_M"] != "") ? implode(",", $_SESSION["f_M"]) : "";
 
-	$is_orders_ready = 1;	// Собираем готовые заказы чтобы можно ставить дату отгрузки (когда все готовы должна получиться 1)
-	$orders_count = 0;		// Счетчик видимых заказов
-	$orders_IDs = "0";		// Список ID заказов для Select2 материалов
+	$is_orders_ready = 1;	// Собираем готовые наборы чтобы можно ставить дату отгрузки (когда все готовы должна получиться 1)
+	$orders_count = 0;		// Счетчик видимых наборов
+	$orders_IDs = "0";		// Список ID наборов для Select2 материалов
 
-	// Получаем основные сведения по заказу
+	// Получаем основные сведения по набору
 	$query = "
 		SELECT OD.OD_ID
 			,OD.Code
@@ -923,20 +923,20 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
-		$is_del = $row["is_del"];			// Заказ удален
+		$is_del = $row["is_del"];			// Набор удален
 		if( !in_array('order_add_confirm', $Rights) and !$row["SH_ID"] ) {
 			$is_lock = 1;
 		}
-		$confirmed = $row["confirmed"];		// Заказ принят в работу
+		$confirmed = $row["confirmed"];		// Набор принят в работу
 		// Запрет на редактирование
 		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and $is_lock == 0 and $row["Archive"] == 0 );
 
-		// Если пользователю доступен только один салон в регионе или оптовик или свободный заказ и нет админских привилегий, то нельзя редактировать общую информацию заказа.
+		// Если пользователю доступен только один салон в регионе или оптовик или свободный набор и нет админских привилегий, то нельзя редактировать общую информацию набора.
 		$editable = (!($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and !($row["SH_ID"] == 0 and !in_array('order_add_confirm', $Rights)));
 
-		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых заказов для фильтра материалов
+		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых наборов для фильтра материалов
 
-		// Получаем содержимое заказа
+		// Получаем содержимое набора
 		$query = "
 			SELECT ODD.ODD_ID
 				,ODD.Amount
@@ -965,7 +965,7 @@
 		";
 		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		// Формируем подробности заказа
+		// Формируем подробности набора
 		$zakaz = '';
 		$material = '';
 		$color = '';
@@ -1000,7 +1000,7 @@
 		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>";
 		echo "<td><span ".($row["address"] ? "title='{$row["address"]}'" : "")."><input type='checkbox' value='{$row["OD_ID"]}' checked name='order[]' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b><br>{$row["mtel"]}</span></td>";
 
-		// Если заказ в накладной - на дате продажи ссылка на накладную
+		// Если набор в накладной - на дате продажи ссылка на накладную
 		if( $row["PFI_ID"] ) {
 			$invoice = "<br><b><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'>Накладная</a></b>";
 		}
@@ -1034,7 +1034,7 @@
 		echo " class='painting_cell ".(( in_array('order_add_confirm', $Rights) and $row["Archive"] == 0 and $is_del == 0 and $row["IsPainting"] != 0 ) ? "painting " : "")."{$class}' isready='{$row["IsReady"]}' shpid='{$_GET["shpid"]}' filter='".(($_GET['shop'] != '' or $_GET['X'] != '') ? 1 : 0)."'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
 		echo "<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'><span class='nowrap material'>{$steps}</span></td>";
 		$checkedX = $_SESSION["X_".$row["OD_ID"]] == 1 ? 'checked' : '';
-		// Если заказ принят
+		// Если набор принят
 		if( $row["confirmed"] == 1 ) {
 			$class = 'confirmed';
 		}
@@ -1050,10 +1050,10 @@
 		echo "<td>";
 
 		if( $editable ) {
-			// Если заказ не заблокирован и не удален, то показываем карандаш и кнопку разделения. Иначе - глаз.
+			// Если набор не заблокирован и не удален, то показываем карандаш и кнопку разделения. Иначе - глаз.
 			if( !$is_lock and in_array('order_add', $Rights) and !$is_del ) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить заказ' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить набор' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
 			}
 			else {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
@@ -1100,25 +1100,25 @@
 
 <script>
 	$(function() {
-		// Отгрузка заказа
+		// Отгрузка набора
 		$('.shipping').on('click', function() {
 			var od_id = $(this).attr('od_id');
-			confirm("Пожалуйста, подтвердите <b>отгрузку</b> заказа.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_shp&od_id="+od_id, dataType: "script", async: false });});
+			confirm("Пожалуйста, подтвердите <b>отгрузку</b> набора.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_shp&od_id="+od_id, dataType: "script", async: false });});
 			return false;
 		});
 
-		// Удаление заказа
+		// Удаление набора
 		$('.deleting').on('click', function() {
 			var od_id = $(this).attr('od_id');
-			var message = "<?=((in_array('order_add_confirm', $Rights)) ? "<b>Внимание!</b><br>Заказ отмеченный как покрашенный при удалении будет считаться <b>списанным</b> - это означает, что задействованные заготовки, тоже останутся <b>списанными</b>.<br>В остальных случаях заказ будет считаться <b>отмененным</b> и заготовки <b>вернутся</b> на склад.<br>К тому же этапы производства, отмеченные как <b>выполненные</b>, после удаления останутся таковыми <b>с сохранением денежного начисления работнику</b>." : "Пожалуйста, подтвердите <b>удаление</b> заказа.")?>";
+			var message = "<?=((in_array('order_add_confirm', $Rights)) ? "<b>Внимание!</b><br>Набор отмеченный как покрашенный при удалении будет считаться <b>списанным</b> - это означает, что задействованные заготовки, тоже останутся <b>списанными</b>.<br>В остальных случаях набор будет считаться <b>отмененным</b> и заготовки <b>вернутся</b> на склад.<br>К тому же этапы производства, отмеченные как <b>выполненные</b>, после удаления останутся таковыми <b>с сохранением денежного начисления работнику</b>." : "Пожалуйста, подтвердите <b>удаление</b> набора.")?>";
 			confirm(message).then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_del&od_id="+od_id, dataType: "script", async: false });});
 			return false;
 		});
 
-		// Восстановление удаленного заказа
+		// Восстановление удаленного набора
 		$('.undo_deleting').on('click', function() {
 			var od_id = $(this).attr('od_id');
-			confirm("Пожалуйста, подтвердите <b>восстановление</b> удалённого заказа.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_del_undo&od_id="+od_id, dataType: "script", async: false });});
+			confirm("Пожалуйста, подтвердите <b>восстановление</b> удалённого набора.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_del_undo&od_id="+od_id, dataType: "script", async: false });});
 			return false;
 		});
 
@@ -1203,7 +1203,7 @@
 			</div>
 			<br>
 			<div class="accordion">
-				<h3>Список заказов на отгрузку</h3>
+				<h3>Список наборов на отгрузку</h3>
 				<div id="orders_to_shipment" style='text-align: left;'></div>
 			</div>
 			<br>
@@ -1220,7 +1220,7 @@
 </div>
 
 <script>
-	// Функция проверяет готов ли список заказов к отгрузке
+	// Функция проверяет готов ли список наборов к отгрузке
 	function check_shipping(ready, count, filter) {
 		if( filter ) {
 			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
@@ -1237,7 +1237,7 @@
 					$('#wr_shipping_date font').html('&nbsp;&nbsp;Список пуст!');
 				}
 				else {
-					$('#wr_shipping_date font').html('&nbsp;&nbsp;Есть неготовые или пустые заказы!');
+					$('#wr_shipping_date font').html('&nbsp;&nbsp;Есть неготовые или пустые наборы!');
 				}
 			}
 			else {
@@ -1413,7 +1413,7 @@
 			});
 		});
 
-		// Динамическая подгрузка заказов при выборе города (в форме отгрузки)
+		// Динамическая подгрузка наборов при выборе города (в форме отгрузки)
 		$('select[name="CT_ID"]').on('change', function() {
 			var CT_ID = $(this).val();
 			$.ajax({ url: "ajax.php?do=shipment&CT_ID="+CT_ID, dataType: "script", async: false });
@@ -1459,7 +1459,7 @@
 			$(this).parent('.comment_cell').find('span').show();
 		});
 
-//		// В форме добавления заказа если выбираем Свободные - дата продажи пустая
+//		// В форме добавления набора если выбираем Свободные - дата продажи пустая
 //		$('#order_form select[name="Shop"]').on("change", function() {
 //			var StartDate = $('#order_form input[name="StartDate"]').attr('date');
 //			if( $(this).val() === '0' ) {

@@ -56,7 +56,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$edge = ($edge != '') ? "'$edge'" : "NULL";
 	$Comment = ($Comment != '') ? "'$Comment'" : "NULL";
 
-	// Узнаем прошлого поставщика и ID заказа
+	// Узнаем прошлого поставщика и ID набора
 	$query = "
 		SELECT ODD.OD_ID
 			,IFNULL(MT.SH_ID, 'NULL') SH_ID
@@ -151,7 +151,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	die;
 }
 
-// Обновление цены изделий в заказе
+// Обновление цены изделий в наборе
 elseif (isset($_GET["add_price"])) {
 	foreach ($_POST["ODD_ID"] as $key => $value) {
 		$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
@@ -163,7 +163,7 @@ elseif (isset($_GET["add_price"])) {
 	die;
 }
 
-// Добавление в базу нового платежа к заказу
+// Добавление в базу нового платежа к набору
 elseif( isset($_GET["add_payment"]) and $_POST["payment_sum_add"] ) {
 	$OD_ID = $_GET["OD_ID"];
 	$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date_add"]) );
@@ -185,7 +185,7 @@ elseif( isset($_GET["add_payment"]) and $_POST["payment_sum_add"] ) {
 						,author = {$_SESSION['id']}";
 		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 		else {
-			// Записываем дату продажи заказа если ее не было
+			// Записываем дату продажи набора если ее не было
 			$query = "UPDATE OrdersData SET StartDate = '{$payment_date}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["error"][] = mysqli_error( $mysqli );

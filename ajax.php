@@ -272,18 +272,18 @@ case "painting_workers":
 	break;
 ///////////////////////////////////////////////////////////////////
 
-// Смена статуса принятия заказа
+// Смена статуса принятия набора
 case "confirmed":
 
 	$id = $_GET["od_id"];
 	$val = $_GET["val"];
 	$val = ($val == 0) ? 1 : 0;
 
-	// Обновляем статус принятия заказа
+	// Обновляем статус принятия набора
 	$query = "UPDATE OrdersData SET confirmed = {$val}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
-	// Получаем статус принятия заказа из базы
+	// Получаем статус принятия набора из базы
 	$query = "SELECT confirmed FROM OrdersData WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	$val = mysqli_result($res,0,'confirmed');
@@ -306,43 +306,43 @@ case "confirmed":
 	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').removeClass('confirmed not_confirmed');";
 	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').addClass('{$class}');";
 	echo "$('.main_table tr[id=\"ord{$id}\"] td.edit_confirmed').attr('val', '{$val}');";
-	echo "noty({timeout: 3000, text: 'Статус заказа изменен на <b>{$status}</b>', type: 'success'});";
+	echo "noty({timeout: 3000, text: 'Статус набора изменен на <b>{$status}</b>', type: 'success'});";
 	break;
 ///////////////////////////////////////////////////////////////////
 
-// Смена статуса получения заказчиком заказа
+// Смена статуса получения клиентом набора
 case "taken":
 
 	$id = $_GET["od_id"];
 	$val = $_GET["val"];
 	$val = ($val == 0) ? 1 : 0;
 
-	// Обновляем статус получения заказа
+	// Обновляем статус получения набора
 	$query = "UPDATE OrdersData SET taken = {$val}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
-	// Получаем статус получения заказа из базы
+	// Получаем статус получения набора из базы
 	$query = "SELECT taken FROM OrdersData WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	$val = mysqli_result($res,0,'taken');
 
 	if( $val == 1) {
 		$class = 'confirmed';
-		$status = 'Клиент забрал заказ';
+		$status = 'Клиент забрал набор';
 	}
 	else {
 		$class = 'not_confirmed';
-		$status = 'Клиент НЕ забрал заказ';
+		$status = 'Клиент НЕ забрал набор';
 	}
 
 	echo "$('.main_table tr[id=\"ord{$id}\"] .taken_confirmed').removeClass('confirmed not_confirmed');";
 	echo "$('.main_table tr[id=\"ord{$id}\"] .taken_confirmed').addClass('{$class}');";
 	echo "$('.main_table tr[id=\"ord{$id}\"] .taken_confirmed').attr('val', '{$val}');";
-	echo "noty({timeout: 3000, text: 'Статус заказа изменен на <b>{$status}</b>', type: 'success'});";
+	echo "noty({timeout: 3000, text: 'Статус набора изменен на <b>{$status}</b>', type: 'success'});";
 	break;
 ///////////////////////////////////////////////////////////////////
 
-// Смена статуса прочитанного собщения в заказе
+// Смена статуса прочитанного собщения в наборе
 case "read_message":
 
 	$id = $_GET["om_id"];
@@ -474,7 +474,7 @@ case "materials":
 case "shipment":
 		$CT_ID = $_GET["CT_ID"] ? $_GET["CT_ID"] : 0;
 
-		// Проверяем права на отгрузку заказа
+		// Проверяем права на отгрузку набора
 		if( !in_array('order_ready', $Rights) ) {
 			echo "noty({timeout: 3000, text: 'Недостаточно прав для совершения операции!', type: 'error'});";
 		}
@@ -523,9 +523,9 @@ case "shipment":
 			$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
 			$html .= "<table class='main_table' id='to_shipment'><thead><tr>";
 			$html .= "<th width='75'>Код<br>Создан</th>";
-			$html .= "<th width='20%'>Заказчик [Продажа]-[Сдача]</th>";
+			$html .= "<th width='20%'>Клиент [Продажа]-[Сдача]</th>";
 			$html .= "<th width='10%'>Подразделение</th>";
-			$html .= "<th width='30%'>Заказ</th>";
+			$html .= "<th width='30%'>Набор</th>";
 			$html .= "<th width='20%'>Материал</th>";
 			$html .= "<th width='20%'>Цвет</th>";
 			$html .= "<th width='100'>Этапы</th>";
@@ -533,7 +533,7 @@ case "shipment":
 			$html .= "<th width='20%'>Примечание</th>";
 			$html .= "</tr></thead><tbody>";
 			while( $row = mysqli_fetch_array($res) ) {
-				// Получаем содержимое заказа
+				// Получаем содержимое набора
 				$query = "
 					SELECT ODD.ODD_ID
 						,ODD.Amount
@@ -555,7 +555,7 @@ case "shipment":
 				";
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-				// Формируем подробности заказа
+				// Формируем подробности набора
 				$zakaz = '';
 				$material = '';
 				$color = '';
@@ -609,7 +609,7 @@ case "shipment":
 				$html .= "<td><span class='nowrap'>{$material}</span></td>";
 				$html .= "<td class='{$class}'>{$row["Color"]}</td>";
 				$html .= "<td><span class='nowrap material'>{$steps}</span></td>";
-					// Если заказ принят
+					// Если набор принят
 					if( $row["confirmed"] == 1 ) {
 						$class = 'confirmed';
 					}
@@ -697,17 +697,17 @@ case "invoice":
 			$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
 			$html .= "<table class='main_table' id='to_invoice'><thead><tr>";
 			$html .= "<th width='75'>Код<br>Создан</th>";
-			$html .= "<th width='20%'>Заказчик [Продажа]-[Сдача]</th>";
+			$html .= "<th width='20%'>Клиент [Продажа]-[Сдача]</th>";
 			$html .= "<th width='10%'>Подразделение</th>";
 			$html .= "<th width='70'>Цена за шт.</th>";
 			$html .= "<th width='70'>Скидка за шт.</th>";
-			$html .= "<th width='30%'>Заказ</th>";
+			$html .= "<th width='30%'>Набор</th>";
 			$html .= "<th width='20%'>Материал</th>";
 			$html .= "<th width='20%'>Цвет</th>";
 			$html .= "<th width='20%'>Примечание</th>";
 			$html .= "</tr></thead><tbody>";
 			while( $row = mysqli_fetch_array($res) ) {
-				// Получаем содержимое заказа
+				// Получаем содержимое набора
 				$query = "
 					SELECT ODD.ODD_ID
 						,ODD.Amount
@@ -733,7 +733,7 @@ case "invoice":
 				";
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-				// Формируем подробности заказа
+				// Формируем подробности набора
 				$zakaz = '';
 				$material = '';
 				$color = '';
@@ -815,13 +815,13 @@ case "invoice":
 	break;
 ///////////////////////////////////////////////////////////////////
 
-// Форма добавления платежа к заказу
+// Форма добавления платежа к набору
 case "add_payment":
 	$OD_ID = $_GET["OD_ID"];
 
 	$html = "<input type='hidden' name='location'>";
 
-	// Узнаем фамилию заказчика, салон, счет терминала в салоне, закрыт ли месяц
+	// Узнаем фамилию клиента, салон, счет терминала в салоне, закрыт ли месяц
 	$query = "SELECT OD.ClientName
 					,SH.SH_ID
 					,SH.Shop
@@ -844,8 +844,8 @@ case "add_payment":
 	$html .= "<div><ul>";
 	$html .= "<li>Менять дату возможно только у терминальных платежей.</li>";
 	$html .= "<li>Ранее добавленные платежи <b>не редактируются</b>. Если нужно изменить или отменить предыдущую запись, то создайте новую корректирующую операцию с отрицательной суммой.</li>";
-	$html .= "<li>Если нужно совершить возврат денег по заказу, он так же вносится со знаком минус.</li>";
-	$html .= "<li>Для переноса платежа с одного заказа на другой: сначала сделайте возврат платежа на первом заказе, затем внесите эту сумму на второй заказ.</li>";
+	$html .= "<li>Если нужно совершить возврат денег по набору, он так же вносится со знаком минус.</li>";
+	$html .= "<li>Для переноса платежа с одного набора на другой: сначала сделайте возврат платежа на первом наборе, затем внесите эту сумму на второй набор.</li>";
 	$html .= "</ul></div>";
 	$html .= "</div>";
 
@@ -893,12 +893,12 @@ case "add_payment":
 		$html .= "</tr>";
 	}
 	if ($is_del) {
-		$html .= "<tr style='background: #6f6;'><td colspan='6'><b>Заказ удалён. Внесение оплаты невозможно.</b></td></tr>";
+		$html .= "<tr style='background: #6f6;'><td colspan='6'><b>Набор удалён. Внесение оплаты невозможно.</b></td></tr>";
 	}
 	elseif ($is_lock) {
 		$html .= "<tr style='background: #6f6;'><td colspan='6'><b>Отчетный период закрыт. Внесение оплаты невозможно.</b></td></tr>";
 	}
-	else { // Если заказ не закрыт и не удален то можно добавить оплату
+	else { // Если набор не закрыт и не удален то можно добавить оплату
 		$payment_date = date('d.m.Y');
 		$html .= "<tr style='background: #6f6;'>";
 		$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'>";
@@ -943,14 +943,14 @@ case "add_payment":
 	break;
 ///////////////////////////////////////////////////////////////////
 
-// Форма редактирования цены заказа
+// Форма редактирования цены набора
 case "update_price":
 	$OD_ID = $_GET["OD_ID"];
 
 	$html = "<input type='hidden' name='location'>";
 
 	$html .= "<div class='accordion'>";
-	$html .= "<h3>Памятка по изменению суммы заказа</h3>";
+	$html .= "<h3>Памятка по изменению стоимости набора</h3>";
 	$html .= "<div><ul>";
 	$html .= "<li>Стоимость изделий вычисляется автоматически согласно прайса и может быть изменена только в большую сторону.</li>";
 	$html .= "<li>Для уменьшения стоимости воспользуйтесь скидкой. Размер скидки указывается в рублях за единицу товара.</li>";
@@ -1014,7 +1014,7 @@ case "create_shop_select":
 	$SH_ID = $_GET["SH_ID"] ? $_GET["SH_ID"] : 0;
 	$html = "";
 
-	// Узнаём отгрузку у заказа, дату отгрузки, регион, накладную, плательщика
+	// Узнаём отгрузку у набора, дату отгрузки, регион, накладную, плательщика
 	$query = "SELECT IFNULL(OD.SHP_ID, 0) SHP_ID
 					,OD.StartDate
 					,OD.ReadyDate
@@ -1105,7 +1105,7 @@ case "update_shop":
 	$old_shid = mysqli_result($res,0,'SH_ID');
 	$old_shop = mysqli_result($res,0,'Shop');
 
-	// Меняем салон в заказе
+	// Меняем салон в наборе
 	$query = "UPDATE OrdersData SET SH_ID = {$SH_ID}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		echo "$('.main_table select.select_shops').val({$old_shid});";
@@ -1137,7 +1137,7 @@ case "update_shop":
 	if( $attention ) {
 		echo "$('.add_payment_btn[id={$OD_ID}]').addClass('attention');";
 		echo "$('.add_payment_btn[id={$OD_ID}]').attr('title', 'Имеются платежи, внесённые в кассу другого салона!');";
-		echo "noty({text: 'У этого заказа имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.', type: 'error'});";
+		echo "noty({text: 'У этого набора имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.', type: 'error'});";
 	}
 	else {
 		echo "$('.add_payment_btn[id={$OD_ID}]').removeClass('attention');";
@@ -1147,14 +1147,14 @@ case "update_shop":
 	echo "noty({timeout: 3000, text: 'Салон изменен с <b>{$old_shop}</b> на <b>{$new_shop}</b>', type: 'success'});";
 	if( $SH_ID == 0 ) {
 		echo "$('.main_table tr[id=\"ord{$OD_ID}\"]').hide('fast');";
-		echo "noty({timeout: 4000, text: 'Заказ перемещен в <b>СВОБОДНЫЕ</b>', type: 'alert'});";
+		echo "noty({timeout: 4000, text: 'Набор перемещен в <b>СВОБОДНЫЕ</b>', type: 'alert'});";
 	}
 
-	// Проверяем отметку об изменении суммы заказа и выводим сообщение
+	// Проверяем отметку об изменении стоимости набора и выводим сообщение
 	$query = "SELECT OD.Code FROM OrdersData OD WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
-		echo "noty({text: 'Внимание! Ваши действия вызвали изменение суммы заказа {$row['Code']}.', type: 'error'});";
+		echo "noty({text: 'Внимание! Ваши действия вызвали изменение стоимости набора {$row['Code']}.', type: 'error'});";
 	}
 	$query = "UPDATE OrdersData OD SET OD.change_price = 0 WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -1250,7 +1250,7 @@ case "update_sverki_comment":
 	break;
 ///////////////////////////////////////////////////////////////////
 
-// Разделение заказа
+// Разделение набора
 case "order_cut":
 	$OD_ID = $_GET["OD_ID"];
 
@@ -1303,7 +1303,7 @@ case "footage":
 	break;
 ///////////////////////////////////////////////////////////////////
 
-// Формирование списка материалов для заказа
+// Формирование списка материалов для набора
 case "material_list":
 	$materials_name = "";
 	$ODD_IDs = 0;
@@ -1763,29 +1763,29 @@ case "blank_log_table":
 	break;
 /////////////////////////////////////////////////////////////////////
 
-// Удаление заказа
+// Удаление набора
 case "order_del":
 	$od_id = $_GET["od_id"];
 
-	// Проверяем права на удаление заказа
+	// Проверяем права на удаление набора
 	if( !in_array('order_add', $Rights) ) {
 		echo "noty({timeout: 3000, text: 'Недостаточно прав для совершения операции!', type: 'error'});";
 	}
 	else {
-		// Узнаем есть ли оплата по этому заказу
+		// Узнаем есть ли оплата по этому набору
 		$query = "SELECT IFNULL((SELECT SUM(payment_sum) FROM OrdersPayment WHERE OD_ID = {$od_id}), 0) order_payments";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$order_payments = mysqli_result($res,0,'order_payments');
 
-		// Если оплата есть, то сообщаем об этом иначе удаляем заказ
+		// Если оплата есть, то сообщаем об этом иначе удаляем набор
 		if( $order_payments == 0 ) {
 			$query = "UPDATE OrdersData SET DelDate = NOW(), IsPainting = IF(IsPainting = 2, 1, IsPainting), author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
 			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 			echo "window.top.window.$('.main_table #ord{$od_id}').hide('slow');";
-			echo "noty({timeout: 3000, text: 'Заказ удален!', type: 'success'});";
+			echo "noty({timeout: 3000, text: 'Набор удален!', type: 'success'});";
 		}
 		else {
-			// Узнаем город заказа, год и месяц продажи
+			// Узнаем город набора, год и месяц продажи
 			$query = "
 				SELECT SH.CT_ID
 					,IFNULL(YEAR(OD.StartDate), 0) start_year
@@ -1800,14 +1800,14 @@ case "order_del":
 			$start_month = mysqli_result($res,0,'start_month');
 
 			$selling_link = "/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$od_id}";
-			echo "noty({text: 'Заказ оплачен! Перейдите в <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b> и запишите возврат платежа. Затем повторите попытку удаления.', type: 'alert'});";
+			echo "noty({text: 'Набор оплачен! Перейдите в <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b> и запишите возврат платежа. Затем повторите попытку удаления.', type: 'alert'});";
 		}
 	}
 
 	break;
 /////////////////////////////////////////////////////////////////////
 
-// Восстановление удаленного заказа
+// Восстановление удаленного набора
 case "order_del_undo":
 	$od_id = $_GET["od_id"];
 
@@ -1819,17 +1819,17 @@ case "order_del_undo":
 		$query = "UPDATE OrdersData SET DelDate = NULL, author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
 		mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		echo "$('.main_table #ord{$od_id}').hide('slow');";
-		echo "noty({timeout: 3000, text: 'Заказ восстановлен!', type: 'success'});";
+		echo "noty({timeout: 3000, text: 'Набор восстановлен!', type: 'success'});";
 	}
 
 	break;
 /////////////////////////////////////////////////////////////////////
 
-// Отгрузка заказа
+// Отгрузка набора
 case "order_shp":
 	$od_id = $_GET["od_id"];
 
-	// Проверяем права на отгрузку заказа
+	// Проверяем права на отгрузку набора
 	if( !in_array('order_ready', $Rights) ) {
 		echo "noty({timeout: 3000, text: 'Недостаточно прав для совершения операции!', type: 'error'});";
 	}
@@ -1837,9 +1837,9 @@ case "order_shp":
 		$query = "UPDATE OrdersData SET ReadyDate = NOW(), author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
 		mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		echo "window.top.window.$('.main_table #ord{$od_id}').hide('slow');";
-		echo "noty({timeout: 3000, text: 'Заказ успешно отгружен!', type: 'success'});";
+		echo "noty({timeout: 3000, text: 'Набор успешно отгружен!', type: 'success'});";
 
-		// Если это розничный заказ, то предлагаем перейти в реализацию
+		// Если это розничный набор, то предлагаем перейти в реализацию
 		$query = "
 			SELECT IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL), 1, 0) retail
 				,SH.CT_ID
