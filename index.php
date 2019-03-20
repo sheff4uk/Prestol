@@ -162,6 +162,7 @@
 					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				}
 			}
+			$_SESSION["success"][] = "Набор разделен на две части: <a href='/orderdetail.php?id={$OD_ID}' target='_blank'>Часть 1</a>, <a href='/orderdetail.php?id={$newOD_ID}' target='_blank'>Часть 2</a>";
 		}
 
 		// Перенаправление на исходный экран
