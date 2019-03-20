@@ -258,7 +258,7 @@
 		if( $inprogress == 0 ) { // Если не приступили, то удаляем.
 			// Создание копии набора
 			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, DelDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, author, confirmed)
-			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, NOW(), OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, NOW(), OrderNumber, CL_ID, IF(IsPainting = 2, 1, IsPainting), WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
