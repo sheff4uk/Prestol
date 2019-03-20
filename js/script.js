@@ -397,5 +397,34 @@ $(function(){
 			$.ajax({ url: "ajax.php?do=taken&od_id="+id+"&val="+val, dataType: "script", async: false });
 		});
 
+		// Отгрузка набора
+		$('.shipping').on('click', function() {
+			var od_id = $(this).attr('od_id');
+			confirm("Пожалуйста, подтвердите <b>отгрузку</b> набора.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_shp&od_id="+od_id, dataType: "script", async: false });});
+			return false;
+		});
+
+		// Удаление набора
+		$('.deleting').on('click', function() {
+			var od_id = $(this).attr('od_id');
+			var m_type = $(this).attr('m_type');
+			var ord_scr = $(this).attr('ord_scr');
+			if (m_type == 1) {
+				var message = "<b>Внимание!</b><br>Набор отмеченный как покрашенный при удалении будет считаться <b>списанным</b> - это означает, что задействованные заготовки, тоже останутся <b>списанными</b>.<br>В остальных случаях набор будет считаться <b>отмененным</b> и заготовки <b>вернутся</b> на склад.<br>К тому же этапы производства, отмеченные как <b>выполненные</b>, после удаления останутся таковыми <b>с сохранением денежного начисления работнику</b>.";
+			}
+			else {
+				var message = "Пожалуйста, подтвердите <b>удаление</b> набора.";
+			}
+			confirm(message).then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_del&od_id="+od_id+"&ord_scr="+ord_scr, dataType: "script", async: false });});
+			return false;
+		});
+
+		// Восстановление удаленного набора
+		$('.undo_deleting').on('click', function() {
+			var od_id = $(this).attr('od_id');
+			var ord_scr = $(this).attr('ord_scr');
+			confirm("Пожалуйста, подтвердите <b>восстановление</b> удалённого набора.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_del_undo&od_id="+od_id+"&ord_scr="+ord_scr, dataType: "script", async: false });});
+			return false;
+		});
 
 });

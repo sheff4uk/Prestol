@@ -1766,6 +1766,7 @@ case "blank_log_table":
 // Удаление набора
 case "order_del":
 	$od_id = $_GET["od_id"];
+	$ord_scr = $_GET["ord_scr"];
 
 	// Проверяем права на удаление набора
 	if( !in_array('order_add', $Rights) ) {
@@ -1778,13 +1779,7 @@ case "order_del":
 		$order_payments = mysqli_result($res,0,'order_payments');
 
 		// Если оплата есть, то сообщаем об этом иначе удаляем набор
-		if( $order_payments == 0 ) {
-			$query = "UPDATE OrdersData SET DelDate = NOW(), IsPainting = IF(IsPainting = 2, 1, IsPainting), author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
-			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-			echo "window.top.window.$('.main_table #ord{$od_id}').hide('slow');";
-			echo "noty({timeout: 3000, text: 'Набор удален!', type: 'success'});";
-		}
-		else {
+		if( $order_payments ) {
 			// Узнаем город набора, год и месяц продажи
 			$query = "
 				SELECT SH.CT_ID
@@ -1802,6 +1797,19 @@ case "order_del":
 			$selling_link = "/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$od_id}";
 			echo "noty({text: 'Набор оплачен! Перейдите в <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b> и запишите возврат платежа. Затем повторите попытку удаления.', type: 'alert'});";
 		}
+		else {
+			$query = "UPDATE OrdersData SET DelDate = NOW(), IsPainting = IF(IsPainting = 2, 1, IsPainting), author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
+			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+			// Если на экране заказа - перезагружаем страницу, иначе скрываем запись
+			if ($ord_scr == 1) {
+				$_SESSION["success"][] = "Набор удален!";
+				echo "location.reload();";
+			}
+			else {
+				echo "$('.main_table #ord{$od_id}').hide('slow');";
+				echo "noty({timeout: 3000, text: 'Набор удален!', type: 'success'});";
+			}
+		}
 	}
 
 	break;
@@ -1810,6 +1818,7 @@ case "order_del":
 // Восстановление удаленного набора
 case "order_del_undo":
 	$od_id = $_GET["od_id"];
+	$ord_scr = $_GET["ord_scr"];
 
 	// Проверяем права
 	if( !in_array('order_add', $Rights) ) {
@@ -1818,8 +1827,15 @@ case "order_del_undo":
 	else {
 		$query = "UPDATE OrdersData SET DelDate = NULL, author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
 		mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-		echo "$('.main_table #ord{$od_id}').hide('slow');";
-		echo "noty({timeout: 3000, text: 'Набор восстановлен!', type: 'success'});";
+		// Если на экране заказа - перезагружаем страницу, иначе скрываем запись
+		if ($ord_scr == 1) {
+			$_SESSION["success"][] = "Набор восстановлен!";
+			echo "location.reload();";
+		}
+		else {
+			echo "$('.main_table #ord{$od_id}').hide('slow');";
+			echo "noty({timeout: 3000, text: 'Набор восстановлен!', type: 'success'});";
+		}
 	}
 
 	break;

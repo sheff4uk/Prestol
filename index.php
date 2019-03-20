@@ -924,15 +924,12 @@
 	{
 		$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
 		$is_del = $row["is_del"];			// Набор удален
-		if( !in_array('order_add_confirm', $Rights) and !$row["SH_ID"] ) {
-			$is_lock = 1;
-		}
 		$confirmed = $row["confirmed"];		// Набор принят в работу
 		// Запрет на редактирование
-		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and $is_lock == 0 and $row["Archive"] == 0 );
+		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$is_lock and !$row["Archive"] );
 
 		// Если пользователю доступен только один салон в регионе или оптовик или свободный набор и нет админских привилегий, то нельзя редактировать общую информацию набора.
-		$editable = (!($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and !($row["SH_ID"] == 0 and !in_array('order_add_confirm', $Rights)));
+		$editable = (!($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and ($row["SH_ID"] or in_array('order_add_confirm', $Rights)));
 
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых наборов для фильтра материалов
 
@@ -973,10 +970,10 @@
 		while( $subrow = mysqli_fetch_array($subres) ) {
 			// Если есть примечание
 			if ($subrow["Comment"]) {
-				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and !$is_del and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}' href='#'" : "not_edit_product'")." title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".(($disabled or $is_del or $row["PFI_ID"] or !$editable) ? "not_edit_product'" : "edit_product{$subrow["PTID"]}' href='#'")." title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
 			}
 			else {
-				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".((!$disabled and !$is_del and $row["PFI_ID"] == "" and in_array('order_add', $Rights)) ? "edit_product{$subrow["PTID"]}' href='#'" : "not_edit_product'")."><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
+				$zakaz .= "<b class='material'><a id='prod{$subrow["ODD_ID"]}' location='{$location}' class='{$subrow["PMfilter"]} ".(($disabled or $is_del or $row["PFI_ID"] or !$editable) ? "not_edit_product'" : "edit_product{$subrow["PTID"]}' href='#'")."><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</a></b><br>";
 			}
 
 			if ($subrow["IsExist"] == "0") {
@@ -1010,7 +1007,7 @@
 
 		echo "<td><span>{$row["StartDate"]}{$invoice}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td class='".( (!$is_lock and in_array('order_add', $Rights) and !$is_del and !($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"])) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
+		echo "<td class='".( (in_array('order_add', $Rights) and !$is_lock and !$is_del and $editable) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
 		echo "<td><span></span></td>";
 
 		echo "<td><span class='nowrap'>{$zakaz}</span></td>";
@@ -1052,8 +1049,8 @@
 		if( $editable ) {
 			// Если набор не заблокирован и не удален, то показываем карандаш и кнопку разделения. Иначе - глаз.
 			if( !$is_lock and in_array('order_add', $Rights) and !$is_del ) {
-				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить набор' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a>";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить набор' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a>";
 			}
 			else {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
@@ -1070,7 +1067,7 @@
 							echo "<a href='#' class='undo_deleting' od_id='{$row["OD_ID"]}' title='Восстановить'><i class='fas fa-undo-alt fa-lg'></i></a>";
 						}
 						else {
-							echo "<a href='#' class='deleting' od_id='{$row["OD_ID"]}' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+							echo "<a href='#' class='deleting' od_id='{$row["OD_ID"]}' m_type='".(in_array('order_add_confirm', $Rights) ? "1" : "0")."' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
 						}
 					}
 				}
@@ -1100,28 +1097,6 @@
 
 <script>
 	$(function() {
-		// Отгрузка набора
-		$('.shipping').on('click', function() {
-			var od_id = $(this).attr('od_id');
-			confirm("Пожалуйста, подтвердите <b>отгрузку</b> набора.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_shp&od_id="+od_id, dataType: "script", async: false });});
-			return false;
-		});
-
-		// Удаление набора
-		$('.deleting').on('click', function() {
-			var od_id = $(this).attr('od_id');
-			var message = "<?=((in_array('order_add_confirm', $Rights)) ? "<b>Внимание!</b><br>Набор отмеченный как покрашенный при удалении будет считаться <b>списанным</b> - это означает, что задействованные заготовки, тоже останутся <b>списанными</b>.<br>В остальных случаях набор будет считаться <b>отмененным</b> и заготовки <b>вернутся</b> на склад.<br>К тому же этапы производства, отмеченные как <b>выполненные</b>, после удаления останутся таковыми <b>с сохранением денежного начисления работнику</b>." : "Пожалуйста, подтвердите <b>удаление</b> набора.")?>";
-			confirm(message).then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_del&od_id="+od_id, dataType: "script", async: false });});
-			return false;
-		});
-
-		// Восстановление удаленного набора
-		$('.undo_deleting').on('click', function() {
-			var od_id = $(this).attr('od_id');
-			confirm("Пожалуйста, подтвердите <b>восстановление</b> удалённого набора.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_del_undo&od_id="+od_id, dataType: "script", async: false });});
-			return false;
-		});
-
 		<?
 		// Выделяем рамкой отфильтрованные этапы
 		if (!isset($_GET["shpid"]) and ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "")) {
