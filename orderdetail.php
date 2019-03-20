@@ -256,8 +256,23 @@
 		$inprogress = mysqli_result($res,0,'inprogress');
 
 		if( $inprogress == 0 ) { // Если не приступили, то удаляем.
-			$query = "UPDATE OrdersDataDetail SET Del = 1, author = {$_SESSION['id']} WHERE ODD_ID={$odd_id}";
+			// Создание копии набора
+			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, DelDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, author, confirmed)
+			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, NOW(), OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$newOD_ID = mysqli_insert_id($mysqli);
+
+			// Записываем в журнал событие разделения набора
+			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$OD_ID}, OFN_ID = 1, old_value = '{$newOD_ID}', new_value = '', author = {$_SESSION['id']}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, OFN_ID = 1, old_value = '{$OD_ID}', new_value = '', author = {$_SESSION['id']}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			// Переносим удаляемое издеоие в отделенный контейнер
+			$query = "UPDATE OrdersDataDetail SET OD_ID = {$newOD_ID} WHERE ODD_ID = {$odd_id}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			$_SESSION["success"][] = "Изделие отделено от набора и перемещено в <a href='/orderdetail.php?id={$newOD_ID}' target='_blank'>удалённые</a>.";
 		}
 		else {
 			$_SESSION["error"][] = "Прежде чем удалить изделие переведите производственные этапы в статус не выполненных.";
