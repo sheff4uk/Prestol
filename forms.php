@@ -582,21 +582,21 @@
 	function piece_from_mechanism(mech) {
 		if( mech == 1 || mech == 2 || mech == 5 ) {
 			$('#addtable #sliding').show('fast');
-			$('#addtable #separately').show('fast');
 			$('#addtable #sliding input[type="number"]').attr('required', true);
 		}
 		else {
 			$('#addtable #sliding').hide('fast');
-			$('#addtable #separately').hide('fast');
 			$('#addtable #sliding input[type="number"]').attr('required', false);
 			$('#addtable input[name="piece_stored"]').prop('checked', false);
 		}
 
 		if( mech == 2 || mech == 5 ) {
 			$('#addtable #piece_amount').show('fast');
+			$('#addtable #separately').show('fast');
 		}
 		else {
 			$('#addtable #piece_amount').hide('fast');
+			$('#addtable #separately').hide('fast');
 		}
 	}
 
@@ -610,12 +610,12 @@
 			$.each(arr_model, function(key, val){
 				// Выделение цветом стандартных форм
 				if (arr_standart[key] == 1) {
-					var filter = "filter: drop-shadow(2px 2px 3px black);";
 					var standart = "standart";
+//					var filter = "filter: drop-shadow(2px 2px 3px black);";
 				}
 				else {
 					var standart = "";
-					var filter = "filter: grayscale(100%);";
+//					var filter = "filter: grayscale(100%);";
 				}
 				forms += "<input type='radio' required id='form" + key + "' name='Form' value='" + key + "' standart='"+arr_standart[key]+"'>";
 				forms += "<label for='form" + key + "'><img class='form "+standart+"' src='/img/form"+key+".png'><br>"+val+"</label>";
@@ -624,16 +624,18 @@
 		}
 		$('#addtable #forms').html(forms);
 		if( forms != "" ) {
-//			if( form > 0 && informs ) {
-//				$('#addtable input[name="Form"][value="'+form+'"]').prop('checked', true);
-//			}
-//			else {
+			if( form > 0 && informs ) {
+				$('#addtable input[name="Form"][value="'+form+'"]').prop('checked', true);
+				size_from_form(form);
+			}
+			else {
 				$('#addtable input[name="Form"][value="'+ModelDefForm[model]+'"]').prop('checked', true);
-//			}
+				size_from_form(ModelDefForm[model]);
+			}
 			$('#addtable #forms').buttonset();
 		}
-		var val = $('#addtable input[name="Form"]:checked').val();
-		size_from_form(val);
+//		var val = $('#addtable input[name="Form"]:checked').val();
+//		size_from_form(val);
 	}
 
 	// Функция формирования списка стандартных размеров в зависимости от модели и механизма стола
