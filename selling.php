@@ -305,7 +305,7 @@
 				,IFNULL(MONTH(OD.StartDate), 0) month
 			FROM OrdersData OD
 			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 AND SH.CT_ID = {$CT_ID}
-			WHERE OD.is_lock = 0
+			WHERE OD.is_lock = 0 AND OD.DelDate IS NULL
 			GROUP BY IFNULL(YEAR(OD.StartDate), 0), IFNULL(MONTH(OD.StartDate), 0)
 
 			UNION
