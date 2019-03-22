@@ -257,18 +257,20 @@
 
 		if( $inprogress == 0 ) { // Если не приступили, то удаляем.
 			// Создание копии набора
-			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, DelDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, author, confirmed)
-			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, NOW(), OrderNumber, CL_ID, IF(IsPainting = 2, 1, IsPainting), WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			$query = "INSERT INTO OrdersData(PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, DelDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, author, confirmed)
+			SELECT PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, NOW(), OrderNumber, CL_ID, IF(IsPainting = 2, 1, IsPainting), WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
-			// Записываем в журнал событие разделения набора
+			// Записываем в журнал событие разделения набора удаление дубликата
 			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$OD_ID}, OFN_ID = 1, old_value = '{$newOD_ID}', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, OFN_ID = 1, old_value = '{$OD_ID}', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, OFN_ID = 18, old_value = '', new_value = '', author = {$_SESSION['id']}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-			// Переносим удаляемое издеоие в отделенный контейнер
+			// Переносим удаляемое изделие в отделенный контейнер
 			$query = "UPDATE OrdersDataDetail SET OD_ID = {$newOD_ID} WHERE ODD_ID = {$odd_id}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -781,7 +783,7 @@ if( $id != "NULL" ) {
 						FROM OrdersChangeLog OCL
 						LEFT JOIN OrdersFieldName OFN ON OFN.OFN_ID = OCL.OFN_ID
 						WHERE (table_key = 'OD_ID' AND table_value = {$id}) OR (table_key = 'ODD_ID' AND table_value IN (SELECT ODD_ID FROM OrdersDataDetail WHERE OD_ID = {$id}))
-						ORDER BY OCL.OCL_ID DESC";
+						ORDER BY OCL.date_time DESC, OCL.OCL_ID DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				echo "<tr class='ord_log_row' lnk='*{$row["table_key"]}{$row["table_value"]}*'>";
