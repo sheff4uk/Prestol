@@ -712,8 +712,8 @@
 		if( $row["Del"] == 0 ) {
 			echo "<button ".(($disabled or $Del or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Редактировать изделие\'')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}'><i class='fa fa-pencil-alt fa-lg'></i></button>";
 
-			$delmessage = addslashes("Удалить {$row["Model"]}({$row["Amount"]} шт.) {$row["Form"]} {$row["Mechanism"]} {$row["Size"]}?");
-			echo "<button ".(($disabled or $Del or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Удалить\'')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;'><i class='fa fa-times fa-lg'></i></button>";
+			$delmessage = addslashes("Удалить {$row["Zakaz"]} ({$row["Amount"]} шт.)?<br><b>Внимание! Для удаления набора воспользуйтесь кнопкой <i class=\"fa fa-times fa-2x\"></i> в правом верхнем углу.</b>");
+			echo "<button ".(($disabled or $Del or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Удалить изделие из набора\'')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;'><i class='fas fa-trash-alt fa-lg'></i></button>";
 		}
 		echo "</td></tr>";
 
