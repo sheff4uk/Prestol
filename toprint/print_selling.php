@@ -85,7 +85,7 @@
 				,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SHP.Shipper, ')'), '')), '') Material
 				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 		FROM OrdersData OD
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 		LEFT JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
@@ -106,7 +106,7 @@
 			,Color(OD.CL_ID) Color
 			,IFNULL(OD.sell_comment, '') Comment
 		FROM OrdersData OD
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		WHERE OD.OD_ID IN ({$id_list})

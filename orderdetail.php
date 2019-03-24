@@ -410,7 +410,7 @@
 	<table class="main_table">
 		<thead>
 		<tr class='nowrap'>
-			<th width="90">Код<br>Создан</th>
+			<th width="90">Код набора</th>
 			<?
 			if( $retail ) {
 				echo "<th width='125'>Клиент<br>Квитанция<br>Телефон</th>";
@@ -665,7 +665,6 @@
 			,Friendly_date(ODD.order_date) order_date
 			,Friendly_date(ODD.arrival_date) arrival_date
 			,Steps_button(ODD.ODD_ID, 0) Steps
-			,ODD.Del
 			,IF(CL.clear = 1 AND PM.enamel = 1, 1, 0) enamel_error
 		FROM OrdersDataDetail ODD
 		JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
@@ -695,7 +694,7 @@
 		}
 		$material = "<span class='wr_mt'>".(($row["outdate"] <= 0 and $row["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$row["outdate"]} дн.'></i>" : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' id='m{$row["ODD_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$row["Material"]}{$row["Shipper"]}</span><input type='text' value='{$row["Material"]}' class='materialtags_{$row["mtype"]}' style='display: none;'><input type='checkbox' ".($row["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span>";
 
-		$steps = "<a id='{$row["ODD_ID"]}' class='".((in_array('step_update', $Rights) and $row["Del"] == 0) ? "edit_steps " : "")."' location='{$location}'>{$row["Steps"]}</a>";
+		$steps = "<a id='{$row["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$row["Steps"]}</a>";
 
 		$format_old_price = ($row["old_Price"] != '') ? '<p class="old_price">'.number_format($row["old_Price"], 0, '', ' ').'</p>' : '';
 		$format_price = ($row["Price"] != '') ? '<p class="price">'.number_format($row["Price"], 0, '', ' ').'</p>' : '';

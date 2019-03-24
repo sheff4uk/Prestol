@@ -167,7 +167,7 @@ case "ispainting":
 		$query = "SELECT BIT_AND(IF(OD.IsPainting = 3 OR OD.CL_ID IS NULL, 1, 0)) IsPainting
 						,BIT_AND(IFNULL(ODS.IsReady, 1)) IsReady
 					FROM OrdersData OD
-					LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+					LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
 					WHERE OD.DelDate IS NULL AND OD.SHP_ID = {$shpid}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
@@ -522,7 +522,7 @@ case "shipment":
 			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 			$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
 			$html .= "<table class='main_table' id='to_shipment'><thead><tr>";
-			$html .= "<th width='75'>Код<br>Создан</th>";
+			$html .= "<th width='75'>Код набора</th>";
 			$html .= "<th width='20%'>Клиент [Продажа]-[Сдача]</th>";
 			$html .= "<th width='10%'>Подразделение</th>";
 			$html .= "<th width='30%'>Набор</th>";
@@ -550,7 +550,7 @@ case "shipment":
 					FROM OrdersDataDetail ODD
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 					LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-					WHERE ODD.Del = 0 AND ODD.OD_ID = {$row["OD_ID"]}
+					WHERE ODD.OD_ID = {$row["OD_ID"]}
 					ORDER BY PTID DESC, ODD.ODD_ID
 				";
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -696,7 +696,7 @@ case "invoice":
 			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 			$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
 			$html .= "<table class='main_table' id='to_invoice'><thead><tr>";
-			$html .= "<th width='75'>Код<br>Создан</th>";
+			$html .= "<th width='75'>Код набора</th>";
 			$html .= "<th width='20%'>Клиент [Продажа]-[Сдача]</th>";
 			$html .= "<th width='10%'>Подразделение</th>";
 			$html .= "<th width='70'>Цена за шт.</th>";
@@ -728,7 +728,7 @@ case "invoice":
 					FROM OrdersDataDetail ODD
 					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 					LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-					WHERE ODD.Del = 0 AND ODD.OD_ID = {$row["OD_ID"]}
+					WHERE ODD.OD_ID = {$row["OD_ID"]}
 					ORDER BY PTID DESC, ODD.ODD_ID
 				";
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -980,7 +980,7 @@ case "update_price":
 
 		FROM OrdersDataDetail ODD
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-		WHERE ODD.OD_ID = {$OD_ID} AND ODD.Del = 0
+		WHERE ODD.OD_ID = {$OD_ID}
 		ORDER BY PTID DESC, ODD.ODD_ID
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
@@ -1268,7 +1268,7 @@ case "order_cut":
 
 		FROM OrdersDataDetail ODD
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-		WHERE ODD.OD_ID = {$OD_ID} AND ODD.Del = 0
+		WHERE ODD.OD_ID = {$OD_ID}
 		ORDER BY PTID DESC, ODD.ODD_ID
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
@@ -1620,7 +1620,6 @@ case "start_balance_blank":
 				FROM OrdersDataDetail ODD
 				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 				JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
-				WHERE ODD.Del = 0
 				GROUP BY PB.BL_ID
 			) SODD ON SODD.BL_ID = BL.BL_ID
 			LEFT JOIN (
@@ -1631,7 +1630,7 @@ case "start_balance_blank":
 					,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
 				FROM OrdersDataDetail ODD
 				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
-				WHERE ODD.BL_ID IS NOT NULL AND ODD.Del = 0
+				WHERE ODD.BL_ID IS NOT NULL
 				GROUP BY ODD.BL_ID
 			) SODB ON SODB.BL_ID = BL.BL_ID
 			WHERE BL.BL_ID = {$bl_id}

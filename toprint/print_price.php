@@ -110,7 +110,7 @@
 				,GROUP_CONCAT(ODD.ODD_ID) ODDs
 				,SUM(1) count
 			FROM OrdersData OD
-			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 			WHERE OD.OD_ID = $od_id
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

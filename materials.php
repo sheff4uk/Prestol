@@ -120,7 +120,7 @@
 					SELECT MT.MT_ID, CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
 					FROM Materials MT
 					JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = {$product}
-					JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD.Del = 0 AND ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
+					JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
 					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL
 					GROUP BY MT.MT_ID
 					ORDER BY MT.Material
@@ -186,7 +186,7 @@
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 			AND ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
 			".( $MT_IDs ? "AND ODD.MT_ID IN ({$MT_IDs})" : "" )."
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -228,7 +228,7 @@
 							AND ODS.Old != 1
 							AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ст%' OR Short LIKE '%Об%') OR ODS.ST_ID IS NULL)
 			LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-			WHERE ODD.Del = 0 AND ODD.OD_ID = {$row["OD_ID"]}
+			WHERE ODD.OD_ID = {$row["OD_ID"]}
 				AND ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
 				".( $MT_IDs ? "AND ODD.MT_ID IN ({$MT_IDs})" : "" )."
 			ORDER BY PTID DESC, ODD.ODD_ID

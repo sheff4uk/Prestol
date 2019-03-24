@@ -241,7 +241,6 @@
 						JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 						LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
 						JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
-						WHERE ODD.Del = 0
 						GROUP BY PB.BL_ID
 					) SODD ON SODD.BL_ID = BL.BL_ID
 					LEFT JOIN (

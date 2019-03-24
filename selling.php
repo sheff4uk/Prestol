@@ -112,11 +112,11 @@
 			}
 
 			// Обновляем автора
-			$query = "UPDATE OrdersDataDetail SET author = NULL WHERE OD_ID = {$OD_ID} AND Del = 0";
+			$query = "UPDATE OrdersDataDetail SET author = NULL WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query );
 
 			// Очищаем скидку
-			$query = "UPDATE OrdersDataDetail SET discount = NULL WHERE OD_ID = {$OD_ID} AND Del = 0";
+			$query = "UPDATE OrdersDataDetail SET discount = NULL WHERE OD_ID = {$OD_ID}";
 			if( mysqli_query( $mysqli, $query ) ) {
 				// Если были изменения
 				if (mysqli_affected_rows($mysqli)) {
@@ -128,11 +128,11 @@
 			}
 
 			// Пересчитываем стоимость по прайсу
-			$query = "UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 1) WHERE OD_ID = {$OD_ID} AND Del = 0";
+			$query = "UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 1) WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query );
 
 			// Ставим цену по прайсу
-			$query = "UPDATE OrdersDataDetail SET Price = IF(IFNULL(min_price, 0) > 0, min_price, Price) WHERE OD_ID = {$OD_ID} AND Del = 0";
+			$query = "UPDATE OrdersDataDetail SET Price = IF(IFNULL(min_price, 0) > 0, min_price, Price) WHERE OD_ID = {$OD_ID}";
 			if( mysqli_query( $mysqli, $query ) ) {
 				// Если были изменения
 				if (mysqli_affected_rows($mysqli)) {
@@ -419,7 +419,6 @@
 								JOIN (
 									SELECT ODD.OD_ID, SUM((ODD.Price - IFNULL(ODD.discount, 0)) * ODD.Amount) Price
 									FROM OrdersDataDetail ODD
-									WHERE ODD.Del = 0
 									GROUP BY ODD.OD_ID
 								) PRICE ON PRICE.OD_ID = OD.OD_ID
 									AND OD.DelDate IS NULL
@@ -435,7 +434,7 @@
 							SELECT SUM(ODD.Price * ODD.Amount) Price
 								,SUM(IFNULL(ODD.discount, 0) * ODD.Amount) discount
 							FROM OrdersData OD
-							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 							WHERE OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$year} AND MONTH(OD.StartDate) = {$month} AND OD.SH_ID = {$row["SH_ID"]}
 						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -450,7 +449,7 @@
 								,SUM(IFNULL(ODD.discount, 0) * ODD.Amount) discount
 							FROM OrdersData OD
 							JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 AND PFI.rtrn != 1
-							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 							WHERE OD.DelDate IS NULL AND YEAR(OD.StartDate) = {$year} AND MONTH(OD.StartDate) = {$month} AND OD.SH_ID = {$row["SH_ID"]}
 						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -568,7 +567,6 @@
 						LEFT JOIN (
 							SELECT ODD.OD_ID, SUM((ODD.Price - IFNULL(ODD.discount, 0)) * ODD.Amount) Price
 							FROM OrdersDataDetail ODD
-							WHERE ODD.Del = 0
 							GROUP BY ODD.OD_ID
 						) PRICE ON PRICE.OD_ID = OD.OD_ID
 						WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OP.send IS NULL
@@ -842,7 +840,7 @@
 		<thead>
 			<tr>
 				<th width="60">Отгружен <i class="fa fa-question-circle" html="<b>Статус получения набора:</b><br><i class='fas fa-handshake fa-2x not_confirmed'></i> - Клиент НЕ забрал набор<br><i class='fas fa-handshake fa-2x confirmed'></i> - Клиент забрал набор"></i></th>
-				<th width="80">Код<br>Создан</th>
+				<th width="80">Код набора</th>
 				<th width="10%">Клиент<br>Квитанция</th>
 				<th width="25%">Набор</th>
 				<th width="15%">Материал</th>
@@ -870,7 +868,7 @@
 				</th>
 				<th width="100">Примечание</th>
 				<th width="100">Дата продажи</th>
-				<th width="65">Сумма набора</th>
+				<th width="65">Стоимость набора</th>
 				<th width="70">Скидка</th>
 				<th width="65">Оплата</th>
 <!--				<th width="20">Т</th>-->
@@ -999,7 +997,7 @@
 				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 				LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 				LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-				WHERE ODD.Del = 0 AND ODD.OD_ID = {$row["OD_ID"]}
+				WHERE ODD.OD_ID = {$row["OD_ID"]}
 				ORDER BY PTID DESC, ODD.ODD_ID
 			";
 			$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

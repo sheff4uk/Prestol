@@ -126,29 +126,6 @@ case "clienttags":
 	echo json_encode($ClientTags);
 	break;
 
-case "price":
-	// Автокомплит цены изделий
-	if( $_GET["PM_ID"] != '' ) {
-		$mechanism = $_GET["PME_ID"] != '' ? '= '.$_GET["PME_ID"] : 'IS NULL';
-		$query = "SELECT ODD.Price, CONCAT(ODD.Price, IFNULL(CONCAT(IF(ODD.Width > 0, ' ', ' Ø'), ODD.Length, IFNULL(CONCAT('(+', IFNULL(CONCAT(ODD.PieceAmount, 'x'), ''), ODD.PieceSize, ')'), ''), IFNULL(CONCAT('х', ODD.Width), '')), '')) Label
-					FROM OrdersDataDetail ODD
-					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
-					JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND IF(SH.KA_ID IS NULL, 1, 0) = {$_GET["retail"]}
-					WHERE ODD.Price IS NOT NULL AND ODD.PM_ID = {$_GET["PM_ID"]} AND ODD.PME_ID {$mechanism}
-					AND DATEDIFF(NOW(),OD.AddDate) <= 90
-					AND ODD.Del = 0
-					GROUP BY ODD.Price, ODD.Length, ODD.Width, ODD.PieceAmount, ODD.PieceSize, ODD.PME_ID
-					ORDER BY MAX(ODD.ODD_ID) DESC
-					LIMIT 8";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) )
-		{
-			$PriceTags[] = array( "label"=>$row["Label"], "value"=>$row["Price"] );
-		}
-		echo json_encode($PriceTags);
-	}
-	break;
-
 case "passport":
 	// Автокомплит паспортных данных для доверенности
 	$term = convert_str($_GET["term"]);

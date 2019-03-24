@@ -34,7 +34,7 @@ if( !in_array('order_add', $Rights) ) {
 			INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, edge, MT_ID, Amount, Comment, min_price, Price, author, ptn)
 			SELECT {$id}, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, edge, MT_ID, Amount, Comment, Price(ODD_ID, {$type}), Price(ODD_ID, {$type}), {$_SESSION['id']}, ptn
 			FROM OrdersDataDetail
-			WHERE OD_ID = {$_GET["id"]} AND Del = 0
+			WHERE OD_ID = {$_GET["id"]}
 		";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$odd_id = mysqli_insert_id( $mysqli );

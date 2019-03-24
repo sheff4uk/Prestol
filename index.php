@@ -231,7 +231,7 @@
 							SELECT PM.PT_ID, PM.space * ODD.Amount space
 							FROM OrdersData OD
 							JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND
 							JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 							WHERE OD.SHP_ID = {$_GET["shpid"]}
 								".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
@@ -622,7 +622,7 @@
 		</div>
 		<thead>
 		<tr>
-			<th width="60"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код<br>Создан</label></th>
+			<th width="60"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код набора</label></th>
 			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Клиент<br>Квитанция</label></th>
 			<th width="60"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
 			<th width="60"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br><?=($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))?></label></th>
@@ -732,7 +732,7 @@
 	if (!isset($_GET["shpid"])) {
 		if ($_SESSION["f_Models"] != "" or $MT_IDs != "" or $_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "") {
 			$query .= "
-				JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+				JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 			";
 			// Фильтр по модели
 			if ($_SESSION["f_Models"] != "") {
@@ -958,7 +958,7 @@
 			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-			WHERE ODD.Del = 0 AND ODD.OD_ID = {$row["OD_ID"]}
+			WHERE ODD.OD_ID = {$row["OD_ID"]}
 			ORDER BY PTID DESC, ODD.ODD_ID
 		";
 		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -1127,7 +1127,7 @@
 		SELECT MT.MT_ID, CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
 		FROM Materials MT
 		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-		JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD.OD_ID IN ({$orders_IDs}) AND ODD.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD.OD_ID IN ({$orders_IDs})
 		GROUP BY MT.MT_ID
 		ORDER BY MT.Material
 	";

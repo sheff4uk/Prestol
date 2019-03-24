@@ -600,7 +600,7 @@ while( $row = mysqli_fetch_array($res) ) {
 				,ODD.discount
 				,Zakaz(ODD.ODD_ID) Zakaz
 			FROM OrdersData OD
-			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			WHERE ODD.OD_ID IN ({$id_list})
 			HAVING PTID IN({$product_types})

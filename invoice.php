@@ -134,7 +134,7 @@ $query = "
 		,IF(OD.SH_ID IN (36), ODD.opt_price, (ODD.Price - IFNULL(ODD.discount, 0))) Price
 		,Zakaz(ODD.ODD_ID) Zakaz
 	FROM OrdersData OD
-	LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.OD_ID IN ({$id_list})
 	ORDER BY OD.OD_ID, PTID DESC, ODD.ODD_ID

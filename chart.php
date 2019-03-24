@@ -14,7 +14,7 @@
 $query = "
 	SELECT IFNULL(ROUND(SUM(ODD.Amount)/52), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) <= 364
 		AND OD.DelDate IS NULL
 ";
@@ -26,7 +26,7 @@ $normal = "$average_power, $average_power, $average_power";
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 8 AND 14
 		AND OD.DelDate IS NULL
 ";
@@ -37,7 +37,7 @@ $last_power_week = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 1 AND 7
 		AND OD.DelDate IS NULL
 ";
@@ -48,7 +48,7 @@ $current_power_week = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 29 AND 56
 		AND OD.DelDate IS NULL
 ";
@@ -59,7 +59,7 @@ $last_power_month = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 1 AND 28
 		AND OD.DelDate IS NULL
 ";
@@ -70,7 +70,7 @@ $current_power_month = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 92 AND 182
 		AND OD.DelDate IS NULL
 ";
@@ -81,7 +81,7 @@ $last_power_quarter = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	WHERE DATEDIFF(NOW(), OD.ReadyDate) BETWEEN 1 AND 91
 		AND OD.DelDate IS NULL
 ";
@@ -169,7 +169,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$query = "
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		WHERE OD.ReadyDate IS NOT NULL
 			AND OD.DelDate IS NULL
@@ -186,7 +186,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$query = "
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
@@ -205,7 +205,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$query = "
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
@@ -224,7 +224,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$query = "
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
@@ -244,7 +244,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$query = "
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
@@ -263,7 +263,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$query = "
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
@@ -282,7 +282,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$query = "
 		SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 		FROM OrdersData OD
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		WHERE OD.ReadyDate IS NULL
@@ -302,7 +302,7 @@ while( $row = mysqli_fetch_array($res) ) {
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -319,7 +319,7 @@ $outdated_chairs_retail = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -336,7 +336,7 @@ $outdated_chairs_opt = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -353,7 +353,7 @@ $outdated_tables_retail = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -370,7 +370,7 @@ $outdated_tables_opt = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -387,7 +387,7 @@ $outdated_others_retail = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -404,7 +404,7 @@ $outdated_others_opt = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -419,7 +419,7 @@ $show_chairs_retail = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -434,7 +434,7 @@ $show_chairs_opt = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -449,7 +449,7 @@ $show_tables_retail = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -464,7 +464,7 @@ $show_tables_opt = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -479,7 +479,7 @@ $show_others_retail = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -494,7 +494,7 @@ $show_others_opt = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -510,7 +510,7 @@ $hold_chairs_retail = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -526,7 +526,7 @@ $hold_chairs_opt = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -542,7 +542,7 @@ $hold_tables_retail = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -558,7 +558,7 @@ $hold_tables_opt = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
@@ -574,7 +574,7 @@ $hold_others_retail = mysqli_result($res,0,'Amount');
 $query = "
 	SELECT IFNULL(SUM(ODD.Amount), 0) Amount
 	FROM OrdersData OD
-	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.Del = 0
+	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 0
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 	WHERE OD.ReadyDate IS NULL
