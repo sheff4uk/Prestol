@@ -1,10 +1,9 @@
-$(document).ready(function() {
+$(function() {
 	var overlay = $('#overlay');
 	var open_modal = $('.open_modal');
 	var close = $('.modal_close, #overlay');
 	var modal = $('.modal_div, #print_tbl');
 	var col = $('#print_tbl thead input[type="checkbox"]:not(#ship_X)');
-	var row = $('.print_row');
 
 	open_modal.click( function(event){
 		event.preventDefault();
@@ -14,7 +13,6 @@ $(document).ready(function() {
 		$('#print_tbl thead input[type="checkbox"][value="11"]').prop( "disabled", true );
 		$('#print_tbl thead input[type="checkbox"][value="12"]').prop( "disabled", true );
 		$('.print_col').button();
-		$('.print_row').button();
 		$('#print_btn > a').css('display', 'block');
 		$('#copy_link').css('display', 'block');
 		$('#print_forms').css('display', 'block');
@@ -27,7 +25,6 @@ $(document).ready(function() {
 //		$('.wr_main_table_body').css('height', 'calc(100% - 50px)');
 		$('.wr_main_table_body').css('margin-right', '0');
 		$('.wr_main_table_head').css('width', 'calc(100% - 15px)');
-//		$('.wr_main_table_body .print_row + label').css('display', 'block');
 		overlay.fadeIn(400);
 
 		$('#print_tbl td:last-child, #print_tbl th:last-child').css('display', 'none');
@@ -57,10 +54,8 @@ $(document).ready(function() {
 //				$('.wr_main_table_body').css('height', '');
 				$('.wr_main_table_body').css('margin-right', '');
 				$('.wr_main_table_head').css('width', '');
-				$('.wr_main_table_body .print_row + label').css('display', 'none');
 				$('.print_col').button('destroy');
-				$('.print_row').button('destroy');
-	 		}
+			}
 		);
 		$('#print_tbl td').css('background', '');
 		$('#print_tbl td').css('opacity', '');

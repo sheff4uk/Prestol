@@ -393,14 +393,8 @@ input[type="checkbox"].nightshift + label {
 	display: inline-block;
 }
 
-.print_col, .print_row {
+.print_col {
 	display: none;
-}
-
-.print_row + label{
-	position: absolute;
-	display: none;
-/*	left: -20px;*/
 }
 
 .main_table thead input[type="text"] {

@@ -995,8 +995,8 @@
 		}
 
 		echo "<tr id='ord{$row["OD_ID"]}'>";
-		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><span class='nowrap'><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>";
-		echo "<td><span ".($row["address"] ? "title='{$row["address"]}'" : "")."><input type='checkbox' value='{$row["OD_ID"]}' checked name='order[]' class='print_row' id='n{$row["OD_ID"]}'><label for='n{$row["OD_ID"]}'>></label><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b><br>{$row["mtel"]}</span></td>";
+		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><input type hidden name='order[]' value='{$row["OD_ID"]}'><span class='nowrap'><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>";
+		echo "<td><span ".($row["address"] ? "title='{$row["address"]}'><i class='fas fa-home'></i>" : ">")."<n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b><br>{$row["mtel"]}</span></td>";
 
 		// Если набор в накладной - на дате продажи ссылка на накладную
 		if( $row["PFI_ID"] ) {
@@ -1274,7 +1274,7 @@
 		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 
 		$('.print_products').button();
-		$('.print_col, .print_row, .print_products').change( function() { changelink(); });
+		$('.print_col, .print_products').change( function() { changelink(); });
 
 		$('#print_btn').click( function() { changelink(); });
 		$('#print_title').change( function() { changelink(); });
