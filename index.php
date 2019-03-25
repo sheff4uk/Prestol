@@ -8,10 +8,11 @@
 	}
 	include "header.php";
 
-	$datediff = 60; // Максимальный период отображения данных
+	$datediff = 91; // Сколько дней отгрузка видна в списке после отправки
 	
 	$location = $_SERVER['REQUEST_URI'];
-	$_SESSION["location"] = $location;
+
+	$archive = $_GET["archive"] ? $_GET["archive"] : 0;
 
 	// Добавление в базу нового набора
 	if( isset($_POST["Shop"]) )
@@ -231,7 +232,7 @@
 							SELECT PM.PT_ID, PM.space * ODD.Amount space
 							FROM OrdersData OD
 							JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND
+							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 							JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 							WHERE OD.SHP_ID = {$_GET["shpid"]}
 								".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
@@ -1244,6 +1245,23 @@
 	}
 
 	$(function(){
+<?
+		//Расскрашиваем экран в зависимости от выбранной вкладки (В работе, Свободные, Отгруженные, Удаленные)
+		switch ($archive) {
+			case 0:
+				echo "$('body').attr('style', 'background: #fff;');";
+				break;
+			case 1:
+				echo "$('body').attr('style', 'background: #ffb;');";
+				break;
+			case 2:
+				echo "$('body').attr('style', 'background: #bf8;');";
+				break;
+			case 3:
+				echo "$('body').attr('style', 'background: #ccc;');";
+				break;
+		}
+?>
 
 		$('#counter').text('<?=$orders_count?>');
 

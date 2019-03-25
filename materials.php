@@ -10,7 +10,6 @@
 	}
 
 	$location = $_SERVER['REQUEST_URI'];
-	$_SESSION["location"] = $location;
 
 	if( isset($_GET["isex"]) ) {
 		$isexist = $_GET["isex"];

@@ -35,7 +35,6 @@
 	}
 
 	$location = "selling.php?CT_ID={$CT_ID}&year={$year}&month={$month}";
-	$_SESSION["location"] = $_SERVER['REQUEST_URI'];
 
 	// Добавление/редактирование расхода/прихода
 	if( isset($_GET["add_cost"]) )

@@ -14,7 +14,8 @@
 				,OD.is_lock
 				,OD.confirmed
 				,IF(OD.DelDate IS NULL, 0, 1) Del
-				,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
+				,IF(OD.ReadyDate IS NULL, 0, 1) Archive
+				,IF(OD.SH_ID IS NULL, 1, 0) Free
 			FROM OrdersData OD
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}
@@ -26,10 +27,24 @@
 		$Code = mysqli_result($res,0,'Code');
 		$Del = mysqli_result($res,0,'Del');
 		$Archive = mysqli_result($res,0,'Archive');
+		$Free = mysqli_result($res,0,'Free');
 		$is_lock = mysqli_result($res,0,'is_lock');
 		$start_year = mysqli_result($res,0,'start_year');
 		$start_month = mysqli_result($res,0,'start_month');
 		$confirmed = mysqli_result($res,0,'confirmed');
+		// Категория набора (в работе/свободные/отгруженные/удаленные)
+		if ($Del) {
+			$arch = 3;
+		}
+		elseif ($Archive) {
+			$arch = 2;
+		}
+		elseif ($Free) {
+			$arch = 1;
+		}
+		else {
+			$arch = 0;
+		}
 
 		// В заголовке страницы выводим код набора
 		$title = $Code;
@@ -328,7 +343,7 @@
 
 	include "forms.php";
 
-	echo "<p><a href='{$_SESSION["location"]}#ord{$_GET["id"]}' class='button'><< Вернуться</a></p>";
+	echo "<p><a href='/?archive={$arch}#ord{$_GET["id"]}' class='button'><< На главную</a></p>";
 
 	$query = "
 		SELECT OD.OD_ID
