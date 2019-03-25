@@ -165,7 +165,7 @@
 	<script src="js/jquery-1.11.3.min.js"></script>
 	<script src="js/ui/jquery-ui.js"></script>
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
-	<script src="js/modal.js?v=9"></script>
+	<script src="js/modal.js?v=10"></script>
 	<script src="js/script.js?v=39" type="text/javascript"></script>
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>

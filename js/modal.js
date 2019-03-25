@@ -34,11 +34,6 @@ $(function() {
 				$('#print_tbl td:nth-child('+$(this).val()+')').css('opacity', '.5');
 			}
 		});
-		row.each(function() {
-			if (!$(this).prop('checked')) {
-				$(this).parents('tr').css('opacity', '.5');
-			}
-		});
 	});
 
 	close.click( function(){
@@ -73,15 +68,6 @@ $(function() {
 		else {
 			$('#print_tbl td:nth-child('+$(this).val()+')').css('background', 'rgba(0,0,0,.5)');
 			$('#print_tbl td:nth-child('+$(this).val()+')').css('opacity', '.5');
-		}
-	});
-
-	row.change(function() {
-		if ($(this).prop('checked')) {
-			$(this).parents('tr').css('opacity', '');
-		}
-		else {
-			$(this).parents('tr').css('opacity', '.5');
 		}
 	});
 });
