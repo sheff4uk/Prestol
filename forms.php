@@ -39,10 +39,9 @@
 	$ModelPatina = array();
 	$ModelDefForm = array();
 	$query = "
-		SELECT PM.PM_ID, PM.ptn, MIN(PMF.PF_ID) PF_ID, SUM(1) cnt
+		SELECT PM.PM_ID, PM.ptn, MIN(PMF.PF_ID) PF_ID, SUM(IF(PM.PT_ID = 2, 1, 0)) cnt
 		FROM ProductModels PM
 		LEFT JOIN ProductModelsForms PMF ON PMF.PM_ID = PM.PM_ID AND PMF.standart = 1
-		WHERE PM.PT_ID = 2
 		GROUP BY PM.PM_ID
 	";
 	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
