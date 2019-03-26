@@ -320,7 +320,7 @@ $query = "SELECT PFB.PFB_ID
 				,KA.Naimenovanie pokupatel
 				,KA.KA_ID
 				,PFB.count
-				,DATE_FORMAT(PFB.date, '%d.%m.%y') date_format
+				,Friendly_date(PFB.date) date_format
 				,USR_Icon(PFB.USR_ID) Name
 			FROM PrintFormsBill PFB
 			LEFT JOIN Kontragenty KA ON KA.KA_ID = PFB.pokupatel_id

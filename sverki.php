@@ -268,8 +268,8 @@ if( $payer ) {
 	";
 	$query = "
 		SELECT token
-			,DATE_FORMAT(date_from, '%d.%m.%y') date_from_format
-			,DATE_FORMAT(date_to, '%d.%m.%y') date_to_format
+			,Friendly_date(date_from) date_from
+			,Friendly_date(date_to) date_to
 		FROM ActSverki
 		WHERE KA_ID = {$payer} AND YEAR(date_to) = {$year}
 		ORDER BY date_to DESC
@@ -277,8 +277,8 @@ if( $payer ) {
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
 		echo "<tr>";
-		echo "<td><b><a href='/toprint/act_sverki.php?t={$row["token"]}' target='_blank'>{$row["date_to_format"]}</a></b></td>";
-		echo "<td>[{$row["date_from_format"]} - {$row["date_to_format"]}]</td>";
+		echo "<td><b><a href='/toprint/act_sverki.php?t={$row["token"]}' target='_blank'>{$row["date_to"]}</a></b></td>";
+		echo "<td>[{$row["date_from"]} - {$row["date_to"]}]</td>";
 		echo "</tr>";
 	}
 	echo "
@@ -314,7 +314,7 @@ if( $payer ) {
 					,KA.Naimenovanie
 					,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
 					,PFI.count
-					,DATE_FORMAT(PFI.date, '%d.%m.%y') date_format
+					,Friendly_date(PFI.date) date_format
 					,PFI.date
 					,USR_Icon(PFI.USR_ID) Name
 					,PFI.del
@@ -334,7 +334,7 @@ if( $payer ) {
 					,KA.Naimenovanie
 					,CONCAT('Оплата от покупателя, <b>', F.comment, '</b>') document
 					,NULL
-					,DATE_FORMAT(F.date, '%d.%m.%y') date_format
+					,Friendly_date(F.date) date_format
 					,F.date
 					,USR_Icon(F.author) Name
 					,NULL
@@ -355,7 +355,7 @@ else {
 					,KA.Naimenovanie
 					,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
 					,PFI.count
-					,DATE_FORMAT(PFI.date, '%d.%m.%y') date_format
+					,Friendly_date(PFI.date) date_format
 					,PFI.date
 					,USR_Icon(PFI.USR_ID) Name
 					,PFI.del

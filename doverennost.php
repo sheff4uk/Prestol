@@ -177,7 +177,7 @@
 <?
 	$query = "SELECT PFD.PFD_ID
 					,PFD.count
-					,DATE_FORMAT(PFD.date, '%d.%m.%y') date_format
+					,Friendly_date(PFD.date) date_format
 					,PFD.firma_prodavetc
 					,PD.fio
 					,USR_Icon(PFD.USR_ID) Name
@@ -194,7 +194,7 @@
 		echo "<td><b>{$row["count"]}</b></td>";
 		echo "<td><b>{$row["date_format"]}</b></td>";
 		echo "<td>{$row["firma_prodavetc"]}</td>";
-		echo "<td><b>{$row["fio"]}</b></td>";
+		echo "<td>{$row["fio"]}</td>";
 		echo "<td>{$row["R_Name"]}</td>";
 		echo "<td><a href='open_print_form.php?type=doverennost&PFD_ID={$row["PFD_ID"]}&number={$row["count"]}' target='_blank'><i class='fa fa-file-pdf fa-2x'></a></td>";
 		echo "<td>{$row["Name"]}</td>";
