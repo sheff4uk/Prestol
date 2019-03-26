@@ -262,23 +262,48 @@ if( $payer ) {
 				<tr>
 					<th>Дата</th>
 					<th>Период</th>
+					<th>Сальдо</th>
 				</tr>
 			</thead>
 			<tbody>
 	";
 	$query = "
 		SELECT token
-			,Friendly_date(date_from) date_from
-			,Friendly_date(date_to) date_to
+			,Friendly_date(date_from) date_from_format
+			,Friendly_date(date_to) date_to_format
+			,date_to
 		FROM ActSverki
 		WHERE KA_ID = {$payer} AND YEAR(date_to) = {$year}
 		ORDER BY date_to DESC
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
+		// Вычисление оборота за период
+		$query = "SELECT SUM(SUB.debet) debet, SUM(SUB.kredit) kredit
+					FROM (
+						SELECT IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+							,NULL kredit
+						FROM PrintFormsInvoice PFI
+						WHERE PFI.date > '{$row["date_to"]}' AND PFI.platelshik_id = {$payer} AND PFI.del = 0
+
+						UNION ALL
+
+						SELECT NULL debet
+							,F.money kredit
+						FROM Finance F
+						WHERE F.date > '{$row["date_to"]}' AND F.KA_ID = {$payer}
+					) SUB";
+		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$debet_profit_now = mysqli_result($subres,0,'debet'); // Дебетовый оборот с конечной даты по сегодня
+		$kredit_profit_now = mysqli_result($subres,0,'kredit'); // Кредитовый оборот с конечной даты по сегодня
+
+		$end_saldo = $saldo + $debet_profit_now - $kredit_profit_now;
+		$end_saldo_format = number_format($end_saldo, 0, '', ' ');
+
 		echo "<tr>";
-		echo "<td><b><a href='/toprint/act_sverki.php?t={$row["token"]}' target='_blank'>{$row["date_to"]}</a></b></td>";
-		echo "<td>[{$row["date_from"]} - {$row["date_to"]}]</td>";
+		echo "<td><b><a href='/toprint/act_sverki.php?t={$row["token"]}' target='_blank'>{$row["date_to_format"]}</a></b></td>";
+		echo "<td>[{$row["date_from_format"]} - {$row["date_to_format"]}]</td>";
+		echo "<td><b style='color: ".(($end_saldo < 0) ? "#E74C3C;" : "#16A085;")."'>{$end_saldo_format}</b></td>";
 		echo "</tr>";
 	}
 	echo "
