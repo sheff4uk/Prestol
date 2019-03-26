@@ -332,6 +332,7 @@
 						,Message = '{$Message}'
 						,priority = {$_POST["priority"]}
 						,author = {$_SESSION['id']}
+						,read_time = DATE_ADD(NOW(), INTERVAL 1 MONTH)
 						,destination = ".( in_array('order_add_confirm', $Rights) ? "0" : "1" );
 		if( !mysqli_query( $mysqli, $query ) ) {
 			$_SESSION["error"][] = mysqli_error( $mysqli );
@@ -831,12 +832,11 @@ if( $id != "NULL" ) {
 			</table>
 		</div>
 		<div id="order_message">
-			<p style='color: #911;'>Если нажать на красный конверт слева от сообщения, то конверт станет зеленым - это означает, что сообщение прочитано. Оно так же исчезнет из уведомлений в верхнем-левом углу и там остануться только самые актуальные сообщения.</p>
 			<table style="width: 100%;">
 				<thead>
 					<tr>
-					<th width="40"><a href="#" class="add_message_btn" title="Добавить сообщение"><i class="fa fa-plus-square fa-2x" style="color: green;"></i></a></th>
-					<th width="">Сообщение</th>
+					<th width="40"><i class="fas fa-question-circle fa-lg" html="<p>Если нажать на красный конверт слева от сообщения, то конверт станет зеленым - это означает, что сообщение прочитано. Оно так же исчезнет из уведомлений в верхнем-левом углу и там остануться только самые актуальные сообщения.</p><p>Непрочитанные сообщения спустя месяц автоматически закрываются.</p>"></i></th>
+					<th width="">Сообщение<br><a href="#" class="add_message_btn button">Добавить сообщение</a></th>
 					<th width="">Дата<br>Время</th>
 					<th width="">Автор</th>
 					</tr>
@@ -849,16 +849,17 @@ if( $id != "NULL" ) {
 							,USR_Icon(OM.author) Name
 							,Friendly_date(OM.date_time) friendly_date
 							,TIME(OM.date_time) Time
-							,IFNULL(USR_Name(OM.read_user), '') read_user
-							,DATE_FORMAT(DATE(OM.read_time), '%d.%m.%y') read_date
+							,IFNULL(USR_Name(OM.read_user), 'СИСТЕМА') read_user
+							,Friendly_date(OM.read_time) read_date
 							,TIME(OM.read_time) read_time
 							,OM.destination
+							,IF(OM.read_time > NOW(), 0, 1) is_read
 						FROM OrdersMessage OM
 						WHERE OM.OD_ID = {$id}
 						ORDER BY OM.OM_ID DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
-				if( $row["read_user"] != '' ) {
+				if( $row["is_read"] ) {
 					if( (in_array('order_add_confirm', $Rights) and $row["destination"] == 1) or (!in_array('order_add_confirm', $Rights) and $row["destination"] == 0) ) {
 						$letter_btn = "<a href='#' class='read_message_btn' id='msg{$row["OM_ID"]}' val='1'><i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: green;' title='Прочитано: {$row["read_user"]} {$row["read_date"]} {$row["read_time"]}'></a>";
 					}

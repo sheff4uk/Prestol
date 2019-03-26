@@ -354,32 +354,40 @@ case "read_message":
 		$query = "UPDATE OrdersMessage SET read_user = {$_SESSION['id']}, read_time = NOW() WHERE OM_ID = {$id}";
 	}
 	else {
-		$query = "UPDATE OrdersMessage SET read_user = NULL, read_time = NULL WHERE OM_ID = {$id}";
+		$query = "UPDATE OrdersMessage SET read_user = NULL, read_time = DATE_ADD(NOW(), INTERVAL 1 MONTH) WHERE OM_ID = {$id}";
 	}
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
 	// Получаем статус сообщения
-	$query = "SELECT IFNULL(USR_Name(OM.read_user), '') read_user
-					,DATE_FORMAT(DATE(OM.read_time), '%d.%m.%y') read_date
+	$query = "SELECT IFNULL(USR_Name(OM.read_user), 'СИСТЕМА') read_user
+					,Friendly_date(OM.read_time) read_date
 					,TIME(OM.read_time) read_time
+					,IF(OM.read_time > NOW(), 0, 1) is_read
+					,USR_Icon(OM.read_user) read_user_icon
 				FROM OrdersMessage OM
 				WHERE OM.OM_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	$read_user = mysqli_result($res,0,'read_user');
 	$read_date = mysqli_result($res,0,'read_date');
 	$read_time = mysqli_result($res,0,'read_time');
+	$is_read = mysqli_result($res,0,'is_read');
+	$read_user_icon = mysqli_result($res,0,'read_user_icon');
 
-	if( $read_user != '') {
+	if( $is_read ) {
 		$html = "<i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: green;' title='Прочитано: {$read_user} {$read_date} {$read_time}'>";
 		$status = "ПРОЧИТАННОЕ";
+		echo "$('#wfm{$id}').addClass('wf_is_read');";
+		echo "$('#wfm{$id} td:last-child').html('{$read_user_icon}');";
 	}
 	else {
 		$html = "<i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: red;'>";
 		$status = "НЕ ПРОЧИТАННОЕ";
+		echo "$('#wfm{$id}').removeClass('wf_is_read');";
+		echo "$('#wfm{$id} td:last-child').html('');";
 	}
 	$html = addslashes($html);
-	echo "window.top.window.$('#msg{$id}').html('{$html}');";
-	echo "window.top.window.$('#msg{$id}').attr('val', '{$val}');";
+	echo "$('#msg{$id}').html('{$html}');";
+	echo "$('#msg{$id}').attr('val', '{$val}');";
 
 	echo "noty({timeout: 3000, text: 'Сообщение отмечено как {$status}', type: 'success'});";
 	break;

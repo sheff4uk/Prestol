@@ -871,6 +871,13 @@ td.tscell > i {
 	float: left;
 }
 
+.wf_is_read {
+	opacity: .3;
+}
+.wf_priority {
+	font-weight: bold;
+}
+
 #MT_filter {
 /*	position: relative;*/
 }

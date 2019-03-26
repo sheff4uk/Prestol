@@ -18,12 +18,13 @@
 				,OD.Code
 				,OM.Message
 				,OM.priority
-				,1 is_read
-				,USR_Icon(OM.author) Name
+				,0 is_read
+				,USR_Icon(OM.author) author
+				,'' read_user
 			FROM OrdersMessage OM
 			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_time > NOW() AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
 			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
 			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
 
@@ -34,15 +35,16 @@
 				,OD.Code
 				,OM.Message
 				,OM.priority
-				,0 is_read
-				,USR_Icon(OM.author) Name
+				,1 is_read
+				,USR_Icon(OM.author) author
+				,USR_Icon(OM.read_user) read_user
 			FROM OrdersMessage OM
 			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_user IS NOT NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
+			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_time <= NOW() AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
 			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
 			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
-			ORDER BY is_read DESC, OM_ID DESC
+			ORDER BY is_read ASC, OM_ID DESC
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -52,8 +54,9 @@
 				<thead>
 					<tr>
 						<th width='60'>Код</th>
+						<th width='50'>Автор</th>
 						<th>Сообщение</th>
-						<th width='100'>Автор</th>
+						<th width='50' title='Кем прочитано'><i class='fa fa-envelope fa-lg'></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -62,13 +65,14 @@
 		while( $row = mysqli_fetch_array($res) )
 		{
 			$workflow_table .= "
-				<tr onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' style='".($row["priority"] ? "font-weight: bold;" : "")." ".($row["is_read"] == 0 ? "opacity: .3;" : "")."'>
+				<tr id='wfm{$row["OM_ID"]}' onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' class='".($row["priority"] ? "wf_priority" : "")." ".($row["is_read"] ? "wf_is_read" : "")."'>
 					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></td>
+					<td>{$row["author"]}</td>
 					<td>{$row["Message"]}</td>
-					<td>{$row["Name"]}</td>
+					<td>{$row["read_user"]}</td>
 				</tr>
 			";
-			if( $row["is_read"] ) {
+			if( $row["is_read"] == 0 ) {
 				if( $row["priority"] == 0 and $workflow_color != 'red' ) {
 					$workflow_color = "yellow";
 				}
@@ -85,12 +89,13 @@
 				,OD.Code
 				,OM.Message
 				,OM.priority
-				,1 is_read
-				,IF(OM.read_user IS NULL, '', USR_Icon(OM.read_user)) Name
+				,0 is_read
+				,USR_Icon(OM.author) author
+				,'' read_user
 			FROM OrdersMessage OM
 			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-			WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "0" : "1")." AND OM.read_time > NOW() AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
 			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
 			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
 
@@ -101,15 +106,16 @@
 				,OD.Code
 				,OM.Message
 				,OM.priority
-				,0 is_read
-				,IF(OM.read_user IS NULL, '', USR_Icon(OM.read_user)) Name
+				,1 is_read
+				,USR_Icon(OM.author) author
+				,USR_Icon(OM.read_user) read_user
 			FROM OrdersMessage OM
 			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-			WHERE OM.author = {$_SESSION["id"]} AND OM.read_user IS NOT NULL AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
+			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "0" : "1")." AND OM.read_time <= NOW() AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
 			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
 			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
-			ORDER BY is_read DESC, OM_ID DESC
+			ORDER BY is_read ASC, OM_ID DESC
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -118,8 +124,9 @@
 				<thead>
 					<tr>
 						<th width='60'>Код</th>
+						<th width='50'>Автор</th>
 						<th>Сообщение</th>
-						<th width='100'>Прочитано</th>
+						<th width='50' title='Кем прочитано'><i class='fa fa-envelope fa-lg'></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -128,10 +135,11 @@
 		while( $row = mysqli_fetch_array($res) )
 		{
 			$workflow_table_outcoming .= "
-				<tr onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' style='".($row["priority"] ? "font-weight: bold;" : "")." ".($row["is_read"] == 0 ? "opacity: .3;" : "")."'>
+				<tr onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' class='".($row["priority"] ? "wf_priority" : "")." ".($row["is_read"] ? "wf_is_read" : "")."'>
 					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></td>
+					<td>{$row["author"]}</td>
 					<td>{$row["Message"]}</td>
-					<td>{$row["Name"]}</td>
+					<td>{$row["read_user"]}</td>
 				</tr>
 			";
 		}
@@ -152,7 +160,7 @@
 	<title><?=$title?></title>
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=61'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=62'>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 <!--	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>-->
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
