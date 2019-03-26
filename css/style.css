@@ -872,7 +872,7 @@ td.tscell > i {
 }
 
 .wf_is_read {
-	opacity: .3;
+	opacity: .5;
 }
 .wf_priority {
 	font-weight: bold;
