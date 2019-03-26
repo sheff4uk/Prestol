@@ -87,14 +87,12 @@
 		//$shipping_date = date( 'Y-m-d', strtotime($_POST["shipping_date"]) );
 		$shp_title = mysqli_real_escape_string( $mysqli, $_POST["shp_title"] );
 		if( isset($_GET["shpid"]) ) {
-			$query = "UPDATE Shipment SET title='{$shp_title}' WHERE SHP_ID = {$_GET["shpid"]}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$query = "UPDATE OrdersData SET SHP_ID = NULL WHERE SHP_ID = {$_GET["shpid"]}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$SHP_ID = $_GET["shpid"];
 		}
 		else {
-			$query = "INSERT INTO Shipment SET title='{$shp_title}', CT_ID={$_POST["CT_ID"]}";
+			$query = "INSERT INTO Shipment SET CT_ID={$_POST["CT_ID"]}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$SHP_ID = mysqli_insert_id( $mysqli );
 		}
@@ -103,6 +101,10 @@
 			$query = "UPDATE OrdersData SET SHP_ID = {$SHP_ID} WHERE OD_ID = {$value}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
+
+		// Обновляем комментарий и тем самым запускаем триггер проверки не пустая ли отгрузка
+		$query = "UPDATE Shipment SET title='{$shp_title}' WHERE SHP_ID = {$SHP_ID}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		// Перенаправление на экран этой отгрузки
 		exit ('<meta http-equiv="refresh" content="0; url=/index.php?shpid='.$SHP_ID.'">');
@@ -287,7 +289,6 @@
 						<th width="20%">Город</th>
 						<th width="40%">Комментарий</th>
 						<th width="20%">Дата отгрузки</th>
-<!--						<th width="20%">Дата поступления</th>-->
 						<th width="30"></th>
 					</tr>
 				</thead>
@@ -298,10 +299,9 @@
 									,CT.Color
 									,SHP.title
 									,DATE_FORMAT(SHP.shipping_date, '%d.%m.%y') shipping_date_format
-									,DATE_FORMAT(SHP.arrival_date, '%d.%m.%y') arrival_date_format
 								FROM Shipment SHP
 								JOIN Cities CT ON CT.CT_ID = SHP.CT_ID".(in_array('shipment_view_city', $Rights) ? " AND CT.CT_ID = {$USR_City}" : "")."
-								WHERE SHP.shipping_date IS NULL OR DATEDIFF(NOW(), SHP.shipping_date) <= {$datediff}
+								WHERE SHP.empty = 0 AND SHP.shipping_date IS NULL OR DATEDIFF(NOW(), SHP.shipping_date) <= {$datediff}
 								ORDER BY SHP.SHP_ID DESC";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
@@ -309,7 +309,6 @@
 						echo "<td><span style='background: {$row["Color"]}'>{$row["City"]}</span></td>";
 						echo "<td>{$row["title"]}</td>";
 						echo "<td><span>{$row["shipping_date_format"]}</span></td>";
-//						echo "<td><span>{$row["arrival_date_format"]}</span></td>";
 						echo "<td><a href='/?shpid={$row["SHP_ID"]}'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a></td>";
 						echo "</tr>";
 					}
