@@ -145,7 +145,7 @@
 				$_SESSION["success"][] = "Данные сохранены.";
 
 				// Узнаем есть ли платежи по кассе другого салона
-				$query = "SELECT CheckPayment({$OD_ID}) attention";
+				$query = "SELECT CheckPayment({$id}) attention";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				$attention = mysqli_result($res,0,'attention');
 				if( $attention ) {
@@ -157,7 +157,7 @@
 			}
 		}
 
-		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$id.'">');
 		die;
 	}
 
@@ -273,14 +273,14 @@
 		if( $inprogress == 0 ) { // Если не приступили, то удаляем.
 			// Создание копии набора
 			$query = "INSERT INTO OrdersData(PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, DelDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, author, confirmed)
-			SELECT PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, NOW(), OrderNumber, CL_ID, IF(IsPainting = 2, 1, IsPainting), WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			SELECT PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, NOW(), OrderNumber, CL_ID, IF(IsPainting = 2, 1, IsPainting), WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$id}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
 			// Записываем в журнал событие разделения набора удаление дубликата
-			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$OD_ID}, OFN_ID = 1, old_value = '{$newOD_ID}', new_value = '', author = {$_SESSION['id']}";
+			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$id}, OFN_ID = 1, old_value = '{$newOD_ID}', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, OFN_ID = 1, old_value = '{$OD_ID}', new_value = '', author = {$_SESSION['id']}";
+			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, OFN_ID = 1, old_value = '{$id}', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, OFN_ID = 18, old_value = '', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -368,7 +368,7 @@
 			,WD.Name
 			,OD.Comment
 			,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
-			,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL), 1, 0) retail
+			,IFNULL(SH.retail, 0) retail
 			,SH.CT_ID
 			,IFNULL(OD.SHP_ID, 0) SHP_ID
 			,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
@@ -440,7 +440,8 @@
 			<th width="40">Принят</th>
 			<th width="65">Стоимость<br>набора</th>
 			<?
-			if( $retail ) {
+			// Если розница и есть доступ в реализацию - видна оплата
+			if( $retail and (in_array('selling_all', $Rights) or in_array('selling_city', $Rights)) ) {
 				echo "<th width='65'>Оплата</th>";
 			}
 			?>
@@ -569,9 +570,10 @@
 		else {
 			$price = "<p class='price'>$format_price</p>";
 		}
-
 		echo "<td class='txtright'>{$price}</td>";
-		if( $retail ) {
+
+		// Если розница и есть доступ в реализацию - можно вносить оплату
+		if( $retail and (in_array('selling_all', $Rights) or in_array('selling_city', $Rights)) ) {
 			echo "<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' location='{$location}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
 		}
 ?>
@@ -588,11 +590,11 @@
 
 		// Если есть право на добавление набора - показываем кнопку клонирования
 		if( in_array('order_add', $Rights) ) {
-			echo "<a href='#' onclick='if(confirm(\"<b>Подтвердите клонирование набора!</b>\", \"clone_order.php?id={$id}&confirmed=".(in_array('order_add_confirm', $Rights) ? 1 : 0)."\")) return false;' title='Клонировать'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></a><br>";
+			echo "<a href='#' class='clone' od_id='{$id}' title='Клонировать набор'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></a><br>";
 		}
-		// Если розничный набор (и не удален)- показываем кнопку перехода в реализацию
-		if( $retail and !$Del ) {
-			echo "<a href='/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$id}' title='Перейти в реализацию'><i class='fa fa-money-bill-alt fa-2x' aria-hidden='true'></i></a><br>";
+		// Если розничный набор и не удален и есть права показываем кнопку перехода в реализацию
+		if( $retail and !$Del and (in_array('selling_all', $Rights) or in_array('selling_city', $Rights)) ) {
+			echo "<a href='/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$id}' title='Перейти в реализацию'><i class='fas fa-money-bill-alt fa-2x' aria-hidden='true'></i></a><br>";
 		}
 		// Если набор в отгрузке - показываем кнопку перехода в отгрузку
 		if( $SHP_ID ) {
@@ -603,7 +605,7 @@
 				echo "<a href='#' class='undo_deleting' od_id='{$id}' ord_scr='1' title='Восстановить'><i class='fas fa-undo-alt fa-2x'></i></a><br>";
 			}
 			else {
-				echo "<a href='#' class='deleting' od_id='{$id}'  ord_scr='1' m_type='".(in_array('order_add_confirm', $Rights) ? "1" : "0")."' title='Удалить'><i class='fa fa-times fa-2x'></i></a><br>";
+				echo "<a href='#' class='deleting' od_id='{$id}'  ord_scr='1' m_type='".(in_array('order_add_confirm', $Rights) ? "1" : "0")."' title='Удалить набор'><i class='fa fa-times fa-2x'></i></a><br>";
 			}
 		}
 	}
@@ -727,7 +729,7 @@
 		if( $row["Del"] == 0 ) {
 			echo "<button ".(($disabled or $Del or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Редактировать изделие\'')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}'><i class='fa fa-pencil-alt fa-lg'></i></button>";
 
-			$delmessage = addslashes("Удалить {$row["Zakaz"]} ({$row["Amount"]} шт.)?<br><b>Внимание! Для удаления набора воспользуйтесь кнопкой <i class=\"fa fa-times fa-2x\"></i> в правом верхнем углу.</b>");
+			$delmessage = addslashes("Удалить {$row["Zakaz"]} ({$row["Amount"]} шт.)?<br><b>Внимание! Для удаления набора воспользуйтесь кнопкой <i class=\"fa fa-times fa-2x\"></i> выше.</b>");
 			echo "<button ".(($disabled or $Del or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Удалить изделие из набора\'')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;'><i class='fas fa-trash-alt fa-lg'></i></button>";
 		}
 		echo "</td></tr>";

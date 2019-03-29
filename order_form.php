@@ -15,7 +15,7 @@
 					$query = "SELECT SH.SH_ID
 									,CONCAT(CT.City, '/', SH.Shop) AS Shop
 									,CT.Color
-									,IF(SH.KA_ID IS NULL, 1, 0) retail
+									,IFNULL(SH.retail, 0) retail
 								FROM Shops SH
 								JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 								WHERE CT.CT_ID IN ({$USR_cities})

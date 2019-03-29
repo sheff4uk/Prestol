@@ -155,11 +155,11 @@ case "ispainting":
 			break;
 	}
 
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').removeClass('notready inwork ready');";
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').addClass('{$class}');";
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('title', '{$status}');";
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('val', '{$val}');";
-	echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] .painting_workers').text('');";
+	echo "$('.main_table tr[id=\"ord{$id}\"] td.painting').removeClass('notready inwork ready');";
+	echo "$('.main_table tr[id=\"ord{$id}\"] td.painting').addClass('{$class}');";
+	echo "$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('title', '{$status}');";
+	echo "$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('val', '{$val}');";
+	echo "$('.main_table tr[id=\"ord{$id}\"] .painting_workers').text('');";
 
 	// Если из отгрузки
 	if( $shpid > 0 ) {
@@ -1029,7 +1029,7 @@ case "create_shop_select":
 					,SH.CT_ID
 					,OD.PFI_ID
 					,PFI.platelshik_id
-					,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL), 1, 0) retail
+					,IFNULL(SH.retail, 0) retail
 				FROM OrdersData OD
 				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 				LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
@@ -1864,7 +1864,7 @@ case "order_shp":
 
 		// Если это розничный набор, то предлагаем перейти в реализацию
 		$query = "
-			SELECT IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL), 1, 0) retail
+			SELECT IFNULL(SH.retail, 0) retail
 				,SH.CT_ID
 				,IFNULL(YEAR(OD.StartDate), 0) start_year
 				,IFNULL(MONTH(OD.StartDate), 0) start_month

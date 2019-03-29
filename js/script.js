@@ -427,4 +427,11 @@ $(function(){
 			return false;
 		});
 
+		// Клонирование набора
+		$('.clone').on('click', function() {
+			var od_id = $(this).attr('od_id');
+			confirm("Пожалуйста, подтвердите <b>клонирование набора</b>.", "clone_order.php?id="+od_id);
+			return false;
+		});
+
 });

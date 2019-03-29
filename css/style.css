@@ -80,7 +80,8 @@ tr:target td {
 }
 
 tr:target {
-	border: 3px solid #191;
+/*	border: 3px solid #191;*/
+	background: yellow !important;
 }
 
 table tbody tr:hover, tbody td.hover {
@@ -848,7 +849,7 @@ td.tscell > i {
 	border-radius: 10px;
 	padding: 10px;
 	overflow-y: auto;
-	box-shadow: 5px 5px 10px #bbb;
+	box-shadow: 5px 5px 8px #666;
 	transition: .3s;
 	-webkit-transition: .3s;
 	position: absolute;

@@ -12,7 +12,7 @@ if( !in_array('order_add', $Rights) ) {
 		$AddDate = date("Y-m-d");
 		$query = "
 			INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, CL_ID, Comment, author, confirmed)
-			SELECT CLientName, '{$AddDate}', NULL, IF(SH_ID IS NULL, NULL, '".date('Y-m-d', strtotime($_SESSION["end_date"]))."'), SH_ID, OrderNumber, CL_ID, Comment, {$_SESSION['id']}, {$_GET["confirmed"]}
+			SELECT CLientName, '{$AddDate}', NULL, IF(SH_ID IS NULL, NULL, '".date('Y-m-d', strtotime($_SESSION["end_date"]))."'), SH_ID, OrderNumber, CL_ID, Comment, {$_SESSION['id']}, ".(in_array('order_add_confirm', $Rights) ? 1 : 0)."
 			FROM OrdersData
 			WHERE OD_ID = {$_GET["id"]}
 		";

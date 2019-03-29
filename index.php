@@ -727,6 +727,10 @@
 			,IF(OD.DelDate IS NULL, 0, 1) is_del
 			,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
 			,PFI.count
+			,IFNULL(SH.retail, 0) retail
+			,SH.CT_ID
+			,IFNULL(YEAR(OD.StartDate), 0) start_year
+			,IFNULL(MONTH(OD.StartDate), 0) start_month
 		FROM OrdersData OD
 	";
 	if (!isset($_GET["shpid"])) {
@@ -1045,43 +1049,54 @@
 		echo "<td val='{$row["confirmed"]}' class='{$class}' style='text-align: center;'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td class='X' style='text-align: center;'><input type='checkbox' {$checkedX} value='1'></td>";
 		echo "<td class='".( (in_array('order_add', $Rights) and $is_del == 0 and $editable) ? "comment_cell" : "" )."' id='{$row["OD_ID"]}'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
-		echo "<td>";
+		echo "<td style='text-align: center;'>";
 
 		if( $editable ) {
 			// Если набор не заблокирован и не удален, то показываем карандаш и кнопку разделения. Иначе - глаз.
 			if( !$is_lock and in_array('order_add', $Rights) and !$is_del ) {
-				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a>";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить набор' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a>";
+				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить набор' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
 			}
 			else {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
 			}
 
-			echo "<action>";
+			// Если розничный набор и не удален и есть права показываем кнопку перехода в реализацию
+			if( $row["retail"] and !$is_del and (in_array('selling_all', $Rights) or in_array('selling_city', $Rights)) ) {
+				echo "<a href='/selling.php?CT_ID={$row["CT_ID"]}&year={$row["start_year"]}&month={$row["start_month"]}#ord{$row["OD_ID"]}' target='_blank' title='Перейти в реализацию'><i class='fas fa-money-bill-alt fa-lg' aria-hidden='true'></i></a> ";
+			}
+
+			echo "<br>";
+
 			if( $row["SHP_ID"] == 0 ) {
 				if( $row["Archive"] == 0 ) {
 					if ($row["SH_ID"] and !$is_del and in_array('order_ready', $Rights)) {
-						echo "<a href='#' class='shipping' ".(($row["IsReady"] and ($row["IsPainting"] == "3" or $row["IsPainting"] == "0")) ? "" : "style='display: none;'")." od_id='{$row["OD_ID"]}' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a>";
+						echo "<a href='#' class='shipping' ".(($row["IsReady"] and ($row["IsPainting"] == "3" or $row["IsPainting"] == "0")) ? "" : "style='display: none;'")." od_id='{$row["OD_ID"]}' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a> ";
 					}
 					if( !$disabled and !$row["PFI_ID"] ) {
 						if ($is_del) {
-							echo "<a href='#' class='undo_deleting' od_id='{$row["OD_ID"]}' title='Восстановить'><i class='fas fa-undo-alt fa-lg'></i></a>";
+							echo "<a href='#' class='undo_deleting' od_id='{$row["OD_ID"]}' title='Восстановить'><i class='fas fa-undo-alt fa-lg'></i></a> ";
 						}
 						else {
-							echo "<a href='#' class='deleting' od_id='{$row["OD_ID"]}' m_type='".(in_array('order_add_confirm', $Rights) ? "1" : "0")."' title='Удалить'><i class='fa fa-times fa-lg'></i></a>";
+							echo "<a href='#' class='deleting' od_id='{$row["OD_ID"]}' m_type='".(in_array('order_add_confirm', $Rights) ? "1" : "0")."' title='Удалить'><i class='fa fa-times fa-lg'></i></a> ";
 						}
 					}
 				}
 			}
 			else {
-				echo "<a href='/?shpid={$row["SHP_ID"]}#ord{$row["OD_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a>";
+				echo "<a href='/?shpid={$row["SHP_ID"]}#ord{$row["OD_ID"]}' title='К списку отгрузки'><i class='fa fa-truck fa-lg' aria-hidden='true'></i></a> ";
 			}
-			echo "</action>";
 		}
 		// Иначе показываем глаз
 		else {
 			echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
 		}
+
+		// Если есть право на добавление набора - показываем кнопку клонирования
+		if( in_array('order_add', $Rights) ) {
+			echo "<a href='#' class='clone' od_id='{$row["OD_ID"]}' title='Клонировать набор'><i class='fa fa-clone fa-lg' aria-hidden='true'></i></a>";
+		}
+		echo "<br>";
 		echo "</td></tr>";
 
 		if( !$row["IsReady"] || $row["IsPainting"] == "1" || $row["IsPainting"] == "2" ) {
