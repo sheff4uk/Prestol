@@ -1241,7 +1241,7 @@
 			$('#add_cost #cost_date').val(cost_date);
 			$('#add_cost #OP_ID').val(OP_ID);
 			$('#add_cost #cost_name').val(cost_name);
-			$('#add_cost #cost').val(cost);
+			$('#add_cost #cost').val(Math.abs(cost));
 			$('#send').prop('checked', false);
 
 			$('#add_cost').dialog({
