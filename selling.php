@@ -842,8 +842,8 @@
 				<th width="80">Код набора</th>
 				<th width="10%">Клиент<br>Квитанция</th>
 				<th width="25%">Набор</th>
-				<th width="15%">Материал</th>
-				<th width="15%">Цвет</th>
+				<th width="15%">Материал <i class="fa fa-question-circle" html="<b>Цветовой статус наличия:</b><br><span class='bg-gray'>Неизвестно</span><br><span class='bg-red'>Нет</span><br><span class='bg-yellow'>Заказано</span><br><span class='bg-green'>В наличии</span><br><span class='bg-red removed'>Выведен</span> - нужно менять"></i></th>
+				<th width="15%">Цвет краски <i class="fa fa-question-circle" html="<b>Цветовой статус лакировки:</b><br><span class='empty'>Покраска не требуется</span><br><span class='notready'>Не дано в покраску</span><br><span class='inwork'>Дано в покраску</span><br><span class='ready'>Покрашено</span>"></i></th>
 				<th width="10%">Салон<br>
 					<?
 					if( !$USR_Shop ) {

@@ -436,7 +436,7 @@
 			<th width="95">Дата продажи</th>
 			<?= ($ReadyDate ? "<th width='95'>Отгружено</th>" : ($DelDate ? "<th width='95'>Удалено</th>" : "<th width='95'>Дата сдачи</th>")) ?>
 			<th width="125">Подразделение</th>
-			<th width="170">Цвет краски</th>
+			<th width="170">Цвет краски <i class="fa fa-question-circle" html="<b>Цветовой статус лакировки:</b><br><span class='empty'>Покраска не требуется</span><br><span class='notready'>Не дано в покраску</span><br><span class='inwork'>Дано в покраску</span><br><span class='ready'>Покрашено</span>"></i></th>
 			<th width="40">Принят</th>
 			<th width="65">Стоимость<br>набора</th>
 			<?
@@ -660,7 +660,7 @@
 			<th width="40">Кол-во</th>
 			<th width="120">Изделие</th>
 			<th width="100">Этапы</th>
-			<th width="">Материал</th>
+			<th width="">Материал <i class="fa fa-question-circle" html="<b>Цветовой статус наличия:</b><br><span class='bg-gray'>Неизвестно</span><br><span class='bg-red'>Нет</span><br><span class='bg-yellow'>Заказано</span><br><span class='bg-green'>В наличии</span><br><span class='bg-red removed'>Выведен</span> - нужно менять"></i></th>
 			<th width="">Примечание</th>
 			<th width="60">Цена</th>
 			<th width="75">Действие</th>
