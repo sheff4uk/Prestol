@@ -486,11 +486,17 @@
 		else {
 			echo "<td><input type='text' name='StartDate' class='date' value='{$StartDate}' date='{$StartDate}' disabled readonly>{$invoice}{$showing}</td>";
 		}
+		echo "<td style='text-align: center;'>";
+		echo ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : ($showing ? "" : "<input type='text' name='EndDate' class='date' value='{$EndDate}' ".((!$disabled and !$Del and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">")));
+			// Если отгружен и есть право отгружать - показываем кнопку отмены отгрузки
+			if ($ReadyDate and in_array('order_ready', $Rights)) {
+				echo "<br><a href='#' class='undo_shipping' od_id='{$id}' title='Отменить отгрузку'><i style='color:#333;' class='fas fa-flag-checkered fa-2x'></i></a> ";
+			}
+		echo "</td>";
 ?>
 
-		<td style='text-align: center;'><?= ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : ($showing ? "" : "<input type='text' name='EndDate' class='date' value='{$EndDate}' ".((!$disabled and !$Del and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">"))) ?></td>
-		<td>
-		<div class='shop_cell' id='<?=$id?>' style='box-shadow: 0px 0px 10px 10px <?=$CTColor?>;'>
+		<td style="background: <?=$CTColor?>;">
+		<div class='shop_cell' id='<?=$id?>'>
 			<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")?> style="width: 100%;">
 			</select>
 			</div>
@@ -1010,13 +1016,11 @@ if( $id != "NULL" ) {
 
 		$('.ord_log_row').hover(function() {
 			var lnk = $(this).attr('lnk');
-			$('.ord_log_row[lnk="'+lnk+'"] td').css('background', '#ffa');
+			$('.ord_log_row[lnk="'+lnk+'"]').css('border-left', '4px solid orangered');
 		}, function() {
 			var lnk = $(this).attr('lnk');
-			$('.ord_log_row[lnk="'+lnk+'"] td').css('background', 'none');
+			$('.ord_log_row[lnk="'+lnk+'"]').css('border', 'none');
 		});
-
-//		$('.attention img').show();
 	});
 </script>
 

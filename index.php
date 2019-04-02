@@ -1012,7 +1012,7 @@
 
 		echo "<td><span>{$row["StartDate"]}{$invoice}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
-		echo "<td class='".( (in_array('order_add', $Rights) and !$is_lock and !$is_del and $editable) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
+		echo "<td class='".( (in_array('order_add', $Rights) and !$is_lock and !$is_del and $editable) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}' style='background: {$row["CTColor"]};'><span style='background: {$row["CTColor"]};'>{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
 		echo "<td><span></span></td>";
 
 		echo "<td><span class='nowrap'>{$zakaz}</span></td>";
@@ -1068,10 +1068,15 @@
 
 			echo "<br>";
 
+			// Если отгружен и есть право отгружать - показываем кнопку отмены отгрузки
+			if ($row["Archive"] and in_array('order_ready', $Rights)) {
+				echo "<a href='#' class='undo_shipping' od_id='{$row["OD_ID"]}' title='Отменить отгрузку'><i style='color:#333;' class='fas fa-flag-checkered fa-lg'></i></a> ";
+			}
+
 			if( $row["SHP_ID"] == 0 ) {
 				if( $row["Archive"] == 0 ) {
 					if ($row["SH_ID"] and !$is_del and in_array('order_ready', $Rights)) {
-						echo "<a href='#' class='shipping' ".(($row["IsReady"] and ($row["IsPainting"] == "3" or $row["IsPainting"] == "0")) ? "" : "style='display: none;'")." od_id='{$row["OD_ID"]}' title='Отгрузить'><i style='color:red;' class='fa fa-flag-checkered fa-lg'></i></a> ";
+						echo "<a href='#' class='shipping' ".(($row["IsReady"] and ($row["IsPainting"] == "3" or $row["IsPainting"] == "0")) ? "" : "style='display: none;'")." od_id='{$row["OD_ID"]}' title='Отгрузить'><i style='color:red;' class='fas fa-flag-checkered fa-lg'></i></a> ";
 					}
 					if( !$disabled and !$row["PFI_ID"] ) {
 						if ($is_del) {

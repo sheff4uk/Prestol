@@ -404,6 +404,13 @@ $(function(){
 			return false;
 		});
 
+		// Отмена отгрузки набора
+		$('.undo_shipping').on('click', function() {
+			var od_id = $(this).attr('od_id');
+			confirm("Вы собираетесь <b>отменить отгрузку</b> набора. Пожалуйста, подтвердите Ваши действия.", "ajax.php?do=order_undo_shp&od_id="+od_id);
+			return false;
+		});
+
 		// Удаление набора
 		$('.deleting').on('click', function() {
 			var od_id = $(this).attr('od_id');

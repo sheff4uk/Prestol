@@ -1092,7 +1092,7 @@ case "create_shop_select":
 	}
 
 	$html = addslashes($html);
-	echo "window.top.window.$('.shop_cell#{$OD_ID} .select_shops').html('{$html}');";
+	echo "$('.shop_cell#{$OD_ID} .select_shops').html('{$html}');";
 
 	break;
 ///////////////////////////////////////////////////////////////////
@@ -1859,7 +1859,7 @@ case "order_shp":
 	else {
 		$query = "UPDATE OrdersData SET ReadyDate = NOW(), author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
 		mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-		echo "window.top.window.$('.main_table #ord{$od_id}').hide('slow');";
+		echo "$('.main_table #ord{$od_id}').hide('slow');";
 		echo "noty({timeout: 3000, text: 'Набор успешно отгружен!', type: 'success'});";
 
 		// Если это розничный набор, то предлагаем перейти в реализацию
@@ -1881,6 +1881,30 @@ case "order_shp":
 			$selling_link = "/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$od_id}";
 			echo "noty({text: 'Проверить <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b>?', type: 'alert'});";
 		}
+	}
+
+	break;
+/////////////////////////////////////////////////////////////////////
+
+// Отмена отгрузки набора (НЕ АЯКС)
+case "order_undo_shp":
+	$od_id = $_GET["od_id"];
+
+	// Проверяем права на отгрузку набора
+	if( in_array('order_ready', $Rights) ) {
+		$query = "UPDATE OrdersData SET ReadyDate = NULL, author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
+		if (mysqli_query( $mysqli, $query )) {
+			$_SESSION["success"][] = "Набор возвращен на производство!";
+			exit ('<meta http-equiv="refresh" content="0; url=orderdetail.php?id='.$od_id.'">');
+		}
+		else {
+			$_SESSION['error'][] = mysqli_error( $mysqli );
+			exit ('<meta http-equiv="refresh" content="0; url=orderdetail.php?id='.$od_id.'">');
+		}
+	}
+	else {
+		$_SESSION['error'][] = "Недостаточно прав для совершения операции!";
+		exit ('<meta http-equiv="refresh" content="0; url=/?archive=2#ord'.$od_id.'">');
 	}
 
 	break;
