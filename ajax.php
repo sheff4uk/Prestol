@@ -1061,14 +1061,14 @@ case "create_shop_select":
 						,CT.Color
 					FROM Shops SH
 					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-					WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.KA_ID IS NULL" : "SH.KA_ID = {$platelshik_id}")."
+					WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.retail = 1" : "SH.KA_ID = {$platelshik_id}")."
 						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
 						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 
 					ORDER BY Shop";
 	}
 	else {
-		if( in_array('order_add_confirm', $Rights) or $SH_ID == 0 ) {
+		if( (in_array('order_add_confirm', $Rights) and !$ReadyDate) or $SH_ID == 0 ) {
 			$html .= "<option value='0' selected style='background: #999;'>Свободные</option>";
 		}
 		$query .= "
