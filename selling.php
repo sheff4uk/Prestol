@@ -167,28 +167,35 @@
 ?>
 <style>
 	#selling_report {
-		height: 200px;
+		position: relative;
+	}
+	#selling_report:hover > div {
+		height: 300px;
+		opacity: 1;
+	}
+	#selling_report > div {
+		background: #fff;
+		height: 0px;
 		border: 1px solid #bbb;
 		padding: 10px;
 		border-radius: 10px;
 		margin-top: 10px;
 		z-index: 2;
 		position: absolute;
-		width: calc( 100% - 40px );
+		top: -10px;
+		left: 0px;
+		width: 100%;
 		overflow: auto;
 		white-space: nowrap;
-	}
-	#selling_report:hover {
-		//overflow: visible;
-	}
-	#selling_report:hover table {
+		opacity: 0;
+		transition: .3s;
+		-webkit-transition: .3s;
 		box-shadow: 5px 5px 8px #666;
 	}
-	#selling_report table {
+	#selling_report > div table {
 		display: inline-block;
 		vertical-align: top;
 		margin-right: 20px;
-		transition: .3s;
 	}
 	#accordion a {
 		color: #428bca !important;
@@ -275,10 +282,14 @@
 			padding: 10px;
 			opacity: 1;
 		}
+		#rep_buttons {
+			overflow-x: scroll;
+			white-space: nowrap;
+		}
 	</style>
 
 	<!-- КНОПКИ ОТЧЕТОВ -->
-	<div style="max-height: 23px;">
+	<div id="rep_buttons">
 		Отчеты:
 		<?
 		echo "<div id='sell_archive'><a href='#' class='button'>Архив</a><div>";
@@ -294,7 +305,7 @@
 		if( $CT_ID ) {
 			while( $row = mysqli_fetch_array($res) ) {
 				$highlight = ($year == $row["year"] and $month == $row["month"]) ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
-				echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>{$MONTHS[$row["month"]]} - {$row["year"]} <i class='fa fa-lock' aria-hidden='true'></i></a><br>";
+				echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>{$MONTHS[$row["month"]]} - {$row["year"]} <i class='fas fa-lock'></i></a><br>";
 			}
 		}
 		echo "</div></div>";
@@ -339,7 +350,9 @@
 		$locking = mysqli_result($res,0,'locking_date') ? 1 : 0;
 		$locking_date = mysqli_result($res,0,'locking_date');
 	?>
-		<div id='selling_report'>
+	<div id='selling_report'>
+		<a href="#" class="button" style="width: 100%; z-index: -1;">ОТЧЁТ: <?=$MONTHS[$month]?> - <?=$year?><?=(($locking_date) ? " <i class='fas fa-lock'></i>" : "")?></a>
+		<div>
 			<div style="display: inline-block; vertical-align:top;">
 
 			<?
@@ -805,12 +818,11 @@
 			</div>
 		</div>
 		</div>
+		</div>
 	</div>
 	<?
 		echo "<script>
 			$(document).ready(function() {
-				$('.wr_main_table_body').css('height', 'calc(100vh - 435px)');
-				$('#MT_header').css('margin-top','210px');
 				$('#section1').html('<i class=\'fas fa-money-bill-alt fa-lg\'></i> Наличные: {$format_cache_sum} {$attention}');
 				$('#section2').html('<i class=\'fas fa-credit-card fa-lg\'></i> Эквайринг: {$format_terminal_sum}');
 				$('#section3').html('<i class=\'fas fa-exchange-alt fa-lg\'></i> Инкассация: {$format_sum_send}');
@@ -835,7 +847,7 @@
 
 	<br>
 	<form method="get">
-	<table class="main_table" id="MT_header">
+	<table class="main_table">
 		<thead>
 			<tr>
 				<th width="60">Отгружен <i class="fa fa-question-circle" html="<b>Статус получения набора:</b><br><i class='fas fa-handshake fa-2x not_confirmed'></i> - Клиент НЕ забрал набор<br><i class='fas fa-handshake fa-2x confirmed'></i> - Клиент забрал набор"></i></th>
@@ -878,7 +890,7 @@
 		</thead>
 	</table>
 	</form>
-<div class="wr_main_table_body">
+<div class="wr_main_table_body" style="height: calc(100vh - 260px);">
 	<form method='post' id="formdiv">
 	<table class="main_table">
 		<thead>
