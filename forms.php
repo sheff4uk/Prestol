@@ -119,14 +119,14 @@
 		<div>
 			<label>Патина:</label>
 			<div class='btnset'>
-				<input type='radio' id='1ptn0' name='ptn' value='0'>
+				<input type='radio' id='1ptn0' name='ptn' value='0' required>
 					<label for='1ptn0'>Нет</label>
-				<input type='radio' id='1ptn1' name='ptn' value='1'>
-				<label for='1ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
-				<input type='radio' id='1ptn2' name='ptn' value='2'>
-				<label for='1ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
-				<input type='radio' id='1ptn3' name='ptn' value='3'>
-				<label for='1ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
+				<input type='radio' id='1ptn1' name='ptn' value='1' required>
+					<label for='1ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
+				<input type='radio' id='1ptn2' name='ptn' value='2' required>
+					<label for='1ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
+				<input type='radio' id='1ptn3' name='ptn' value='3' required>
+					<label for='1ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
 			</div>
 		</div>
 		<div>
@@ -270,13 +270,13 @@
 		<div>
 			<label>Патина:</label>
 			<div class='btnset'>
-				<input type='radio' id='2ptn0' name='ptn' value='0'>
+				<input type='radio' id='2ptn0' name='ptn' value='0' required>
 					<label for='2ptn0'>Нет</label>
-				<input type='radio' id='2ptn1' name='ptn' value='1'>
+				<input type='radio' id='2ptn1' name='ptn' value='1' required>
 					<label for='2ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
-				<input type='radio' id='2ptn2' name='ptn' value='2'>
+				<input type='radio' id='2ptn2' name='ptn' value='2' required>
 					<label for='2ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
-				<input type='radio' id='2ptn3' name='ptn' value='3'>
+				<input type='radio' id='2ptn3' name='ptn' value='3' required>
 					<label for='2ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
 			</div>
 			<br>
@@ -394,13 +394,13 @@
 			<div>
 				<label>Патина:</label>
 				<div class='btnset'>
-					<input type='radio' id='0ptn0' name='ptn' value='0'>
+					<input type='radio' id='0ptn0' name='ptn' value='0' required>
 						<label for='0ptn0'>Нет</label>
-					<input type='radio' id='0ptn1' name='ptn' value='1'>
+					<input type='radio' id='0ptn1' name='ptn' value='1' required>
 						<label for='0ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
-					<input type='radio' id='0ptn2' name='ptn' value='2'>
+					<input type='radio' id='0ptn2' name='ptn' value='2' required>
 						<label for='0ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
-					<input type='radio' id='0ptn3' name='ptn' value='3'>
+					<input type='radio' id='0ptn3' name='ptn' value='3' required>
 						<label for='0ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
 				</div>
 			</div>
@@ -565,12 +565,14 @@
 	function size_from_form(form) {
 		if( form == 4 ) {
 			$('#addtable #length').attr('title', 'Диаметр');
+			$('#addtable #length').attr('placeholder', 'Диаметр');
 			$('#addtable #second_x').hide('fast');
 			$('#addtable #width').hide('fast');
 			$('#addtable #width').attr('required', false);
 		}
 		else {
 			$('#addtable #length').attr('title', 'Длина');
+			$('#addtable #length').attr('placeholder', 'Длина');
 			$('#addtable #second_x').show('fast');
 			$('#addtable #width').show('fast');
 			$('#addtable #width').attr('required', true);
@@ -691,13 +693,13 @@
 
 	// Функция включения золотой патины для моделей с патиной
 	function patina_model_list(model, type) {
-		$('#'+type+'ptn'+ModelPatina[model]).prop('checked', true);
-		if( type == 1 ) {
-			$('#addchair input[type="radio"]').button('refresh');
+		if (ModelPatina[model] == 1) {
+			$('input[name="ptn"]').prop('checked', false);
 		}
 		else {
-			$('#addtable input[type="radio"]').button('refresh');
+			$('#'+type+'ptn0').prop('checked', true);
 		}
+		$('input[name="ptn"]').button('refresh');
 	}
 
 	// Функция пересчитывает итог в форме редактирования стоимости набора
