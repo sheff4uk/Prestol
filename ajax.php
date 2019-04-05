@@ -1805,7 +1805,7 @@ case "order_del":
 			echo "noty({text: 'Набор оплачен! Перейдите в <b><a href=\"{$selling_link}\" target=\"_blank\">реализацию</a></b> и запишите возврат платежа. Затем повторите попытку удаления.', type: 'alert'});";
 		}
 		else {
-			$query = "UPDATE OrdersData SET DelDate = NOW(), IsPainting = IF(IsPainting = 2, 1, IsPainting), author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
+			$query = "UPDATE OrdersData SET DelDate = NOW(), author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
 			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 			// Если на экране заказа - перезагружаем страницу, иначе скрываем запись
 			if ($ord_scr == 1) {
