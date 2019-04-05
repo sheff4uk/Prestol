@@ -1136,12 +1136,12 @@
 				$('#addblank input[name="Price"]').val(odd_data['price']);
 				if( odd_data['blank'] > 0 ) {
 					$('#addblank select[name="Blanks"]').val(odd_data['blank']).trigger('change');
-					$('#addblank input[name="Other"]').prop('disabled', true);
+					$('#addblank select[name="Blanks"]').prop("required", true);
 					$('#addblank input[name="Other"]').prop("required", false);
 				}
 				else {
 					$('#addblank input[name="Other"]').val(odd_data['other']);
-					$('#addblank select[name="Blanks"]').prop('disabled', true);
+					$('#addblank input[name="Other"]').prop("required", true);
 					$('#addblank select[name="Blanks"]').prop('required', false);
 				}
 				$('#addblank textarea[name="Comment"]').val(odd_data['comment']);
@@ -1211,34 +1211,20 @@
 			return false;
 		});
 
-		// Если выбрана заготовка, то прочее недоступно
+		// Если выбрана заготовка, то прочее очищается
 		$('#addblank select[name="Blanks"]').change( function() {
-			if( !(id > 0) ) {
-				val = $(this).val();
-				if( val != '' ) {
-					$('#addblank input[name="Other"]').prop('disabled', true);
-					$('#addblank input[name="Other"]').prop("required", false);
-				}
-				else {
-					$('#addblank input[name="Other"]').prop('disabled', false);
-					$('#addblank input[name="Other"]').prop("required", true);
-				}
-			}
+			$('#addblank input[name="Other"]').val('');
+			$('#addblank input[name="Other"]').prop("required", false);
+			$('#addblank select[name="Blanks"]').prop("required", true);
 		});
 
-		// Если указано прочее, то выбор заготовок недоступен
+		// Если указано прочее, то заготовка очищается
 		$('#addblank input[name="Other"]').change( function() {
-			if( !(id > 0) ) {
-				val = $(this).val();
-				if( val != '' ) {
-					$('#addblank select[name="Blanks"]').prop('disabled', true);
-					$('#addblank select[name="Blanks"]').prop('required', false);
-				}
-				else {
-					$('#addblank select[name="Blanks"]').prop('disabled', false);
-					$('#addblank select[name="Blanks"]').prop('required', true);
-				}
-			}
+			val = $(this).val();
+			$('#addblank select[name="Blanks"]').val('').trigger('change');
+			$('#addblank select[name="Blanks"]').prop('required', false);
+			$('#addblank input[name="Other"]').prop('required', true);
+			$('#addblank input[name="Other"]').val(val);
 		});
 
 		// Если добавлена ткань - то пластик не доступеню. И наоборот.
