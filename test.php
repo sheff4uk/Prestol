@@ -88,7 +88,7 @@ foreach ($arrayOfDates as $v) {
 
 	// Записываем в базу
 	$query = "
-		INSERT INTO ExhibitionCost
+		INSERT INTO ExhibitionCostLog
 		SET date = '{$v}', SH_ID = {$shop}, cost = {$cost}
 		ON DUPLICATE KEY
 		UPDATE cost = {$cost}
