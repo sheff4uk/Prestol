@@ -7,7 +7,7 @@ $shop = $_GET["shop"];
 
 // Узнаем настоящую стоимость выставки
 $query = "
-	SELECT SUM((ODD.Price - IFNULL(ODD.discount, 0))*ODD.Amount) cost
+	SELECT IFNULL(SUM((ODD.Price - IFNULL(ODD.discount, 0))*ODD.Amount), 0) cost
 	FROM OrdersData OD
 	JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	WHERE OD.StartDate IS NULL
@@ -28,7 +28,7 @@ $query = "
 	WHERE (OD.AddDate < OD.StartDate OR OD.StartDate IS NULL)
 		AND OD.DelDate IS NULL
 		AND OD.ReadyDate IS NOT NULL
-		AND OD.SH_ID = 2
+		AND OD.SH_ID = {$shop}
 ";
 $result = mysqli_query( $mysqli, $query );
 $row = mysqli_fetch_array($result);
