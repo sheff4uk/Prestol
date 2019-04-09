@@ -21,7 +21,21 @@
 	// Кнопка добавления стола
 	echo "<div id='add_btn' class='edit_product2' odid='0' location='calc.php' title='Рассчитать стоимость стола'></div>";
 ?>
-	<h1>Калькулятор стоимости стола</h1>
+	<h1 style="display: inline-block; width: 50%;">Калькулятор стоимости стола</h1>
+	<div style="display: inline-block; width: 49%; text-align: right;">
+		<h2 style="display: inline-block;">Действующий прайс: </h2>
+<?
+		if ($price_type == 0 or $price_type == 1) {
+			echo "<a href='/files/8ywESUMbNK.pdf' target='_blank' title='Розничный прайс'><i class='fas fa-file-pdf fa-3x'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;";
+		}
+		if ($price_type == 0 or $price_type == 2) {
+			echo "<a href='/files/AQdWQ7WngL.pdf' target='_blank' title='Оптовый прайс'><i class='fas fa-file-pdf fa-3x' style='color: green;'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;";
+		}
+		if ($price_type == 0 or $price_type == 3) {
+			echo "<a href='/files/3prTuBMtnK.pdf' target='_blank' title='Оптовый региональный прайс'><i class='fas fa-file-pdf fa-3x' style='color: blue;'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;";
+		}
+?>
+	</div>
 	<table class="main_table" id="MT_header">
 		<thead>
 			<tr>
@@ -122,8 +136,8 @@
 					<td>{$row["Name"]}</td>
 					<td>{$row["friendly_date"]}<br>{$row["Time"]}</td>
 					<td>
-						<a href='#' title='Редактировать стол' id='{$row["ODD_ID"]}' odid='0' class='edit_product2' location='calc.php'><i class='fa fa-pencil-alt fa-lg'></i></a>
-						<a href='#' title='Новый набор с этим столом' odd='{$row["ODD_ID"]}' class='add_order'><i class='fas fa-plus-square fa-lg'></i></a>
+						<a href='#' title='Редактировать стол' id='{$row["ODD_ID"]}' odid='0' class='edit_product2' location='calc.php'><i class='fas fa-pencil-alt fa-2x'></i></a>
+						<a href='#' title='Новый набор с этим столом' odd='{$row["ODD_ID"]}' class='add_order'><i class='fas fa-plus-square fa-2x'></i></a>
 					</td>
 				</tr>
 			";
