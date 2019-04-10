@@ -1,9 +1,12 @@
 <?
 include "config.php";
 
+$query = "DELETE FROM ExhibitionCostLog WHERE date = CURRENT_DATE()";
+mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
 $query = "
 	INSERT INTO ExhibitionCostLog
-	SELECT NOW() date, OD.SH_ID, SUM((ODD.Price - IFNULL(ODD.discount, 0))*ODD.Amount) cost
+	SELECT CURRENT_DATE() date, OD.SH_ID, SUM((ODD.Price - IFNULL(ODD.discount, 0))*ODD.Amount) cost
 	FROM OrdersDataDetail ODD
 	JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 		AND OD.DelDate IS NULL
