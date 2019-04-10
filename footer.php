@@ -16,14 +16,12 @@
 	position: fixed;
 	left: 0;
 	bottom: 0;
-	#background: #222222;
-	background: rgba(0,0,0,0.4);
+	background: rgba(0,0,0,0.2);
 	z-index: 14;
-	box-shadow: 0 -1px 4px rgba(0,0,0,0.3);
-	color: #ffffff;
+	box-shadow: 0 -1px 4px rgba(0,0,0,0.2);
 	text-align: center;
 	line-height: 25px;
-">&copy; ООО "Престол", 2016-<?=( date("Y") )?></div>
+			">&copy; 2016-<?=( date("Y") )?> ООО &laquo;<a href="https://фабрикастульев.рф" target="_blank">Престол</a>&raquo;</div>
 
 <script>
 	$(document).ready(function(){
