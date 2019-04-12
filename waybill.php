@@ -37,7 +37,7 @@ $query = "
 	FROM Shipment SHP
 	JOIN Cities CT ON CT.CT_ID = SHP.CT_ID
 	JOIN Rekvizity R ON R.R_ID = CT.R_ID
-	WHERE SHP.SHP_ID = 593
+	WHERE SHP.SHP_ID = {$_GET["shpid"]}
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $row = mysqli_fetch_array($res);
