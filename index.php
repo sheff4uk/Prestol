@@ -217,8 +217,11 @@
 			echo "<h3 style='margin: 10px 0;'>Отгрузка на <span style='background: {$Color};'>{$City}</span>".($shp_title != '' ? ' ('.$shp_title.')' : '')."</h3>";
 
 			if( in_array('add_shipment', $Rights) ) {
-				echo "<div id='wr_shipping_date'><form method='post'><label>Отгрузка состоялась: <input type='text' name='shipping_date' value='{$shipping_date}' class='date' autocomplete='off'></label><button style='margin-left: 10px;'>Сoхранить</button>";
+				echo "<div id='wr_shipping_date'><form method='post'>Отгрузка состоялась: <input type='text' name='shipping_date' value='{$shipping_date}' class='date' autocomplete='off' onchange='this.form.submit()'>";
 				echo "<font style='display: none;' color='red'></font></form></div>";
+				if ($shipping_date) {
+					echo "<a id='print_shp' href='waybill.php?shpid={$_GET["shpid"]}' title='Распечатать товарно-транспортную накладную' style='position: absolute; top: 95px; left: 260px;'><i class='fas fa-print fa-2x'></i></a>";
+				}
 			}
 			else {
 				echo "Дата отгрузки: {$shipping_date}<br>";
@@ -1220,14 +1223,12 @@
 	function check_shipping(ready, count, filter) {
 		if( filter ) {
 			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
-			$('#wr_shipping_date button').hide('fast');
 			$('#wr_shipping_date font').hide('fast');
 			$('#wr_shipping_date font').html();
 		}
 		else {
 			if(!ready || !count) {
 				$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
-				$('#wr_shipping_date button').hide('fast');
 				$('#wr_shipping_date font').show('fast');
 				if( !count ) {
 					$('#wr_shipping_date font').html('&nbsp;&nbsp;Список пуст!');
@@ -1238,7 +1239,6 @@
 			}
 			else {
 				$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', false);
-				$('#wr_shipping_date button').show('fast');
 				$('#wr_shipping_date font').hide('fast');
 				$('#wr_shipping_date font').html();
 			}
@@ -1335,6 +1335,7 @@
 
 		// Открытие диалога печати
 		$("#toprint").printPage();
+		$("#print_shp").printPage();
 
 		// Ограничение дат продажи и сдачи
 		$( '#order_form fieldset input[name="StartDate"]' ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
