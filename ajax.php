@@ -1892,7 +1892,7 @@ case "order_undo_shp":
 
 	// Проверяем права на отгрузку набора
 	if( in_array('order_ready', $Rights) ) {
-		$query = "UPDATE OrdersData SET ReadyDate = NULL, author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
+		$query = "UPDATE OrdersData SET ReadyDate = NULL, SHP_ID = NULL, author = {$_SESSION['id']} WHERE OD_ID={$od_id}";
 		if (mysqli_query( $mysqli, $query )) {
 			$_SESSION["success"][] = "Набор возвращен на производство!";
 			exit ('<meta http-equiv="refresh" content="0; url=orderdetail.php?id='.$od_id.'">');
