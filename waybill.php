@@ -31,8 +31,14 @@ while( $row = mysqli_fetch_array($res) ) {
 	$Counter++;
 }
 
-// Информация о грузоотправителе
-$query = "SELECT * FROM Rekvizity WHERE R_ID = 1";
+// Информация о грузоотправителе и грузополучателе
+$query = "
+	SELECT R.*
+	FROM Shipment SHP
+	JOIN Cities CT ON CT.CT_ID = SHP.CT_ID
+	JOIN Rekvizity R ON R.R_ID = CT.R_ID
+	WHERE SHP.SHP_ID = 593
+";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $row = mysqli_fetch_array($res);
 $_POST["gruzootpravitel_name"] = $row["Name"];
@@ -47,17 +53,19 @@ $_POST["gruzootpravitel_bank"] = $row["Bank"];
 $_POST["gruzootpravitel_bik"] = $row["BIK"];
 $_POST["gruzootpravitel_ks"] = $row["KS"];
 
-// Информация о грузополучателе
-$query = "
-	SELECT CONCAT(USR.Surname, ' ', USR.Name) Name
-	FROM Shipment SHP
-	JOIN Users USR ON USR.CT_ID = SHP.CT_ID AND USR.RL_ID = 3
-	WHERE SHP_ID = {$_GET["shpid"]}
-";
-$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$row = mysqli_fetch_array($res);
-$_POST["gruzopoluchatel"] = 1;
 $_POST["gruzopoluchatel_name"] = $row["Name"];
+$_POST["gruzopoluchatel_inn"] = $row["INN"];
+$_POST["gruzopoluchatel_kpp"] = $row["KPP"];
+$_POST["gruzopoluchatel_okpo"] = '';
+$_POST["gruzopoluchatel_adres"] = $row["Addres"];
+$_POST["gruzopoluchatel_buhgalter"] = $row["Dir"];
+$_POST["gruzopoluchatel_tel"] = $row["Phone"];
+$_POST["gruzopoluchatel_schet"] = $row["RS"];
+$_POST["gruzopoluchatel_bank"] = $row["Bank"];
+$_POST["gruzopoluchatel_bik"] = $row["BIK"];
+$_POST["gruzopoluchatel_ks"] = $row["KS"];
+
+$_POST["gruzopoluchatel"] = 1;
 
 if( $curl = curl_init() ) {
 	curl_setopt($curl, CURLOPT_URL, 'https://service-online.su/forms/auto/ttn/blanc.php');

@@ -220,7 +220,13 @@
 				echo "<div id='wr_shipping_date'><form method='post'>Отгрузка состоялась: <input type='text' name='shipping_date' value='{$shipping_date}' class='date' autocomplete='off' onchange='this.form.submit()'>";
 				echo "<font style='display: none;' color='red'></font></form></div>";
 				if ($shipping_date) {
-					echo "<a id='print_shp' href='waybill.php?shpid={$_GET["shpid"]}' title='Распечатать товарно-транспортную накладную' style='position: absolute; top: 95px; left: 260px;'><i class='fas fa-print fa-2x'></i></a>";
+					// Узнаем регион отгрузки и организацию в этом регионе
+					$query = "SELECT CT.R_ID FROM Shipment SHP JOIN Cities CT ON CT.CT_ID = SHP.CT_ID WHERE SHP.SHP_ID = {$_GET["shpid"]}";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					$row = mysqli_fetch_array($res);
+					if ($row["R_ID"]) {
+						echo "<a id='print_shp' href='waybill.php?shpid={$_GET["shpid"]}' title='Распечатать товарно-транспортную накладную' style='position: absolute; top: 95px; left: 260px;'><i class='fas fa-print fa-2x'></i></a>";
+					}
 				}
 			}
 			else {
