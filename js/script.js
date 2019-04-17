@@ -85,6 +85,11 @@ function makeform(odd_id, location)
 
 ////////////////////////////////////////////////////////////////////////////////
 $(function(){
+	// Предотвращение двойного клика
+	$("*").dblclick(function(e){
+		e.preventDefault();
+	});
+
 	// При очистке информации о цвете деактивируем кнопки прозрачности
 	$('#paint_color').on("change", function(){
 		clearonoff(this);
