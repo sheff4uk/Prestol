@@ -633,8 +633,8 @@
 					echo "<td width='49'>{$row["payment_date_short"]}</td>";
 					echo "<td width='20' style='overflow: visible;'>{$attention}</td>";
 					echo "<td width='60' class='txtright'><b>{$format_sum}</b></td>";
-					echo "<td width='45'><span>{$row["Shop"]}</span></td>";
-					echo "<td width='180'>{$cache_name}{$is_terminal}</td>";
+					echo "<td width='60'><span>{$row["Shop"]}</span></td>";
+					echo "<td width='165'>{$cache_name}{$is_terminal}</td>";
 					echo "<td width='25'>";
 						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
 							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='{$row["sign"]}' title='Отредактировать запись'><i class='fa fa-pencil-alt fa-lg'></i></a>";
