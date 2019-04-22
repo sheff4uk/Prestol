@@ -593,7 +593,7 @@ $hold_others_opt = mysqli_result($res,0,'Amount');
 		labels: ["Отложены", "Выставка", "Просрок"<?=$weeks_list?>],
 		datasets: [{
 			type: 'line',
-			label: 'Норма',
+			label: 'Средний темп',
 			fill: false,
 			backgroundColor: 'rgba(255, 159, 64, 1)',
 			borderWidth: 4,
