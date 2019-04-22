@@ -11,9 +11,15 @@
 
 	$CT_ID = (isset($_GET["CT_ID"]) and (int)$_GET["CT_ID"] > 0) ? $_GET["CT_ID"] : $USR_City;
 	$SH_ID = (isset($_GET["SH_ID"]) and (int)$_GET["SH_ID"] > 0) ? $_GET["SH_ID"] : 0;
-	$SH_ID = $USR_Shop ? $USR_Shop : $SH_ID;
 	$year = isset($_GET["year"]) ? $_GET["year"] : date('Y');
 	$month = isset($_GET["month"]) ? $_GET["month"] : date('n');
+
+	// Узнаем кол-во доступных пользователю салонов и список идентификаторов
+	$query = "SELECT SUM(1) cnt, GROUP_CONCAT(SH.SH_ID) SH_IDs FROM Shops SH WHERE SH.CT_ID = {$CT_ID} AND SH.retail = 1 ".($USR_Shop ? "AND SH_ID IN ({$USR_Shop})" : "")."";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$row = mysqli_fetch_array($res);
+	$shop_num_rows = $row["cnt"];
+	$SH_IDs = $row["SH_IDs"];
 
 	// Проверка прав на доступ к экрану (если пользователю доступен только город)
 	if( in_array('selling_city', $Rights) ) {
@@ -27,7 +33,7 @@
 	}
 
 	// Формируем выпадающее меню салонов в таблицу
-	$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND KA_ID IS NULL ".($USR_Shop ? "AND SH_ID = {$USR_Shop}" : "")." ORDER BY Shop";
+	$query = "SELECT SH.SH_ID, SH.Shop FROM Shops SH WHERE SH.SH_ID IN ({$SH_IDs}) ORDER BY SH.Shop";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$select_shops = "";
 	while( $row = mysqli_fetch_array($res) ) {
@@ -208,9 +214,9 @@
 <form method="get" style="display: inline-block;">
 	<select name="CT_ID" onchange="this.form.submit()">
 		<?
-		$query = "SELECT CT.CT_ID, CONCAT(CT.City, ' (', GROUP_CONCAT(SH.Shop), ')') City, CT.Color
+		$query = "SELECT CT.CT_ID, CONCAT(CT.City, ' (', GROUP_CONCAT(SH.Shop ORDER BY SH.Shop), ')') City, CT.Color
 					FROM Cities CT
-					JOIN Shops SH ON SH.CT_ID = CT.CT_ID AND SH.KA_ID IS NULL
+					JOIN Shops SH ON SH.CT_ID = CT.CT_ID AND SH.KA_ID IS NULL AND SH.SH_ID IN ({$SH_IDs})
 					".(in_array('selling_city', $Rights) ? 'WHERE CT.CT_ID = '.$USR_City : '')."
 					GROUP BY CT.CT_ID
 					ORDER BY CT.City";
@@ -226,29 +232,24 @@
 </form>
 
 <?
-	if( !$CT_ID ) die;
+	if (!$CT_ID) die;
 	// Узнаем общий остаток наличных
-	$query = "SELECT SUM(IFNULL(MSIO.pay_in,0)) - SUM(IFNULL(MSIO.pay_out,0)) ostatok, SH.Shop
-				FROM MonthlySellInOut MSIO
-				JOIN Shops SH ON SH.SH_ID = MSIO.SH_ID";
-	if( $SH_ID ) {
-		$query .= " WHERE MSIO.SH_ID = {$SH_ID}";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$label = "Касса ".mysqli_result($res,0,'Shop').":";
-	}
-	else {
-		$query .= " WHERE MSIO.SH_ID IN(SELECT SH_ID FROM Shops WHERE CT_ID = {$CT_ID})";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$label = "Остаток наличных:";
-	}
+	$query = "
+		SELECT SUM(IFNULL(MSIO.pay_in,0)) - SUM(IFNULL(MSIO.pay_out,0)) ostatok
+		FROM MonthlySellInOut MSIO
+		JOIN Shops SH ON SH.SH_ID = MSIO.SH_ID
+		WHERE MSIO.SH_ID IN ({$SH_IDs})
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$label = "Остаток наличных:";
 	$ostatok = mysqli_result($res,0,'ostatok');
 	$format_ostatok = number_format($ostatok, 0, '', ' ');
 	$now_date = date('d.m.Y');
 	if( $CT_ID ) {
 		echo "<h3 style='display: inline-block; margin: 10px 20px;'>{$label} {$format_ostatok}</h3>";
-		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='+' CT_ID='{$CT_ID}' title='Внести приход'><i class='fa fa-plus fa-lg' style='color: white; background: green; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
-		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='-' CT_ID='{$CT_ID}' title='Внести расход'><i class='fa fa-minus fa-lg' style='color: white; background: red; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
-		echo "<a href='#' class='add_cost_btn' shop='".($USR_Shop ? $USR_Shop : "")."' cost_name='' cost='' cost_date='{$now_date}' sign='' CT_ID='{$CT_ID}' title='Сдать выручку'><i class='fa fa-exchange-alt fa-lg' style='color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>";
+		echo "<a href='#' class='add_cost_btn' cost_name='' cost='' cost_date='{$now_date}' sign='+' CT_ID='{$CT_ID}' title='Внести приход'><i class='fa fa-plus fa-lg' style='color: white; background: green; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
+		echo "<a href='#' class='add_cost_btn' cost_name='' cost='' cost_date='{$now_date}' sign='-' CT_ID='{$CT_ID}' title='Внести расход'><i class='fa fa-minus fa-lg' style='color: white; background: red; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
+		echo "<a href='#' class='add_cost_btn' cost_name='' cost='' cost_date='{$now_date}' sign='' CT_ID='{$CT_ID}' title='Сдать выручку'><i class='fa fa-exchange-alt fa-lg' style='color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>";
 	}
 	else {
 		echo "<h3 style='display: inline-block; margin: 10px 20px;'>&nbsp;</h3>";
@@ -397,7 +398,7 @@
 					$city_otkaz = 0;
 					$city_debt = 0;
 					$city_cash = 0;
-					$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND KA_ID IS NULL ".($USR_Shop ? "AND SH_ID = {$USR_Shop}" : "")." ORDER BY SH_ID";
+					$query = "SELECT SH.SH_ID, SH.Shop FROM Shops SH WHERE SH.SH_ID IN ({$SH_IDs}) ORDER BY SH.Shop";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						// Получаем сумму поступившей налички для отчета
@@ -514,7 +515,7 @@
 							echo "</tr>";
 						}
 					}
-					if( !$USR_Shop ) {
+					if( $shop_num_rows > 1 ) {
 						$city_percent = round($city_discount / $city_price * 100, 2);
 						$format_city_report = number_format($city_report, 0, '', ' ');
 						$format_city_price = number_format($city_price - $city_discount, 0, '', ' ');
@@ -564,8 +565,9 @@
 							,IF(OP.payment_sum < 0, '-', '+') sign
 							,IF(OP1.terminal_sum > 0, 2,IF((PRICE.Price - OP1.payment_sum > 10 AND OD.StartDate IS NOT NULL AND SH.FA_ID IS NOT NULL), 1, 0)) is_terminal
 							,IF(OP.SH_ID != OD.SH_ID, 1, 0) attention
+							,IF(IFNULL(OD.SH_ID, 0) NOT IN ({$SH_IDs}), 1, 0) other_city
 						FROM OrdersPayment OP
-						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
+						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 						LEFT JOIN (
 							SELECT OP.OD_ID
@@ -601,8 +603,9 @@
 							,IF(OD.DelDate IS NULL, '', 'del') del
 							,IF(OP.payment_sum < 0, '-', '+') sign
 							,IF(OP.SH_ID != OD.SH_ID, 1, 0) attention
+							,IF(IFNULL(OD.SH_ID, 0) NOT IN ({$SH_IDs}), 1, 0) other_city
 						FROM OrdersPayment OP
-						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
+						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 						WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OP.send IS NULL
 						ORDER BY OP.payment_date DESC
@@ -615,7 +618,7 @@
 					$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 					$cache_sum = $cache_sum + $row["payment_sum"];
 					$href = ($row["del"]) ? "orderdetail.php?id={$row["OD_ID"]}' target='_blank" : "?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}";
-					$cache_name = ( $row["Code"] ) ? "<b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>" : "<span>{$row["cost_name"]}</span>";
+					$cache_name = ( $row["Code"] ) ? ( $row["other_city"] ? "<b class='code {$row["del"]}' title='Набор перемещен в другой регион'>{$row["Code"]}</b>" : "<b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>") : "<span>{$row["cost_name"]}</span>";
 					$attention = ( $row["attention"] ) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='После внесения оплаты набор был перенесен в другой салон!'></i>" : "";
 					$attention_sum = $attention_sum + $row["attention"];
 					if( in_array('selling_all', $Rights) ) {
@@ -658,8 +661,9 @@
 									,OD.OD_ID
 									,SH.Shop
 									,IF(OD.DelDate IS NULL, '', 'del') del
+									,IF(IFNULL(OD.SH_ID, 0) NOT IN ({$SH_IDs}), 1, 0) other_city
 								FROM OrdersPayment OP
-								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
+								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 								WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NOT NULL
 								ORDER BY OP.payment_date DESC";
@@ -669,11 +673,12 @@
 						$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 						$terminal_sum = $terminal_sum + $row["payment_sum"];
 						$href = ($row["del"]) ? "orderdetail.php?id={$row["OD_ID"]}' target='_blank" : "?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}";
+						$cache_name = ( $row["other_city"] ) ? "<b class='code {$row["del"]}' title='Набор перемещен в другой регион'>{$row["Code"]}</b>" : "<b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>";
 						echo "<tr>";
 						echo "<td width='49'>{$row["payment_date"]}</td>";
 						echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
-						echo "<td width='60'><b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
+						echo "<td width='60'>{$cache_name}</td>";
 						echo "<td width='140' class='nowrap'>{$row["terminal_payer"]}</td>";
 						echo "</tr>";
 					}
@@ -697,7 +702,7 @@
 									,SH.Shop
 									,OP.send
 								FROM OrdersPayment OP
-								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.CT_ID = {$CT_ID}")."
+								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 								WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NOT NULL
 								ORDER BY OP.payment_date DESC";
 
@@ -743,7 +748,7 @@
 							,PFI.count
 							,PFI.platelshik_id
 						FROM OrdersData OD
-						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 ".($SH_ID ? "AND SH.SH_ID = {$SH_ID}" : "AND SH.CT_ID = {$CT_ID}")."
+						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 						LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 						WHERE YEAR(OD.StartDate) = {$year}
 							AND MONTH(OD.StartDate) = {$month}
@@ -793,9 +798,10 @@
 									,OT.StartDate
 									,OT.SH_ID
 									,IF(OD.DelDate IS NULL, '', 'del') del
+									,IF(IFNULL(OD.SH_ID, 0) NOT IN ({$SH_IDs}), 1, 0) other_city
 								FROM OrdersData OD
 								JOIN Otkazi OT ON OT.OD_ID = OD.OD_ID
-								JOIN Shops SH ON SH.SH_ID = OT.SH_ID ".($SH_ID ? "AND SH.SH_ID = {$SH_ID}" : "AND SH.CT_ID = {$CT_ID}")."
+								JOIN Shops SH ON SH.SH_ID = OT.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 								WHERE YEAR(OT.StartDate) = {$year} AND MONTH(OT.StartDate) = {$month}";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					$reject_count = 0;
@@ -803,11 +809,12 @@
 						$format_old_price = number_format($row["old_sum"], 0, '', ' ');
 						++$reject_count;
 						$href = ($row["del"]) ? "orderdetail.php?id={$row["OD_ID"]}' target='_blank" : "?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}";
+						$cache_name = ( $row["other_city"] ) ? "<b class='code {$row["del"]}' title='Набор перемещен в другой регион'>{$row["Code"]}</b>" : "<b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>";
 						echo "<tr>";
 						echo "<td width='49'><span class='nowrap'>{$row["reject_date"]}</span></td>";
 						echo "<td width='70' class='txtright'><b>{$format_old_price}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
-						echo "<td width='60'><b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b></td>";
+						echo "<td width='60'>{$cache_name}</td>";
 						echo "<td width='120' style='color: #911;'>{$row["comment"]}</td>";
 						//echo "<td width='25'><a href='#' onclick='if(confirm(\"Убрать набор <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
@@ -856,35 +863,33 @@
 				<th width="25%">Набор</th>
 				<th width="15%">Материал <i class="fa fa-question-circle" html="<b>Цветовой статус наличия:</b><br><span class='bg-gray'>Неизвестно</span><br><span class='bg-red'>Нет</span><br><span class='bg-yellow'>Заказано</span><br><span class='bg-green'>В наличии</span><br><span class='bg-red removed'>Выведен</span> - нужно менять"></i></th>
 				<th width="15%">Цвет краски <i class="fa fa-question-circle" html="<b>Цветовой статус лакировки:</b><br><span class='empty'>Покраска не требуется</span><br><span class='notready'>Не дано в покраску</span><br><span class='inwork'>Дано в покраску</span><br><span class='ready'>Покрашено</span>"></i></th>
+				<?
+				if ($shop_num_rows > 1) {
+				?>
 				<th width="10%">Салон<br>
-					<?
-					if( !$USR_Shop ) {
-					?>
 					<input type="hidden" name="CT_ID" value="<?=$_GET['CT_ID']?>">
 					<input type="hidden" name="year" value="<?=$_GET['year']?>">
 					<input type="hidden" name="month" value="<?=$_GET['month']?>">
 					<select style="width: 100%;" name="SH_ID" id="filter_shop" onchange="this.form.submit()" <?=( $_GET["SH_ID"] ? "class='filtered'" : "" )?>>
 						<option></option>
 						<?
-							$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND KA_ID IS NULL ORDER BY SH_ID";
+							$query = "SELECT SH.SH_ID, SH.Shop FROM Shops SH WHERE SH.SH_ID IN ({$SH_IDs}) ORDER BY SH.Shop";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) ) {
 								echo "<option value='{$row['SH_ID']}' ".( $row['SH_ID'] == $_GET['SH_ID'] ? 'selected' : '' ).">{$row['Shop']}</option>";
 							}
 						?>
 					</select>
-					<?
-					}
-					?>
 				</th>
+				<?
+				}
+				?>
 				<th width="100">Примечание</th>
 				<th width="100">Дата продажи</th>
 				<th width="65">Стоимость набора</th>
 				<th width="70">Скидка</th>
 				<th width="65">Оплата</th>
-<!--				<th width="20">Т</th>-->
 				<th width="65">Доплата</th>
-<!--				<th width="65">Отказ</th>-->
 				<th width="70">Действие</th>
 			</tr>
 		</thead>
@@ -901,15 +906,13 @@
 				<th width="25%"></th>
 				<th width="15%"></th>
 				<th width="15%"></th>
-				<th width="10%"></th>
+				<? if ($shop_num_rows > 1) {echo "<th width='10%'></th>";} ?>
 				<th width="100"></th>
 				<th width="100"></th>
 				<th width="65"></th>
 				<th width="70"></th>
 				<th width="65"></th>
-<!--				<th width="20"></th>-->
 				<th width="65"></th>
-<!--				<th width="65"></th>-->
 				<th width="70"></th>
 			</tr>
 		</thead>
@@ -943,8 +946,7 @@
 				,PFI.platelshik_id
 				,OD.taken
 			FROM OrdersData OD
-			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 AND SH.CT_ID = {$CT_ID}
-				".( $SH_ID ? " AND SH.SH_ID = {$SH_ID}" : "" )."
+			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 AND ".( $SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 			LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
 			WHERE OD.DelDate IS NULL
@@ -1072,10 +1074,10 @@
 				}
 			echo " class='painting_cell {$class}'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
 
-			echo "
-				<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>
-				<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>
-			";
+			if ($shop_num_rows > 1) {
+				echo "<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".($is_lock ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>";
+			}
+			echo "<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>";
 
 			// Если набор в накладной - стоимость набора ведет в накладную, цена не редактируется
 			if( $row["PFI_ID"] ) {
@@ -1109,7 +1111,7 @@
 			if( in_array('order_add', $Rights) and !$is_lock ) {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
 				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить набор' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' invoice={$row["PFI_ID"]} location='{$location}' payment='{$row["payment_sum"]}' old_sum='{$row["Price"]}' title='Пометить как отказ/замена.'><i class='fa fa-hand-paper fa-lg' aria-hidden='true'></i></a>";
+				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' invoice={$row["PFI_ID"]} location='{$location}' payment='{$row["payment_sum"]}' old_sum='".($row["Price"] - $row["discount"])."' title='Пометить как отказ/замена.'><i class='fa fa-hand-paper fa-lg' aria-hidden='true'></i></a>";
 			}
 			else {
 				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
@@ -1150,10 +1152,10 @@
 				<label for="SH_ID">Касса:</label><br>
 				<select size="4" name="SH_ID" id="SH_ID" style="width: 100%;" required>
 					<?
-					$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND KA_ID IS NULL ".($USR_Shop ? "AND SH_ID = {$USR_Shop}" : "")." ORDER BY SH_ID";
+					$query = "SELECT SH.SH_ID, SH.Shop FROM Shops SH WHERE SH.SH_ID IN ({$SH_IDs}) ORDER BY SH.Shop";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
-						echo "<option ".($USR_Shop ? "selected" : "")." value='{$row["SH_ID"]}'>{$row["Shop"]}</option>";
+						echo "<option ".(($shop_num_rows == 1) ? "selected" : "")." value='{$row["SH_ID"]}'>{$row["Shop"]}</option>";
 					}
 					?>
 				</select>
@@ -1178,7 +1180,7 @@
 
 <!-- Форма отказа -->
 <div id='order_otkaz' style='display:none'>
-	<form method='post' action="<?=$location?>&order_otkaz=1">
+	<form method='post' action="<?=$location?>&order_otkaz">
 		<div style="display: inline-block;">
 			<i class='fa fa-hand-paper fa-4x' aria-hidden='true'></i>
 		</div>
@@ -1249,7 +1251,12 @@
 			var cost_name = $(this).attr('cost_name');
 			var cost = $(this).attr('cost');
 
-			$('#add_cost #SH_ID').val(shop);
+			if (shop) {
+				$('#add_cost #SH_ID').val(shop);
+			}
+			else if (<?=$shop_num_rows?> > 1) {
+				$('#add_cost #SH_ID').val('');
+			}
 			$('#add_cost #cost_date').val(cost_date);
 			$('#add_cost #OP_ID').val(OP_ID);
 			$('#add_cost #cost_name').val(cost_name);

@@ -19,7 +19,7 @@
 			FROM OrdersData OD
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}
-				".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."
+				".($USR_Shop ? "AND (SH.SH_ID IN ({$USR_Shop}) OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."
 				".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")
 		;
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -420,7 +420,7 @@
 	$format_payment = number_format($row["payment_sum"], 0, '', ' ');
 
 	// Если пользователю доступен только один салон в регионе или оптовик или свободный набор и нет админских привилегий, то нельзя редактировать общую информацию набора.
-	$editable = (!($USR_Shop and $SH_ID and $USR_Shop != $SH_ID) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and ($SH_ID or in_array('order_add_confirm', $Rights)));
+	$editable = (!($USR_Shop and $SH_ID and !in_array($SH_ID, explode(",", $USR_Shop))) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and ($SH_ID or in_array('order_add_confirm', $Rights)));
 ?>
 	<form method='post' id='order_form' action='<?=$location?>&order_update'>
 	<table class="main_table">
@@ -440,8 +440,8 @@
 			<th width="40">Принят</th>
 			<th width="65">Стоимость<br>набора</th>
 			<?
-			// Если розница и есть доступ в реализацию - видна оплата
-			if( $retail and (in_array('selling_all', $Rights) or in_array('selling_city', $Rights)) ) {
+			// Если розница и набор свой - видна оплата
+			if( $retail and $editable ) {
 				echo "<th width='65'>Оплата</th>";
 			}
 			?>
@@ -557,8 +557,8 @@
 		if( $SH_ID == 0 ) {
 			$price = "";
 		}
-		// Если розница и есть доступ к реализации или опт и есть доступ к сверкам то цена редактируемая
-		elseif( ($retail and (in_array('selling_all', $Rights) or in_array('selling_city', $Rights))) or (!$retail and(in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights))) ) {
+		// Если розница и набор свой или опт и есть доступ к сверкам то цена редактируемая
+		elseif( ($retail and $editable) or (!$retail and(in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights))) ) {
 			// Если набор в накладной - сумма набора ведет в накладную, цена не редактируется
 			if( $row["PFI_ID"] ) {
 				// Исключение для Клена
@@ -578,8 +578,8 @@
 		}
 		echo "<td class='txtright'>{$price}</td>";
 
-		// Если розница и есть доступ в реализацию - можно вносить оплату
-		if( $retail and (in_array('selling_all', $Rights) or in_array('selling_city', $Rights)) ) {
+		// Если розница и набор свой - можно вносить оплату
+		if( $retail and $editable ) {
 			echo "<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' location='{$location}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
 		}
 ?>
@@ -594,10 +594,6 @@
 			echo "<a href='#' id='{$id}' class='order_cut' title='Разделить набор' location='{$location}'><i class='fa fa-sliders-h fa-2x'></i></a><br>";
 		}
 
-		// Если есть право на добавление набора - показываем кнопку клонирования
-		if( in_array('order_add', $Rights) ) {
-			echo "<a href='#' class='clone' od_id='{$id}' title='Клонировать набор'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></a><br>";
-		}
 		// Если розничный набор и не удален и есть права показываем кнопку перехода в реализацию
 		if( $retail and !$Del and (in_array('selling_all', $Rights) or in_array('selling_city', $Rights)) ) {
 			echo "<a href='/selling.php?CT_ID={$CT_ID}&year={$start_year}&month={$start_month}#ord{$id}' title='Перейти в реализацию'><i class='fas fa-money-bill-alt fa-2x' aria-hidden='true'></i></a><br>";
@@ -614,6 +610,11 @@
 				echo "<a href='#' class='deleting' od_id='{$id}'  ord_scr='1' m_type='".(in_array('order_add_confirm', $Rights) ? "1" : "0")."' title='Удалить набор'><i class='fa fa-times fa-2x'></i></a><br>";
 			}
 		}
+	}
+
+	// Если есть право на добавление набора - показываем кнопку клонирования
+	if( in_array('order_add', $Rights) ) {
+		echo "<a href='#' class='clone' od_id='{$id}' title='Клонировать набор'><i class='fa fa-clone fa-2x' aria-hidden='true'></i></a><br>";
 	}
 ?>
 			</td>
@@ -637,11 +638,13 @@
 		});
 	</script>
 <?
-		echo "<div id='order_in_work_label' style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em; ".(($confirmed == 1) ? "" : "display: none;")."'>Набор принят в работу.</div>";
-		if( $is_lock == 1 ) {
+		if ( $confirmed == 1 and !$ReadyDate ) {
+			echo "<div id='order_in_work_label' style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em;'>Набор принят в работу.</div>";
+		}
+		if ( $is_lock == 1 ) {
 			echo "<div style='position: absolute; top: 77px; left: 340px; font-weight: bold; color: green; font-size: 1.2em;'>Месяц в реализации закрыт (изменения ограничены).</div>";
 		}
-		if( $Del == 1 ) {
+		if ( $Del == 1 ) {
 			echo "<div style='position: absolute; top: 173px; font-weight: bold; color: #911; font-size: 5em; opacity: .3; border: 5px solid;'>Набор удалён</div>";
 		}
 ?>
@@ -844,7 +847,13 @@ if( $id != "NULL" ) {
 				<thead>
 					<tr>
 					<th width="40"><i class="fas fa-question-circle fa-lg" html="<p>Если нажать на красный конверт слева от сообщения, то конверт станет зеленым - это означает, что сообщение прочитано. Оно так же исчезнет из уведомлений в верхнем-левом углу и там остануться только самые актуальные сообщения.</p><p>Непрочитанные сообщения спустя месяц автоматически закрываются.</p>"></i></th>
-					<th width="">Сообщение<br><a href="#" class="add_message_btn button">Добавить сообщение</a></th>
+					<th width="">Сообщение
+					<?
+					if ($editable or !$SH_ID) {
+						echo "<br><a href='#' class='add_message_btn button'>".(in_array('order_add_confirm', $Rights) ? "Сообщение от производства" : "Сообщение на производство")."</a>";
+					}
+					?>
+					</th>
 					<th width="">Дата<br>Время</th>
 					<th width="">Автор</th>
 					</tr>
@@ -957,7 +966,7 @@ if( $id != "NULL" ) {
 		</fieldset>
 		<div>
 			<hr>
-			<button style='float: right;'>Сохранить</button>
+			<button style='float: right;'>Отправить</button>
 		</div>
 	</form>
 </div>

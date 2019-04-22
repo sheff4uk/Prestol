@@ -345,51 +345,70 @@ case "taken":
 // Смена статуса прочитанного собщения в наборе
 case "read_message":
 
-	$id = $_GET["om_id"];
-	$val = $_GET["val"];
-	$val = ($val == 0) ? 1 : 0;
+	$om_id = $_GET["om_id"];
 
-	// Обновляем статус сообщения
-	if( $val == 1 ) {
-		$query = "UPDATE OrdersMessage SET read_user = {$_SESSION['id']}, read_time = NOW() WHERE OM_ID = {$id}";
-	}
-	else {
-		$query = "UPDATE OrdersMessage SET read_user = NULL, read_time = DATE_ADD(NOW(), INTERVAL 1 MONTH) WHERE OM_ID = {$id}";
-	}
+	// Узнаем есть ли право менять статус сообщения
+	$query = "
+		SELECT 1
+		FROM OrdersMessage OM
+		JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
+		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		WHERE OM.OM_ID = {$om_id} AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+		".($USR_Shop ? "AND (SH.SH_ID IN ({$USR_Shop}) OR OD.SH_ID IS NULL)" : "")."
+		".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR OD.SH_ID IS NULL)" : "")."
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
-	// Получаем статус сообщения
-	$query = "SELECT IFNULL(USR_Name(OM.read_user), 'СИСТЕМА') read_user
-					,Friendly_date(OM.read_time) read_date
-					,TIME(OM.read_time) read_time
-					,IF(OM.read_time > NOW(), 0, 1) is_read
-					,USR_Icon(OM.read_user) read_user_icon
-				FROM OrdersMessage OM
-				WHERE OM.OM_ID = {$id}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-	$read_user = mysqli_result($res,0,'read_user');
-	$read_date = mysqli_result($res,0,'read_date');
-	$read_time = mysqli_result($res,0,'read_time');
-	$is_read = mysqli_result($res,0,'is_read');
-	$read_user_icon = mysqli_result($res,0,'read_user_icon');
+	if (mysqli_num_rows($res)) {
+		$val = $_GET["val"];
+		$val = ($val == 0) ? 1 : 0;
 
-	if( $is_read ) {
-		$html = "<i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: green;' title='Прочитано: {$read_user} {$read_date} {$read_time}'>";
-		$status = "ПРОЧИТАННОЕ";
-		echo "$('#wfm{$id}').addClass('wf_is_read');";
-		echo "$('#wfm{$id} td:last-child').html('{$read_user_icon}');";
+		// Обновляем статус сообщения
+		if( $val == 1 ) {
+			$query = "UPDATE OrdersMessage SET read_user = {$_SESSION['id']}, read_time = NOW() WHERE OM_ID = {$om_id}";
+		}
+		else {
+			$query = "UPDATE OrdersMessage SET read_user = NULL, read_time = DATE_ADD(NOW(), INTERVAL 1 MONTH) WHERE OM_ID = {$om_id}";
+		}
+		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+
+		// Получаем статус сообщения
+		$query = "SELECT IFNULL(USR_Name(OM.read_user), 'СИСТЕМА') read_user
+						,Friendly_date(OM.read_time) read_date
+						,TIME(OM.read_time) read_time
+						,IF(OM.read_time > NOW(), 0, 1) is_read
+						,USR_Icon(OM.read_user) read_user_icon
+					FROM OrdersMessage OM
+					WHERE OM.OM_ID = {$om_id}";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		$read_user = mysqli_result($res,0,'read_user');
+		$read_date = mysqli_result($res,0,'read_date');
+		$read_time = mysqli_result($res,0,'read_time');
+		$is_read = mysqli_result($res,0,'is_read');
+		$read_user_icon = mysqli_result($res,0,'read_user_icon');
+
+		if( $is_read ) {
+			$html = "<i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: green;' title='Прочитано: {$read_user} {$read_date} {$read_time}'>";
+			$status = "ПРОЧИТАННОЕ";
+			echo "$('#wfm{$om_id}').addClass('wf_is_read');";
+			echo "$('#wfm{$om_id} td:last-child').html('{$read_user_icon}');";
+		}
+		else {
+			$html = "<i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: red;'>";
+			$status = "НЕ ПРОЧИТАННОЕ";
+			echo "$('#wfm{$om_id}').removeClass('wf_is_read');";
+			echo "$('#wfm{$om_id} td:last-child').html('');";
+		}
+		$html = addslashes($html);
+		echo "$('#msg{$om_id}').html('{$html}');";
+		echo "$('#msg{$om_id}').attr('val', '{$val}');";
+
+		echo "noty({timeout: 3000, text: 'Сообщение отмечено как {$status}', type: 'success'});";
 	}
 	else {
-		$html = "<i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: red;'>";
-		$status = "НЕ ПРОЧИТАННОЕ";
-		echo "$('#wfm{$id}').removeClass('wf_is_read');";
-		echo "$('#wfm{$id} td:last-child').html('');";
+		echo "noty({timeout: 3000, text: 'Вы не можете менять статус сообщений в этом наборе.', type: 'alert'});";
 	}
-	$html = addslashes($html);
-	echo "$('#msg{$id}').html('{$html}');";
-	echo "$('#msg{$id}').attr('val', '{$val}');";
 
-	echo "noty({timeout: 3000, text: 'Сообщение отмечено как {$status}', type: 'success'});";
 	break;
 ///////////////////////////////////////////////////////////////////
 
@@ -397,13 +416,13 @@ case "read_message":
 case "Xlabel":
 
 	session_start();
-	$id = $_GET["od_id"];
+	$od_id = $_GET["od_id"];
 	$val = $_GET["val"];
 	if ($val == 1) {
-		$_SESSION["X_".$id] = $val;
+		$_SESSION["X_".$od_id] = $val;
 	}
 	else {
-		unset($_SESSION["X_".$id]);
+		unset($_SESSION["X_".$od_id]);
 	}
 	break;
 ///////////////////////////////////////////////////////////////////
@@ -488,36 +507,36 @@ case "shipment":
 		}
 		else {
 			$html = "";
-			$query = "SELECT SH_ID, Shop
-						FROM Shops
-						WHERE CT_ID = {$CT_ID}
-							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-							".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "");
+			$query = "
+				SELECT SH.SH_ID, SH.Shop
+				FROM Shops SH
+				WHERE SH.CT_ID = {$CT_ID}
+			";
 			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 			while( $row = mysqli_fetch_array($res) ) {
 				$html .= "<label for='shop{$row["SH_ID"]}'>{$row["Shop"]}</label><input type='checkbox' id='shop{$row["SH_ID"]}' class='button_shops'>";
 			}
 			$html .= "<br><br>";
 
-			$query = "SELECT OD.OD_ID
-							,OD.Code
-							,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
-							,IFNULL(OD.ClientName, '') ClientName
-							,OD.ul
-							,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
-							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
-							,Color(OD.CL_ID) Color
-							,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-							,IF(OD.SHP_ID IS NULL, '', 'checked') checked
-							,OD.SH_ID
-							,SH.Shop
-							,OD.confirmed
-							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
-						FROM OrdersData OD
-						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
-						WHERE OD.DelDate IS NULL
-							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-							".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "");
+			$query = "
+				SELECT OD.OD_ID
+					,OD.Code
+					,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
+					,IFNULL(OD.ClientName, '') ClientName
+					,OD.ul
+					,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
+					,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
+					,Color(OD.CL_ID) Color
+					,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
+					,IF(OD.SHP_ID IS NULL, '', 'checked') checked
+					,OD.SH_ID
+					,SH.Shop
+					,OD.confirmed
+					,REPLACE(OD.Comment, '\r\n', '<br>') Comment
+				FROM OrdersData OD
+				JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
+				WHERE OD.DelDate IS NULL
+			";
 			if( $_GET["shpid"] ) {
 				$query .= " AND ((OD.ReadyDate IS NULL AND OD.SHP_ID IS NULL) OR OD.SHP_ID = {$_GET["shpid"]})";
 			}
@@ -665,10 +684,10 @@ case "invoice":
 			$html = "";
 			// Если доступен только город и у пользователя указан салон - показываем только его
 			if( in_array('sverki_city', $Rights) and $USR_Shop ) {
-				$query = "SELECT SH_ID, Shop FROM Shops WHERE SH_ID = {$USR_Shop}";
+				$query = "SELECT SH.SH_ID, SH.Shop FROM Shops SH WHERE SH.SH_ID IN ({$USR_Shop})";
 			}
 			else {
-				$query = "SELECT SH_ID, Shop FROM Shops WHERE CT_ID = {$CT_ID} AND KA_ID".($KA_ID ? " = {$KA_ID}" : " IS NULL");
+				$query = "SELECT SH.SH_ID, SH.Shop FROM Shops SH WHERE SH.CT_ID = {$CT_ID} AND SH.KA_ID".($KA_ID ? " = {$KA_ID}" : " IS NULL");
 			}
 			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 			while( $row = mysqli_fetch_array($res) ) {
@@ -676,30 +695,32 @@ case "invoice":
 			}
 			$html .= "<br><br>";
 
-			$query = "SELECT OD.OD_ID
-							,OD.Code
-							,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
-							,IFNULL(OD.ClientName, '') ClientName
-							,OD.ul
-							,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
-							,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
-							,Color(OD.CL_ID) Color
-							,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-							,OD.SH_ID
-							,SH.Shop
-							,REPLACE(OD.Comment, '\r\n', '<br>') Comment
-						FROM OrdersData OD
-						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
-						LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 AND PFI.rtrn != 1
-						WHERE OD.DelDate IS NULL
-							".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.KA_ID IS NULL AND OD.ul = 1")."
-							".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
-							".($num_rows > 0 ? "AND (OD.StartDate IS NOT NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NOT NULL))" : "AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))")."
-							AND OD.ReadyDate IS NOT NULL
-							AND Payment_sum(OD.OD_ID) = 0
-							AND OD.is_lock = 0
-						GROUP BY OD.OD_ID
-						ORDER BY OD.ReadyDate ".($num_rows > 0 ? "DESC LIMIT {$num_rows}" : "ASC");
+			$query = "
+				SELECT OD.OD_ID
+					,OD.Code
+					,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
+					,IFNULL(OD.ClientName, '') ClientName
+					,OD.ul
+					,IFNULL(DATE_FORMAT(OD.StartDate, '%d.%m'), '...') StartDate
+					,IFNULL(DATE_FORMAT(OD.EndDate, '%d.%m'), '...') EndDate
+					,Color(OD.CL_ID) Color
+					,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
+					,OD.SH_ID
+					,SH.Shop
+					,REPLACE(OD.Comment, '\r\n', '<br>') Comment
+				FROM OrdersData OD
+				JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
+				LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 AND PFI.rtrn != 1
+				WHERE OD.DelDate IS NULL
+					".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.retail = 1 AND OD.ul = 1")."
+					".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
+					".($num_rows > 0 ? "AND (OD.StartDate IS NOT NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NOT NULL))" : "AND (OD.StartDate IS NULL OR (SH.KA_ID IS NULL AND OD.PFI_ID IS NULL))")."
+					AND OD.ReadyDate IS NOT NULL
+					AND Payment_sum(OD.OD_ID) = 0
+					AND OD.is_lock = 0
+				GROUP BY OD.OD_ID
+				ORDER BY OD.ReadyDate ".($num_rows > 0 ? "DESC LIMIT {$num_rows}" : "ASC")."
+			";
 
 			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 			$html .= "<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>";
@@ -912,14 +933,10 @@ case "add_payment":
 		$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'>";
 		$html .= "<option value=''>{$Shop}</option>";
 		if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
-			$query = "SELECT FA.FA_ID, FA.name, IF(FA.USR_ID = {$_SESSION["id"]}, 'selected', '') selected FROM FinanceAccount FA WHERE FA.USR_ID = {$_SESSION["id"]}";
+			$query = "SELECT FA.FA_ID, FA.name, IF(FA.bank IS NULL, 'selected', '') selected FROM FinanceAccount FA WHERE FA.USR_ID = {$_SESSION["id"]} AND FA.archive = 0";
 			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 			while( $row = mysqli_fetch_array($res) ) {
-				// Если на производстве, то по дефолту касса пользователя
-				if( in_array('order_add_confirm', $Rights) ) {
-					$query = "SELECT ";
-				}
-					$html .= "<option ".(in_array('order_add_confirm', $Rights) ? $row["selected"] : "")." value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+				$html .= "<option ".(in_array('order_add_confirm', $Rights) ? $row["selected"] : "")." value='{$row["FA_ID"]}'>{$row["name"]}</option>";
 			}
 		}
 		$html .= "</select>";
@@ -1062,7 +1079,7 @@ case "create_shop_select":
 					FROM Shops SH
 					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 					WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.retail = 1" : "SH.KA_ID = {$platelshik_id}")."
-						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+						".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
 						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 
 					ORDER BY Shop";
@@ -1080,7 +1097,7 @@ case "create_shop_select":
 					FROM Shops SH
 					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 					WHERE CT.CT_ID IN (".($CT_ID ? $CT_ID : $USR_cities).")
-						".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+						".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
 						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 
 					ORDER BY Shop";

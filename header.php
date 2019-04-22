@@ -25,8 +25,8 @@
 			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_time > NOW() AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
-			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
-			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_Shop ? "AND (SH.SH_ID IN ({$USR_Shop}) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR OD.SH_ID IS NULL)" : "")."
 
 			UNION ALL
 
@@ -42,8 +42,8 @@
 			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "1" : "0")." AND OM.read_time <= NOW() AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
-			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
-			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_Shop ? "AND (SH.SH_ID IN ({$USR_Shop}) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR OD.SH_ID IS NULL)" : "")."
 			ORDER BY is_read ASC, OM_ID DESC
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -96,8 +96,8 @@
 			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "0" : "1")." AND OM.read_time > NOW() AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
-			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
-			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_Shop ? "AND (SH.SH_ID IN ({$USR_Shop}) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR OD.SH_ID IS NULL)" : "")."
 
 			UNION ALL
 
@@ -113,8 +113,8 @@
 			JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			WHERE OM.destination = ".(in_array('order_add_confirm', $Rights) ? "0" : "1")." AND OM.read_time <= NOW() AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND DATEDIFF(NOW(), OM.read_time) <= 7
-			".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND IF(SH.KA_ID IS NULL, 1, 0)) OR OD.SH_ID IS NULL)" : "")."
-			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_Shop ? "AND (SH.SH_ID IN ({$USR_Shop}) OR OD.SH_ID IS NULL)" : "")."
+			".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR OD.SH_ID IS NULL)" : "")."
 			ORDER BY is_read ASC, OM_ID DESC
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

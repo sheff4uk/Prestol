@@ -83,7 +83,7 @@
 					WHERE KA_ID IN (
 						SELECT PFI.platelshik_id
 						FROM PrintFormsInvoice PFI
-						JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID AND OD.SH_ID = {$USR_Shop}
+						JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID AND OD.SH_ID IN ({$USR_Shop})
 						UNION
 						SELECT PFB.pokupatel_id
 						FROM PrintFormsBill PFB

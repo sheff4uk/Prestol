@@ -19,7 +19,7 @@
 								FROM Shops SH
 								JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 								WHERE CT.CT_ID IN ({$USR_cities})
-									".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+									".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
 									".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 								ORDER BY CT.City, SH.Shop";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

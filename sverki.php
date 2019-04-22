@@ -470,7 +470,7 @@ while( $row = mysqli_fetch_array($res) ) {
 
 						// Если доступен только город и у пользователя указан салон - показываем только его
 						if( in_array('sverki_city', $Rights) and $USR_Shop ) {
-							$query = "SELECT Shop FROM Shops WHERE SH_ID = {$USR_Shop}";
+							$query = "SELECT GROUP_CONCAT(SH.Shop) Shop FROM Shops SH WHERE SH.SH_ID IN ({$USR_Shop})";
 							$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							$Shop = mysqli_result($subres,0,'Shop');
 							echo "<option value='0' CT_ID='{$row["CT_ID"]}'>{$Shop}</option>";
@@ -486,14 +486,14 @@ while( $row = mysqli_fetch_array($res) ) {
 							$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $subrow = mysqli_fetch_array($subres) )
 							{
-								echo "<option value='{$subrow["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$subrow["Naimenovanie"]} ({$row["City"]})</option>";
+								echo "<option value='{$subrow["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$subrow["Naimenovanie"]}</option>";
 							}
 
 							// Если в городе есть розница - показываем "Роница/Склад"
-							$query = "SELECT 1 FROM Shops WHERE CT_ID = {$row["CT_ID"]} AND KA_ID IS NULL";
+							$query = "SELECT 1 FROM Shops SH WHERE SH.CT_ID = {$row["CT_ID"]} AND SH.retail = 1";
 							$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							if( mysqli_num_rows($subres) ) {
-								echo "<option value='0' CT_ID='{$row["CT_ID"]}'>*Розница/Склад ({$row["City"]})*</option>";
+								echo "<option value='0' CT_ID='{$row["CT_ID"]}'>*Розница/Склад*</option>";
 							}
 						}
 						echo "</optgroup>";

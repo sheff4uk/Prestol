@@ -9,39 +9,58 @@ if( !in_array('order_add', $Rights) ) {
 }
 
 	if( isset($_GET["id"]) ) {
+		// Узнаём какие подразделения доступны пользователю при добавлении набора
+		$SH_IDs = "";
+		if( in_array('order_add_confirm', $Rights) ) {
+			$SH_IDs .= "0,";
+		}
+		$query = "
+			SELECT GROUP_CONCAT(SH.SH_ID) SH_IDs
+				,MIN(IF(SH.retail = 1, SH.SH_ID, NULL)) first_SH_ID_retail
+				,MIN(IF(SH.retail = 0, SH.SH_ID, NULL)) first_SH_ID_opt
+			FROM Shops SH
+			JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+			WHERE CT.CT_ID IN ({$USR_cities})
+				".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
+				".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$row = mysqli_fetch_array($res);
+		$SH_IDs .= $row["SH_IDs"];
+		$first_SH_ID .= $row["first_SH_ID_retail"] ? $row["first_SH_ID_retail"] : $row["first_SH_ID_opt"]; // Отдаём преимущество рознице
+
+		// Создаём новый набор
 		$AddDate = date("Y-m-d");
 		$query = "
-			INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, CL_ID, Comment, author, confirmed)
-			SELECT CLientName, '{$AddDate}', NULL, IF(SH_ID IS NULL, NULL, '".date('Y-m-d', strtotime($_SESSION["end_date"]))."'), SH_ID, OrderNumber, CL_ID, Comment, {$_SESSION['id']}, ".(in_array('order_add_confirm', $Rights) ? 1 : 0)."
+			INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, CL_ID, author, confirmed)
+			SELECT CLientName, '{$AddDate}', NULL, IF(SH_ID IS NULL, NULL, '".date('Y-m-d', strtotime($_SESSION["end_date"]))."'), IF(IFNULL(SH_ID, 0) IN ({$SH_IDs}), SH_ID, {$first_SH_ID}), OrderNumber, CL_ID, {$_SESSION['id']}, ".(in_array('order_add_confirm', $Rights) ? 1 : 0)."
 			FROM OrdersData
 			WHERE OD_ID = {$_GET["id"]}
 		";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$id = mysqli_insert_id( $mysqli );
 
-		// Узнаем категорию подразделения (розница, опт, региональный опт) чтобы вычислить цену
+		// Копируем изделия из первоначального набора и вычисляем стоимость
 		$query = "
-			SELECT IF(SH.retail = 1, 1, IF(SH.reg = 1, 3, IF(SH.retail IS NOT NULL, 2, 0))) type
-			FROM OrdersData OD
-			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-			WHERE OD.OD_ID = {$id}
-		";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$row = mysqli_fetch_array($res);
-		$type = $row["type"];
-
-		$query = "
-			INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, edge, MT_ID, Amount, Comment, min_price, Price, author, ptn)
-			SELECT {$id}, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, edge, MT_ID, Amount, Comment, Price(ODD_ID, {$type}), Price(ODD_ID, {$type}), {$_SESSION['id']}, ptn
+			SELECT ODD_ID
 			FROM OrdersDataDetail
 			WHERE OD_ID = {$_GET["id"]}
 		";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$odd_id = mysqli_insert_id( $mysqli );
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while ($row = mysqli_fetch_array($res)) {
+			$query = "
+				INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, edge, MT_ID, Amount, author, ptn)
+				SELECT {$id}, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, edge, MT_ID, Amount, {$_SESSION['id']}, ptn
+				FROM OrdersDataDetail
+				WHERE ODD_ID = {$row["ODD_ID"]}
+			";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$odd_id = mysqli_insert_id( $mysqli );
 
-		// Вычисляем и записываем стоимость по прайсу
-		$query = "CALL Price({$odd_id})";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			// Вычисляем и записываем стоимость по прайсу
+			$query = "CALL Price({$odd_id})";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
 
 		exit ('<meta http-equiv="refresh" content="0; url=orderdetail.php?id='.$id.'">');
 		die;

@@ -246,7 +246,7 @@
 							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 							JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 							WHERE OD.SHP_ID = {$_GET["shpid"]}
-								".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+								".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
 								".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 						) PMS ON PMS.PT_ID = PT.PT_ID
 						GROUP BY PT.PT_ID
@@ -582,7 +582,7 @@
 						FROM OrdersData OD
 						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 						WHERE OD.SHP_ID = {$_GET["shpid"]}
-							".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."
+							".($USR_Shop ? "AND (SH.SH_ID IN ({$USR_Shop}) OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."
 							".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
 						GROUP BY OD.SH_ID";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -812,7 +812,7 @@
 		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
 		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 		WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
-		".($USR_Shop ? "AND (SH.SH_ID = {$USR_Shop} OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."
+		".($USR_Shop ? "AND (SH.SH_ID IN ({$USR_Shop}) OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."
 		".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR (OD.StartDate IS NULL AND SH.stock = 1) OR OD.SH_ID IS NULL)" : "")."
 	";
 
@@ -943,7 +943,7 @@
 		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$is_lock and !$row["Archive"] );
 
 		// Если пользователю доступен только один салон в регионе или оптовик или свободный набор и нет админских привилегий, то нельзя редактировать общую информацию набора.
-		$editable = (!($USR_Shop and $row["SH_ID"] and $USR_Shop != $row["SH_ID"]) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and ($row["SH_ID"] or in_array('order_add_confirm', $Rights)));
+		$editable = (!($USR_Shop and $row["SH_ID"] and !in_array($row["SH_ID"], explode(",", $USR_Shop))) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and ($row["SH_ID"] or in_array('order_add_confirm', $Rights)));
 
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых наборов для фильтра материалов
 
@@ -1194,7 +1194,7 @@
 								FROM Cities CT
 								JOIN Shops SH ON SH.CT_ID = CT.CT_ID
 								".(isset($_GET["shpid"]) ? ' WHERE CT.CT_ID = '.$CT_ID : '')."
-								".($USR_Shop ? "AND SH.SH_ID = {$USR_Shop}" : "")."
+								".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
 								".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
 								GROUP BY CT.CT_ID
 								ORDER BY CT.City";
