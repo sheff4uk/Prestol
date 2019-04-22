@@ -214,12 +214,14 @@
 <form method="get" style="display: inline-block;">
 	<select name="CT_ID" onchange="this.form.submit()">
 		<?
-		$query = "SELECT CT.CT_ID, CONCAT(CT.City, ' (', GROUP_CONCAT(SH.Shop ORDER BY SH.Shop), ')') City, CT.Color
-					FROM Cities CT
-					JOIN Shops SH ON SH.CT_ID = CT.CT_ID AND SH.KA_ID IS NULL AND SH.SH_ID IN ({$SH_IDs})
-					".(in_array('selling_city', $Rights) ? 'WHERE CT.CT_ID = '.$USR_City : '')."
-					GROUP BY CT.CT_ID
-					ORDER BY CT.City";
+		$query = "
+			SELECT CT.CT_ID, CT.City, CT.Color
+			FROM Cities CT
+			JOIN Shops SH ON SH.CT_ID = CT.CT_ID AND SH.retail = 1
+			".(in_array('selling_city', $Rights) ? 'WHERE CT.CT_ID = '.$USR_City : '')."
+			GROUP BY CT.CT_ID
+			ORDER BY CT.City
+		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) )
 		{
