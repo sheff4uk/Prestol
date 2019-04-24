@@ -110,6 +110,7 @@
 			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 			WHERE ODD.OD_ID IS NULL
 			ORDER BY ODD.ODD_ID DESC
+			LIMIT 200
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
