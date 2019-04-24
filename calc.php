@@ -87,6 +87,9 @@
 			SELECT ODD.ODD_ID
 				,PM.code
 				,Zakaz(ODD.ODD_ID) Zakaz
+				,ODD.PF_ID
+				,PF.Form
+				,IF(PMF.standart, 'standart', '') form_standart
 				,IFNULL(MT.Material, '') Material
 				,CONCAT(' <b>', SH.Shipper, '</b>') Shipper
 				,IF(MT.removed=1, 'removed ', '') removed
@@ -98,6 +101,8 @@
 				,TIME(OCL.date_time) Time
 			FROM OrdersDataDetail ODD
 			JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
+			LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+			LEFT JOIN ProductModelsForms PMF ON PMF.PM_ID = ODD.PM_ID AND PMF.PF_ID = ODD.PF_ID
 			JOIN OrdersChangeLog OCL ON OCL.table_value = ODD.ODD_ID AND OCL.table_key LIKE 'ODD_ID' AND OCL.OFN_ID = 3
 			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
@@ -112,7 +117,7 @@
 
 			echo "
 				<tr>
-					<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."</td>
+					<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."".($row["PF_ID"] ? "<br><img class='form {$row["form_standart"]}' src='/img/form{$row["PF_ID"]}.png' title='{$row["Form"]}'>" : "")."</td>
 					<td><b>{$row["Zakaz"]}</b></td>
 					<td>{$material}</td>
 			";

@@ -680,6 +680,9 @@
 			,(ODD.Price - IFNULL(ODD.discount, 0)) Price
 			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PT_ID
 			,Zakaz(ODD.ODD_ID) Zakaz
+			,ODD.PF_ID
+			,PF.Form
+			,IF(PMF.standart, 'standart', '') form_standart
 			,IFNULL(MT.Material, '') Material
 			,CONCAT(' <b>', SH.Shipper, '</b>') Shipper
 			,DATEDIFF(ODD.arrival_date, NOW()) outdate
@@ -697,6 +700,8 @@
 		JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+		LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
+		LEFT JOIN ProductModelsForms PMF ON PMF.PM_ID = ODD.PM_ID AND PMF.PF_ID = ODD.PF_ID
 		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 		LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 		WHERE ODD.OD_ID = {$id}
@@ -726,7 +731,7 @@
 		$format_old_price = ($row["old_Price"] != '') ? '<p class="old_price">'.number_format($row["old_Price"], 0, '', ' ').'</p>' : '';
 		$format_price = ($row["Price"] != '') ? '<p class="price">'.number_format($row["Price"], 0, '', ' ').'</p>' : '';
 		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
-		echo "<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."</td>";
+		echo "<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."".($row["PF_ID"] ? "<br><img class='form {$row["form_standart"]}' src='/img/form{$row["PF_ID"]}.png' title='{$row["Form"]}'>" : "")."</td>";
 		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
 		echo "<td><span>{$row["Zakaz"]}</span></td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'>{$steps}</td>";
