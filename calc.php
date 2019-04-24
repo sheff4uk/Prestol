@@ -40,6 +40,7 @@
 		<thead>
 			<tr>
 				<th width="50"></th>
+				<th width="50"></th>
 				<th>Стол</th>
 				<th>Пластик</th>
 			<?
@@ -64,6 +65,7 @@
 	<table class="main_table">
 		<thead>
 			<tr>
+				<th width="50"></th>
 				<th width="50"></th>
 				<th></th>
 				<th></th>
@@ -117,7 +119,8 @@
 
 			echo "
 				<tr>
-					<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."".($row["PF_ID"] ? "<img class='form {$row["form_standart"]}' src='/img/form{$row["PF_ID"]}.png' title='{$row["Form"]}'>" : "")."</td>
+					<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."</td>
+					<td>".($row["PF_ID"] ? "<img class='form {$row["form_standart"]}' src='/img/form{$row["PF_ID"]}.png' title='{$row["Form"]}'>" : "")."</td>
 					<td><b>{$row["Zakaz"]}</b></td>
 					<td>{$material}</td>
 			";
