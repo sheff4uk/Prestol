@@ -978,10 +978,11 @@ td.tscell > i {
 
 img.form {
 	height: 24px;
-	filter: grayscale(100%);
+	filter: grayscale(100%) opacity(.5);
 }
 img.form.standart {
-	filter: drop-shadow(2px 2px 3px black);
+/*	filter: drop-shadow(2px 2px 3px black);*/
+	filter: none;
 }
 
 @media (max-width: 1024px) {
