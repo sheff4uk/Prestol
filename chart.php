@@ -94,9 +94,9 @@ $load_month = round((($current_power_month/4)/$average_power)*100);
 $load_quarter = round((($current_power_quarter/13)/$average_power)*100);
 
 // Вычисляем относительное изменение периодов
-$diff_week = round($current_power_week/$last_power_week*100, 1) - 100;
-$diff_month = round($current_power_month/$last_power_month*100, 1) - 100;
-$diff_quarter = round($current_power_quarter/$last_power_quarter*100, 1) - 100;
+$diff_week = round($current_power_week/$last_power_week*100) - 100;
+$diff_month = round($current_power_month/$last_power_month*100) - 100;
+$diff_quarter = round($current_power_quarter/$last_power_quarter*100) - 100;
 
 $format_diff_week = ($last_power_week == 0 or $diff_week == 0) ? "<br>" : "<font title='По сравнению с предыдущим периодом' size='-1' color=".($diff_week > 0 ? "'#26a332'>+" : "'#e51616'>").$diff_week."&thinsp;%</font>";
 $format_diff_month = ($last_power_month == 0 or $diff_month == 0) ? "<br>" : "<font title='По сравнению с предыдущим периодом' size='-1' color=".($diff_month > 0 ? "'#26a332'>+" : "'#e51616'>").$diff_month."&thinsp;%</font>";
