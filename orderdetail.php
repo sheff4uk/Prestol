@@ -733,7 +733,7 @@
 		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
 		echo "<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."".($row["PF_ID"] ? "<br><img class='form {$row["form_standart"]}' src='/img/form{$row["PF_ID"]}.png' title='{$row["Form"]}'>" : "")."</td>";
 		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
-		echo "<td><span>{$row["Zakaz"]}</span></td>";
+		echo "<td><b>{$row["Zakaz"]}</b></td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'>{$steps}</td>";
 		echo "<td>{$material}</td>";
 		echo "<td>{$row["Comment"]}</td>";

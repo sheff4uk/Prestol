@@ -186,11 +186,12 @@
 <div id='addtable' title='Параметры стола' class='addproduct' style='display:none'>
 	<form method='post'>
 		<fieldset>
+		<span>Стандартные столы после добавления помечаются символом - <b>❋</b></span>
 		<input type='hidden' value='2' name='Type'>
+		<input type='hidden' value='1' name='Amount'>
 		<div>
 			<label>Kол-во:</label>
 			<span id="amount" style="font-size: 2em;">1</span>
-			<input type='hidden' value='1' name='Amount'>
 		</div>
 		<div>
 			<label>Модель:</label>
@@ -892,6 +893,7 @@
 			$('#addtable select[name="Shipper"]').attr("required", false);
 			$('#addtable textarea').val('');
 			$('#addtable #amount').text('1');
+			$('#addtable #amount').parent('div').hide('fast');
 			$('#addtable input[name="Amount"]').val('1');
 			$('#addtable input[name="Length"]').val('');
 			$('#addtable input[name="Width"]').val('');
@@ -939,7 +941,10 @@
 //					$('#addtable select[name="Model"]').select2();
 //				}
 
-				$('#addtable #amount').text(odd_data['amount']);
+				if (odd_data['amount'] > 1) {
+					$('#addtable #amount').text(odd_data['amount']);
+					$('#addtable #amount').parent('div').show('fast');
+				}
 				$('#addtable input[name="Amount"]').val(odd_data['amount']);
 
 				// Задание значение, создав при необходимости новую опцию
