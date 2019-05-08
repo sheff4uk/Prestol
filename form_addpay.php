@@ -109,7 +109,7 @@
 		</fieldset>
 		<div>
 			<hr>
-			<button type='submit' style='float: right;'>Сохранить</button>
+			<input type='submit' value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>

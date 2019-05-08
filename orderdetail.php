@@ -971,7 +971,7 @@ if( $id != "NULL" ) {
 		</fieldset>
 		<div>
 			<hr>
-			<button style='float: right;'>Отправить</button>
+			<input type='submit' value='Отправить' style='float: right;'>
 		</div>
 	</form>
 </div>

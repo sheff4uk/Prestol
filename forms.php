@@ -466,7 +466,7 @@
 		</fieldset>
 		<div>
 			<hr>
-			<button style='float: right;'>Сохранить</button>
+			<input type='submit' value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>
@@ -492,7 +492,7 @@
 		</fieldset>
 		<div>
 			<hr>
-			<button style='float: right;'>Сохранить</button>
+			<input type='submit' value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>
@@ -505,7 +505,7 @@
 		</fieldset>
 		<div>
 			<hr>
-			<button style='float: right;'>Сохранить</button>
+			<input type='submit' value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>
@@ -530,7 +530,7 @@
 		</fieldset>
 		<div>
 			<hr>
-			<button style='float: right;'>Сохранить</button>
+			<input type='submit' value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>

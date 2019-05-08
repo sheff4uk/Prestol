@@ -86,10 +86,10 @@ function makeform(odd_id, location)
 ////////////////////////////////////////////////////////////////////////////////
 $(function(){
 	// Предотвращение двойного сабмита формы
-//	$('form button').click(function() {
-//		$('form button').prop("disabled", true);
-//		$(this).parents('form').submit();
-//	});
+	$('form input[type="submit"]').click(function() {
+		$('form input[type="submit"]').prop("disabled", true);
+		$(this).parents('form').submit();
+	});
 
 	// При очистке информации о цвете деактивируем кнопки прозрачности
 	$('#paint_color').on("change", function(){

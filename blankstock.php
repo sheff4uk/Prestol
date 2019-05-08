@@ -140,7 +140,7 @@
 			</fieldset>
 			<div>
 				<hr>
-				<button type='submit' style='float: right;'>Сохранить</button>
+				<input type='submit' value='Сохранить' style='float: right;'>
 			</div>
 		</form>
 	</div>
@@ -377,7 +377,7 @@
 //			var comment = $(this).parents('tr').find('.comment > pre').html();
 
 			// Очистка диалога
-			$('#addblank input, #addblank select, #addblank textarea').val('');
+			$('#addblank input[type="text"], #addblank input[type="number"], #addblank select, #addblank textarea').val('');
 			$('#addblank #worker').val('').trigger('change');
 			$('#addblank #blank').val('').trigger('change');
 
