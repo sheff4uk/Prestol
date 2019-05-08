@@ -366,7 +366,8 @@
 
 	<!-- Форма ворклог -->
 	<div id='dayworklog' class="addproduct" style="display:none">
-		<form method="post">
+		<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 			<fieldset>
 				<input type="hidden" name="date">
 				<input type="hidden" name="worker">
@@ -439,7 +440,7 @@
 			</fieldset>
 			<div>
 				<hr>
-				<input type='submit' value='Сохранить' style='float: right;'>
+				<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
 			</div>
 		</form>
 	</div>

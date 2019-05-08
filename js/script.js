@@ -35,7 +35,7 @@ function makeform(odd_id, location)
 	
 	// Диалог добавления этапов
 	$('#steps').dialog({
-		width: 500,
+		width: 550,
 		modal: true,
 		show: 'blind',
 		hide: 'explode',
@@ -85,12 +85,6 @@ function makeform(odd_id, location)
 
 ////////////////////////////////////////////////////////////////////////////////
 $(function(){
-	// Предотвращение двойного сабмита формы
-//	$('form input[type="submit"]').click(function() {
-//		$('form input[type="submit"]').prop("disabled", true);
-//		$(this).parents('form').submit();
-//	});
-
 	// При очистке информации о цвете деактивируем кнопки прозрачности
 	$('#paint_color').on("change", function(){
 		clearonoff(this);

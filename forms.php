@@ -94,7 +94,8 @@
 
 <!-- Форма добавления стула -->
 <div id='addchair' title='Параметры стула' class='addproduct' style='display:none'>
-	<form method='post'>
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 		<input type='hidden' value='1' name='Type'>
 		<div>
@@ -176,7 +177,7 @@
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Сохранить' style='float: right;'>
+			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>
@@ -184,7 +185,8 @@
 
 <!-- Форма добавения стола -->
 <div id='addtable' title='Параметры стола' class='addproduct' style='display:none'>
-	<form method='post'>
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 		<span>Стандартные столы после добавления помечаются символом - <b>❋</b></span>
 		<input type='hidden' value='2' name='Type'>
@@ -337,7 +339,7 @@
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Сохранить' style='float: right;'>
+			<input type='submit' name='subbut' value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>
@@ -345,7 +347,8 @@
 
 <!-- Форма добавления заготовки -->
 <div id='addblank' title='Параметры заготовки/прочего' class='addproduct' style='display:none'>
-	<form method='post'>
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<div>
 				<label>Kол-во:</label>
@@ -466,33 +469,37 @@
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Сохранить' style='float: right;'>
+			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>
 <!-- Конец формы добавления заготовки -->
 
 <!-- Форма добавления этапов производства -->
-<div id='steps' title='Этапы производства' style='display:none'>
+<div id='steps' title='Этапы производства' style='display:none' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 	<form method='post'>
-		<div id='formsteps'></div> <!-- Форма создается в ajax.php -->
-		<p>
+		<fieldset>
+			<div id='formsteps'></div> <!-- Форма создается в ajax.php -->
+		</fieldset>
+		<div>
 			<hr>
-			<input type='submit' value='Сохранить' style='float: right;'>
-		</p>
+			<input type='submit' name='subbut' value='Сохранить' style='float: right;'>
+		</div>
 	</form>
 </div>
 <!-- Конец формы добавления этапов производства -->
 
 <!-- Форма разбитя набора -->
 <div id='order_cut' title='Разделение набора' style='display:none'>
-	<form method="post" action="index.php">
+	<form method="post" action="index.php" onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Сохранить' style='float: right;'>
+			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>
@@ -500,12 +507,13 @@
 
 <!-- Форма редактирования стоимости набора -->
 <div id='update_price' title='Изменение стоимости набора' style='display:none'>
-	<form method='post'>
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Сохранить' style='float: right;'>
+			<input type='submit' name='subbut' value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>
@@ -524,13 +532,14 @@
 		width: 180px;
 	}
 </style>
-<div id='add_payment' title='Добавление оплаты' style='display:none'>
+<div id='add_payment' title='Добавление оплаты' style='display:none' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 	<form method='post'>
 		<fieldset>
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Сохранить' style='float: right;'>
+			<input type='submit' neme='subbut' value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>

@@ -32,7 +32,8 @@
 
 <!-- Форма добавления платежа -->
 <div id='addpay' class="addproduct" style='display:none'>
-	<form method="post" action="form_addpay.php">
+	<form method="post" action="form_addpay.php" onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<input type='hidden' name='pl_id'>
 			<input type='hidden' name='sign'>
@@ -109,7 +110,7 @@
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Сохранить' style='float: right;'>
+			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>

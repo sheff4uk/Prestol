@@ -348,7 +348,8 @@ while( $row = mysqli_fetch_array($res) ) {
 <!-- Форма подготовки счёта -->
 <div id='add_bill_form' style='display:none' title="Счёт на оплату">
 	<h1>Счёт на оплату</h1>
-	<form action="?add_bill=1" method="post" id="formdiv">
+	<form action="?add_bill=1" method="post" id="formdiv" onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset style="text-align: left;">
 			<legend>Информация о плательщике:</legend>
 			<table width="100%" class="forms">
@@ -554,7 +555,7 @@ while( $row = mysqli_fetch_array($res) ) {
 
 		<div>
 			<hr>
-			<input type='submit' value='Создать счет' style='float: right;'>
+			<input type='submit' name="subbut" value='Создать счет' style='float: right;'>
 			<input type="text" name="date" id="date" value="<?=date('d.m.Y')?>" class="date" style="float: right; margin: 4px 10px; width: 90px;" readonly>
 		</div>
 	</form>

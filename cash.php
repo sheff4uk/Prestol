@@ -1038,7 +1038,8 @@
 <!--/////////////////////////////////////////////////////////////////-->
 <!-- Форма добавления/редактирования операции -->
 <div id='add_operation' style='display:none' title="ДОБАВИТЬ ОПЕРАЦИЮ">
-	<form method='post' action='<?=$location?>?add_operation=1'>
+	<form method='post' action='<?=$location?>?add_operation' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<input type="hidden" name="F_ID" id="F_ID">
 			<div class="field">
@@ -1123,14 +1124,15 @@
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Сохранить' style='float: right;'>
+			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>
 <!--/////////////////////////////////////////////////////////////////-->
 <!-- Форма принятия выручки -->
 <div id='add_send' style='display:none' title="ПРИНЯТЬ ВЫРУЧКУ">
-	<form method='post' action='<?=$location?>?add_send=1'>
+	<form method='post' action='<?=$location?>?add_send' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<input type="hidden" id="OP_ID" name="OP_ID">
 			<div style="text-align: center;">
@@ -1156,14 +1158,15 @@
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Принять' style='float: right;'>
+			<input type='submit' name="subbut" value='Принять' style='float: right;'>
 		</div>
 	</form>
 </div>
 <!--/////////////////////////////////////////////////////////////////-->
 <!-- Форма добавления/редактирования счета -->
 <div id='add_account' style='display:none' title="ИЗМЕНИТЬ СЧЕТ">
-	<form method='post' action='<?=$location?>?add_account=1'>
+	<form method='post' action='<?=$location?>?add_account' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<input type="hidden" id="FA_ID" name="FA_ID">
 			<div class="field">
@@ -1204,14 +1207,15 @@
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Сохранить' style='float: right;'>
+			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>
 <!--/////////////////////////////////////////////////////////////////-->
 <!-- Форма добавления/редактирования категории -->
 <div id='add_category' style='display:none;' title="ИЗМЕНИТЬ КАТЕГОРИЮ">
-	<form method='post' action='<?=$location?>?add_category=1'>
+	<form method='post' action='<?=$location?>?add_category' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<table>
 				<thead>
@@ -1256,7 +1260,7 @@
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Сохранить' style='float: right;'>
+			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>

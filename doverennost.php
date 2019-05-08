@@ -208,7 +208,8 @@
 <!-- Форма подготовки доверенности -->
 <div id='add_doverennost_form' style='display:none' title="Доверенность на получение товарно-материальных ценностей">
 	<h1>Доверенность на получение товарно-материальных ценностей</h1>
-	<form method="post" id="formdiv" action="?add_doverennost">
+	<form method="post" id="formdiv" action="?add_doverennost" onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 
 		<div class="formdiv">
 			<table style="width: 100%" border="0" cellspacing="4" class="forms">
@@ -365,7 +366,7 @@
 
 			<div>
 				<hr>
-				<input type='submit' value='Создать доверенность' style='float: right;'>
+				<input type='submit' name="subbut" value='Создать доверенность' style='float: right;'>
 			</div>
 
 		</div>

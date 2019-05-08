@@ -447,7 +447,8 @@ while( $row = mysqli_fetch_array($res) ) {
 
 <!-- Форма подготовки накладной -->
 <div id='add_invoice_form' style='display:none'>
-	<form method='post' action="invoice.php">
+	<form method='post' action="invoice.php" onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset style="text-align: center;">
 			<div>
 				<input type="hidden" name="year" value="<?=$year?>">
@@ -663,7 +664,7 @@ while( $row = mysqli_fetch_array($res) ) {
 				<h3 style="display: inline-block; margin: 10px;">Процент скидки: <span id="invoice_percent" style="color: #16A085;">0</span></h3>
 				<input type="hidden" name="summa" value="0">
 				<input type="hidden" name="total_discount" value="0">
-				<input type='submit' value='Создать накладную' style='float: right;'>
+				<input type='submit' name="subbut" value='Создать накладную' style='float: right;'>
 				<input type="text" name="date" id="date" class="date" style="float: right; margin: 4px 10px; width: 90px;" readonly>
 			</div>
 			<h3 id="return_message" style="color: #911; display: none;">ВНИМАНИЕ! Накладную на возврат товара отменить не возможно.</h3>
@@ -673,7 +674,8 @@ while( $row = mysqli_fetch_array($res) ) {
 
 <!-- Форма подготовки акта сверки -->
 <div id='add_act_sverki_form' style='display:none' title="Акт сверки">
-	<form method='post' action="?add_act=1&year=<?=$year?>&payer=<?=$payer?>">
+	<form method='post' action="?add_act=1&year=<?=$year?>&payer=<?=$payer?>" onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<div>
 				Период:&nbsp;[&nbsp;
@@ -685,7 +687,7 @@ while( $row = mysqli_fetch_array($res) ) {
 			</div>
 			<div>
 				<hr>
-				<input type='submit' value='Создать акт сверки' style='float: right;'>
+				<input type='submit' name="subbut" value='Создать акт сверки' style='float: right;'>
 			</div>
 		</fieldset>
 	</form>

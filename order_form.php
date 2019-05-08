@@ -1,6 +1,7 @@
 <!-- Форма добавления набора -->
 <div id='order_form' class='addproduct' title='Новый набор' style='display:none;'>
-	<form method='post'>
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<div>
 				<label>Подразделение:</label>
@@ -86,7 +87,7 @@
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Создать' style='float: right;'>
+			<input type='submit' name="subbut" value='Создать' style='float: right;'>
 		</div>
 	</form>
 </div>

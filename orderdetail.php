@@ -909,11 +909,12 @@ if( $id != "NULL" ) {
 			</table>
 		</div>
 		<div id="attachments">
-			<form action=upload.php method=post enctype=multipart/form-data>
+			<form action="upload.php" method="post" enctype="multipart/form-data" onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 				<input type="hidden" name="odid" value="<?=$id?>">
 				<input type=file name=uploadfile>
 				<input type="text" name="comment" placeholder="Комментарий">
-				<input type=submit value=Загрузить>
+				<input type=submit name="subbut" value=Загрузить>
 			</form>
 			<p style="color: #911;">Файлы хранятся 1 год с момента загрузки.</p>
 			<table style="width: 100%;">
@@ -952,7 +953,8 @@ if( $id != "NULL" ) {
 ?>
 <!-- Форма добавления сообщения к набору -->
 <div id='add_message' title='Сообщение' style='display:none'>
-	<form method='post' action='<?=$location?>&add_message'>
+	<form method='post' action='<?=$location?>&add_message' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<div>
 				<label for="message">Текст сообщения:</label><br>
@@ -971,7 +973,7 @@ if( $id != "NULL" ) {
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' value='Отправить' style='float: right;'>
+			<input type='submit' name="subbut" value='Отправить' style='float: right;'>
 		</div>
 	</form>
 </div>
