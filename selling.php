@@ -92,23 +92,24 @@
 		$type = $_POST["type"];
 
 		// Получаем из базы доп. сведения по набору
-		$query = "SELECT OD.SH_ID, OD.StartDate FROM OrdersData OD WHERE OD.OD_ID = {$OD_ID}";
+		$query = "SELECT OD.SH_ID, OD.StartDate, OD.ClientName FROM OrdersData OD WHERE OD.OD_ID = {$OD_ID}";
 		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$SH_ID = mysqli_result($subres,0,'SH_ID');
 		$StartDate = mysqli_result($subres,0,'StartDate');
+		$ClientName = mysqli_result($subres,0,'ClientName');
 
 		if( $StartDate ) {
 			if( $old_sum ) {
 				$query = "INSERT INTO Otkazi
-					SET OD_ID = {$OD_ID}, type = {$type}, SH_ID = {$SH_ID}, StartDate = '{$StartDate}', old_sum = {$old_sum}
+					SET OD_ID = {$OD_ID}, type = {$type}, SH_ID = {$SH_ID}, StartDate = '{$StartDate}', old_sum = {$old_sum}, comment = '{$ClientName}'
 					ON DUPLICATE KEY UPDATE type = {$type}, old_sum = {$old_sum}";
 				if( mysqli_query( $mysqli, $query ) ) {
 					$_SESSION["alert"][] = "В таблице отказов/замен сделана запись.";
 				}
 				else { $_SESSION["alert"][] = mysqli_error( $mysqli ); }
 			}
-			// Очищаем дату продажи и статус получения набора
-			$query = "UPDATE OrdersData SET StartDate = NULL, taken = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена', ' Отказ')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
+			// Очищаем дату продажи, заказчика и статус получения набора
+			$query = "UPDATE OrdersData SET StartDate = NULL, ClientName = NULL, ul = 0, mtel = NULL, address = NULL, OrderNumber = NULL, taken = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена ({$ClientName})', ' Отказ ({$ClientName})')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 			if( mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"][] = "Набор перемещен в \"Свободные\"";
 			}
@@ -796,7 +797,7 @@
 									,IFNULL(MONTH(OD.StartDate), 0) month
 									,SH.Shop
 									,OT.old_sum
-									,IF(OT.type = 1, 'Замена', 'Отказ') comment
+									,CONCAT(IF(OT.type = 1, 'Замена (', 'Отказ ('), IFNULL(OT.comment, ''), ')') comment
 									,OT.StartDate
 									,OT.SH_ID
 									,IF(OD.DelDate IS NULL, '', 'del') del
@@ -817,7 +818,7 @@
 						echo "<td width='70' class='txtright'><b>{$format_old_price}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
 						echo "<td width='60'>{$cache_name}</td>";
-						echo "<td width='120' style='color: #911;'>{$row["comment"]}</td>";
+						echo "<td width='120'><span>{$row["comment"]}</span></td>";
 						//echo "<td width='25'><a href='#' onclick='if(confirm(\"Убрать набор <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
 					}
