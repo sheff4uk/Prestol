@@ -11,27 +11,45 @@ this.subbut.value='Подождите, пожалуйста!';">
 						echo "<option value=''>-=Выберите подразделение=-</option>";
 					}
 					if( in_array('order_add_confirm', $Rights) ) {
-						echo "<option value='0' style='background: #999;'>Свободные</option>";
+						echo "<option value='0' style='background: #999;'>-=Свободные=-</option>";
 					}
-					$query = "SELECT SH.SH_ID
-									,CONCAT(CT.City, '/', SH.Shop) AS Shop
-									,CT.Color
-									,IFNULL(SH.retail, 0) retail
-								FROM Shops SH
-								JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-								WHERE CT.CT_ID IN ({$USR_cities})
-									".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
-									".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-								ORDER BY CT.City, SH.Shop";
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 					$num_rows = 0;
+
+					$query = "
+						SELECT CT.CT_ID
+							,CT.City
+						FROM Cities CT
+						WHERE CT.CT_ID IN ({$USR_cities})
+							".($USR_Shop ? "AND CT.CT_ID IN (SELECT CT_ID FROM Shops WHERE SH_ID IN ({$USR_Shop}))" : "")."
+							".($USR_KA ? "AND CT.CT_ID IN (SELECT CT_ID FROM Shops WHERE KA_ID = {$USR_KA})" : "")."
+						ORDER BY CT.City
+					";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) )
 					{
-						echo "<option value='{$row["SH_ID"]}' retail='{$row["retail"]}' style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
-						++$num_rows;
-						$sh_id = $row["SH_ID"];
+						echo "<optgroup label='{$row["City"]}'>";
+						$query = "
+							SELECT SH.SH_ID
+								,SH.Shop
+								,IFNULL(SH.retail, 0) retail
+							FROM Shops SH
+							WHERE SH.CT_ID = ({$row["CT_ID"]})
+								".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
+								".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
+							ORDER BY SH.retail DESC, SH.Shop
+						";
+						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+						while( $subrow = mysqli_fetch_array($subres) )
+						{
+							echo "<option value='{$subrow["SH_ID"]}' retail='{$subrow["retail"]}'>{$subrow["Shop"]}</option>";
+							++$num_rows;
+							$sh_id = $subrow["SH_ID"];
+						}
+						echo "<optgroup>";
 					}
+
 					?>
 				</select>
 			</div>
