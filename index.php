@@ -425,8 +425,10 @@
 			<th width="25%">
 				<select name="f_Models" style="width: 100%;" onchange="this.form.submit()" class="<?=($_SESSION["f_Models"] != "") ? "filtered" : ""?>">
 					<option></option>
-					<option value="0" <?=(($_SESSION["f_Models"] == "0") ? "selected" : "")?>>Столешницы/Заготовки/Прочее</option>
+					<option value="*" <?=(($_SESSION["f_Models"] == "*") ? "selected" : "")?>>Заготовка/Прочее</option>
+
 					<optgroup label="Столы">
+					<option value="0" <?=(($_SESSION["f_Models"] == "0") ? "selected" : "")?>>-=Столешница=-</option>
 					<?
 						$query = "
 							SELECT PM.PM_ID, CONCAT(PM.Model, IF(PM.archive, ' (архив)', '')) Model
@@ -714,9 +716,21 @@
 			";
 			// Фильтр по модели
 			if ($_SESSION["f_Models"] != "") {
-				$query .= "
-					AND IFNULL(ODD.PM_ID, 0) = {$_SESSION["f_Models"]}
-				";
+				if ($_SESSION["f_Models"] == "*") {
+					$query .= "
+						AND (ODD.BL_ID IS NOT NULL OR ODD.Other IS NOT NULL)
+					";
+				}
+				elseif ($_SESSION["f_Models"] == "0") {
+					$query .= "
+						AND ODD.PM_ID IS NULL AND ODD.Length IS NOT NULL
+					";
+				}
+				else {
+					$query .= "
+						AND ODD.PM_ID = {$_SESSION["f_Models"]}
+					";
+				}
 			}
 			// Фильтр по материалам
 			if ($MT_IDs != "") {
@@ -917,7 +931,7 @@
 			SELECT ODD.ODD_ID
 				,ODD.Amount
 				,Zakaz(ODD.ODD_ID) zakaz
-				,".((!isset($_GET["shpid"]) and $_SESSION["f_Models"] != "") ? "IF(IFNULL(ODD.PM_ID, 0) = {$_SESSION["f_Models"]}, 'ss', '')" : "''")." PMfilter
+				,".((!isset($_GET["shpid"]) and $_SESSION["f_Models"] != "") ? "IF(IF(ODD.BL_ID IS NOT NULL OR ODD.Other IS NOT NULL, '*', IFNULL(ODD.PM_ID, 0)) LIKE '{$_SESSION["f_Models"]}', 'ss', '')" : "''")." PMfilter
 				,ODD.Comment
 				,DATEDIFF(ODD.arrival_date, NOW()) outdate
 				,ODD.IsExist
