@@ -8,6 +8,41 @@ if (!empty($_SESSION['login']) and !empty($_SESSION['id'])) {
 	die;
 }
 
+function set_end_date() {
+	// Отсчитываем дату сдачи - 30 раб. дней и записываем в сессию
+	if( !isset($_SESSION["end_date"]) or $_SESSION["today"] != date('d.m.Y') ) {
+		$_SESSION["today"] = date('d.m.Y');
+		$end_date = date_create(date('Y-m-d'));
+		$working_days = 0;
+		$year = 0;
+		while ($working_days < 30) {
+			date_modify($end_date, '+1 day');
+			// Если при подсчете рабочих дней изменился год, то получаем новый календарь
+			if( $year != date('Y', strtotime(date_format($end_date, 'd.m.Y'))) ) {
+				$year = date('Y', strtotime(date_format($end_date, 'd.m.Y')));
+				$xml = simplexml_load_file("http://xmlcalendar.ru/data/ru/".$year."/calendar.xml");
+				$json = json_encode($xml);
+				$data = json_decode($json,TRUE);
+			}
+			$day_of_week = date('N', strtotime(date_format($end_date, 'd.m.Y')));
+			$month = date('m', strtotime(date_format($end_date, 'd.m.Y')));
+			$day = date('d', strtotime(date_format($end_date, 'd.m.Y')));
+			// Перебираем массив и если находим дату то проверяем ее тип (тип дня: 1 - выходной день, 2 - рабочий и сокращенный (может быть использован для любого дня недели), 3 - рабочий день (суббота/воскресенье))
+			$t = 0;
+			foreach( $data["days"]["day"] as $key=>$value ) {
+				if( $value["@attributes"]["d"] == $month.".".$day) {
+					$t = $value["@attributes"]["t"];
+				}
+			}
+			// Если очередной день - рабочий, то увеличиваем счетчик
+			if ( !(($day_of_week >= 6 and $t != "3" and $t != "2") or ($t == "1")) ) {
+				++$working_days;
+			}
+		}
+		$_SESSION["end_date"] = date_format($end_date, 'd.m.Y');
+	}
+}
+
 // Если введен СМС-код
 if( isset($_GET["sms"]) ) {
 	// Если код верный - сохраняем в сессию пользователя и покидаем экран
@@ -16,6 +51,11 @@ if( isset($_GET["sms"]) ) {
 		$result = mysqli_query( $mysqli, $query );
 		$myrow = mysqli_fetch_array($result);
 		$_SESSION['login'] = $myrow['Login'];
+
+		// Обнуляем неудачные попытки входа
+		mysqli_query ($mysqli, "UPDATE Users SET try = 0 WHERE USR_ID = {$_SESSION['id']}");
+
+		set_end_date();
 
 		if( $_GET["location"] ) {
 			exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
@@ -131,6 +171,7 @@ if (isset($_POST['submit'])) {
 				// Обнуляем неудачные попытки входа
 				mysqli_query ($mysqli, "UPDATE Users SET try = 0 WHERE USR_ID = {$myrow['USR_ID']}");
 
+				set_end_date();
 
 				if( isset($_GET["location"]) ) {
 					exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');

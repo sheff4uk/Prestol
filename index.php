@@ -270,7 +270,7 @@
 	}
 	else {
 	?>
-		<p>
+		<div style="margin: 1em 0;">
 			<form method="get">
 				<div class='btnset'>
 					<input type='radio' id='archive0' name='archive' value='0' <?= ($archive == "0" ? "checked" : "") ?> onchange="this.form.submit()">
@@ -283,7 +283,7 @@
 						<label for='archive3'>Удаленные</label>
 				</div>
 			</form>
-		</p>
+		</div>
 	<?
 	}
 
@@ -328,41 +328,6 @@
 	</div>
 	<?
 	}
-	// Отсчитываем дату сдачи - 30 раб. дней и записываем в сессию
-	if( !isset($_SESSION["end_date"]) or $_SESSION["today"] != date('d.m.Y') ) {
-		$_SESSION["today"] = date('d.m.Y');
-		$end_date = date_create(date('Y-m-d'));
-		$working_days = 0;
-		$year = 0;
-		while ($working_days < 30) {
-			date_modify($end_date, '+1 day');
-			// Если при подсчете рабочих дней изменился год, то получаем новый календарь
-			if( $year != date('Y', strtotime(date_format($end_date, 'd.m.Y'))) ) {
-				$year = date('Y', strtotime(date_format($end_date, 'd.m.Y')));
-				$xml = simplexml_load_file("http://xmlcalendar.ru/data/ru/".$year."/calendar.xml");
-				$json = json_encode($xml);
-				$data = json_decode($json,TRUE);
-			}
-			$day_of_week = date('N', strtotime(date_format($end_date, 'd.m.Y')));
-			$month = date('m', strtotime(date_format($end_date, 'd.m.Y')));
-			$day = date('d', strtotime(date_format($end_date, 'd.m.Y')));
-			// Перебираем массив и если находим дату то проверяем ее тип (тип дня: 1 - выходной день, 2 - рабочий и сокращенный (может быть использован для любого дня недели), 3 - рабочий день (суббота/воскресенье))
-			$t = 0;
-			foreach( $data["days"]["day"] as $key=>$value ) {
-				if( $value["@attributes"]["d"] == $month.".".$day) {
-					$t = $value["@attributes"]["t"];
-				}
-			}
-			// Если очередной день - рабочий, то увеличиваем счетчик
-			if ( !(($day_of_week >= 6 and $t != "3" and $t != "2") or ($t == "1")) ) {
-				++$working_days;
-			}
-		}
-		$_SESSION["end_date"] = date_format($end_date, 'd.m.Y');
-	}
-	?>
-
-<?
 	// Кнопка добавления набора
 	if( in_array('order_add', $Rights) and !isset($_GET["shpid"]) ) {
 		echo "<div id='add_btn' class='add_order' title='Добавить новый набор'></div>";
@@ -1479,21 +1444,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$(this).parent('.comment_cell').find('textarea').hide();
 			$(this).parent('.comment_cell').find('span').show();
 		});
-
-//		// В форме добавления набора если выбираем Свободные - дата продажи пустая
-//		$('#order_form select[name="Shop"]').on("change", function() {
-//			var StartDate = $('#order_form input[name="StartDate"]').attr('date');
-//			if( $(this).val() === '0' ) {
-//				$('#order_form input[name="StartDate"]').val('');
-//			}
-//			else {
-//				$('#order_form input[name="StartDate"]').val(StartDate);
-//			}
-//		});
-
-//		$('#order_form input[name="StartDate"]').on("change", function() {
-//			$(this).attr('date', $(this).val());
-//		});
 	});
 </script>
 
