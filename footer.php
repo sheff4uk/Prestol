@@ -1,6 +1,12 @@
 <?
 	// Выводим собранные в сесии сообщения через noty
 	include "noty.php";
+
+	// Записывае в БД текущий URL
+	if (isset($_SESSION['id'])) {
+		$query = "UPDATE Users SET last_url = '{$_SERVER["REQUEST_URI"]}' WHERE USR_ID = {$_SESSION['id']}";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	}
 ?>
 </div>
 <div style="

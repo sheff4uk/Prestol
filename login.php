@@ -47,7 +47,7 @@ function set_end_date() {
 if( isset($_GET["sms"]) ) {
 	// Если код верный - сохраняем в сессию пользователя и покидаем экран
 	if( $_POST["sms_code"] == $_SESSION["sms_code"] ) {
-		$query = "SELECT Login, Name FROM Users WHERE USR_ID={$_SESSION['id']}";
+		$query = "SELECT Login, Name, last_url FROM Users WHERE USR_ID={$_SESSION['id']}";
 		$result = mysqli_query( $mysqli, $query );
 		$myrow = mysqli_fetch_array($result);
 		$_SESSION['login'] = $myrow['Login'];
@@ -57,12 +57,7 @@ if( isset($_GET["sms"]) ) {
 
 		set_end_date();
 
-		if( $_GET["location"] ) {
-			exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
-		}
-		else {
-			exit ('<meta http-equiv="refresh" content="0; url=/">');
-		}
+		exit ('<meta http-equiv="refresh" content="0; url='.$myrow["last_url"].'">');
 		die;
 	}
 	else {
@@ -75,7 +70,7 @@ if( isset($_GET["sms"]) ) {
 if (isset($_POST['submit'])) {
 
 	// проверяем, сущестует ли пользователь с таким логином
-	$query = "SELECT USR_ID, Login, Mailconfirm, Activation, password_hash, phone, try FROM Users WHERE Login='".mysqli_real_escape_string($mysqli, $_POST['login'])."'";
+	$query = "SELECT USR_ID, Login, Mailconfirm, Activation, password_hash, phone, try, last_url FROM Users WHERE Login='".mysqli_real_escape_string($mysqli, $_POST['login'])."'";
 	$result = mysqli_query( $mysqli, $query );
 	if (mysqli_num_rows($result)) {
 
@@ -142,7 +137,7 @@ if (isset($_POST['submit'])) {
 								if ($json->status == "OK") { // Запрос выполнился
 									// Рисуем форму для принятия СМС-кода
 									echo "
-										<form method='post' action='?sms=1?location={$_GET["location"]}'>
+										<form method='post' action='?sms'>
 											<input type='text' name='sms_code'>
 										</form>
 									";
@@ -173,12 +168,7 @@ if (isset($_POST['submit'])) {
 
 				set_end_date();
 
-				if( isset($_GET["location"]) ) {
-					exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
-				}
-				else {
-					exit ('<meta http-equiv="refresh" content="0; url=/">');
-				}
+				exit ('<meta http-equiv="refresh" content="0; url='.$myrow["last_url"].'">');
 				die;
 			}
 			else {
