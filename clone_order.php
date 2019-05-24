@@ -32,8 +32,8 @@ if( !in_array('order_add', $Rights) ) {
 		// Создаём новый набор
 		$AddDate = date("Y-m-d");
 		$query = "
-			INSERT INTO OrdersData(CLientName, AddDate, StartDate, EndDate, SH_ID, OrderNumber, CL_ID, author, confirmed)
-			SELECT CLientName, '{$AddDate}', NULL, IF(SH_ID IS NULL, NULL, '".date('Y-m-d', strtotime($_SESSION["end_date"]))."'), IF(IFNULL(SH_ID, 0) IN ({$SH_IDs}), SH_ID, {$first_SH_ID}), OrderNumber, CL_ID, {$_SESSION['id']}, ".(in_array('order_add_confirm', $Rights) ? 1 : 0)."
+			INSERT INTO OrdersData(AddDate, SH_ID, CL_ID, author, confirmed)
+			SELECT '{$AddDate}', IF(IFNULL(SH_ID, 0) IN ({$SH_IDs}), SH_ID, {$first_SH_ID}), CL_ID, {$_SESSION['id']}, ".(in_array('order_add_confirm', $Rights) ? 1 : 0)."
 			FROM OrdersData
 			WHERE OD_ID = {$_GET["id"]}
 		";

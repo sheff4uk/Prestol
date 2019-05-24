@@ -23,7 +23,6 @@
 		}
 		$AddDate = date("Y-m-d");
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
-//		$EndDate = $_POST["Shop"] ? ($_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : '\''.date( "Y-m-d", strtotime($_SESSION["end_date"]) ).'\'') : "NULL";
 		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
 		$chars = array("+", " ", "(", ")"); // Символы, которые трубуется удалить из строки с телефоном
