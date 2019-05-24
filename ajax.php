@@ -1061,47 +1061,48 @@ case "create_shop_select":
 	$retail = mysqli_result($res,0,'retail');
 
 	// Формируем элементы дропдауна
-	$query = "SELECT SH.SH_ID
-					,CONCAT(CT.City, '/', SH.Shop) AS Shop
-					,'selected' selected
-					,CT.Color
-				FROM Shops SH
-				JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-				WHERE SH.SH_ID = {$SH_ID}";
+	$query = "
+		SELECT SH.SH_ID
+			,CONCAT(CT.City, '/', SH.Shop) AS Shop
+			,'selected' selected
+			,CT.Color
+		FROM Shops SH
+		JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+		WHERE SH.SH_ID = {$SH_ID}
+	";
 
-	if( $PFI_ID and $StartDate ) {
+	if ($StartDate) {
 		$query .= "
-					UNION
-					SELECT SH.SH_ID
-						,CONCAT(CT.City, '/', SH.Shop) AS Shop
-						,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
-						,CT.Color
-					FROM Shops SH
-					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-					WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.retail = 1" : "SH.KA_ID = {$platelshik_id}")."
-						".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
-						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-
-					ORDER BY Shop";
+			UNION
+			SELECT SH.SH_ID
+				,CONCAT(CT.City, '/', SH.Shop) AS Shop
+				,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
+				,CT.Color
+			FROM Shops SH
+			JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+			WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.retail = 1" : "SH.KA_ID = {$platelshik_id}")."
+		";
 	}
 	else {
 		if( (in_array('order_add_confirm', $Rights) and !$ReadyDate) or $SH_ID == 0 ) {
 			$html .= "<option value='0' selected style='background: #999;'>Свободные</option>";
 		}
 		$query .= "
-					UNION
-					SELECT SH.SH_ID
-						,CONCAT(CT.City, '/', SH.Shop) AS Shop
-						,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
-						,CT.Color
-					FROM Shops SH
-					JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-					WHERE CT.CT_ID IN (".($CT_ID ? $CT_ID : $USR_cities).")
-						".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
-						".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-
-					ORDER BY Shop";
+			UNION
+			SELECT SH.SH_ID
+				,CONCAT(CT.City, '/', SH.Shop) AS Shop
+				,IF(SH.SH_ID = {$SH_ID}, 'selected', '') selected
+				,CT.Color
+			FROM Shops SH
+			JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+			WHERE CT.CT_ID IN (".($CT_ID ? $CT_ID : $USR_cities).")
+		";
 	}
+	$query .= "
+			".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
+			".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
+		ORDER BY Shop
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	while( $row = mysqli_fetch_array($res) )
 	{

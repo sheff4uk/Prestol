@@ -69,8 +69,23 @@
 	// Обновление основной информации о наборе
 	if( isset($_GET["order_update"]) )
 	{
+		// Узнаем, была ли дата продажи
+		$query = "
+			SELECT OD.StartDate
+			FROM OrdersData OD
+			WHERE OD.OD_ID = {$id}
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$row = mysqli_fetch_array($res);
+		$old_StartDate = $row["StartDate"];
+
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
-		$EndDate = $_POST[EndDate] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
+		// Если продали с выставки, то присваиваем дату сдачи
+		if (!$old_StartDate and $_POST["StartDate"]) {
+			$_POST["EndDate"] = $_SESSION["end_date"];
+		}
+		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
+		// Если юр.лицо без клиента, то выводим предупреждение
 		if( $_POST["ul"] ) {
 			if( $_POST["ClientName"] ) {
 				$ul = "1";
@@ -81,9 +96,11 @@
 			}
 		}
 		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
+
 		$chars = array("+", " ", "(", ")"); // Символы, которые трубуется удалить из строки с телефоном
 		$mtel = $_POST["mtel"] ? '\''.str_replace($chars, "", $_POST["mtel"]).'\'' : 'NULL';
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
+
 		// Обработка строк
 		$ClientName = convert_str($_POST["ClientName"]);
 		$ClientName = mysqli_real_escape_string($mysqli, $ClientName);
@@ -123,19 +140,21 @@
 			$_POST["clear"] = "0"; //Чтобы сработало условие в следующем запросе когда цвет удален
 		}
 
-		$query = "UPDATE OrdersData
-					SET author = {$_SESSION['id']}
-						".(isset($_POST["ClientName"]) ? ",CLientName = '$ClientName'" : "")."
-						".(isset($_POST["ClientName"]) ? ",ul = $ul" : "")."
-						".(isset($_POST["mtel"]) ? ",mtel = $mtel" : "")."
-						".(isset($_POST["address"]) ? ",address = '$address'" : "")."
-						".(isset($_POST["StartDate"]) ? ",StartDate = $StartDate" : "")."
-						".(isset($_POST["EndDate"]) ? ",EndDate = $EndDate" : "")."
-						".(isset($_POST["Shop"]) ? ",SH_ID = $Shop" : "")."
-						".(isset($_POST["OrderNumber"]) ? ",OrderNumber = '$OrderNumber'" : "")."
-						".((isset($_POST["Color"]) and isset($_POST["clear"])) ? ",CL_ID = $cl_id" : "")."
-						".(isset($_POST["Comment"]) ? ",Comment = '$Comment'" : "")."
-					WHERE OD_ID = {$id}";
+		$query = "
+			UPDATE OrdersData
+			SET author = {$_SESSION['id']}
+				".(isset($_POST["ClientName"]) ? ",CLientName = '$ClientName'" : "")."
+				".(isset($_POST["ClientName"]) ? ",ul = $ul" : "")."
+				".(isset($_POST["mtel"]) ? ",mtel = $mtel" : "")."
+				".(isset($_POST["address"]) ? ",address = '$address'" : "")."
+				".(isset($_POST["StartDate"]) ? ",StartDate = $StartDate" : "")."
+				".(isset($_POST["EndDate"]) ? ",EndDate = $EndDate" : "")."
+				".(isset($_POST["Shop"]) ? ",SH_ID = $Shop" : "")."
+				".(isset($_POST["OrderNumber"]) ? ",OrderNumber = '$OrderNumber'" : "")."
+				".((isset($_POST["Color"]) and isset($_POST["clear"])) ? ",CL_ID = $cl_id" : "")."
+				".(isset($_POST["Comment"]) ? ",Comment = '$Comment'" : "")."
+			WHERE OD_ID = {$id}
+		";
 		if( !mysqli_query( $mysqli, $query ) ) {
 			$_SESSION["error"][] = mysqli_error( $mysqli );
 		}
@@ -358,7 +377,7 @@
 			,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 			,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
 			,DATE_FORMAT(OD.DelDate, '%d.%m.%y') DelDate
-			,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), '<br><b style=\'background-color: silver;\'>Выставка</b>', '') showing
+			,IF((SH.retail AND OD.StartDate IS NULL), '<br><b style=\'background-color: silver;\'>Выставка</b>', '') showing
 			,IFNULL(OD.SH_ID, 0) SH_ID
 			,IFNULL(SH.KA_ID, 0) KA_ID
 			,OD.OrderNumber
@@ -428,13 +447,13 @@
 		<tr class='nowrap'>
 			<th width="90">Код набора</th>
 			<?
-			if( $retail ) {
+			if ($retail and $StartDate) {
 				echo "<th width='125'>Клиент<br>Квитанция<br>Телефон</th>";
 				echo "<th width='20%'>Адрес доставки</th>";
 			}
 			?>
 			<th width="95">Дата продажи</th>
-			<?= ($ReadyDate ? "<th width='95'>Отгружено</th>" : ($DelDate ? "<th width='95'>Удалено</th>" : "<th width='95'>Дата сдачи</th>")) ?>
+			<?= ($ReadyDate ? "<th width='95'>Отгружено</th>" : ($DelDate ? "<th width='95'>Удалено</th>" : ($showing ? "" : "<th width='95'>Дата сдачи</th>"))) ?>
 			<th width="125">Подразделение</th>
 			<th width="170">Цвет краски <i class="fa fa-question-circle" html="<b>Цветовой статус лакировки:</b><br><span class='empty'>Покраска не требуется</span><br><span class='notready'>Не дано в покраску</span><br><span class='inwork'>Дано в покраску</span><br><span class='ready'>Покрашено</span>"></i></th>
 			<th width="40">Принят</th>
@@ -453,7 +472,7 @@
 		<tr class='ord_log_row' lnk='*OD_ID<?=$id?>*' id='ord<?=$id?>'>
 			<td class="nowrap"><h1><?=$Code?></h1><?=$AddDate?></td>
 <?
-		if( $retail ) {
+		if ($retail and $StartDate) {
 			echo "
 				<td>
 					<input type='text' class='clienttags' name='ClientName' style='width: 120px;' value='$ClientName' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." placeholder='Клиент'>
@@ -474,7 +493,7 @@
 		// Если набор в накладной - под датой продажи ссылка на накладную
 		if( $PFI_ID ) {
 			$invoice = "<br><b><a href='open_print_form.php?type=invoice&PFI_ID={$PFI_ID}&number={$count}' target='_blank'>Накладная</a></b>";
-			$title="Чтобы стереть дату продажи анулируйте накладную в актах сверки, затем перейдите в реализацию и нажмите на символ ладошки справа.";
+			$title="Чтобы стереть дату продажи анулируйте накладную в Сверках, затем перейдите в Реализацию и нажмите на символ ладошки справа.";
 		}
 		else {
 			$invoice = "";
@@ -486,13 +505,18 @@
 		else {
 			echo "<td><input type='text' name='StartDate' class='date' value='{$StartDate}' date='{$StartDate}' disabled readonly>{$invoice}{$showing}</td>";
 		}
-		echo "<td style='text-align: center;'>";
-		echo ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : ($showing ? "" : "<input type='text' name='EndDate' class='date' value='{$EndDate}' ".((!$disabled and !$Del and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">")));
-			// Если отгружен и есть право отгружать - показываем кнопку отмены отгрузки
-			if ($ReadyDate and in_array('order_ready', $Rights)) {
-				echo "<br><a href='#' class='undo_shipping' od_id='{$id}' title='Отменить отгрузку'><i style='color:#333;' class='fas fa-flag-checkered fa-2x'></i></a> ";
-			}
-		echo "</td>";
+		if ($showing and !$ReadyDate and !$DelDate) {
+			echo "";
+		}
+		else {
+			echo "<td style='text-align: center;'>";
+			echo ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date' value='{$EndDate}' autocomplete='off' ".((!$disabled and !$Del and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">"));
+				// Если отгружен и есть право отгружать - показываем кнопку отмены отгрузки
+				if ($ReadyDate and in_array('order_ready', $Rights)) {
+					echo "<br><a href='#' class='undo_shipping' od_id='{$id}' title='Отменить отгрузку'><i style='color:#333;' class='fas fa-flag-checkered fa-2x'></i></a> ";
+				}
+			echo "</td>";
+		}
 ?>
 
 		<td style="background: <?=$CTColor?>;">

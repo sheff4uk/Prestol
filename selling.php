@@ -108,8 +108,8 @@
 				}
 				else { $_SESSION["alert"][] = mysqli_error( $mysqli ); }
 			}
-			// Очищаем дату продажи, заказчика и статус получения набора
-			$query = "UPDATE OrdersData SET StartDate = NULL, ClientName = NULL, ul = 0, mtel = NULL, address = NULL, OrderNumber = NULL, taken = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена ({$ClientName})', ' Отказ ({$ClientName})')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
+			// Очищаем дату продажи, остальное сделает триггер Clear_client_if_reject
+			$query = "UPDATE OrdersData SET StartDate = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена ({$ClientName})', ' Отказ ({$ClientName})')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 			if( mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"][] = "Набор перемещен в \"Свободные\"";
 			}

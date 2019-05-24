@@ -23,7 +23,8 @@
 		}
 		$AddDate = date("Y-m-d");
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
-		$EndDate = $_POST["Shop"] ? ($_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : '\''.date( "Y-m-d", strtotime($_SESSION["end_date"]) ).'\'') : "NULL";
+//		$EndDate = $_POST["Shop"] ? ($_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : '\''.date( "Y-m-d", strtotime($_SESSION["end_date"]) ).'\'') : "NULL";
+		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
 		$chars = array("+", " ", "(", ")"); // Символы, которые трубуется удалить из строки с телефоном
 		$mtel = $_POST["mtel"] ? '\''.str_replace($chars, "", $_POST["mtel"]).'\'' : 'NULL';
@@ -661,7 +662,7 @@
 			,OD.ul
 			,OD.mtel
 			,OD.address
-			,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) StartDate
+			,IF((SH.retail AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) StartDate
 		";
 		if ($archive == "0" or isset($_GET["shpid"])) {
 			$query .= "

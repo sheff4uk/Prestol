@@ -157,13 +157,13 @@ pre {
 .txtleft {
 	text-align: left;
 }
-.addproduct > form > fieldset > div > label,
+.addproduct > form > fieldset > fieldset > div > label,
 .addproduct > form > fieldset label.ui-button {
 	display: block;
 	float: left;
 	width: 100px;
 }
-.addproduct > form > fieldset > div {
+.addproduct > form > fieldset > fieldset > div {
 	width: 100%;
 	margin: 1em 0;
 	display: flex;
