@@ -146,7 +146,7 @@
 			,Ord_price(OD.OD_ID) Price
 			,Ord_discount(OD.OD_ID) discount
 			,Payment_sum(OD.OD_ID) payment_sum
-			,IF(OD.StartDate, SH.retail, 0) retail
+			,IFNULL(SH.retail, 0) retail
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -177,7 +177,7 @@
 			$odid = $row["OD_ID"];
 			$span = 1;
 			// Сумма доплаты
-			if ($subrow["retail"]) {
+			if ($subrow["retail"] and $subrow["StartDate"]) {
 				$format_diff = "Доплата: ".number_format($subrow["Price"] - $subrow['discount'] - $subrow["payment_sum"], 0, '', ' ');
 			}
 			else {
@@ -199,7 +199,7 @@
 		if(isset($_GET["CN"]) and $span) echo "<td width='9%' rowspan='{$cnt}'>{$subrow["ClientName"]}<b>{$subrow["OrderNumber"]}</b>{$subrow["mtel"]}{$subrow["address"]}<b>{$format_diff}</b></td>";
 		if(isset($_GET["SD"]) and $span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["StartDate"]}</td>";
 		if(isset($_GET["ED"]) and $span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["EndDate"]}</td>";
-		if(isset($_GET["SH"]) and $span) echo "<td width='7%' rowspan='{$cnt}'>{$subrow["Shop"]}</td>";
+		if(isset($_GET["SH"]) and $span) echo "<td width='7%' rowspan='{$cnt}'>".($subrow["retail"] ? "&bull; " : "")."{$subrow["Shop"]}</td>";
 		if(isset($_GET["Z"])) echo "<td width='20' style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
 		if(isset($_GET["Z"])) echo "<td width='20%' style='font-size: 16px;'>{$row["Zakaz"]}</td>";
 		if(isset($_GET["M"])) echo "<td width='15%'>{$row["Material"]}</td>";

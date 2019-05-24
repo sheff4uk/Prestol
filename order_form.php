@@ -43,11 +43,11 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 						while( $subrow = mysqli_fetch_array($subres) )
 						{
-							echo "<option value='{$subrow["SH_ID"]}' retail='{$subrow["retail"]}'>{$subrow["Shop"]}</option>";
+							echo "<option value='{$subrow["SH_ID"]}' retail='{$subrow["retail"]}'>".($subrow["retail"] ? "&bull; " : "")."{$subrow["Shop"]}</option>";
 							++$num_rows;
 							$sh_id = $subrow["SH_ID"];
 						}
-						echo "<optgroup>";
+						echo "</optgroup>";
 					}
 
 					?>

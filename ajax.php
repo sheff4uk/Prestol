@@ -1066,6 +1066,7 @@ case "create_shop_select":
 			,CONCAT(CT.City, '/', SH.Shop) AS Shop
 			,'selected' selected
 			,CT.Color
+			,SH.retail
 		FROM Shops SH
 		JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		WHERE SH.SH_ID = {$SH_ID}
@@ -1078,6 +1079,7 @@ case "create_shop_select":
 				,CONCAT(CT.City, '/', SH.Shop) AS Shop
 				,IF(SH.SH_ID = {$SH_ID}, 'selected', '') AS selected
 				,CT.Color
+				,SH.retail
 			FROM Shops SH
 			JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 			WHERE ".($retail ? "CT.CT_ID = {$CT_ID} AND SH.retail = 1" : "SH.KA_ID = {$platelshik_id}")."
@@ -1093,6 +1095,7 @@ case "create_shop_select":
 				,CONCAT(CT.City, '/', SH.Shop) AS Shop
 				,IF(SH.SH_ID = {$SH_ID}, 'selected', '') selected
 				,CT.Color
+				,SH.retail
 			FROM Shops SH
 			JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 			WHERE CT.CT_ID IN (".($CT_ID ? $CT_ID : $USR_cities).")
@@ -1101,12 +1104,13 @@ case "create_shop_select":
 	$query .= "
 			".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
 			".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-		ORDER BY Shop
+		#ORDER BY Shop
+		ORDER BY retail DESC, Shop
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$html .= "<option value='{$row["SH_ID"]}' {$row["selected"]} style='background: {$row["Color"]};'>{$row["Shop"]}</option>";
+		$html .= "<option value='{$row["SH_ID"]}' {$row["selected"]} style='background: {$row["Color"]};'>".($row["retail"] ? "&bull; " : "")."{$row["Shop"]}</option>";
 	}
 
 	$html = addslashes($html);
@@ -1144,6 +1148,7 @@ case "update_shop":
 					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 					,IFNULL(OD.SH_ID, 0) SH_ID
 					,CheckPayment(OD.OD_ID) attention
+					,IFNULL(SH.retail, 0) retail
 				FROM OrdersData OD
 				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 				LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -1155,8 +1160,9 @@ case "update_shop":
 	$SH_ID = mysqli_result($res,0,'SH_ID');
 	$ShopCity = addslashes($ShopCity);
 	$attention = mysqli_result($res,0,'attention');
+	$retail = mysqli_result($res,0,'retail');
 
-	echo "$('.shop_cell[id={$OD_ID}] span').html('{$ShopCity}');";
+	echo "$('.shop_cell[id={$OD_ID}] span').html('".($retail ? "&bull; " : "")."{$ShopCity}');";
 	echo "$('.shop_cell[id={$OD_ID}] span').attr('style', 'background: {$CTColor};');";
 	echo "$('.shop_cell[id={$OD_ID}]').attr('SH_ID', '{$SH_ID}');";
 	// Если есть оплата в кассу другого салона

@@ -174,6 +174,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			,DATE_FORMAT(OD.StartDate, '%d.%m.%y') StartDate
 			,DATE_FORMAT(OD.EndDate, '%d.%m.%y') EndDate
 			,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
+			,IFNULL(SH.retail, 0) retail
 			,IF((SH.KA_ID IS NULL AND SH.SH_ID IS NOT NULL AND OD.StartDate IS NULL), '<br><b style=\'background-color: silver;\'>Выставка</b>', '') showing
 			,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 			,OD.OrderNumber
@@ -308,7 +309,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		echo "<td style='background: {$row["CTColor"]};' class='nowrap'>";
 		echo "<n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br>";
 		echo "{$row["StartDate"]} - <span class='{$row["Deadline"]}'>{$row["EndDate"]}</span><br>";
-		echo "{$row["Shop"]} <b>{$row["OrderNumber"]}</b>";
+		echo ($row["retail"] ? "&bull; " : "")."{$row["Shop"]} <b>{$row["OrderNumber"]}</b>";
 		echo "</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "</tr>";
