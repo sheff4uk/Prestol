@@ -979,7 +979,7 @@
 			";
 
 			// Если набор у клиента
-			if( $row["ReadyDate"] ) {
+			if( $row["ReadyDate"] and $row["StartDate"]) {
 				if( $row["taken"] == 1 ) {
 					$class = 'confirmed';
 				}
@@ -1026,7 +1026,7 @@
 			while( $subrow = mysqli_fetch_array($subres) ) {
 
 				// Если в свободных - добавляем чекбокс для печати ценников, узнаем сколько изделий в наборе для ценника на гарнитур
-				if ($year == 0 and $month == 0) {
+				if (!$row["StartDate"]) {
 					$zakaz .= "<input type='checkbox' value='{$subrow["ODD_ID"]}' name='odd[]' class='chbox'>";
 					$cnt = $cnt + $subrow["Amount"];
 				}
