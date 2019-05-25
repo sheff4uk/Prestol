@@ -92,7 +92,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<fieldset>
 				<legend>Цвет краски:</legend>
 				<p style='color: #911;'>ВНИМАНИЕ! Патина указывается у каждого изделия персонально в специальной графе "патина".</p>
-				<div style="display: inline-block;">
+				<div>
 					<input type='text' id='paint_color' class='colortags' name='Color' style='width: 100%;' placeholder='ЗДЕСЬ ПАТИНУ УКАЗЫВАТЬ НЕ НУЖНО'>
 					<div class='btnset'>
 						<input required type='radio' id='clear1' name='clear' value='1'>
