@@ -178,7 +178,7 @@
 			$span = 1;
 			// Сумма доплаты
 			if ($subrow["retail"] and $subrow["StartDate"]) {
-				$format_diff = "Доплата: ".number_format($subrow["Price"] - $subrow['discount'] - $subrow["payment_sum"], 0, '', ' ');
+				$format_diff = "Доплата: <span style='white-space: nowrap;'>".number_format($subrow["Price"] - $subrow['discount'] - $subrow["payment_sum"], 0, '', ' ')."</span>";
 			}
 			else {
 				$format_diff = "";
