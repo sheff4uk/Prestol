@@ -302,6 +302,8 @@ if( !in_array('sverki_opt', $Rights) ) {
 }
 ?>
 
+<a href="/files/create_bill.webm" target="_blank" style="position: fixed; top: 100px; right: 50px; z-index: 9;"><i class="fas fa-video fa-3x" title="Видео инструкция по выставлению счёта"></i></a>
+
 <table>
 	<thead>
 		<tr>
