@@ -367,8 +367,7 @@
 <?
 			$query = "
 				SELECT BL.Balance
-					,DAY(BL.Date) day
-					,MONTH(BL.Date) month
+					,Friendly_date(BL.Date) date
 					,TIME(BL.Date) Time
 				FROM BalanceLog BL
 				WHERE WD_ID = {$_GET["worker"]}
@@ -385,7 +384,7 @@
 				else
 					$color = '';
 				echo "<tr>";
-				echo "<td><span class='nowrap'><b>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></span></td>";
+				echo "<td><span class='nowrap'><b>{$row["date"]}</b></span></td>";
 				echo "<td><span class='nowrap'>{$row["Time"]}</span></td>";
 				echo "<td class='txtright'><span class='nowrap{$color}'>{$format_balance}</span></td>";
 				echo "</tr>";
@@ -418,8 +417,7 @@
 	<?
 			$query = "
 				SELECT PL.PL_ID
-					,DAY(PL.Date) day
-					,MONTH(PL.Date) month
+					,Friendly_date(PL.Date) date
 					,TIME(PL.Date) Time
 					,WD.Name Worker
 					,ABS(PL.Pay) Pay
@@ -453,7 +451,7 @@
 			{
 				$format_pay = number_format($row["Pay"], 0, '', ' ');
 				echo "<tr class='{$row["Archive"]}' id='pl{$row["PL_ID"]}'>";
-				echo "<td><span class='nowrap'><b>{$row["day"]} {$MONTHS_DATE[$row["month"]]}</b></span></td>";
+				echo "<td><span class='nowrap'><b>{$row["date"]}</b></span></td>";
 				echo "<td><span>{$row["Time"]}</span></td>";
 				echo "<td class='worker' val='{$row["WD_ID"]}'><span><a href='?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>";
 				if ( $row["FA_ID"] ) {
