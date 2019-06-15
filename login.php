@@ -9,9 +9,20 @@ if (!empty($_SESSION['login']) and !empty($_SESSION['id'])) {
 }
 
 function set_end_date() {
-	// Отсчитываем дату сдачи - 30 раб. дней и записываем в сессию
-	if( !isset($_SESSION["end_date"]) or $_SESSION["today"] != date('d.m.Y') ) {
-		$_SESSION["today"] = date('d.m.Y');
+	global $mysqli;
+
+	// Читаем из базы текущую дату
+	$query = "SELECT value FROM vars WHERE var LIKE 'today'";
+	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$myrow = mysqli_fetch_array($result);
+	$today = $myrow['value'];
+
+	// Если дата устарела - отсчитываем дату сдачи 30 раб. дней и записываем в базу
+	if ($today != date('d.m.Y')) {
+		// Обновляем в базе текущую дату
+		$query = "UPDATE vars SET value = '".date('d.m.Y')."' WHERE var LIKE 'today'";
+		mysqli_query( $mysqli, $query );
+
 		$end_date = date_create(date('Y-m-d'));
 		$working_days = 0;
 		$year = 0;
@@ -39,8 +50,18 @@ function set_end_date() {
 				++$working_days;
 			}
 		}
-		$_SESSION["end_date"] = date_format($end_date, 'd.m.Y');
+		// Обновляем в базе дату сдачи
+		if ($end_date != date('Y-m-d')) {
+			$query = "UPDATE vars SET value = '".date_format($end_date, 'd.m.Y')."' WHERE var LIKE 'end_date'";
+			mysqli_query( $mysqli, $query );
+		}
 	}
+
+	// Читаем из базы дату сдачи и записываем в сессию
+	$query = "SELECT value FROM vars WHERE var LIKE 'end_date'";
+	$result = mysqli_query( $mysqli, $query );
+	$myrow = mysqli_fetch_array($result);
+	$_SESSION["end_date"] = $myrow['value'];
 }
 
 // Если введен СМС-код
