@@ -35,7 +35,7 @@
 			display: inline-block;
 			position: absolute;
 			top: 10px;
-			right: 10px;
+			left: 10px;
 		}
 		.prod {
 			display: inline-block;
@@ -53,7 +53,7 @@
 		}
 		.price {
 			color: #C00000;
-			font-size: 125px;
+			font-size: 100px;
 			font-weight: bold;
 			display: block;
 			text-shadow: 3px 3px 5px #640;
@@ -62,11 +62,11 @@
 		}
 		.discount {
 			background: red;
-			width: 100px;
-			padding: 10px;
+			width: 200px;
+			padding: 5px;
 			border-radius: 10px;
-			color: #e2d94c;
-			font-size: 1.8em;
+			color: white;
+			font-size: 2.5em;
 			font-weight: bold;
 			transform: rotate(-5deg);
 			position: absolute;
@@ -75,13 +75,17 @@
 			box-shadow: 3px 3px 5px #640;
 		}
 		.old_price {
+			display: inline;
+			color: black;
+			margin-right: 50px;
+			position: relative;
+		}
+		.old_price:before {
+			border-bottom: 7px solid #C00000;
 			position: absolute;
-			font-size: 4em;
-			font-weight: bold;
-			text-decoration: line-through;
-			opacity: .6;
-			top: 30px;
-			left: 30px;
+			content: "";
+			width: 100%;
+			height: 42%;
 		}
 	</style>
 	<script>
@@ -121,8 +125,9 @@
 
 		if( mysqli_result($res,0,'discount') ) {
 			$old_price = number_format(mysqli_result($res,0,'old_Price'), 0, '', ' ');
+			$discount = number_format(mysqli_result($res,0,'discount'), 0, '', ' ');
 			$old_price = "<div class='old_price'>{$old_price}</div>";
-			$discount = "<div class='discount'>скидка<br><span style='font-size: 1.5em;'>".mysqli_result($res,0,'percent')."%</span></div>";
+			$discount = "<div class='discount'>Выгода<br><span style='white-space: nowrap;'>{$discount} руб!</span></div>";
 		}
 		else {
 			$old_price = "";
@@ -133,6 +138,7 @@
 			<div style="position: relative; text-align: center;">
 				<img src="../img/logo.png" style="height: 142px; margin: 5px;">
 				<div class="code"><?=$Code?></div>
+				<?=$discount?>
 			</div>
 			<div style="text-align: center; text-shadow: 3px 3px 5px #666;">
 				<div class="prod" style="font-size: 50px;">Мебельный гарнитур:</div>
@@ -199,9 +205,7 @@
 			?>
 			</div>
 			<div class="price_wr">
-				<?=$old_price?>
-				<?=$discount?>
-				<span class="price"><?=$price?></span>
+				<span class="price"><?=$old_price?><?=$price?></span>
 				<b>РОССИЯ</b><b style="color: #C00000;"> / </b><b>КИРОВ</b>
 			</div>
 		</div>
@@ -248,8 +252,9 @@
 
 		if($row["discount"]) {
 			$old_price = number_format($row["old_Price"], 0, '', ' ');
+			$discount = number_format($row["discount"], 0, '', ' ');
 			$old_price = "<div class='old_price'>{$old_price}</div>";
-			$discount = "<div class='discount'>скидка<br><span style='font-size: 1.5em;'>{$row["percent"]}%</span></div>";
+			$discount = "<div class='discount'>Выгода<br><span style='white-space: nowrap;'>{$discount} руб!</span></div>";
 		}
 		else {
 			$old_price = "";
@@ -260,6 +265,7 @@
 			<div style="position: relative; text-align: center;">
 				<img src="../img/logo.png" style="height: 142px; margin: 5px;">
 				<div class="code"><?=$row["Code"]?></div>
+				<?=$discount?>
 			</div>
 			<div style="text-align: center; text-shadow: 3px 3px 5px #666;">
 				<div class="prod" style="font-size: 24px;" fontSize="24"><?=$row["product"]?></div>
@@ -285,11 +291,10 @@
 				</div>
 			</div>
 			<div class="price_wr">
-				<?=$old_price?>
-				<?=$discount?>
-				<span class="price"><?=$price?></span>
+				<span class="price"><?=$old_price?><?=$price?></span>
 				<b>РОССИЯ</b><b style="color: #C00000;"> / </b><b>КИРОВ</b>
 			</div>
+
 		</div>
 		<script>
 			fontSize('#<?=$row["id"]?> .prod', 80);
