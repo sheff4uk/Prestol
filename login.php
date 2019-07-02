@@ -243,8 +243,8 @@ if (isset($_POST['submit'])) {
 		<h3>Вход в личный кабинет</h3>
 
 		<form method="POST">
-			<div><label>Логин</label><input type="text" name="login" minlength="3" maxlength="15" autocomplete="off"></div>
-			<div><label>Пароль</label><input type="password" name="password" minlength="3" maxlength="15"></div>
+			<div><label>Логин</label><input type="text" name="login" minlength="3" maxlength="30" autocomplete="off"></div>
+			<div><label>Пароль</label><input type="password" name="password" minlength="6"></div>
 			<div style="text-align: right;"><input name="submit" type="submit" value="Войти »"></div>
 		</form>
 		<a href="reg.php"><b>Зарегистрироваться</b></a>
