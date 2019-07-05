@@ -244,7 +244,7 @@ if (isset($_POST['submit'])) {
 
 		<form method="POST">
 			<div><label>Логин</label><input type="text" name="login" minlength="3" maxlength="30" autocomplete="off"></div>
-			<div><label>Пароль</label><input type="password" name="password" minlength="6"></div>
+			<div><label>Пароль</label><input type="password" name="password" minlength="3"></div>
 			<div style="text-align: right;"><input name="submit" type="submit" value="Войти »"></div>
 		</form>
 		<a href="reg.php"><b>Зарегистрироваться</b></a>
