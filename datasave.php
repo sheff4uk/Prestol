@@ -164,7 +164,7 @@ elseif (isset($_GET["add_price"])) {
 }
 
 // Добавление в базу нового платежа к набору
-elseif( isset($_GET["add_payment"]) and $_POST["payment_sum_add"] ) {
+elseif( isset($_GET["add_payment"]) ) {
 	$OD_ID = $_GET["OD_ID"];
 	$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date_add"]) );
 	$payment_sum = $_POST["payment_sum_add"];
@@ -191,6 +191,12 @@ elseif( isset($_GET["add_payment"]) and $_POST["payment_sum_add"] ) {
 				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 		}
+	}
+
+	// Помечаем платежи, требующие переноса
+	foreach ($_POST["move_payment"] as $key => $value) {
+		$query = "UPDATE OrdersPayment SET OD_ID = IF(OD_ID IS NULL, {$_POST["OD_ID"]}, NULL) WHERE OP_ID = {$value}";
+		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 	}
 
 	exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'#ord'.$OD_ID.'">');

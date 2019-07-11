@@ -874,9 +874,11 @@ case "add_payment":
 	$html .= "<li>Менять дату возможно только у терминальных платежей.</li>";
 	$html .= "<li>Ранее добавленные платежи <b>не редактируются</b>. Если нужно изменить или отменить предыдущую запись, то создайте новую корректирующую операцию с отрицательной суммой.</li>";
 	$html .= "<li>Если нужно совершить возврат денег по набору, он так же вносится со знаком минус.</li>";
-	$html .= "<li>Для переноса платежа с одного набора на другой: сначала сделайте возврат платежа на первом наборе, затем внесите эту сумму на второй набор.</li>";
+	$html .= "<li><b>Для переноса платежа с одного набора на другой: поставьте галку справа от платежа, который требуется перенести, и нажмите \"Сохранить\", затем перейдите к заказу в который нужно принять платёж, в форме добавления оплаты поставьте галку напротив платежа, который нужно принять (выделен полупрозрачностью), и нажмите \"Сохранить\".</b></li>";
 	$html .= "</ul></div>";
 	$html .= "</div>";
+
+	$html .= "<input type='hidden' name='OD_ID' value='{$OD_ID}'>";
 
 	$html .= "<table><thead><tr>";
 	$html .= "<th style='width: 56px;'>Касса</th>";
@@ -885,27 +887,53 @@ case "add_payment":
 	$html .= "<th>Терминал</th>";
 	$html .= "<th>Фамилия</th>";
 	$html .= "<th>Автор</th>";
+	$html .= "<th><i class='fas fa-exchange-alt' title='Перенести оплату с этого набора на другой.'></i></th>";
 	$html .= "</tr></thead><tbody>";
 
 	// Выводим список ранее внесенных платежей
-	$query = "SELECT OP.OP_ID
-					,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
-					,OP.payment_sum
-					,IF(OP.terminal_payer IS NOT NULL AND OP.FA_ID IS NOT NULL, 1, 0) terminal
-					,OP.terminal_payer
-					,IFNULL(OP.FA_ID, 0) FA_ID
-					,USR_Icon(OP.author) Name
-					,IF(OP.FA_ID IS NOT NULL AND OP.terminal_payer IS NULL, FA.name, '') account
-					,SH.Shop
-				FROM OrdersPayment OP
-				LEFT JOIN FinanceAccount FA ON FA.FA_ID = OP.FA_ID
-				LEFT JOIN Shops SH ON SH.SH_ID = OP.SH_ID
-				WHERE OD_ID = {$OD_ID} AND IFNULL(payment_sum, 0) != 0
-				ORDER BY OP_ID";
+	$query = "
+		SELECT OP.OD_ID
+			,OP.OP_ID
+			,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
+			,OP.payment_sum
+			,IF(OP.terminal_payer IS NOT NULL AND OP.FA_ID IS NOT NULL, 1, 0) terminal
+			,OP.terminal_payer
+			,IFNULL(OP.FA_ID, 0) FA_ID
+			,USR_Icon(OP.author) Name
+			,'' account
+			,SH.Shop
+		FROM OrdersPayment OP
+		JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND SH.SH_ID = {$SH_ID}
+		WHERE OP.OD_ID IS NULL AND OP.cost_name IS NULL AND IFNULL(OP.payment_sum, 0) != 0
+
+		UNION ALL
+
+		SELECT OP.OD_ID
+			,OP.OP_ID
+			,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
+			,OP.payment_sum
+			,IF(OP.terminal_payer IS NOT NULL AND OP.FA_ID IS NOT NULL, 1, 0) terminal
+			,OP.terminal_payer
+			,IFNULL(OP.FA_ID, 0) FA_ID
+			,USR_Icon(OP.author) Name
+			,IF(OP.FA_ID IS NOT NULL AND OP.terminal_payer IS NULL, FA.name, '') account
+			,SH.Shop
+		FROM OrdersPayment OP
+		LEFT JOIN FinanceAccount FA ON FA.FA_ID = OP.FA_ID
+		LEFT JOIN Shops SH ON SH.SH_ID = OP.SH_ID
+		WHERE OP.OD_ID = {$OD_ID} AND IFNULL(OP.payment_sum, 0) != 0
+
+		#ORDER BY OD_ID, OP_ID
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
 	while( $row = mysqli_fetch_array($res) ) {
-		$html .= "<tr>";
+		if( $row["OD_ID"] ) {
+			$html .= "<tr>";
+		}
+		else {
+			$html .= "<tr style='opacity: .5;'>";
+		}
 		if( $row["account"] ) {
 			$html .= "<td class='nowrap'><b>{$row["account"]}</b></td>";
 		}
@@ -919,13 +947,19 @@ case "add_payment":
 		$html .= "<td>".($row["terminal"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
 		$html .= "<td>{$row["terminal_payer"]}</td>";
 		$html .= "<td>{$row["Name"]}</td>";
+		if( $row["account"] or $is_del or $is_lock ) {
+			$html .= "<td></td>";
+		}
+		else {
+			$html .= "<td><input type='checkbox' name='move_payment[]' value='{$row["OP_ID"]}'></td>";
+		}
 		$html .= "</tr>";
 	}
 	if ($is_del) {
-		$html .= "<tr style='background: #6f6;'><td colspan='6'><b>Набор удалён. Внесение оплаты невозможно.</b></td></tr>";
+		$html .= "<tr style='background: #6f6;'><td colspan='7'><b>Набор удалён. Внесение оплаты невозможно.</b></td></tr>";
 	}
 	elseif ($is_lock) {
-		$html .= "<tr style='background: #6f6;'><td colspan='6'><b>Отчетный период закрыт. Внесение оплаты невозможно.</b></td></tr>";
+		$html .= "<tr style='background: #6f6;'><td colspan='7'><b>Отчетный период закрыт. Внесение оплаты невозможно.</b></td></tr>";
 	}
 	else { // Если набор не закрыт и не удален то можно добавить оплату
 		$payment_date = date('d.m.Y');
@@ -956,6 +990,7 @@ case "add_payment":
 		}
 
 		$html .= "<td>{$USR_Icon}</td>";
+		$html .= "<td></td>";
 		$html .= "</tr>";
 	}
 	$html .= "</tbody></table>";

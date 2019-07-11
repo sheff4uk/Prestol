@@ -568,7 +568,8 @@
 							,IF(OP.payment_sum < 0, '-', '+') sign
 							,IF(OP1.terminal_sum > 0, 2,IF((PRICE.Price - OP1.payment_sum > 10 AND OD.StartDate IS NOT NULL AND SH.FA_ID IS NOT NULL), 1, 0)) is_terminal
 							,IF(OP.SH_ID != OD.SH_ID, 1, 0) attention
-							,IF(IFNULL(OD.SH_ID, 0) NOT IN ({$SH_IDs}), 1, 0) other_city
+							,IF(IFNULL(OD.SH_ID, 0) NOT IN ({$SH_IDs}) AND OP.OD_ID IS NOT NULL, 1, 0) other_city
+							,IF(OP.cost_name IS NULL, 1, 0) cost_name_is_null
 						FROM OrdersPayment OP
 						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
@@ -606,7 +607,8 @@
 							,IF(OD.DelDate IS NULL, '', 'del') del
 							,IF(OP.payment_sum < 0, '-', '+') sign
 							,IF(OP.SH_ID != OD.SH_ID, 1, 0) attention
-							,IF(IFNULL(OD.SH_ID, 0) NOT IN ({$SH_IDs}), 1, 0) other_city
+							,IF(IFNULL(OD.SH_ID, 0) NOT IN ({$SH_IDs}) AND OP.OD_ID IS NOT NULL, 1, 0) other_city
+							,IF(OP.cost_name IS NULL, 1, 0) cost_name_is_null
 						FROM OrdersPayment OP
 						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
@@ -630,16 +632,21 @@
 					else {
 						$is_terminal = "";
 					}
-					echo "<tr>";
+					if( $row["Code"] or $row["cost_name_is_null"] == 0 ) {
+						echo "<tr>";
+					}
+					else {
+						echo "<tr style='opacity: .5;'>";
+					}
 					echo "<td width='49'>{$row["payment_date_short"]}</td>";
 					echo "<td width='20' style='overflow: visible;'>{$attention}</td>";
 					echo "<td width='60' class='txtright'><b>{$format_sum}</b></td>";
 					echo "<td width='60'><span>{$row["Shop"]}</span></td>";
 					echo "<td width='165'>{$cache_name}{$is_terminal}</td>";
 					echo "<td width='25'>";
-						if( $locking == 0 and $row["Code"] == '' ) { // Если месяц не закрыт
-							echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='{$row["sign"]}' title='Отредактировать запись'><i class='fa fa-pencil-alt fa-lg'></i></a>";
-						}
+					if( $locking == 0 and $row["Code"] == '' and $row["cost_name_is_null"] == 0 ) { // Если месяц не закрыт
+						echo "<a href='#' class='add_cost_btn' id='{$row["OP_ID"]}' shop='{$row["SH_ID"]}' cost_name='{$row["cost_name"]}' cost='{$row["payment_sum"]}' cost_date='{$row["payment_date"]}' sign='{$row["sign"]}' title='Отредактировать запись'><i class='fa fa-pencil-alt fa-lg'></i></a>";
+					}
 					echo "</td>";
 					echo "</tr>";
 				}
@@ -655,29 +662,40 @@
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
 				<?
-					$query = "SELECT DATE_FORMAT(OP.payment_date, '%d.%m') payment_date
-									,OP.payment_sum
-									,OP.terminal_payer
-									,OD.Code
-									,IFNULL(YEAR(OD.StartDate), 0) year
-									,IFNULL(MONTH(OD.StartDate), 0) month
-									,OD.OD_ID
-									,SH.Shop
-									,IF(OD.DelDate IS NULL, '', 'del') del
-									,IF(IFNULL(OD.SH_ID, 0) NOT IN ({$SH_IDs}), 1, 0) other_city
-								FROM OrdersPayment OP
-								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
-								JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-								WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NOT NULL
-								ORDER BY OP.payment_date DESC";
+					$query = "
+						SELECT DATE_FORMAT(OP.payment_date, '%d.%m') payment_date
+							,OP.payment_sum
+							,OP.terminal_payer
+							,OD.Code
+							,IFNULL(YEAR(OD.StartDate), 0) year
+							,IFNULL(MONTH(OD.StartDate), 0) month
+							,OD.OD_ID
+							,SH.Shop
+							,IF(OD.DelDate IS NULL, '', 'del') del
+							,IF(IFNULL(OD.SH_ID, 0) NOT IN ({$SH_IDs}) AND OP.OD_ID IS NOT NULL, 1, 0) other_city
+						FROM OrdersPayment OP
+						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
+						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
+						WHERE YEAR(OP.payment_date) = {$year}
+							AND MONTH(OP.payment_date) = {$month}
+							AND IFNULL(OP.payment_sum, 0) != 0
+							AND OP.terminal_payer IS NOT NULL
+							AND OP.cost_name IS NULL
+						ORDER BY OP.payment_date DESC
+					";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					$terminal_sum = 0;
 					while( $row = mysqli_fetch_array($res) ) {
 						$format_sum = number_format($row["payment_sum"], 0, '', ' ');
 						$terminal_sum = $terminal_sum + $row["payment_sum"];
 						$href = ($row["del"]) ? "orderdetail.php?id={$row["OD_ID"]}' target='_blank" : "?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}#ord{$row["OD_ID"]}";
-						$cache_name = ( $row["other_city"] ) ? "<b class='code {$row["del"]}' title='Набор перемещен в другой регион'>{$row["Code"]}</b>" : "<b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>";
-						echo "<tr>";
+						$cache_name = $row["other_city"] ? "<b class='code {$row["del"]}' title='Набор перемещен в другой регион'>{$row["Code"]}</b>" : ($row["Code"] ? "<b><a href='{$href}'><b class='code {$row["del"]}'>{$row["Code"]}</b></a></b>" : "");
+						if($row["Code"]) {
+							echo "<tr>";
+						}
+						else {
+							echo "<tr style='opacity: .5;'>";
+						}
 						echo "<td width='49'>{$row["payment_date"]}</td>";
 						echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
