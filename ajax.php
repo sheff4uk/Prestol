@@ -187,8 +187,16 @@ case "ispainting":
 	}
 
 	if( $val == 3 ) {
+		// Узнаём есть ли патина в наборе
+		$query = "
+			SELECT SUM(1) cnt FROM `OrdersDataDetail` WHERE OD_ID = {$id} AND ptn > 0
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		$row = mysqli_fetch_array($res);
+		$patina_cnt = $row["cnt"];
+
 		// Формирование дропдауна со списком лакировщиков. Сортировка по релевантности.
-		$painting_workers = "<select id='painting_workers' size='10'>";
+		$painting_workers = "<select id='painting_wd_id' size='10'>";
 		$painting_workers .= "<option selected value='0'>-=Выберите работника=-</option>";
 		$painting_workers .= "<optgroup label='Работающие'>";
 		$query = "
@@ -225,19 +233,71 @@ case "ispainting":
 		}
 		$painting_workers .= "</optgroup>";
 		$painting_workers .= "</select>";
-		// Конец дропдауна со списком лакировщиков
 		$painting_workers = addslashes($painting_workers);
+		// Конец дропдауна со списком лакировщиков
+
+		// Формирование дропдауна со списком патинировщиков. Сортировка по релевантности.
+		$patina_workers = "<select id='patina_wd_id' size='10'>";
+		$patina_workers .= "<option selected value='0'>-=Выберите работника=-</option>";
+		$patina_workers .= "<optgroup label='Работающие'>";
+		$query = "
+			SELECT WD.WD_ID, WD.Name, SUM(1) CNT
+			FROM WorkersData WD
+			LEFT JOIN (
+				SELECT OD.patina_WD_ID
+				FROM OrdersData OD
+				WHERE OD.patina_WD_ID IS NOT NULL
+				ORDER BY OD.OD_ID DESC
+				LIMIT 100
+			) SOD ON SOD.patina_WD_ID = WD.WD_ID
+			WHERE WD.Type = 2 AND WD.IsActive = 1
+			GROUP BY WD.WD_ID
+			ORDER BY CNT DESC
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$patina_workers .= "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+		}
+		$patina_workers .= "</optgroup>";
+		$patina_workers .= "<optgroup label='Уволенные'>";
+		$query = "
+			SELECT WD.WD_ID ,WD.Name
+			FROM WorkersData WD
+			WHERE WD.Type = 2 AND WD.IsActive = 0
+			ORDER BY WD.Name
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		while( $row = mysqli_fetch_array($res) )
+		{
+			$patina_workers .= "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+		}
+		$patina_workers .= "</optgroup>";
+		$patina_workers .= "</select>";
+		$patina_workers = addslashes($patina_workers);
+		// Конец дропдауна со списком патинировщиков
+
+		$painting_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkgreen;\"><legend>Лакировал:</legend>{$painting_workers}<div><label>Тариф: </label><input type=\"number\" min=\"0\" id=\"tariff\" style=\"width: 70px;\"></div></fieldset>";
+		if ($patina_cnt) {
+			$patina_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkgreen;\"><legend>Наносил патину:</legend>{$patina_workers}<div><label>Тариф: </label><input type=\"number\" min=\"0\" id=\"patina_tariff\" style=\"width: 70px;\"></div></fieldset>";
+		}
+		else {
+			$patina_form = "";
+		}
 
 		echo "
 			noty({
 				modal: true,
 				timeout: false,
-				text: 'Статус лакировки изменен на <b>{$status}</b>. Выберите исполнителя:<br>{$painting_workers}',
+				text: 'Статус лакировки изменен на <b>{$status}</b>.<div style=\"display: flex;\">{$painting_form}{$patina_form}</div>',
 				buttons: [
 					{addClass: 'btn btn-primary', text: 'Ok', onClick: function (\$noty) {
 						\$noty.close();
-						var wd_id = \$('#painting_workers').val();
-						\$.ajax({ url: 'ajax.php?do=painting_workers&wd_id='+wd_id+'&od_id={$id}', dataType: 'script', async: false });
+						var wd_id = \$('#painting_wd_id').val();
+						var tariff = \$('#tariff').val();
+						var patina_wd_id = \$('#patina_wd_id').val();
+						var patina_tariff = \$('#patina_tariff').val();
+						\$.ajax({ url: 'ajax.php?do=painting_workers&wd_id='+wd_id+'&tariff='+tariff+'&patina_wd_id='+patina_wd_id+'&patina_tariff='+patina_tariff+'&od_id={$id}', dataType: 'script', async: false });
 					}
 					}
 				],
@@ -254,8 +314,11 @@ case "ispainting":
 // Сохранение в базу лакировщика
 case "painting_workers":
 
-	$wd_id = $_GET["wd_id"];
 	$id = $_GET["od_id"];
+	$wd_id = $_GET["wd_id"];
+	$tariff = $_GET["tariff"];
+	$patina_wd_id = $_GET["patina_wd_id"];
+	$patina_tariff = $_GET["patina_tariff"];
 
 	if( $wd_id > 0 ) {
 		// Узнаем имя лакировщика
@@ -265,8 +328,39 @@ case "painting_workers":
 
 		$query = "UPDATE OrdersData SET WD_ID = {$wd_id}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-		echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] .painting_workers').text('{$Name}');";
-		echo "window.top.window.$('.main_table tr[id=\"ord{$id}\"] td.painting').attr('title', 'Готово ({$Name})');";
+		$painting_workers = $Name;
+
+		if ($tariff > 0) {
+			$query = "
+				INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
+				VALUES ({$id}, {$wd_id}, {$tariff}, 'Лакировка', {$_SESSION['id']})
+			";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+	}
+
+
+	if( $patina_wd_id > 0 ) {
+		// Узнаем имя лакировщика
+		$query = "SELECT Name FROM WorkersData WHERE WD_ID = {$patina_wd_id}";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		$Name = mysqli_result($res,0,'Name');
+
+		$query = "UPDATE OrdersData SET patina_WD_ID = {$patina_wd_id}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		$painting_workers .= " + {$Name}";
+
+		if ($patina_tariff > 0) {
+			$query = "
+				INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
+				VALUES ({$id}, {$patina_wd_id}, {$patina_tariff}, 'Патинирование', {$_SESSION['id']})
+			";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+	}
+
+	if ($painting_workers) {
+		echo "$('.main_table tr[id=\"ord{$id}\"] .painting_workers').text('{$painting_workers}');";
 	}
 
 	break;

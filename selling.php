@@ -953,7 +953,7 @@
 				,OD.OrderNumber
 				,Color(OD.CL_ID) Color
 				,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-				,WD.Name
+				,CONCAT(WD.Name, IF(patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')) Name
 				,Ord_price(OD.OD_ID) Price
 				,Ord_discount(OD.OD_ID) discount
 				,Ord_opt_price(OD.OD_ID) opt_price
@@ -970,6 +970,7 @@
 			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 AND ".( $SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 			LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
+			LEFT JOIN WorkersData pWD ON pWD.WD_ID = OD.patina_WD_ID
 			WHERE OD.DelDate IS NULL
 			".(($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year)."
 			ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.AddDate ASC, OD.OD_ID ASC

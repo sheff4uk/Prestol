@@ -694,7 +694,7 @@
 			,OD.Comment
 			,Color(OD.CL_ID) Color
 			,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-			,WD.Name
+			,CONCAT(WD.Name, IF(patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')) Name
 			,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 			,OD_IsReady(OD.OD_ID) IsReady
 			,IFNULL(OD.SHP_ID, 0) SHP_ID
@@ -789,6 +789,7 @@
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
+		LEFT JOIN WorkersData pWD ON pWD.WD_ID = OD.patina_WD_ID
 		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 		WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
 		".($USR_Shop ? "AND (SH.SH_ID IN ({$USR_Shop}) OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."

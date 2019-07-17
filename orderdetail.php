@@ -384,7 +384,7 @@
 			,CL.color Color
 			,CL.clear
 			,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-			,WD.Name
+			,CONCAT(WD.Name, IF(patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')) Name
 			,OD.Comment
 			,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
 			,IFNULL(SH.retail, 0) retail
@@ -400,6 +400,7 @@
 		FROM OrdersData OD
 		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
+		LEFT JOIN WorkersData pWD ON pWD.WD_ID = OD.patina_WD_ID
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
