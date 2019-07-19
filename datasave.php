@@ -46,6 +46,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$ptn = $_POST["ptn"];
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
+	$sidebar = isset($_POST["sidebar"]) ? $_POST["sidebar"] : "NULL";
 	// Обработка строк
 	$Material = convert_str($_POST["Material"]);
 	$Material = mysqli_real_escape_string($mysqli, $Material);
@@ -100,6 +101,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 		SET BL_ID = {$Blank}
 			,Other = {$Other}
 			,edge = {$edge}
+			,sidebar = {$sidebar}
 			,piece_stored = {$piece_stored}
 			,MT_ID = {$mt_id}
 			,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."

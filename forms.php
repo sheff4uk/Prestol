@@ -35,11 +35,12 @@
 		$ModelMech_box[$row["PM_ID"]][$row["PME_ID"]] = [$row["box"]];
 	}
 
-	// Массив наличия патины и дефолтная форма в зависимости от модели
+	// Массив наличия патины, пластиковая царга и дефолтная форма в зависимости от модели
 	$ModelPatina = array();
+	$ModelSidebar = array();
 	$ModelDefForm = array();
 	$query = "
-		SELECT PM.PM_ID, PM.ptn, MIN(PMF.PF_ID) PF_ID, SUM(IF(PM.PT_ID = 2, 1, 0)) cnt
+		SELECT PM.PM_ID, PM.ptn, PM.sidebar, MIN(PMF.PF_ID) PF_ID, SUM(IF(PM.PT_ID = 2, 1, 0)) cnt
 		FROM ProductModels PM
 		LEFT JOIN ProductModelsForms PMF ON PMF.PM_ID = PM.PM_ID AND PMF.standart = 1
 		GROUP BY PM.PM_ID
@@ -47,6 +48,7 @@
 	$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($result) ) {
 		$ModelPatina[$row["PM_ID"]] = [$row["ptn"]];
+		$ModelSidebar[$row["PM_ID"]] = [$row["sidebar"]];
 		if ($row["cnt"] == 1) {
 			$ModelDefForm[$row["PM_ID"]] = [$row["PF_ID"]];
 		}
@@ -86,6 +88,7 @@
 		ModelForm = <?= json_encode($ModelForm); ?>;
 		ModelForm_standart = <?= json_encode($ModelForm_standart); ?>;
 		ModelPatina = <?= json_encode($ModelPatina); ?>;
+		ModelSidebar = <?= json_encode($ModelSidebar); ?>;
 		ModelDefForm = <?= json_encode($ModelDefForm); ?>;
 		ModelMech = <?= json_encode($ModelMech); ?>;
 		ModelMech_box = <?= json_encode($ModelMech_box); ?>;
@@ -197,7 +200,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</div>
 		<div>
 			<label>Модель:</label>
-			<select name="Model" style="width: 300px;">
+			<select name="Model" style="width: 300px;" required>
 			<?
 				echo "<option value='0'>-=Столешница=-</option>";
 				$query = "SELECT * FROM ProductModels WHERE PT_ID = 2 AND archive = 0 ORDER BY Model";
@@ -328,6 +331,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 		<div>
 			<label>Кромка ПВХ:</label>
 			<input type='text' name='edge' style="width: 300px;" autocomplete='off' placeholder="Название кромки">
+		</div>
+		<div id="wr_sidebar">
+			<label>Царга:</label>
+			<div class='btnset sidebar_radio'>
+				<input type='radio' id='sidebar0' name='sidebar' value='0'>
+					<label for='sidebar0'>Пластик</label>
+				<input type='radio' id='sidebar1' name='sidebar' value='1'>
+					<label for='sidebar1'>Покраска</label>
+			</div>
 		</div>
 		<div>
 			<label>Примечание:</label>
@@ -701,6 +713,20 @@ this.subbut.value='Подождите, пожалуйста!';">
 		}
 	}
 
+	// Функция включения/выключения радиокнопок царги в зависимости от модели стола
+	function model_sidebar(model) {
+		$('#addtable input[name="sidebar"]').prop('checked', false);
+		$('#addtable input[name="sidebar"]').button("refresh");
+		if( ModelSidebar[model] == 1 ) {
+			$('#addtable #wr_sidebar').show('fast');
+			$('#addtable input[name="sidebar"]').attr("required", true);
+		}
+		else {
+			$('#addtable #wr_sidebar').hide('fast');
+			$('#addtable input[name="sidebar"]').attr("required", false);
+		}
+	}
+
 	// Функция включения золотой патины для моделей с патиной
 	function patina_model_list(model, type) {
 		if (ModelPatina[model] == 1) {
@@ -908,6 +934,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#addtable input[name="Width"]').val('');
 			$('#addtable input[name="PieceSize"]').val('');
 			$('#addtable input[name="piece_stored"]').prop('checked', false);
+			$('#addtable input[name="sidebar"]').prop('checked', false);
 			$('#2radio').prop('checked', true);
 			$('#2ptn0').prop('checked', true);
 			$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
@@ -966,6 +993,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 					// Append it to the select
 					$('#addtable select[name="Model"]').append(newOption).trigger('change');
 				}
+				model_sidebar(model);
 
 				$('#2ptn'+odd_data['ptn']).prop('checked', true);
 				$('#form'+form).prop('checked', true);
@@ -991,6 +1019,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#addtable select[name="Shipper"]').val(odd_data['shipper']);
 				$('#addtable input[name="edge"]').val(odd_data['edge']);
 				$('#2radio'+odd_data['isexist']).prop('checked', true);
+				$('#addtable #sidebar'+odd_data['sidebar']).prop('checked', true);
 				$('#addtable input[type="radio"]').button('refresh');
 				if( odd_data['isexist'] == 1 ) {
 					$('#addtable .order_material').show('fast');
@@ -1048,11 +1077,13 @@ this.subbut.value='Подождите, пожалуйста!';">
 				form_model_list(0, form);
 				mech_model_list(0, mechanism);
 				patina_model_list(0, 2);
+				model_sidebar(0);
 			}
 			else {
 				form_model_list($(this).val(), form);
 				mech_model_list($(this).val(), mechanism);
 				patina_model_list($(this).val(), 2);
+				model_sidebar($(this).val());
 			}
 			// Очищаем размеры
 			$('#addtable input[name="Length"]').val('');

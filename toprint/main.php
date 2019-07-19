@@ -72,12 +72,12 @@
 					if(isset($_GET["CN"])) echo "<td width='9%'>Клиент<br>Квитанция</td>";
 					if(isset($_GET["SD"])) echo "<td width='4%'>Дата продажи</td>";
 					if(isset($_GET["ED"])) echo "<td width='4%'>Дата ".($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))."</td>";
-					if(isset($_GET["SH"])) echo "<td width='7%'>Подразде-ление</td>";
+					if(isset($_GET["SH"])) echo "<td width='5%'>Подразде-ление</td>";
 					if(isset($_GET["Z"])) echo "<td width='20'>Кол-во</td>";
 					if(isset($_GET["Z"])) echo "<td width='20%'>Набор</td>";
 					if(isset($_GET["M"])) echo "<td width='15%'>Пластик/ткань</td>";
 					if(isset($_GET["CR"])) echo "<td width='10%'>Цвет покраски</td>";
-					if(isset($_GET["CR"])) echo "<td width='5%'>Патина</td>";
+					if(isset($_GET["CR"])) echo "<td width='3%'>Пат.</td>";
 					if(isset($_GET["PR"])) echo "<td width='8%'>Этапы</td>";
 					if(isset($_GET["N"])) echo "<td width='15%'>Примечание</td>";
 				?>
@@ -89,9 +89,10 @@
 
 	$query = "
 		SELECT OD.OD_ID
-			,CONCAT(Zakaz(ODD.ODD_ID), IF(IFNULL(ODD.Comment, '') = '', '', CONCAT(' <b>(', ODD.Comment, ')</b>'))) Zakaz
+			,Zakaz(ODD.ODD_ID) Zakaz
+			,ODD.Comment
 			,CONCAT('<b>', ODD.Amount, '</b>') Amount
-			,Patina(ODD.ptn) Patina
+			,LEFT(Patina(ODD.ptn), 3) Patina
 			,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SHP.Shipper, ')'), ''),
 				IF(IFNULL(MT.Material, '') != '',
 					CASE IFNULL(ODD.IsExist, -1)
@@ -199,12 +200,27 @@
 		if(isset($_GET["CN"]) and $span) echo "<td width='9%' rowspan='{$cnt}'>{$subrow["ClientName"]}<b>{$subrow["OrderNumber"]}</b>{$subrow["mtel"]}{$subrow["address"]}<b>{$format_diff}</b></td>";
 		if(isset($_GET["SD"]) and $span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["StartDate"]}</td>";
 		if(isset($_GET["ED"]) and $span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["EndDate"]}</td>";
-		if(isset($_GET["SH"]) and $span) echo "<td width='7%' rowspan='{$cnt}'>".($subrow["retail"] ? "&bull; " : "")."{$subrow["Shop"]}</td>";
-		if(isset($_GET["Z"])) echo "<td width='20' style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
-		if(isset($_GET["Z"])) echo "<td width='20%' style='font-size: 16px;'>{$row["Zakaz"]}</td>";
+		if(isset($_GET["SH"]) and $span) echo "<td width='5%' rowspan='{$cnt}'>".($subrow["retail"] ? "&bull; " : "")."{$subrow["Shop"]}</td>";
+		if(isset($_GET["Z"])) {
+			$zakaz = "";
+			$options = "";
+			$zakaz_arr = explode(" | ", $row["Zakaz"]);
+			foreach($zakaz_arr as $key => $value) {
+				if ($key == 0) {
+					$zakaz = $value;
+				}
+				else {
+					$options .= "{$value}<br>";
+				}
+			}
+			$options .= "<b>{$row["Comment"]}</b>";
+			echo "<td width='20' style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
+			echo "<td width='7%' style='font-size: 16px;'>{$zakaz}</td>";
+			echo "<td width='13%' style='font-size: 16px;'>{$options}</td>";
+		}
 		if(isset($_GET["M"])) echo "<td width='15%'>{$row["Material"]}</td>";
 		if(isset($_GET["CR"]) and $span) echo "<td width='10%' rowspan='{$cnt}'>{$subrow["Colors"]}</td>";
-		if(isset($_GET["CR"])) echo "<td width='5%'>{$row["Patina"]}</td>";
+		if(isset($_GET["CR"])) echo "<td width='3%'>{$row["Patina"]}</td>";
 		if(isset($_GET["PR"])) echo "<td width='8%'><span class='nowrap'>{$row["Steps"]}</span></td>";
 		if(isset($_GET["N"]) and $span) echo "<td width='15%' rowspan='{$cnt}'>{$subrow["Comment"]}</td>";
 		echo "</tr>";
