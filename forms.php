@@ -333,7 +333,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<input type='text' name='edge' style="width: 300px;" autocomplete='off' placeholder="Название кромки">
 		</div>
 		<div id="wr_sidebar">
-			<label>Царга:</label>
+			<label title="Пластик - оклейка пластиком цвета столешницы. Шпон - покраска царги в цвет ног.">
+				<i class='fa fa-question-circle'></i>Царга:
+			</label>
 			<div class='btnset sidebar_radio'>
 				<input type='radio' id='sidebar0' name='sidebar' value='0'>
 					<label for='sidebar0'>Пластик</label>
