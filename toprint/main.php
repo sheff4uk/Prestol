@@ -216,7 +216,7 @@
 			$options .= "<b>{$row["Comment"]}</b>";
 			echo "<td width='20' style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
 			echo "<td width='7%' style='font-size: 16px;'>{$zakaz}</td>";
-			echo "<td width='13%' style='font-size: 16px;'>{$options}</td>";
+			echo "<td width='13%'>{$options}</td>";
 		}
 		if(isset($_GET["M"])) echo "<td width='15%'>{$row["Material"]}</td>";
 		if(isset($_GET["CR"]) and $span) echo "<td width='10%' rowspan='{$cnt}'>{$subrow["Colors"]}</td>";
