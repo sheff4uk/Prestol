@@ -338,7 +338,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<input type='radio' id='sidebar0' name='sidebar' value='0'>
 					<label for='sidebar0'>Пластик</label>
 				<input type='radio' id='sidebar1' name='sidebar' value='1'>
-					<label for='sidebar1'>Покраска</label>
+					<label for='sidebar1'>Шпон</label>
 			</div>
 		</div>
 		<div>
