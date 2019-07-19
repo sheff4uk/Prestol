@@ -72,7 +72,7 @@
 					if(isset($_GET["CN"])) echo "<td width='9%'>Клиент<br>Квитанция</td>";
 					if(isset($_GET["SD"])) echo "<td width='4%'>Дата продажи</td>";
 					if(isset($_GET["ED"])) echo "<td width='4%'>Дата ".($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))."</td>";
-					if(isset($_GET["SH"])) echo "<td width='5%'>Подразде-ление</td>";
+					if(isset($_GET["SH"])) echo "<td width='6%'>Подразде-ление</td>";
 					if(isset($_GET["Z"])) echo "<td width='20'>Кол-во</td>";
 					if(isset($_GET["Z"])) echo "<td width='20%'>Набор</td>";
 					if(isset($_GET["M"])) echo "<td width='15%'>Пластик/ткань</td>";
@@ -200,7 +200,7 @@
 		if(isset($_GET["CN"]) and $span) echo "<td width='9%' rowspan='{$cnt}'>{$subrow["ClientName"]}<b>{$subrow["OrderNumber"]}</b>{$subrow["mtel"]}{$subrow["address"]}<b>{$format_diff}</b></td>";
 		if(isset($_GET["SD"]) and $span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["StartDate"]}</td>";
 		if(isset($_GET["ED"]) and $span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["EndDate"]}</td>";
-		if(isset($_GET["SH"]) and $span) echo "<td width='5%' rowspan='{$cnt}'>".($subrow["retail"] ? "&bull; " : "")."{$subrow["Shop"]}</td>";
+		if(isset($_GET["SH"]) and $span) echo "<td width='6%' rowspan='{$cnt}'>".($subrow["retail"] ? "&bull; " : "")."{$subrow["Shop"]}</td>";
 		if(isset($_GET["Z"])) {
 			$zakaz = "";
 			$options = "";
