@@ -219,6 +219,7 @@
 		$ptn = $_POST["ptn"];
 		$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 		$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
+		$sidebar = isset($_POST["sidebar"]) ? $_POST["sidebar"] : "NULL";
 		// Обработка строк
 		$Material = convert_str($_POST["Material"]);
 		$Material = mysqli_real_escape_string($mysqli, $Material);
@@ -252,8 +253,8 @@
 			$mt_id = "NULL";
 		}
 
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, edge, Length, Width, PieceAmount, PieceSize, piece_stored, PF_ID, PME_ID, box, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, author, ptn)
-				  VALUES (IF({$id} > 0, {$id}, NULL), {$Model}, {$Blank}, {$Other}, {$edge}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$piece_stored}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, edge, sidebar, Length, Width, PieceAmount, PieceSize, piece_stored, PF_ID, PME_ID, box, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, author, ptn)
+				  VALUES (IF({$id} > 0, {$id}, NULL), {$Model}, {$Blank}, {$Other}, {$edge}, {$sidebar}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$piece_stored}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		if ($id > 0) {
