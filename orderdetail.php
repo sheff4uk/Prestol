@@ -220,7 +220,7 @@
 		$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 		$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 		$sidebar = isset($_POST["sidebar"]) ? $_POST["sidebar"] : "NULL";
-		$PVC_ID = isset($_POST["PVC_ID"]) ? $_POST["PVC_ID"] : "NULL";
+		$PVC_ID = $_POST["PVC_ID"] ? $_POST["PVC_ID"] : "NULL";
 		// Обработка строк
 		$Material = convert_str($_POST["Material"]);
 		$Material = mysqli_real_escape_string($mysqli, $Material);
