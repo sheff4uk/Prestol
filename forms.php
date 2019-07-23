@@ -330,7 +330,17 @@ this.subbut.value='Подождите, пожалуйста!';">
 		?>
 		<div>
 			<label>Кромка ПВХ:</label>
-			<input type='text' name='edge' style="width: 300px;" autocomplete='off' placeholder="Название кромки">
+			<select name="PVC_ID" style="width: 300px;">
+			<?
+				echo "<option></option>";
+				$query = "SELECT PVC_ID, edge FROM PVCedge ORDER BY edge";
+				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($result) )
+				{
+					echo "<option value='{$row["PVC_ID"]}'>{$row["edge"]}</option>";
+				}
+			?>
+			</select>
 		</div>
 		<div id="wr_sidebar">
 			<label title="Пластик - оклейка пластиком цвета столешницы. Шпон - покраска царги в цвет ног.">
@@ -1019,7 +1029,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#addtable textarea[name="Comment"]').val(odd_data['comment']);
 				$('#addtable input[name="Material"]').val(odd_data['material']);
 				$('#addtable select[name="Shipper"]').val(odd_data['shipper']);
-				$('#addtable input[name="edge"]').val(odd_data['edge']);
+				$('#addtable select[name="PVC_ID"]').val(odd_data['PVC_ID']);
 				$('#2radio'+odd_data['isexist']).prop('checked', true);
 				$('#addtable #sidebar'+odd_data['sidebar']).prop('checked', true);
 				$('#addtable input[type="radio"]').button('refresh');

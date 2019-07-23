@@ -47,14 +47,12 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 	$sidebar = isset($_POST["sidebar"]) ? $_POST["sidebar"] : "NULL";
+	$PVC_ID = isset($_POST["PVC_ID"]) ? $_POST["PVC_ID"] : "NULL";
 	// Обработка строк
 	$Material = convert_str($_POST["Material"]);
 	$Material = mysqli_real_escape_string($mysqli, $Material);
-	$edge = convert_str($_POST["edge"]);
-	$edge = mysqli_real_escape_string($mysqli, $edge);
 	$Comment = convert_str($_POST["Comment"]);
 	$Comment = mysqli_real_escape_string($mysqli, $Comment);
-	$edge = ($edge != '') ? "'$edge'" : "NULL";
 	$Comment = ($Comment != '') ? "'$Comment'" : "NULL";
 
 	// Узнаем прошлого поставщика и ID набора
@@ -100,7 +98,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 		UPDATE OrdersDataDetail
 		SET BL_ID = {$Blank}
 			,Other = {$Other}
-			,edge = {$edge}
+			,PVC_ID = {$PVC_ID}
 			,sidebar = {$sidebar}
 			,piece_stored = {$piece_stored}
 			,MT_ID = {$mt_id}
