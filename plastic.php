@@ -1,6 +1,6 @@
 <?
 	include "config.php";
-	$title = 'Материалы';
+	$title = 'Пластики';
 	include "header.php";
 
 	// Проверка прав на доступ к экрану
