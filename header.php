@@ -379,7 +379,8 @@
 			}
 		}
 		if( in_array('screen_materials', $Rights) ) {
-			$menu["Материалы"] = "materials.php";
+			$menu["Материалы"]["Ткани"] = "textile.php";
+			$menu["Материалы"]["Пластики"] = "plastic.php";
 		}
 		if( in_array('screen_blanks', $Rights) ) {
 			$menu["Заготовки"] = "blankstock.php";
