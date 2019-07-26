@@ -138,7 +138,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			,USR_Icon(PVCL.author) Name
 		FROM PVClog PVCL
 		JOIN PVCedge PVC ON PVC.PVC_ID = PVCL.PVC_ID
-		ORDER BY date DESC
+		ORDER BY PVCL.date DESC
 		LIMIT 100
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
