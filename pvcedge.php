@@ -18,8 +18,8 @@
 
 		// Добавление заготовок
 		$query = "
-			INSERT INTO PVClog(PVC_ID, amount, comment, author)
-			VALUES ({$_POST["PVC_ID"]}, {$_POST["amount"]}, '{$comment}', {$_SESSION["id"]})
+			INSERT INTO PVClog(PVC_ID, size, amount, comment, author)
+			VALUES ({$_POST["PVC_ID"]}, {$_POST["size"]}, {$_POST["amount"]}, '{$comment}', {$_SESSION["id"]})
 		";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -53,6 +53,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 					?>
 				</select>
 			</div>
+			<div>
+				<label>Размер:</label>
+				<div class='btnset'>
+					<input type='radio' id='size1' name='size' value='1' required>
+						<label for='size1'>2mm</label>
+					<input type='radio' id='size0' name='size' value='0' required>
+						<label for='size0'>0,4mm</label>
+				</div>
+			</div>
 			<div style="width: 170px; display: inline-block;">
 				<label>Кол-во:</label>
 				<input required type='number' name='amount' class='amount'>
@@ -75,6 +84,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		<thead>
 		<tr class="nowrap">
 			<th>Кромка</th>
+			<th>Размер</th>
 			<th>Наличие</th>
 			<th>Потребность</th>
 		</tr>
@@ -85,8 +95,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 		SELECT PVC.PVC_ID
 			,PVC.edge
 			,SUM(ODD.Amount) cnt
-			,IFNULL(PVCL.cnt, 0) - ROUND(SUM(IF(ODS.IsReady = 1, (IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000, 0)), 1) balance
-			,ROUND(SUM(IF(ODS.IsReady = 0, (IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000, 0)), 1) need
+
+			,IFNULL(PVCL.cnt2, 0) - ROUND(SUM(IF(ODS.IsReady = 1, (IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000, 0)), 1) balance2
+
+			,IFNULL(PVCL.cnt04, 0) - ROUND(SUM(IF(ODS.IsReady = 1, (IF(ODD.sidebar = 0, IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2), 0) + IF(ODD.PieceSize IS NOT NULL, IFNULL(ODD.Width, ODD.Length), 0)*(IFNULL(ODD.PieceAmount, 1)+1)*2)/1000, 0)), 1) balance04
+
+			,ROUND(SUM(IF(ODS.IsReady = 0, (IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000, 0)), 1) need2
+
+			,ROUND(SUM(IF(ODS.IsReady = 0, (IF(ODD.sidebar = 0, IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2), 0) + IF(ODD.PieceSize IS NOT NULL, IFNULL(ODD.Width, ODD.Length), 0)*(IFNULL(ODD.PieceAmount, 1)+1)*2)/1000, 0)), 1) need04
+
 		FROM PVCedge PVC
 		LEFT JOIN OrdersDataDetail ODD ON ODD.PVC_ID = PVC.PVC_ID AND ODD.PVC_ID IS NOT NULL
 		LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
@@ -94,7 +111,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			AND ODS.Old != 1
 			AND ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ст%')
 		LEFT JOIN (
-			SELECT PVC_ID, SUM(amount) cnt
+			SELECT PVC_ID, SUM(IF(size = 1, amount, 0)) cnt2, SUM(IF(size = 0, amount, 0)) cnt04
 			FROM PVClog
 			GROUP BY PVC_ID
 		) PVCL ON PVCL.PVC_ID = PVC.PVC_ID
@@ -104,10 +121,16 @@ this.subbut.value='Подождите, пожалуйста!';">
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		echo "<tr id='{$row["PVC_ID"]}'>";
-		echo "<td><i>{$row["edge"]}</i></td>";
-		echo "<td class='txtright'>{$row["balance"]}</td>";
-		echo "<td class='txtright'>{$row["need"]}</td>";
+		echo "<tr style='border-top: 2px solid #bbb;'>";
+		echo "<td rowspan='2'><i>{$row["edge"]}</i></td>";
+		echo "<td><i>2mm</i></td>";
+		echo "<td class='txtright'>{$row["balance2"]}</td>";
+		echo "<td class='txtright'>{$row["need2"]}</td>";
+		echo "</tr>";
+		echo "<tr>";
+		echo "<td><i>0,4mm</i></td>";
+		echo "<td class='txtright'>{$row["balance04"]}</td>";
+		echo "<td class='txtright'>{$row["need04"]}</td>";
 		echo "</tr>";
 	}
 ?>
@@ -121,9 +144,10 @@ this.subbut.value='Подождите, пожалуйста!';">
 		<tr class="nowrap">
 			<th width="60">Дата</th>
 			<th width="60">Время</th>
-			<th width="50%">Кромка</th>
+			<th width="40%">Кромка</th>
+			<th width="50">Размер</th>
 			<th width="60">Кол-во</th>
-			<th width="50%">Примечание</th>
+			<th width="60%">Примечание</th>
 			<th width="50">Автор</th>
 		</tr>
 		</thead>
@@ -136,6 +160,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			,PVCL.amount
 			,PVCL.comment
 			,USR_Icon(PVCL.author) Name
+			,IF(size = 1, '2mm', '0,4mm') size
 		FROM PVClog PVCL
 		JOIN PVCedge PVC ON PVC.PVC_ID = PVCL.PVC_ID
 		ORDER BY PVCL.date DESC
@@ -148,6 +173,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		echo "<td><span class='nowrap'><b>{$row["date"]}</b></span></td>";
 		echo "<td><span class='nowrap'>{$row["time"]}</span></td>";
 		echo "<td><span class='nowrap'><i>{$row["edge"]}</i></span></td>";
+		echo "<td><i>{$row["size"]}</i></td>";
 		echo "<td class='txtright'>{$row["amount"]}</td>";
 		echo "<td>{$row["comment"]}</td>";
 		echo "<td>{$row["Name"]}</td>";
@@ -164,6 +190,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 		$('#add_btn').click(function() {
 			// Очистка диалога
 			$('#addpvc input[type="text"], #addpvc input[type="number"], #addpvc select, #addpvc textarea').val('');
+			$('#addpvc input[name="size"]').prop('checked', false);
+			$('#addpvc input[type="radio"]').button("refresh");
 
 			// Форма добавления/редактирования заготовок
 			$('#addpvc').dialog({
