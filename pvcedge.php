@@ -121,16 +121,22 @@ this.subbut.value='Подождите, пожалуйста!';">
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
+		$balance2 = $row["balance2"] ? $row["balance2"] : '-';
+		$need2 = $row["need2"] ? $row["need2"] : '-';
+		$balance04 = $row["balance04"] ? $row["balance04"] : '-';
+		$need04 = $row["need04"] ? $row["need04"] : '-';
+		$balance2bg = $row["balance2"] < $row["need2"] ? 'bg-red' : '';
+		$balance04bg = $row["balance04"] < $row["need04"] ? 'bg-red' : '';
 		echo "<tr style='border-top: 2px solid #bbb;'>";
 		echo "<td rowspan='2'><i>{$row["edge"]}</i></td>";
 		echo "<td><i>2mm</i></td>";
-		echo "<td class='txtright'>{$row["balance2"]}</td>";
-		echo "<td class='txtright'>{$row["need2"]}</td>";
+		echo "<td class='txtright {$balance2bg}'>{$balance2}</td>";
+		echo "<td class='txtright'>{$need2}</td>";
 		echo "</tr>";
 		echo "<tr>";
 		echo "<td><i>0,4mm</i></td>";
-		echo "<td class='txtright'>{$row["balance04"]}</td>";
-		echo "<td class='txtright'>{$row["need04"]}</td>";
+		echo "<td class='txtright {$balance04bg}'>{$balance04}</td>";
+		echo "<td class='txtright'>{$need04}</td>";
 		echo "</tr>";
 	}
 ?>
