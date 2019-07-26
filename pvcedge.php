@@ -96,13 +96,13 @@ this.subbut.value='Подождите, пожалуйста!';">
 			,PVC.edge
 			,SUM(ODD.Amount) cnt
 
-			,IFNULL(PVCL.cnt2, 0) - ROUND(SUM(IF(ODS.IsReady = 1, (IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000, 0)), 1) balance2
+			,IFNULL(PVCL.cnt2, 0) - CEIL(SUM(IF(ODS.IsReady = 1, (IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000, 0))) balance2
 
-			,IFNULL(PVCL.cnt04, 0) - ROUND(SUM(IF(ODS.IsReady = 1, (IF(ODD.sidebar = 0, IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2), 0) + IF(ODD.PieceSize IS NOT NULL, IFNULL(ODD.Width, ODD.Length), 0)*(IFNULL(ODD.PieceAmount, 1)+1)*2)/1000, 0)), 1) balance04
+			,IFNULL(PVCL.cnt04, 0) - CEIL(SUM(IF(ODS.IsReady = 1, (IF(ODD.sidebar = 0, IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2), 0) + IF(ODD.PieceSize IS NOT NULL, IFNULL(ODD.Width, ODD.Length), 0)*(IFNULL(ODD.PieceAmount, 1)+1)*2)/1000, 0))) balance04
 
-			,ROUND(SUM(IF(ODS.IsReady = 0, (IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000, 0)), 1) need2
+			,CEIL(SUM(IF(ODS.IsReady = 0, (IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000, 0))) need2
 
-			,ROUND(SUM(IF(ODS.IsReady = 0, (IF(ODD.sidebar = 0, IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2), 0) + IF(ODD.PieceSize IS NOT NULL, IFNULL(ODD.Width, ODD.Length), 0)*(IFNULL(ODD.PieceAmount, 1)+1)*2)/1000, 0)), 1) need04
+			,CEIL(SUM(IF(ODS.IsReady = 0, (IF(ODD.sidebar = 0, IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2), 0) + IF(ODD.PieceSize IS NOT NULL, IFNULL(ODD.Width, ODD.Length), 0)*(IFNULL(ODD.PieceAmount, 1)+1)*2)/1000, 0))) need04
 
 		FROM PVCedge PVC
 		LEFT JOIN OrdersDataDetail ODD ON ODD.PVC_ID = PVC.PVC_ID AND ODD.PVC_ID IS NOT NULL
