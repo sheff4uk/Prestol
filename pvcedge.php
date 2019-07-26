@@ -85,7 +85,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		SELECT PVC.PVC_ID
 			,PVC.edge
 			,SUM(ODD.Amount) cnt
-			,SUM(IF(ODS.IsReady = 1, ROUND((IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000), 0)) + IFNULL(PVCL.cnt, 0) balance
+			,IFNULL(PVCL.cnt, 0) - SUM(IF(ODS.IsReady = 1, ROUND((IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000), 0)) balance
 			,SUM(IF(ODS.IsReady = 0, ROUND((IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000), 0)) need
 		FROM PVCedge PVC
 		LEFT JOIN OrdersDataDetail ODD ON ODD.PVC_ID = PVC.PVC_ID AND ODD.PVC_ID IS NOT NULL
