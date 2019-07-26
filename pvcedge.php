@@ -116,7 +116,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 			GROUP BY PVC_ID
 		) PVCL ON PVCL.PVC_ID = PVC.PVC_ID
 		GROUP BY PVC.PVC_ID
-		ORDER BY cnt DESC
+		#ORDER BY cnt DESC
+		ORDER BY PVC.edge
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
