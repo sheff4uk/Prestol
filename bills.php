@@ -16,16 +16,15 @@ if( $_GET["add_bill"] ) {
 	// Сохраняем цены и скидки изделий в ODD
 	$summa = 0;
 	foreach ($_POST["item"] as $key => $value) {
-		//$odd_id = $_POST["item"][$key];
-		$tovar_cena = $_POST["tovar_cena"][$key];
-		$discount = ($_POST["tovar_skidka"][$key] > 0) ? $_POST["tovar_skidka"][$key] : "NULL";
-
-		$query = "UPDATE OrdersDataDetail SET Price = {$tovar_cena}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$value}";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		// Если товар из набора - приписываем вначале код
+		// Если товар из набора - приписываем вначале код и обновляем цену и скидку
 		if( $_POST["code"][$key] ) {
 			$_POST["tovar_name"][$key] = "[{$_POST["code"][$key]}] {$_POST["tovar_name"][$key]}";
+
+			$tovar_cena = $_POST["tovar_cena"][$key];
+			$discount = ($_POST["tovar_skidka"][$key] > 0) ? $_POST["tovar_skidka"][$key] : "NULL";
+
+			$query = "UPDATE OrdersDataDetail SET Price = {$tovar_cena}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$value}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 		$summa += ($_POST["tovar_cena"][$key] - $_POST["tovar_skidka"][$key]) * $_POST["tovar_kol"][$key];
 	}
