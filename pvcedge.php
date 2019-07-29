@@ -54,7 +54,7 @@
 	}
 
 ?>
-<div id='add_btn' title='Приходовать кромку'></div>
+<div id='add_btn' title='Заказать или приходовать кромку'></div>
 
 <!-- Форма добавления заготовки -->
 <div id='addpvc' title='Приход кромки ПВХ' class="addproduct" style='display:none'>
