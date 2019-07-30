@@ -101,18 +101,31 @@
 			<select name="MT_ID[]" multiple style="width: 800px; display: none;">
 				<?
 				$query = "
-					SELECT MT.MT_ID, CONCAT(MT.Material, ' (', SH.Shipper, ')') Material
-					FROM Materials MT
-					JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = {$product}
-					JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
-					JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL
-					GROUP BY MT.MT_ID
-					ORDER BY MT.Material
+					SELECT SHP.SH_ID, SHP.Shipper
+					FROM Shippers SHP
+					WHERE SHP.mtype = {$product}
+					ORDER BY SHP.Shipper
 				";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
-					$selected = in_array($row["MT_ID"], $_GET["MT_ID"]) ? "selected" : "";
-					echo "<option {$selected} value='{$row["MT_ID"]}'>{$row["Material"]}</option>";
+					echo "<optgroup label='{$row["Shipper"]}'>";
+
+					$query = "
+						SELECT MT.MT_ID, MT.Material
+						FROM Materials MT
+						JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
+						JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL
+						WHERE MT.SH_ID = {$row["SH_ID"]}
+						GROUP BY MT.MT_ID
+						ORDER BY MT.Material
+					";
+					$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $subrow = mysqli_fetch_array($subres) ) {
+						$selected = in_array($subrow["MT_ID"], $_GET["MT_ID"]) ? "selected" : "";
+						echo "<option {$selected} value='{$subrow["MT_ID"]}'>{$subrow["Material"]}</option>";
+					}
+
+					echo "</optgroup>";
 				}
 				?>
 			</select>
@@ -134,18 +147,18 @@
 <form method='post' id="formdiv" style='position: relative;' onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
 	<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>
-	<table>
+	<table class="main_table">
 		<thead>
 		<tr class="nowrap">
-			<th></th>
-			<th>Материал</th>
-			<th>Код</th>
-			<th>Принят</th>
-			<th>Работник</th>
-			<th>Набор</th>
-			<th>Цвет</th>
-			<th>Клиент<br>Дата продажи - Дата сдачи<br>Подразделение (№ квитанции)</th>
-			<th>Примечание</th>
+			<th width="30"></th>
+			<th width="20%">Материал</th>
+			<th width="60">Код</th>
+			<th width="40">Принят</th>
+			<th width="70">Работник</th>
+			<th width="40%">Набор</th>
+			<th width="20%">Цвет</th>
+			<th width="130">Клиент<br>Продажа - Сдача<br>Подразделение</th>
+			<th width="20%">Примечание</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -290,9 +303,11 @@ this.subbut.value='Подождите, пожалуйста!';">
 				break;
 		}
 		echo "<td style='background: {$row["CTColor"]};' class='nowrap'>";
+		echo "<span>";
 		echo "<n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br>";
 		echo "{$row["StartDate"]} - <span class='{$row["Deadline"]}'>{$row["EndDate"]}</span><br>";
-		echo ($row["retail"] ? "&bull; " : "")."{$row["Shop"]} <b>{$row["OrderNumber"]}</b>";
+		echo ($row["retail"] ? "&bull; " : "")."{$row["Shop"]}";
+		echo "</span>";
 		echo "</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "</tr>";
