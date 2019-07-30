@@ -9,23 +9,44 @@
 		die('Недостаточно прав для совершения операции');
 	}
 
-//	$location = $_SERVER['REQUEST_URI'];
 	$location = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 
-	// Добавление заготовок
-	if( isset($_POST["PVC_ID"]) )
+	// Добавление в журнал
+	if( isset($_POST["PVCedge"]) )
 	{
 		$ord = $_POST["subbut"] == "Заказать" ? 1 : 0;
-		$comment = mysqli_real_escape_string( $mysqli,$_POST["comment"] );
+		$comment = convert_str($_POST["comment"]);
+		$comment = mysqli_real_escape_string( $mysqli,$comment );
 
-		// Добавление заготовок
 		$query = "
 			INSERT INTO PVClog(PVC_ID, size, amount, comment, ord, author)
-			VALUES ({$_POST["PVC_ID"]}, {$_POST["size"]}, {$_POST["amount"]}, '{$comment}', {$ord}, {$_SESSION["id"]})
+			VALUES ({$_POST["PVCedge"]}, {$_POST["size"]}, {$_POST["amount"]}, '{$comment}', {$ord}, {$_SESSION["id"]})
 		";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		die;
+	}
+
+	// Добавлени/редактирование кромки
+	if ( isset($_POST["edge"]) ) {
+		$edge = convert_str($_POST["edge"]);
+		$edge = mysqli_real_escape_string( $mysqli, $edge );
+		if ($_POST["PVC_ID"]) {
+			$PVC_ID = $_POST["PVC_ID"];
+			$query = "
+				UPDATE PVCedge SET edge = '{$edge}' WHERE PVC_ID = {$PVC_ID}
+			";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+		else {
+			$query = "
+				INSERT INTO PVCedge SET edge = '{$edge}'
+			";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$PVC_ID = mysqli_insert_id( $mysqli );
+		}
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#pvc'.$PVC_ID.'">');
 		die;
 	}
 
@@ -54,6 +75,21 @@
 	}
 
 ?>
+<style>
+	.pvc_label {
+		position: relative;
+	}
+	.pvc_label a {
+		position: absolute;
+		left: 100px;
+		top: 15px;
+		opacity: 0;
+	}
+	.pvc_label:hover a {
+		opacity: 1;
+	}
+</style>
+
 <div id='add_btn' title='Заказать или приходовать кромку'></div>
 
 <!-- Форма добавления заготовки -->
@@ -61,10 +97,9 @@
 	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset style="font-size: 1.2em;">
-			<input type='hidden' name='BS_ID'>
 			<div>
 				<label>Кромка:</label>
-				<select required name="PVC_ID" id="edge" style="width: 200px;">
+				<select required name="PVCedge" id="edge" style="width: 200px;">
 					<?
 					$query = "
 						SELECT PVC.PVC_ID, PVC.edge
@@ -94,7 +129,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</div>
 			<div>
 				<label>Примечание:</label>
-				<input type='text' name='comment' style="width: 200px;">
+				<input type='text' name='comment' style="width: 200px;" autocomplete="off">
 			</div>
 		</fieldset>
 		<div>
@@ -105,8 +140,28 @@ this.subbut.value='Подождите, пожалуйста!';">
 	</form>
 </div>
 
+<!-- Форма добавления/редактирования кромки -->
+<div id='editpvc' title='Кромка ПВХ' class="addproduct" style='display:none'>
+	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
+		<fieldset style="font-size: 1.2em;">
+			<input type='hidden' name='PVC_ID'>
+			<div>
+				<label>Название:</label>
+				<input type="text" name="edge" required autocomplete="off">
+			</div>
+		</fieldset>
+		<div>
+			<hr>
+			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
+		</div>
+	</form>
+</div>
+
 <div class="halfblock">
 	<h1>Список кромок</h1>
+	<a href="#" class="add_pvc_btn button">Добавить новую кромку ПВХ</a>
+	<br><br>
 	<table>
 		<thead>
 		<tr class="nowrap">
@@ -166,8 +221,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 		$ord04 = $row["ord04"] ? $row["ord04"] : '-';
 		$balance2bg = ($row["balance2"] + $row["ord2"]) < $row["need2"] ? 'bg-red' : '';
 		$balance04bg = ($row["balance04"] + $row["ord04"]) < $row["need04"] ? 'bg-red' : '';
-		echo "<tr style='border-top: 2px solid #bbb;'>";
-		echo "<td rowspan='2'><i>{$row["edge"]}</i></td>";
+		echo "<tr id='pvc{$row["PVC_ID"]}' style='border-top: 2px solid #bbb;'>";
+		echo "<td class='pvc_label' rowspan='2'><i>{$row["edge"]}</i><a href='#' class='add_pvc_btn' PVC_ID='{$row["PVC_ID"]}' edge='{$row["edge"]}' title='Редактировать название кромки'><i class='fa fa-pencil-alt fa-lg'></i></a></td>";
 		echo "<td><i>2mm</i></td>";
 		echo "<td class='txtright {$balance2bg}'>{$balance2}</td>";
 		echo "<td class='txtright'>{$need2}</td>";
@@ -196,7 +251,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<th width="60">Кол-во</th>
 			<th width="60%">Примечание</th>
 			<th width="50">Автор</th>
-			<th width="70">Действие</th>
+			<th width="75">Действие</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -289,9 +344,29 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#addpvc input[name="size"]').prop('checked', false);
 			$('#addpvc input[type="radio"]').button("refresh");
 
-			// Форма добавления/редактирования заготовок
 			$('#addpvc').dialog({
 				width: 500,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
+			return false;
+		});
+
+		// Форма добавления/редактирования кромки
+		$('.add_pvc_btn').click(function() {
+			// Очистка диалога
+			$('#editpvc input[name="edge"], #editpvc input[name="PVC_ID"]').val('');
+
+			// Заполнение формы в случае редактирования
+			if ($(this).attr('pvc_id')) {
+				$('#editpvc input[name="edge"]').val($(this).attr('edge'));
+				$('#editpvc input[name="PVC_ID"]').val($(this).attr('pvc_id'));
+			}
+
+			$('#editpvc').dialog({
+				width: 400,
 				modal: true,
 				show: 'blind',
 				hide: 'explode',
