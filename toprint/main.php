@@ -74,7 +74,7 @@
 					if(isset($_GET["ED"])) echo "<td width='4%'>Дата ".($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))."</td>";
 					if(isset($_GET["SH"])) echo "<td width='6%'>Подразде-ление</td>";
 					if(isset($_GET["Z"])) echo "<td width='20'>Кол-во</td>";
-					if(isset($_GET["Z"])) echo "<td width='20%'>Набор</td>";
+					if(isset($_GET["Z"])) echo "<td width='30%'>Набор</td>";
 					if(isset($_GET["M"])) echo "<td width='15%'>Пластик/ткань</td>";
 					if(isset($_GET["CR"])) echo "<td width='10%'>Цвет покраски</td>";
 					if(isset($_GET["CR"])) echo "<td width='3%'>Пат.</td>";
@@ -196,27 +196,28 @@
 			echo "<tr>";
 		}
 
-		if(isset($_GET["CD"]) and $span) echo "<td width='50' rowspan='{$cnt}' class='nowrap'><b>{$subrow["Code"]}</b></td>";
+		if(isset($_GET["CD"]) and $span) echo "<td width='50' style='font-size: 20px;' rowspan='{$cnt}' class='nowrap'><b>{$subrow["Code"]}</b></td>";
 		if(isset($_GET["CN"]) and $span) echo "<td width='9%' rowspan='{$cnt}'>{$subrow["ClientName"]}<b>{$subrow["OrderNumber"]}</b>{$subrow["mtel"]}{$subrow["address"]}<b>{$format_diff}</b></td>";
 		if(isset($_GET["SD"]) and $span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["StartDate"]}</td>";
 		if(isset($_GET["ED"]) and $span) echo "<td width='4%' rowspan='{$cnt}'>{$subrow["EndDate"]}</td>";
 		if(isset($_GET["SH"]) and $span) echo "<td width='6%' rowspan='{$cnt}'>".($subrow["retail"] ? "&bull; " : "")."{$subrow["Shop"]}</td>";
 		if(isset($_GET["Z"])) {
-			$zakaz = "";
-			$options = "";
-			$zakaz_arr = explode(" | ", $row["Zakaz"]);
-			foreach($zakaz_arr as $key => $value) {
-				if ($key == 0) {
-					$zakaz = $value;
-				}
-				else {
-					$options .= "{$value}<br>";
-				}
-			}
+//			$zakaz = "";
+//			$options = "";
+//			$zakaz_arr = explode(" | ", $row["Zakaz"]);
+//			foreach($zakaz_arr as $key => $value) {
+//				if ($key == 0) {
+//					$zakaz = $value;
+//				}
+//				else {
+//					$options .= "{$value}<br>";
+//				}
+//			}
 			$options .= "<b>{$row["Comment"]}</b>";
 			echo "<td width='20' style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
-			echo "<td width='7%' style='font-size: 16px;'>{$zakaz}</td>";
-			echo "<td width='13%'>{$options}</td>";
+//			echo "<td width='7%' style='font-size: 16px;'>{$zakaz}</td>";
+//			echo "<td width='13%'>{$options}</td>";
+			echo "<td width='30%' style='font-size: 16px;'>{$row["Zakaz"]}</td>";
 		}
 		if(isset($_GET["M"])) echo "<td width='15%'>{$row["Material"]}</td>";
 		if(isset($_GET["CR"]) and $span) echo "<td width='10%' rowspan='{$cnt}'>{$subrow["Colors"]}</td>";
