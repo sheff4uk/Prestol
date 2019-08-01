@@ -64,7 +64,6 @@
 						,author = {$_SESSION["id"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		//header( "Location: ".$location );
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
@@ -234,9 +233,10 @@
 					FROM WorkersData WD
 					LEFT JOIN TimeSheet TS ON TS.WD_ID = WD.WD_ID AND YEAR(TS.Date) = {$year} AND MONTH(TS.Date) = {$month}
 					LEFT JOIN MonthlyPremiumPercent MPP ON MPP.WD_ID = WD.WD_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
-					WHERE WD.Type = 2
+					WHERE WD.Type IN (2,3)
 					GROUP BY WD.WD_ID
 					HAVING IsActive = 1 OR Hours > 0
+					ORDER BY WD.Type, WD.WD_ID
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
