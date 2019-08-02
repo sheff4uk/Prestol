@@ -296,11 +296,11 @@
 			$newOD_ID = mysqli_insert_id($mysqli);
 
 			// Записываем в журнал событие разделения набора удаление дубликата
-			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$id}, OFN_ID = 1, old_value = '{$newOD_ID}', new_value = '', author = {$_SESSION['id']}";
+			$query = "INSERT INTO OrdersChangeLog SET OD_ID = {$id}, OFN_ID = 1, old_value = '{$newOD_ID}', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, OFN_ID = 1, old_value = '{$id}', new_value = '', author = {$_SESSION['id']}";
+			$query = "INSERT INTO OrdersChangeLog SET OD_ID = {$newOD_ID}, OFN_ID = 1, old_value = '{$id}', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$query = "INSERT INTO OrdersChangeLog SET table_key = 'OD_ID', table_value = {$newOD_ID}, OFN_ID = 18, old_value = '', new_value = '', author = {$_SESSION['id']}";
+			$query = "INSERT INTO OrdersChangeLog SET OD_ID = {$newOD_ID}, OFN_ID = 18, old_value = '', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			// Переносим удаляемое изделие в отделенный контейнер
@@ -826,9 +826,9 @@ if( $id != "NULL" ) {
 				</thead>
 				<tbody>
 		<?
-			$query = "SELECT OCL.table_key
-							,OCL.table_value
-							,IF(OCL.OFN_ID IS NOT NULL, OFN.field_name, OCL.field_name) field_name
+			$query = "SELECT IF(OCL.OD_ID IS NOT NULL, 'OD_ID', 'ODD_ID') table_key
+							,IF(OCL.OD_ID IS NOT NULL, OCL.OD_ID, IFNULL(OCL.ODD_ID, ODS.ODD_ID)) table_value
+							,CONCAT(OFN.field_name, IFNULL(CONCAT(' \"', ST.Step, '\"'), '')) field_name
 							,OCL.OFN_ID
 							,OCL.old_value
 							,OCL.new_value
@@ -836,8 +836,10 @@ if( $id != "NULL" ) {
 							,Friendly_date(OCL.date_time) friendly_date
 							,TIME(OCL.date_time) Time
 						FROM OrdersChangeLog OCL
-						LEFT JOIN OrdersFieldName OFN ON OFN.OFN_ID = OCL.OFN_ID
-						WHERE (table_key = 'OD_ID' AND table_value = {$id}) OR (table_key = 'ODD_ID' AND table_value IN (SELECT ODD_ID FROM OrdersDataDetail WHERE OD_ID = {$id}))
+						JOIN OrdersFieldName OFN ON OFN.OFN_ID = OCL.OFN_ID
+						LEFT JOIN OrdersDataSteps ODS ON ODS.ODS_ID = OCL.ODS_ID
+						LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+						WHERE (OCL.OD_ID = {$id}) OR (OCL.ODD_ID IN (SELECT ODD_ID FROM OrdersDataDetail WHERE OD_ID = {$id})) OR (ODS.ODD_ID IN (SELECT ODD_ID FROM OrdersDataDetail WHERE OD_ID = {$id}))
 						ORDER BY OCL.date_time DESC, OCL.OCL_ID DESC";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
