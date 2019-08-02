@@ -54,7 +54,7 @@
 	if( isset($_GET["incoming"]) )
 	{
 		$query = "
-			UPDATE PVClog SET ord = 0, date = NOW() WHERE PVCL_ID = {$_GET["incoming"]}
+			UPDATE PVClog SET ord = 0 WHERE PVCL_ID = {$_GET["incoming"]}
 		";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
