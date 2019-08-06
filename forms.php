@@ -174,8 +174,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 		}
 		?>
 		<div>
-			<label>Примечание:</label>
-			<textarea name='Comment' rows='3' cols='38'></textarea>
+		<?
+			if (in_array('order_add_confirm', $Rights)) {
+				echo "<label>Примечание:</label>";
+				echo "<textarea name='Comment' rows='3' cols='38'></textarea>";
+			}
+			else {
+				echo "<p style='color: #911;'>Обо всех дополнительных особенностях изделия сообщайте через кнопку <b>Сообщение на производство</b></p>";
+			}
+		?>
 		</div>
 		</fieldset>
 		<div>
@@ -354,8 +361,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</div>
 		</div>
 		<div>
-			<label>Примечание:</label>
-			<textarea name='Comment' rows='3' cols='38'></textarea>
+		<?
+			if (in_array('order_add_confirm', $Rights)) {
+				echo "<label>Примечание:</label>";
+				echo "<textarea name='Comment' rows='3' cols='38'></textarea>";
+			}
+			else {
+				echo "<p style='color: #911;'>Обо всех дополнительных особенностях изделия сообщайте через кнопку <b>Сообщение на производство</b></p>";
+			}
+		?>
 		</div>
 		<?
 		}
@@ -487,8 +501,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 			}
 			?>
 			<div>
-				<label>Примечание:</label>
-				<textarea name='Comment' rows='3' style='width: 300px;'></textarea>
+		<?
+			if (in_array('order_add_confirm', $Rights)) {
+				echo "<label>Примечание:</label>";
+				echo "<textarea name='Comment' rows='3' cols='38'></textarea>";
+			}
+			else {
+				echo "<p style='color: #911;'>Обо всех дополнительных особенностях изделия сообщайте через кнопку <b>Сообщение на производство</b></p>";
+			}
+		?>
 			</div>
 		</fieldset>
 		<div>

@@ -103,7 +103,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 			,piece_stored = {$piece_stored}
 			,MT_ID = {$mt_id}
 			,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
-			,Comment = {$Comment}
+			,Comment = ".( isset($_POST["Comment"]) ? $Comment : "Comment" )."
 			,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
 			,arrival_date = ".( isset($_POST["IsExist"]) ? $ArrivalDate : "arrival_date" )."
 			,author = {$_SESSION['id']}

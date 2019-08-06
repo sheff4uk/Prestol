@@ -78,7 +78,7 @@
 		}
 		
 		// Перенаправление на экран деталей набора
-		exit ('<meta http-equiv="refresh" content="0; url=/orderdetail.php?id='.$id.'">');
+		exit ('<meta http-equiv="refresh" content="0; url=/orderdetail.php?id='.$id.'&odd_id='.$odd_id.'">');
 		die;
 	}
 

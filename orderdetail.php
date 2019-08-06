@@ -608,7 +608,10 @@
 		}
 ?>
 
-		<td><textarea name='Comment' rows='6' <?=( (in_array('order_add', $Rights) and !$Del and $editable) ? "" : "disabled" )?> style='width: 100%;'><?=$Comment?></textarea></td>
+		<td>
+			<textarea name='Comment' rows='6' <?=( (in_array('order_add_confirm', $Rights) and !$Del and $editable) ? "" : "disabled" )?> style='width: 100%;'><?=$Comment?></textarea>
+			<? if (!in_array('order_add_confirm', $Rights)) echo "<span style='color: #911;'>Обо всех дополнительных особенностях набора сообщайте через кнопку <b>Сообщение на производство</b></span>"; ?>
+		</td>
 		<td style="text-align: center;">
 
 <?
@@ -1063,6 +1066,13 @@ this.subbut.value='Подождите, пожалуйста!';">
 			var lnk = $(this).attr('lnk');
 			$('.ord_log_row[lnk="'+lnk+'"]').css('border', 'none');
 		});
+
+		<?
+		// Если пришли из калькулятора - открывается форма редактирования стола
+		if ($_GET["odd_id"]) {
+			echo "$('#{$_GET["odd_id"]}.edit_product2').click();";
+		}
+		?>
 	});
 </script>
 
