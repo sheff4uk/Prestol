@@ -98,7 +98,7 @@
 		</div>
 
 		<div>
-			<select name="MT_ID[]" multiple style="width: 800px; display: none;">
+			<select name="MT_ID[]" multiple style="width: 800px;">
 				<?
 				$query = "
 					SELECT SHP.SH_ID, SHP.Shipper
@@ -122,7 +122,7 @@
 					$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $subrow = mysqli_fetch_array($subres) ) {
 						$selected = in_array($subrow["MT_ID"], $_GET["MT_ID"]) ? "selected" : "";
-						echo "<option {$selected} value='{$subrow["MT_ID"]}'>{$subrow["Material"]}</option>";
+						echo "<option {$selected} value='{$subrow["MT_ID"]}'>{$subrow["Material"]} ({$row["Shipper"]})</option>";
 					}
 
 					echo "</optgroup>";
@@ -423,6 +423,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			placeholder: "Выберите интересующие материалы",
 			allowClear: true,
 			closeOnSelect: false,
+			scrollAfterSelect: false,
 			language: "ru"
 		});
 	});
