@@ -1053,7 +1053,7 @@
 //		}
 		echo "<td val='{$row["confirmed"]}' class='{$class}' style='text-align: center;'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td class='X' style='text-align: center;'><input type='checkbox' {$checkedX} value='1'></td>";
-		echo "<td class='".( (in_array('order_add', $Rights) and $is_del == 0 and $editable) ? "comment_cell" : "" )."' id='{$row["OD_ID"]}'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
+		echo "<td class='".( (in_array('order_add_confirm', $Rights) and $is_del == 0 and $editable) ? "comment_cell" : "" )."' id='{$row["OD_ID"]}'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
 		echo "<td style='text-align: center;'>";
 
 		if( $editable ) {
