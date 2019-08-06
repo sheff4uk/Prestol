@@ -196,7 +196,10 @@ pre {
 }
 
 .ss {
-	border: 2px solid #333;
+	border: 2px solid #000;
+/*	background-color: #911 !important;*/
+	color: #000;
+	font-weight: bold;
 }
 
 .shadow {

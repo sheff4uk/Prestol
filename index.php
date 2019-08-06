@@ -754,31 +754,47 @@
 					AND (ODD.BL_ID IS NOT NULL OR ODD.Other IS NOT NULL)
 				";
 			}
-			// Фильтр этапов
-			if ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "") {
+//			// Фильтр этапов
+//			if ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "") {
+//				$query .= "
+//					JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
+//				";
+//				if ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "") {
+//					$query .= "
+//						AND ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}
+//					";
+//				}
+//				elseif ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "") {
+//					if (strpos($_SESSION["f_PR"], "0") === 0) {
+//						$query .= "
+//							AND ODS.WD_ID IS NULL
+//						";
+//					}
+//					else {
+//						$query .= "
+//							AND ODS.WD_ID = {$_SESSION["f_PR"]}
+//						";
+//					}
+//				}
+//				elseif ($_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "") {
+//					$query .= "
+//						AND ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}
+//					";
+//				}
+//			}
+			// Фильтр по работникам
+			if ($_SESSION["f_PR"] != "") {
 				$query .= "
 					JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
 				";
-				if ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "") {
+				if (strpos($_SESSION["f_PR"], "0") === 0) {
 					$query .= "
-						AND ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}
+						AND ODS.WD_ID IS NULL
 					";
 				}
-				elseif ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "") {
-					if (strpos($_SESSION["f_PR"], "0") === 0) {
-						$query .= "
-							AND ODS.WD_ID IS NULL
-						";
-					}
-					else {
-						$query .= "
-							AND ODS.WD_ID = {$_SESSION["f_PR"]}
-						";
-					}
-				}
-				elseif ($_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "") {
+				else {
 					$query .= "
-						AND ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}
+						AND ODS.WD_ID = {$_SESSION["f_PR"]}
 					";
 				}
 			}
