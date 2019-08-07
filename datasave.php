@@ -101,7 +101,6 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 			,PVC_ID = {$PVC_ID}
 			,sidebar = {$sidebar}
 			,piece_stored = {$piece_stored}
-			,MT_ID = {$mt_id}
 			,IsExist = ".( isset($_POST["IsExist"]) ? $IsExist : "IsExist" )."
 			,Comment = ".( isset($_POST["Comment"]) ? $Comment : "Comment" )."
 			,order_date = ".( isset($_POST["IsExist"]) ? $OrderDate : "order_date" )."
@@ -125,6 +124,19 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 
+	// Узнаем какой был пластик до изменений
+	$query = "
+		SELECT ODD.MT_ID, SHP.mtype
+		FROM OrdersDataDetail ODD
+		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+		LEFT JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
+		WHERE ODD.ODD_ID = {$_GET["oddid"]}
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$oldMT_ID = mysqli_result($res,0,'MT_ID');
+	$mtype = mysqli_result($res,0,'mtype');
+
+
 	//Обновляем записи, влияющие на цену
 	$query = "
 		UPDATE OrdersDataDetail
@@ -133,6 +145,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 			,Width = {$Width}
 			,PieceAmount = {$PieceAmount}
 			,PieceSize = {$PieceSize}
+			,MT_ID = {$mt_id}
 			,PF_ID = {$Form}
 			,PME_ID = {$Mechanism}
 			,box = {$box}
@@ -141,8 +154,13 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
+	// Если пластик поменялся - предупреждаем чтобы проверили цвет краски
+	if ($mtype == 2 and $mt_id != $oldMT_ID and $mt_id != "NULL") {
+		$_SESSION["error"][] = "Пластик был заменён. Пожалуйста проверьте цвет краски.";
+	}
+
 	// Если были изменения обновляем цену
-	if (mysqli_affected_rows($mysqli) or $old_Shipper != $Shipper) {
+	if (mysqli_affected_rows($mysqli)) {
 		$query = "CALL Price({$_GET["oddid"]})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
