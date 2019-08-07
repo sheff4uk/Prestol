@@ -806,7 +806,7 @@ case "invoice":
 				JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
 				LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 AND PFI.rtrn != 1
 				WHERE OD.DelDate IS NULL
-					".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.retail = 1 AND (OD.ul = 1 OR SH.SH_ID = 36) #Исключение для Клёна")."
+					".($KA_ID ? "AND SH.KA_ID = {$KA_ID}" : "AND SH.retail = 1 AND OD.StartDate IS NOT NULL AND (OD.ul = 1 OR SH.SH_ID = 36) #Исключение для Клёна")."
 					".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
 					".($num_rows > 0 ? "AND PFI.PFI_ID IS NOT NULL" : "AND PFI.PFI_ID IS NULL")."
 					AND OD.ReadyDate IS NOT NULL
