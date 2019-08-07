@@ -1145,7 +1145,7 @@
 			echo "</script>";
 
 			// Собираем ошибки если у проданного набора нет предоплаты
-			if ($row["Price"] - $row['discount'] > 0 and $row["StartDate"] and $row["payment_sum"] == 0 and !$row["PFI_ID"] and $row["ul"] == 0) {
+			if ($row["Price"] - $row['discount'] > 0 and $row["StartDate"] and $row["payment_sum"] == 0 and !$row["PFI_ID"] and $row["ul"] == 0 and $row["SH_ID"] != 36) {
 				$_SESSION["error"][] = "Набор <a href='#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a> продан {$row["StartDate"]}, но предоплата не внесена!";
 			}
 		}
