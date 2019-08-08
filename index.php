@@ -694,7 +694,7 @@
 			,OD.Comment
 			,Color(OD.CL_ID) Color
 			,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-			,CONCAT(WD.Name, IF(patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')) Name
+			,IF(OD.IsPainting = 3, CONCAT(WD.Name, IF(OD.patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')), '') Name
 			,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 			,OD_IsReady(OD.OD_ID) IsReady
 			,IFNULL(OD.SHP_ID, 0) SHP_ID

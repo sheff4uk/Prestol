@@ -130,15 +130,18 @@ case "ispainting":
 	$filter = $_GET["filter"];
 
 	// Обновляем статус лакировки
-	$query = "UPDATE OrdersData SET IsPainting = {$val}, paint_date = IF({$val} = 3, NOW(), NULL), WD_ID = NULL, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+	$query = "UPDATE OrdersData SET IsPainting = {$val}, paint_date = IF({$val} = 3, NOW(), NULL), author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
-	// Получаем статус лакировки и отгрузку из базы
-	$query = "SELECT IsPainting, IFNULL(SHP_ID, 0) SHP_ID, IFNULL(SH_ID, 0) SH_ID FROM OrdersData WHERE OD_ID = {$id}";
+	// Получаем статус лакировки, отгрузку, лакировщиков и тарифы
+	$query = "SELECT IsPainting, IFNULL(SHP_ID, 0) SHP_ID, WD_ID, tariff, patina_WD_ID, patina_tariff FROM OrdersData WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	$val = mysqli_result($res,0,'IsPainting');
 	$SHP_ID = mysqli_result($res,0,'SHP_ID');
-	$SH_ID = mysqli_result($res,0,'SH_ID');
+	$WD_ID = mysqli_result($res,0,'WD_ID');
+	$tariff = mysqli_result($res,0,'tariff');
+	$patina_WD_ID = mysqli_result($res,0,'patina_WD_ID');
+	$patina_tariff = mysqli_result($res,0,'patina_tariff');
 
 	switch ($val) {
 		case 1:
@@ -186,7 +189,25 @@ case "ispainting":
 		}
 	}
 
-	if( $val == 3 ) {
+	if ($val == 1) {
+		// Если отмена лакировки - убираем из начислений
+		if ($WD_ID > 0 and $tariff > 0) {
+			$query = "
+				INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
+				VALUES ({$id}, {$WD_ID}, -1 * {$tariff}, 'Лакировка', {$_SESSION['id']})
+			";
+			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		}
+		if ($patina_WD_ID > 0 and $patina_tariff > 0) {
+			$query = "
+				INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
+				VALUES ({$id}, {$patina_WD_ID}, -1 * {$patina_tariff}, 'Патинирование', {$_SESSION['id']})
+			";
+			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		}
+	}
+
+	if ($val == 3) {
 		// Узнаём есть ли патина в наборе
 		$query = "
 			SELECT SUM(1) cnt FROM `OrdersDataDetail` WHERE OD_ID = {$id} AND ptn > 0
@@ -216,7 +237,7 @@ case "ispainting":
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
-			$painting_workers .= "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+			$painting_workers .= "<option ".($row["WD_ID"] == $WD_ID ? "selected" : "")." value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
 		}
 		$painting_workers .= "</optgroup>";
 		$painting_workers .= "<optgroup label='Уволенные'>";
@@ -229,7 +250,7 @@ case "ispainting":
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
-			$painting_workers .= "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+			$painting_workers .= "<option ".($row["WD_ID"] == $WD_ID ? "selected" : "")." value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
 		}
 		$painting_workers .= "</optgroup>";
 		$painting_workers .= "</select>";
@@ -257,7 +278,7 @@ case "ispainting":
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
-			$patina_workers .= "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+			$patina_workers .= "<option ".($row["WD_ID"] == $patina_WD_ID ? "selected" : "")." value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
 		}
 		$patina_workers .= "</optgroup>";
 		$patina_workers .= "<optgroup label='Уволенные'>";
@@ -270,16 +291,16 @@ case "ispainting":
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
-			$patina_workers .= "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+			$patina_workers .= "<option ".($row["WD_ID"] == $patina_WD_ID ? "selected" : "")." value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
 		}
 		$patina_workers .= "</optgroup>";
 		$patina_workers .= "</select>";
 		$patina_workers = addslashes($patina_workers);
 		// Конец дропдауна со списком патинировщиков
 
-		$painting_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkgreen;\"><legend>Лакировал:</legend>{$painting_workers}<div><label>Тариф: </label><input type=\"number\" min=\"0\" id=\"tariff\" style=\"width: 70px;\"></div></fieldset>";
+		$painting_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkgreen;\"><legend>Лакировал:</legend>{$painting_workers}<div><label>Тариф: </label><input type=\"number\" value=\"{$tariff}\" min=\"0\" id=\"tariff\" style=\"width: 70px;\"></div></fieldset>";
 		if ($patina_cnt) {
-			$patina_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkgreen;\"><legend>Наносил патину:</legend>{$patina_workers}<div><label>Тариф: </label><input type=\"number\" min=\"0\" id=\"patina_tariff\" style=\"width: 70px;\"></div></fieldset>";
+			$patina_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkgreen;\"><legend>Наносил патину:</legend>{$patina_workers}<div><label>Тариф: </label><input type=\"number\" value=\"{$patina_tariff}\" min=\"0\" id=\"patina_tariff\" style=\"width: 70px;\"></div></fieldset>";
 		}
 		else {
 			$patina_form = "";
@@ -304,10 +325,14 @@ case "ispainting":
 				type: 'success'
 			});
 		";
+
+		echo "$('.main_table tr[id=\"ord{$id}\"] td.painting #paint_color').prop('disabled', true);";
 	}
 	else {
+		echo "$('.main_table tr[id=\"ord{$id}\"] td.painting #paint_color').prop('disabled', false);";
 		echo "noty({timeout: 3000, text: 'Статус лакировки изменен на <b>{$status}</b>', type: 'success'});";
 	}
+	echo "clearonoff('#paint_color');";
 	break;
 ///////////////////////////////////////////////////////////////////
 
@@ -326,7 +351,7 @@ case "painting_workers":
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$Name = mysqli_result($res,0,'Name');
 
-		$query = "UPDATE OrdersData SET WD_ID = {$wd_id}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+		$query = "UPDATE OrdersData SET WD_ID = {$wd_id}, tariff = ".($tariff > 0 ? $tariff : "NULL").", author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$painting_workers = $Name;
 
@@ -335,7 +360,7 @@ case "painting_workers":
 				INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
 				VALUES ({$id}, {$wd_id}, {$tariff}, 'Лакировка', {$_SESSION['id']})
 			";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		}
 	}
 
@@ -346,7 +371,7 @@ case "painting_workers":
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$Name = mysqli_result($res,0,'Name');
 
-		$query = "UPDATE OrdersData SET patina_WD_ID = {$patina_wd_id}, author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+		$query = "UPDATE OrdersData SET patina_WD_ID = {$patina_wd_id}, patina_tariff = ".($patina_tariff > 0 ? $patina_tariff : "NULL").", author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$painting_workers .= " + {$Name}";
 
@@ -355,7 +380,7 @@ case "painting_workers":
 				INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
 				VALUES ({$id}, {$patina_wd_id}, {$patina_tariff}, 'Патинирование', {$_SESSION['id']})
 			";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		}
 	}
 

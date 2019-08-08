@@ -383,7 +383,7 @@
 			,CL.color Color
 			,CL.clear
 			,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-			,CONCAT(WD.Name, IF(patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')) Name
+			,IF(OD.IsPainting = 3, CONCAT(WD.Name, IF(OD.patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')), '') Name
 			,OD.Comment
 			,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
 			,IFNULL(SH.retail, 0) retail
@@ -556,8 +556,8 @@
 						<input type='radio' id='clear0' name='clear' value='0' ".($clear == "0" ? "checked" : "").">
 							<label for='clear0'>Эмаль</label>
 					</div>
-					<input type='text' id='paint_color' class='colortags' name='Color' style='width: 160px;' ".((!$disabled and !$Del and $editable) ? "" : "disabled")." value='{$Color}'>
-					<i class='fa fa-question-circle' style='margin: 5px;' title='Прозрачное поктытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'>Подсказка</i>
+					<input type='text' id='paint_color' class='colortags' name='Color' style='width: 160px;' ".((!$disabled and !$Del and $editable and $IsPainting != 3) ? "" : "disabled")." value='{$Color}'>
+					<i class='fa fa-question-circle' style='margin: 5px;' title='Прозрачное покрытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'>Подсказка</i>
 				</div>
 			</td>
 		";

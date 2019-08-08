@@ -953,7 +953,6 @@
 				,OD.OrderNumber
 				,Color(OD.CL_ID) Color
 				,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-				,CONCAT(WD.Name, IF(patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')) Name
 				,Ord_price(OD.OD_ID) Price
 				,Ord_discount(OD.OD_ID) discount
 				,Ord_opt_price(OD.OD_ID) opt_price
@@ -1094,7 +1093,7 @@
 						$class = "ready";
 						break;
 				}
-			echo " class='painting_cell {$class}'><div class='painting_workers'>{$row["Name"]}</div>{$row["Color"]}</td>";
+			echo " class='painting_cell {$class}'>{$row["Color"]}</td>";
 
 			if ($shop_num_rows > 1) {
 				echo "<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".($is_lock ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>";
