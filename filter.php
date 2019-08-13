@@ -57,9 +57,31 @@ switch( $_GET["do"] )
 		$_SESSION["f_CF"] = $_GET["f_CF"];			// Статус принятия набора
 		if( substr($_GET["f_PR"], 0, 1) === "0" ) {	// Статус этапа
 			$_SESSION["f_ST"] = "";
+			$_SESSION["f_CH"] = "";
 		}
 		else {
-			$_SESSION["f_ST"] = $_GET["f_ST"];
+			switch ($_GET["f_ST"]) {
+				case "0":
+					$_SESSION["f_ST"] = "0";
+					$_SESSION["f_CH"] = "0";
+				break;
+				case "1":
+					$_SESSION["f_ST"] = "1";
+					$_SESSION["f_CH"] = "0";
+				break;
+				case "2":
+					$_SESSION["f_ST"] = "0";
+					$_SESSION["f_CH"] = "1";
+				break;
+				case "3":
+					$_SESSION["f_ST"] = "1";
+					$_SESSION["f_CH"] = "1";
+				break;
+				default:
+					$_SESSION["f_ST"] = "";
+					$_SESSION["f_CH"] = "";
+				break;
+			}
 		}
 	break;
 }

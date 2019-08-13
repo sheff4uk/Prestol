@@ -517,8 +517,10 @@
 				</select>
 				<select name="f_ST" style="width:30%;" onchange="this.form.submit()" class="<?=($_SESSION["f_ST"] != "") ? "filtered" : ""?>">
 					<option></option>
-					<option value="0" <?= ($_SESSION["f_ST"] == "0") ? 'selected' : '' ?> class="inwork">В работе</option>
-					<option value="1" <?= ($_SESSION["f_ST"] == "1") ? 'selected' : '' ?> class="ready">Готово</option>
+					<option value="0" <?= ($_SESSION["f_ST"] == "0" and $_SESSION["f_CH"] == "0") ? 'selected' : '' ?> class="inwork">В работе</option>
+					<option value="1" <?= ($_SESSION["f_ST"] == "1" and $_SESSION["f_CH"] == "0") ? 'selected' : '' ?> class="ready">Готово</option>
+					<option value="2" <?= ($_SESSION["f_ST"] == "0" and $_SESSION["f_CH"] == "1") ? 'selected' : '' ?> class="inwork">В работе (фильтр)</option>
+					<option value="3" <?= ($_SESSION["f_ST"] == "1" and $_SESSION["f_CH"] == "1") ? 'selected' : '' ?> class="ready">Готово (фильтр)</option>
 				</select>
 			</th>
 			<th width="40">
@@ -758,36 +760,36 @@
 					AND (ODD.BL_ID IS NOT NULL OR ODD.Other IS NOT NULL)
 				";
 			}
-//			// Фильтр этапов
-//			if ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "") {
-//				$query .= "
-//					JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
-//				";
-//				if ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "") {
-//					$query .= "
-//						AND ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}
-//					";
-//				}
-//				elseif ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "") {
-//					if (strpos($_SESSION["f_PR"], "0") === 0) {
-//						$query .= "
-//							AND ODS.WD_ID IS NULL
-//						";
-//					}
-//					else {
-//						$query .= "
-//							AND ODS.WD_ID = {$_SESSION["f_PR"]}
-//						";
-//					}
-//				}
-//				elseif ($_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "") {
-//					$query .= "
-//						AND ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}
-//					";
-//				}
-//			}
+			// Фильтр этапов
+			if ($_SESSION["f_CH"] == "1") {
+				$query .= "
+					JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
+				";
+				if ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "") {
+					$query .= "
+						AND ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}
+					";
+				}
+				elseif ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "") {
+					if (strpos($_SESSION["f_PR"], "0") === 0) {
+						$query .= "
+							AND ODS.WD_ID IS NULL
+						";
+					}
+					else {
+						$query .= "
+							AND ODS.WD_ID = {$_SESSION["f_PR"]}
+						";
+					}
+				}
+				elseif ($_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "") {
+					$query .= "
+						AND ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}
+					";
+				}
+			}
 			// Фильтр по работникам
-			if ($_SESSION["f_PR"] != "") {
+			elseif ($_SESSION["f_PR"] != "") {
 				$query .= "
 					JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
 				";
