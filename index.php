@@ -135,13 +135,17 @@
 		$right_sum = array_sum($_POST["prod_amount_right"]);
 
 		if( $left_sum != 0 and $right_sum != 0 ) {
+			// Обнуляем тарифы на лакировку исходного набора
+			$query = "UPDATE OrdersData SET tariff = IF(IsPainting = 3 AND tariff > 0, 0, tariff), patina_tariff = IF(IsPainting = 3 AND patina_tariff > 0, 0, patina_tariff) WHERE OD_ID = {$OD_ID}";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
 			// Создание копии набора
-			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, author, confirmed)
-			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, paint_date, WD_ID, tariff, patina_WD_ID, patina_tariff, Comment, IsReady, author, confirmed)
+			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, paint_date, WD_ID, tariff, patina_WD_ID, patina_tariff, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
-			// Записываем в журнал событие разделения набора
+			// Записываем в журнал событие - разделения набора
 			$query = "INSERT INTO OrdersChangeLog SET OD_ID = {$OD_ID}, OFN_ID = 1, old_value = '{$newOD_ID}', new_value = '', author = {$_SESSION['id']}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$query = "INSERT INTO OrdersChangeLog SET OD_ID = {$newOD_ID}, OFN_ID = 1, old_value = '{$OD_ID}', new_value = '', author = {$_SESSION['id']}";

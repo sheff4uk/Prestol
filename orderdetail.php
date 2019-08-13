@@ -16,6 +16,7 @@
 				,IF(OD.DelDate IS NULL, 0, 1) Del
 				,IF(OD.ReadyDate IS NULL, 0, 1) Archive
 				,IF(OD.SH_ID IS NULL, 1, 0) Free
+				,OD.IsPainting
 			FROM OrdersData OD
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities}) AND OD_ID = {$_GET["id"]}
@@ -32,6 +33,7 @@
 		$start_year = mysqli_result($res,0,'start_year');
 		$start_month = mysqli_result($res,0,'start_month');
 		$confirmed = mysqli_result($res,0,'confirmed');
+		$IsPainting = mysqli_result($res,0,'IsPainting');
 		// Категория набора (в работе/свободные/отгруженные/удаленные)
 		if ($Del) {
 			$arch = 3;
@@ -183,6 +185,12 @@
 	// Добавление в базу нового изделия. Заполнение этапов.
 	if ( isset($_GET["add"]) and !$disabled and !$Del)
 	{
+		// Если набор уже покрашен - предупреждение, что нельзя добавить изделие
+		if ($IsPainting == 3) {
+			$_SESSION["error"][] = "Набор покрашен! Добавление изделий не возможно.";
+			exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		}
+
 		// Узнаем возможен ли ящик для этой модели с таким механизмом
 		if( $_POST["Mechanism"] and $_POST["Model"] ) {
 			$query = "
@@ -281,14 +289,33 @@
 	{
 		$odd_id = (int)$_GET["del"];
 
-		$query = "SELECT IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
-				  FROM OrdersDataDetail ODD
-				  LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
-				  WHERE ODD.ODD_ID = {$odd_id}";
+		// Узнаём статус лакировки набора
+		$query = "
+			SELECT OD.IsPainting
+			FROM OrdersData OD
+			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.ODD_ID = {$odd_id}
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$IsPainting = mysqli_result($res,0,'IsPainting');
+
+		// Узнаем приступили ли к производству изделия
+		$query = "
+			SELECT IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
+			FROM OrdersDataDetail ODD
+			LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
+			WHERE ODD.ODD_ID = {$odd_id}
+		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$inprogress = mysqli_result($res,0,'inprogress');
 
-		if( $inprogress == 0 ) { // Если не приступили, то удаляем.
+		if ($IsPainting == 3) { // Если набор покрашен
+			$_SESSION["error"][] = "Набор покрашен. Удаление не возможно.";
+		}
+		if ($inprogress > 0) { // Если изделие в работе
+			$_SESSION["error"][] = "Изделие дано в работу. Удаление не возможно.";
+		}
+
+		if (count($_SESSION["error"]) == 0) { // Если нет препятствий то удаляем
 			// Создание копии набора
 			$query = "INSERT INTO OrdersData(PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, DelDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, author, confirmed)
 			SELECT PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, NOW(), OrderNumber, CL_ID, IF(IsPainting = 2, 1, IsPainting), WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$id}";
@@ -308,9 +335,6 @@
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			$_SESSION["success"][] = "Изделие отделено от набора и перемещено в <a href='/orderdetail.php?id={$newOD_ID}' target='_blank'>удалённые</a>.";
-		}
-		else {
-			$_SESSION["error"][] = "Прежде чем удалить изделие переведите производственные этапы в статус не выполненных.";
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
