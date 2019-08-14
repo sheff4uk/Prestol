@@ -106,7 +106,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</fieldset>
 			<fieldset>
 				<legend>Примечание:</legend>
-				<textarea name='Comment' rows='3' style='width: 100%;'></textarea>
+				<? if (!in_array('order_add_confirm', $Rights)) echo "<i class='fa fa-question-circle' title='Обо всех дополнительных особенностях набора сообщайте через кнопку \"Сообщение на производство\".'></i>"; ?>
+				<textarea name='Comment' rows='3' style='width: 100%;' <?=( in_array('order_add_confirm', $Rights) ? "" : "disabled" )?>></textarea>
 			</fieldset>
 		</fieldset>
 		<div>
