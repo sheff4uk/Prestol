@@ -92,6 +92,7 @@ case "plastictags":
 			,MT.SH_ID
 			,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
 			,MT.removed
+			,CONCAT('<b> +', IFNULL(MT.markup, SH.markup), 'р.</b>') markup
 		FROM Materials MT
 		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 2
 		LEFT JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID
@@ -107,7 +108,7 @@ case "plastictags":
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$PlasticTags[] = array( "label"=>$row["Label"], "value"=>$row["Material"], "SH_ID"=>$row["SH_ID"], "removed"=>$row["removed"] );
+		$PlasticTags[] = array( "label"=>$row["Label"].$row["markup"], "value"=>$row["Material"], "SH_ID"=>$row["SH_ID"], "removed"=>$row["removed"] );
 	}
 	echo json_encode($PlasticTags);
 	break;

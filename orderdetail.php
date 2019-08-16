@@ -747,6 +747,7 @@
 			,Friendly_date(ODD.arrival_date) arrival_date
 			,Steps_button(ODD.ODD_ID, 0) Steps
 			,IF(CL.clear = 1 AND PM.enamel = 1, 1, 0) enamel_error
+			,CONCAT('<p class=\"price\">+', IFNULL(MT.markup, SH.markup), 'р.</p>') markup
 		FROM OrdersDataDetail ODD
 		JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
@@ -786,7 +787,7 @@
 		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
 		echo "<td><b>{$row["Zakaz"]}</b></td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'>{$steps}</td>";
-		echo "<td>{$material}</td>";
+		echo "<td>{$material}{$row["markup"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td class='txtright'>{$format_old_price}{$format_price}</td>";
 		echo "<td>";
