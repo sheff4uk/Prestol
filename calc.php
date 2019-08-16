@@ -101,6 +101,7 @@
 				,USR_Icon(OCL.author) Name
 				,Friendly_date(OCL.date_time) friendly_date
 				,TIME(OCL.date_time) Time
+				,CONCAT('<p class=\"price\">+', IFNULL(MT.markup, SH.markup), 'р.</p>') markup
 			FROM OrdersDataDetail ODD
 			JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2
 			LEFT JOIN ProductForms PF ON PF.PF_ID = ODD.PF_ID
@@ -123,7 +124,7 @@
 					<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."</td>
 					<td>".($row["PF_ID"] ? "<img class='form {$row["form_standart"]}' src='/img/form{$row["PF_ID"]}.png' title='{$row["Form"]}'>" : "")."</td>
 					<td><b>{$row["Zakaz"]}</b></td>
-					<td>{$material}</td>
+					<td>{$material}{$row["markup"]}</td>
 			";
 			if ($price_type == 0) {
 				echo "
