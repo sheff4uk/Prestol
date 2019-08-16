@@ -135,7 +135,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</div>
 		<div>
 			<label>Ткань:</label>
-			<input type='text' class='materialtags_1 all' name='Material' style='width: 200px;'>
+			<input type='text' class='materialtags_1 all' name='Material' style='width: 250px;'>
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
 				<?
 				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 1 ORDER BY Shipper";
@@ -296,7 +296,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</div>
 		<div>
 			<label>Пластик:</label>
-			<input type='text' class="materialtags_2 all" name='Material' style="width: 200px;">
+			<input type='text' class="materialtags_2 all" name='Material' style="width: 250px;" placeholder="Для поиска вводите только цифры">
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
 				<?
 				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 2 ORDER BY Shipper";
@@ -448,7 +448,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</div>
 			<div>
 				<label>Ткань:</label>
-				<input type='text' class='materialtags_1 all' name='Material' style='width: 200px;'>
+				<input type='text' class='materialtags_1 all' name='Material' style='width: 250px;'>
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
 					<?
 					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 1 ORDER BY Shipper";
@@ -461,7 +461,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</div>
 			<div>
 				<label>Пластик:</label>
-				<input type='text' class="materialtags_2 all" name='Material' style="width: 200px;">
+				<input type='text' class="materialtags_2 all" name='Material' style="width: 250px;" placeholder="Для поиска вводите только цифры">
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
 					<?
 					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 2 ORDER BY Shipper";
