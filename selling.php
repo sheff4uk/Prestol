@@ -133,6 +133,12 @@
 				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 
+			// Обновляем минимальную цену по последнему прайсу (триггер обновит цену при необходимости)
+			$query = "UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 1) WHERE OD_ID = {$OD_ID}";
+			if( !mysqli_query( $mysqli, $query ) ) {
+				$_SESSION["error"][] = mysqli_error( $mysqli );
+			}
+
 			// Пересчитываем стоимость по прайсу
 			$query = "UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 1) WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query );
