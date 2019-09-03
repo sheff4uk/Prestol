@@ -302,23 +302,25 @@
 	<div id="rep_buttons">
 		Отчеты:
 		<?
-		echo "<div id='sell_archive'><a href='#' class='button'>Архив</a><div>";
-		// Формируем список архивных отчетов
-		$query = "
-			SELECT OS.year
-				,OS.month
-			FROM OstatkiShops OS
-			WHERE OS.CT_ID = {$CT_ID} AND OS.locking_date IS NOT NULL
-			ORDER BY year DESC, month DESC
-		";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		if( $CT_ID ) {
-			while( $row = mysqli_fetch_array($res) ) {
-				$highlight = ($year == $row["year"] and $month == $row["month"]) ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
-				echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>{$MONTHS[$row["month"]]} - {$row["year"]} <i class='fas fa-lock'></i></a><br>";
+		if ($USR_Role != 5) {
+			echo "<div id='sell_archive'><a href='#' class='button'>Архив</a><div>";
+			// Формируем список архивных отчетов
+			$query = "
+				SELECT OS.year
+					,OS.month
+				FROM OstatkiShops OS
+				WHERE OS.CT_ID = {$CT_ID} AND OS.locking_date IS NOT NULL
+				ORDER BY year DESC, month DESC
+			";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			if( $CT_ID ) {
+				while( $row = mysqli_fetch_array($res) ) {
+					$highlight = ($year == $row["year"] and $month == $row["month"]) ? 'border: 1px solid #fbd850; color: #eb8f00;' : '';
+					echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>{$MONTHS[$row["month"]]} - {$row["year"]} <i class='fas fa-lock'></i></a><br>";
+				}
 			}
+			echo "</div></div>";
 		}
-		echo "</div></div>";
 
 		$query = "
 			SELECT IFNULL(YEAR(OD.StartDate), 0) year
