@@ -339,7 +339,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<label>Кромка ПВХ:</label>
 			<select name="PVC_ID" style="width: 300px;">
 			<?
-				echo "<option></option>";
+				echo "<option value='' selected style='background-color: #999;'>-=НЕТ (фрезеровка)=-</option>";
 				$query = "SELECT PVC_ID, edge FROM PVCedge ORDER BY edge";
 				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($result) )
