@@ -18,7 +18,7 @@
 		.label-wr {
 			display: inline-block;
 			width: 800px;
-			height: 290px;
+			height: 280px;
 			box-sizing: border-box;
 			border-top: 1px dashed;
 			border-bottom: 1px dashed;
@@ -43,7 +43,7 @@
 			font-weight: bold;
 		}
 		.price_wr {
-			height: 100px;
+			height: 90px;
 			text-align: center;
 			position: relative;
 			white-space: nowrap;
@@ -53,7 +53,7 @@
 			font-weight: bold;
 			display: block;
 			text-shadow: 3px 3px 5px #666;
-			line-height: 100px;
+			line-height: 90px;
 		}
 		.discount {
 			padding: 5px;
@@ -140,7 +140,7 @@
 		}
 	?>
 		<div id="<?=$row["id"]?>1" class="label-wr">
-			<div style="width: 70%;">
+			<div style="width: 70%; margin-left: 5%;">
 				<div style="position: relative; text-align: center;">
 					<div class="code"><?=$row["Code"]?></div>
 					<?=$discount?>
@@ -168,7 +168,7 @@
 			</div>
 		</div>
 		<div id="<?=$row["id"]?>2" class="label-wr">
-			<div style="width: 70%;">
+			<div style="width: 70%; margin-left: 5%;">
 				<div style="position: relative; text-align: center;">
 					<div class="code"><?=$row["Code"]?></div>
 					<?=$discount?>
