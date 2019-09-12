@@ -876,9 +876,14 @@
 		<a id="toprint" style="display: block;"></a>
 	</div>
 
-	<!--Кнопка печати ценников-->
-	<div id="print_price_btn" style="display: none;" title="Распечатать ценники">
+	<!--Кнопка печати цветных ценников-->
+	<div id="print_price_btn" style="display: none;" title="Распечатать цветные ценники">
 		<a id="print_price" style="display: block; height: 100%;"></a>
+	</div>
+
+	<!--Кнопка печати чёрно-белых ценников-->
+	<div id="print_price_new_btn" style="display: none;" title="Распечатать чёрно-белые ценники">
+		<a id="print_price_new" style="display: block; height: 100%;"></a>
 	</div>
 
 	<br>
@@ -1080,7 +1085,7 @@
 
 			echo "
 				</td>
-				<td><span><b class='code'>{$row["Code"]}</b>".(($cnt > 1) ? "<input type='checkbox' value='{$row["OD_ID"]}' name='od[]' class='chbox'>" : "")."<br>{$row["AddDate"]}</span></td>
+				<td><span><b class='code'>{$row["Code"]}</b>".(($cnt > 1 and false) ? "<input type='checkbox' value='{$row["OD_ID"]}' name='od[]' class='chbox'>" : "")."<br>{$row["AddDate"]}</span></td>
 				<td><span><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b></span></td>
 				<td><span class='nowrap'>{$zakaz}</span></td>
 				<td><span class='nowrap material'>{$material}</span></td>
@@ -1243,6 +1248,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		// Открытие диалога печати
 		$("#toprint").printPage();
 		$("#print_price").printPage();
+		$("#print_price_new").printPage();
 
 		$( "#accordion" ).accordion({
 			active: false,
@@ -1263,13 +1269,16 @@ this.subbut.value='Подождите, пожалуйста!';">
 			});
 			if( checked_status ) {
 				$('#print_price_btn').show();
+				$('#print_price_new_btn').show();
 			}
 			else {
 				$('#print_price_btn').hide();
+				$('#print_price_new_btn').hide();
 			}
 
 			var data = $('#formdiv').serialize();
 			$("#print_price").attr('href', '/toprint/print_price.php?' + data);
+			$("#print_price_new").attr('href', '/toprint/print_price_new.php?' + data);
 			return false;
 		});
 
