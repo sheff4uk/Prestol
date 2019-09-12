@@ -236,7 +236,7 @@
 					WHERE WD.Type IN (2,3)
 					GROUP BY WD.WD_ID
 					HAVING IsActive = 1 OR Hours > 0
-					ORDER BY WD.Type, WD.WD_ID
+					ORDER BY WD.Type, WD.Name
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
