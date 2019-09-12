@@ -105,7 +105,8 @@
 				,CONCAT(IF(SH.Shipper LIKE '%=%', '', CONCAT(SH.Shipper, ' ')), MT.Material) material
 				,SH.mtype
 				,IFNULL(CONCAT(' ', PME.full_mech, IF(ODD.box = 1, '+ящик', '')), '') mechanism
-				,IFNULL(CONCAT(IF(ODD.Width > 0, '', 'Ø'), ODD.Length, IFNULL(CONCAT('(+', IFNULL(CONCAT(ODD.PieceAmount, 'x'), ''), ODD.PieceSize, ')'), ''), IFNULL(CONCAT('х', ODD.Width), ''), ' мм'), '') size
+				#,IFNULL(CONCAT(IF(ODD.Width > 0, '', 'Ø'), ROUND(ODD.Length/10), IFNULL(CONCAT('(+', IFNULL(CONCAT(ODD.PieceAmount, 'x'), ''), ROUND(ODD.PieceSize/10), ')'), ''), IFNULL(CONCAT('х', ROUND(ODD.Width/10)), ''), ' см'), '') size
+				,IFNULL(CONCAT(IF(ODD.Width > 0, '', 'Ø'), ROUND(ODD.Length/10), IFNULL(CONCAT('х', ROUND(ODD.Width/10)), ''), ' см', IF(ODD.PieceAmount = 1, CONCAT(' + вставка', ROUND(ODD.PieceSize/10), ' см'), IF(ODD.PieceAmount = 2, CONCAT(' + <b>две</b> вставки по ', ROUND(ODD.PieceSize/10), ' см'), IF(ODD.PieceAmount = 3, CONCAT(' + <b>три</b> вставки по ', ROUND(ODD.PieceSize/10), ' см'), '')))), '') size
 				,IFNULL(PM.materials, '') materials
 				,ODD.PieceAmount
 				,(ODD.Price - IFNULL(ODD.discount, 0)) Price
@@ -151,17 +152,17 @@
 					<span class="price"><?=$old_price?><?=$price?></span>
 				</div>
 				<div style="display: flex; height: 120px; font-size:22px; white-space: nowrap;">
-					<div style="width: 40%; text-align: right; padding: 5px;">
-						<?=($row["size"] ? "<i>Размер столешницы</i><br>" : "")?>
-						<?=($row["mechanism"] ? "<i>Механизм</i><br>" : "")?>
-						<?=($row["materials"] ? "<i>Материалы</i><br>" : "")?>
-						<?=($row["mtype"] == 1 ? "<i>Ткань</i>" : ($row["mtype"] == 2 ? "<i>Поверхность (пластик)</i>" : ""))?>
+					<div style="width: 30%; text-align: right; padding: 5px;">
+						<?=($row["size"] ? "Столешница<br>" : "")?>
+						<?=($row["mechanism"] ? "Механизм<br>" : "")?>
+						<?=($row["materials"] ? "Материалы<br>" : "")?>
+						<?=($row["mtype"] == 1 ? "Ткань" : ($row["mtype"] == 2 ? "Поверхность" : ""))?>
 					</div>
-					<div style="width: 60%; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
-						<?=($row["size"] ? "<i>{$row["size"]}</i><br>" : "")?>
-						<?=($row["mechanism"] ? "<i>{$row["mechanism"]}</i><br>" : "")?>
-						<?=($row["materials"] ? "<i>{$row["materials"]}</i><br>" : "")?>
-						<?=($row["mtype"] == 1 ? "<i>{$row["material"]}</i>" : ($row["mtype"] == 2 ? "<i>{$row["material"]}</i>" : ""))?>
+					<div style="width: 70%; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
+						<?=($row["size"] ? "{$row["size"]}<br>" : "")?>
+						<?=($row["mechanism"] ? "{$row["mechanism"]}<br>" : "")?>
+						<?=($row["materials"] ? "{$row["materials"]}<br>" : "")?>
+						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "{$row["material"]}" : ""))?>
 					</div>
 				</div>
 			</div>
@@ -179,17 +180,17 @@
 					<span class="price"><?=$old_price?><?=$price?></span>
 				</div>
 				<div style="display: flex; height: 120px; font-size:22px; white-space: nowrap;">
-					<div style="width: 40%; text-align: right; padding: 5px;">
-						<?=($row["size"] ? "<i>Размер столешницы</i><br>" : "")?>
-						<?=($row["mechanism"] ? "<i>Механизм</i><br>" : "")?>
-						<?=($row["materials"] ? "<i>Материалы</i><br>" : "")?>
-						<?=($row["mtype"] == 1 ? "<i>Ткань</i>" : ($row["mtype"] == 2 ? "<i>Поверхность (пластик)</i>" : ""))?>
+					<div style="width: 30%; text-align: right; padding: 5px;">
+						<?=($row["size"] ? "Столешница<br>" : "")?>
+						<?=($row["mechanism"] ? "Механизм<br>" : "")?>
+						<?=($row["materials"] ? "Материалы<br>" : "")?>
+						<?=($row["mtype"] == 1 ? "Ткань" : ($row["mtype"] == 2 ? "Поверхность" : ""))?>
 					</div>
-					<div style="width: 60%; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
-						<?=($row["size"] ? "<i>{$row["size"]}</i><br>" : "")?>
-						<?=($row["mechanism"] ? "<i>{$row["mechanism"]}</i><br>" : "")?>
-						<?=($row["materials"] ? "<i>{$row["materials"]}</i><br>" : "")?>
-						<?=($row["mtype"] == 1 ? "<i>{$row["material"]}</i>" : ($row["mtype"] == 2 ? "<i>{$row["material"]}</i>" : ""))?>
+					<div style="width: 70%; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
+						<?=($row["size"] ? "{$row["size"]}<br>" : "")?>
+						<?=($row["mechanism"] ? "{$row["mechanism"]}<br>" : "")?>
+						<?=($row["materials"] ? "{$row["materials"]}<br>" : "")?>
+						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "{$row["material"]}" : ""))?>
 					</div>
 				</div>
 			</div>
