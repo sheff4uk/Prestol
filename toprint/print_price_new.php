@@ -52,7 +52,6 @@
 			font-size: 90px;
 			font-weight: bold;
 			display: block;
-			text-shadow: 3px 3px 5px #666;
 			line-height: 90px;
 		}
 		.discount {
@@ -71,7 +70,7 @@
 			position: relative;
 			text-decoration: line-through;
 			color: #fff;
-			text-shadow: 3px 3px 5px #000, -3px 3px 5px #000, -3px -3px 5px #000, 3px -3px 5px #000;
+			text-shadow: 2px 2px 3px #000, -2px 2px 3px #000, -2px -2px 3px #000, 2px -2px 3px #000;
 		}
 	</style>
 	<script>
@@ -145,7 +144,7 @@
 					<div class="code" style="z-index: -1;"><?=$row["Code"]?></div>
 					<?=$discount?>
 				</div>
-				<div style="text-align: center; text-shadow: 3px 3px 5px #666;">
+				<div style="text-align: center;">
 					<div class="prod" style="font-size: 24px;" fontSize="24"><?=$row["product"]?></div>
 				</div>
 				<div class="price_wr">
@@ -173,7 +172,7 @@
 					<div class="code"><?=$row["Code"]?></div>
 					<?=$discount?>
 				</div>
-				<div style="text-align: center; text-shadow: 3px 3px 5px #666;">
+				<div style="text-align: center;">
 					<div class="prod" style="font-size: 24px;" fontSize="24"><?=$row["product"]?></div>
 				</div>
 				<div class="price_wr">
