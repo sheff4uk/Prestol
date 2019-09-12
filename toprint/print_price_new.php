@@ -70,7 +70,7 @@
 			margin-right: 50px;
 			position: relative;
 			text-decoration: line-through;
-			color: #ccc;
+			color: #fff;
 			text-shadow: 3px 3px 5px #000, -3px 3px 5px #000, -3px -3px 5px #000, 3px -3px 5px #000;
 		}
 	</style>
