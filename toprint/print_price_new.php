@@ -132,7 +132,7 @@
 			$old_price = number_format($row["old_Price"], 0, '', ' ');
 			$discount = number_format($row["discount"], 0, '', ' ');
 			$old_price = "<div class='old_price'>{$old_price}</div>";
-			$discount = "<div class='discount'>Выгода {$discount} руб!</div>";
+			$discount = "<div class='discount' style='z-index: -1;'>Выгода {$discount} руб!</div>";
 		}
 		else {
 			$old_price = "";
@@ -142,7 +142,7 @@
 		<div id="<?=$row["id"]?>1" class="label-wr">
 			<div style="width: 70%; margin-left: 5%;">
 				<div style="position: relative; text-align: center;">
-					<div class="code"><?=$row["Code"]?></div>
+					<div class="code" style="z-index: -1;"><?=$row["Code"]?></div>
 					<?=$discount?>
 				</div>
 				<div style="text-align: center; text-shadow: 3px 3px 5px #666;">
