@@ -105,7 +105,7 @@
 				,SH.mtype
 				,IFNULL(CONCAT(' ', PME.full_mech, IF(ODD.box = 1, '+ящик', '')), '') mechanism
 				#,IFNULL(CONCAT(IF(ODD.Width > 0, '', 'Ø'), ROUND(ODD.Length/10), IFNULL(CONCAT('(+', IFNULL(CONCAT(ODD.PieceAmount, 'x'), ''), ROUND(ODD.PieceSize/10), ')'), ''), IFNULL(CONCAT('х', ROUND(ODD.Width/10)), ''), ' см'), '') size
-				,IFNULL(CONCAT(IF(ODD.Width > 0, '', 'Ø'), ROUND(ODD.Length/10), IFNULL(CONCAT('х', ROUND(ODD.Width/10)), ''), ' см', IF(ODD.PieceAmount = 1, CONCAT(' + вставка', ROUND(ODD.PieceSize/10), ' см'), IF(ODD.PieceAmount = 2, CONCAT(' + <b>две</b> вставки по ', ROUND(ODD.PieceSize/10), ' см'), IF(ODD.PieceAmount = 3, CONCAT(' + <b>три</b> вставки по ', ROUND(ODD.PieceSize/10), ' см'), '')))), '') size
+				,IFNULL(CONCAT(IF(ODD.Width > 0, '', 'Ø'), ROUND(ODD.Length/10), IFNULL(CONCAT('х', ROUND(ODD.Width/10)), ''), ' см', IF(ODD.PieceAmount = 1 OR (ODD.PieceAmount IS NULL AND ODD.PieceSize IS NOT NULL), CONCAT(' + вставка ', ROUND(ODD.PieceSize/10), ' см'), IF(ODD.PieceAmount = 2, CONCAT(' + <b>две</b> вставки по ', ROUND(ODD.PieceSize/10), ' см'), IF(ODD.PieceAmount = 3, CONCAT(' + <b>три</b> вставки по ', ROUND(ODD.PieceSize/10), ' см'), '')))), '') size
 				,IFNULL(PM.materials, '') materials
 				,ODD.PieceAmount
 				,(ODD.Price - IFNULL(ODD.discount, 0)) Price
@@ -121,6 +121,7 @@
 		LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 		LEFT JOIN BlankList BL ON BL.BL_ID = ODD.BL_ID
 		WHERE ODD.ODD_ID IN ($ODD_IDs)
+		ORDER BY OD.AddDate ASC, OD.OD_ID ASC
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
