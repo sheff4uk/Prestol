@@ -1109,7 +1109,7 @@
 			echo " class='painting_cell {$class}'>{$row["Color"]}</td>";
 
 			if ($shop_num_rows > 1) {
-				echo "<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".($is_lock ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>";
+				echo "<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>";
 			}
 			echo "<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>";
 

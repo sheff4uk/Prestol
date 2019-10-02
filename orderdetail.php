@@ -545,7 +545,8 @@
 
 		<td style="background: <?=$CTColor?>;">
 		<div class='shop_cell' id='<?=$id?>'>
-			<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")?> style="width: 100%;">
+			<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable and !$USR_Shop) ? "" : "disabled")?> style="width: 100%;">
+				<!--Список салонов выводится аяксом ниже-->
 			</select>
 			</div>
 		</td>
@@ -1033,6 +1034,33 @@ this.subbut.value='Подождите, пожалуйста!';">
 </div>
 <!-- Конец формы добавления сообщения к набору -->
 
+<!-- Форма изменения цвета краски -->
+<div id='paint_color' title='Цвет краски' style='display:none'>
+	<form method='post' action='<?=$location?>&paint_color' onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
+		<fieldset>
+			<div>
+				<label for="message">Описание цвета:</label><br>
+				<input type="text" name="color" style="width: 160px;" value="" autocomplete="off">
+			</div>
+			<div>
+				<label for="message" title='Прозрачное покрытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'><i class='fa fa-question-circle' style='margin: 5px;'>Подсказка</i>Тип покрытия:</label><br>
+				<div class='btnset'>
+					<input type='radio' id='clear1' name='clear' value='1'>
+						<label for='clear1'>Прозрачный</label>
+					<input type='radio' id='clear0' name='clear' value='0'>
+						<label for='clear0'>Эмаль</label>
+				</div>
+			</div>
+		</fieldset>
+		<div>
+			<hr>
+			<input type='submit' name="subbut" value='Отправить' style='float: right;'>
+		</div>
+	</form>
+</div>
+<!-- Конец формы добавления сообщения к набору -->
+
 <script>
 	$(function(){
 //		// Select2 для выбора салона
@@ -1061,6 +1089,17 @@ this.subbut.value='Подождите, пожалуйста!';">
 		// Кнопка добавления сообщения к набору
 		$('.add_message_btn').click( function() {
 			$('#add_message').dialog({
+				width: 500,
+				modal: true,
+				show: 'blind',
+				hide: 'explode',
+				closeText: 'Закрыть'
+			});
+		});
+
+		// Кнопка изменения цвета краски
+		$('.paint_color_btn').click( function() {
+			$('#paint_color').dialog({
 				width: 500,
 				modal: true,
 				show: 'blind',
