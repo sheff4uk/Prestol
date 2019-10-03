@@ -258,7 +258,7 @@
 				";
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-				$sigmahours = 0; // Сумма отработанных дней по работнику
+				$sigmahours = 0; // Сумма отработанных часов по работнику
 				$sigmamoney = 0; // Сумма заработанных денег по работнику
 				$day = 0;
 				if( $subrow = mysqli_fetch_array($subres) ) {
@@ -300,6 +300,8 @@
 					$premium = 0;
 					$green = '';
 				}
+				$sigmamoney = round($sigmamoney);
+				$premium = round($premium);
 				$total = $sigmamoney + $premium;
 
 				// Получаем кол-во изделий по работнику за месяц
