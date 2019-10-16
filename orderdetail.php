@@ -182,7 +182,7 @@
 				ON DUPLICATE KEY UPDATE
 					count = count + 1
 			";
-			mysqli_query( $mysqli, $query ) or die("Invalid query1: " .mysqli_error( $mysqli ));
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$cl_id = mysqli_insert_id( $mysqli );
 
 			$query = "
@@ -443,7 +443,7 @@
 			,Color(OD.CL_ID) Color
 			,CL.color
 			,CL.clear
-			,CL.NCS_ID
+			,IFNULL(CL.NCS_ID, 0) NCS_ID
 			,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
 			,IF(OD.IsPainting = 3, CONCAT(WD.Name, IF(OD.patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')), '') Name
 			,OD.Comment
@@ -1164,6 +1164,10 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		// Кнопка изменения цвета краски
 		$('#paint_color_btn').click( function() {
+			// Очистка радио кнопок
+			$('#paint_color input[type="radio"]').prop('checked', false);
+			$('#paint_color input[type="radio"]').button('refresh');
+
 			var color = $(this).attr('color');
 			var clear = $(this).attr('clear');
 			var NCS_ID = $(this).attr('NCS_ID');
