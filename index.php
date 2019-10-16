@@ -34,8 +34,6 @@
 		$ClientName = mysqli_real_escape_string($mysqli, $ClientName);
 		$OrderNumber = convert_str($_POST["OrderNumber"]);
 		$OrderNumber = mysqli_real_escape_string($mysqli, $OrderNumber);
-		$Color = convert_str($_POST["Color"]);
-		$Color = mysqli_real_escape_string($mysqli, $Color);
 		$Comment = convert_str($_POST["Comment"]);
 		$Comment = mysqli_real_escape_string($mysqli, $Comment);
 		$address = convert_str($_POST["address"]);
@@ -43,25 +41,8 @@
 
 		$confirmed = in_array('order_add_confirm', $Rights) ? 1 : 0;
 
-		// Сохраняем в таблицу цветов полученный цвет и узнаем его ID
-		if( $Color != '' ) {
-			$query = "INSERT INTO Colors
-						SET
-							color = '{$Color}',
-							clear = {$clear},
-							count = 0
-						ON DUPLICATE KEY UPDATE
-							count = count + 1,
-							clear = {$clear}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$cl_id = mysqli_insert_id( $mysqli );
-		}
-		else {
-			$cl_id = "NULL";
-		}
-
-		$query = "INSERT INTO OrdersData(CLientName, ul, mtel, address, AddDate, StartDate, EndDate, SH_ID, OrderNumber, CL_ID, Comment, author, confirmed)
-				  VALUES ('{$ClientName}', $ul, $mtel, '$address', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', $cl_id, '{$Comment}', {$_SESSION['id']}, {$confirmed})";
+		$query = "INSERT INTO OrdersData(CLientName, ul, mtel, address, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Comment, author, confirmed)
+				  VALUES ('{$ClientName}', $ul, $mtel, '$address', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Comment}', {$_SESSION['id']}, {$confirmed})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$id = mysqli_insert_id( $mysqli );
 
@@ -875,7 +856,7 @@
 			$query .= " AND IF(OD.CL_ID IS NULL, 0, OD.IsPainting) = {$_SESSION["f_IP"]}";
 		}
 		if( $_SESSION["f_CR"] != "" ) {
-			$query .= " AND (Color(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%' OR WD.Name LIKE '%{$_SESSION["f_CR"]}%')";
+			$query .= " AND (Color_print(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%' OR WD.Name LIKE '%{$_SESSION["f_CR"]}%')";
 		}
 		if( $_SESSION["f_CF"] != "" ) {
 			$query .= " AND OD.confirmed = {$_SESSION["f_CF"]}";

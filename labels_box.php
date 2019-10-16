@@ -198,7 +198,7 @@
 $(document).ready(function() {
 <?
 	$query = "
-		SELECT Color(OD.CL_ID) Color
+		SELECT Color_print(OD.CL_ID) Color
 			,OD.Code
 			,ODD.ODD_ID
 			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID

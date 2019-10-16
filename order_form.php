@@ -90,21 +90,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 				</div>
 			</fieldset>
 			<fieldset>
-				<legend>Цвет краски:</legend>
-				<p style='color: #911;'>ВНИМАНИЕ! Патина указывается у каждого изделия персонально в специальной графе "патина".</p>
-				<div>
-					<input type='text' id='paint_color' class='colortags' name='Color' style='width: 100%;' placeholder='ЗДЕСЬ ПАТИНУ УКАЗЫВАТЬ НЕ НУЖНО'>
-					<div class='btnset'>
-						<input required type='radio' id='clear1' name='clear' value='1'>
-							<label for='clear1'>Прозрачный</label>
-						<input required type='radio' id='clear0' name='clear' value='0'>
-							<label for='clear0'>Эмаль</label>
-					</div>
-					<i class='fa fa-question-circle' style='margin: 5px;' title='Прозрачное поктытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'>Подсказка</i>
-				</div>
-
-			</fieldset>
-			<fieldset>
 				<legend>Примечание:</legend>
 				<? if (!in_array('order_add_confirm', $Rights)) echo "<i class='fa fa-question-circle' title='Обо всех дополнительных особенностях набора сообщайте через кнопку \"Сообщение на производство\".'></i>"; ?>
 				<textarea name='Comment' rows='3' style='width: 100%;' <?=( in_array('order_add_confirm', $Rights) ? "" : "disabled" )?>></textarea>
@@ -141,9 +126,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#order_form #EndDate input').attr('disabled', true);
 
 			<?=(($num_rows == 1) ? "$('#order_form select[name=Shop]').val('{$sh_id}').trigger('change');" : "")?>
-
-			// Деактивация кнопок типа покраски
-			clearonoff('#paint_color');
 
 			if (odd) {
 				$("#order_form form").attr("action", "index.php?odd="+odd);

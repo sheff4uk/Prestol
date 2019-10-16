@@ -99,7 +99,7 @@
 		}
 		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
 
-		$chars = array("+", " ", "(", ")"); // Символы, которые трубуется удалить из строки с телефоном
+		$chars = array("+", " ", "(", ")"); // Символы, которые требуется удалить из строки с телефоном
 		$mtel = $_POST["mtel"] ? '\''.str_replace($chars, "", $_POST["mtel"]).'\'' : 'NULL';
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
 
@@ -108,39 +108,10 @@
 		$ClientName = mysqli_real_escape_string($mysqli, $ClientName);
 		$OrderNumber = convert_str($_POST["OrderNumber"]);
 		$OrderNumber = mysqli_real_escape_string($mysqli, $OrderNumber);
-		$Color = convert_str($_POST["Color"]);
-		$Color = mysqli_real_escape_string($mysqli, $Color);
 		$Comment = convert_str($_POST["Comment"]);
 		$Comment = mysqli_real_escape_string($mysqli, $Comment);
 		$address = convert_str($_POST["address"]);
 		$address = mysqli_real_escape_string($mysqli, $address);
-
-		// Сохраняем в таблицу цветов полученный цвет и узнаем его ID
-		if( $Color != '' ) {
-			// Если с цветом передана прозрачность - обновляем цвет
-			if( isset($_POST["clear"]) ) {
-				$clear = $_POST["clear"];
-				$query = "
-					INSERT INTO Colors
-					SET
-						color = '{$Color}',
-						clear = {$clear},
-						count = 0
-					ON DUPLICATE KEY UPDATE
-						count = count + 1
-				";
-				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				$cl_id = mysqli_insert_id( $mysqli );
-			}
-			// Если с цветом не передана прозрачность выводим предупреждение
-			else {
-				$_SESSION["alert"][] = "Пожалуйста укажите тип покрытия \"Прозрачный\" или \"Эмаль\".";
-			}
-		}
-		else {
-			$cl_id = "NULL";
-			$_POST["clear"] = "0"; //Чтобы сработало условие в следующем запросе когда цвет удален
-		}
 
 		$query = "
 			UPDATE OrdersData
@@ -153,7 +124,7 @@
 				".(isset($_POST["EndDate"]) ? ",EndDate = $EndDate" : "")."
 				".(isset($_POST["Shop"]) ? ",SH_ID = $Shop" : "")."
 				".(isset($_POST["OrderNumber"]) ? ",OrderNumber = '$OrderNumber'" : "")."
-				".((isset($_POST["Color"]) and isset($_POST["clear"])) ? ",CL_ID = $cl_id" : "")."
+				#".((isset($_POST["Color"]) and isset($_POST["clear"])) ? ",CL_ID = $cl_id" : "")."
 				".(isset($_POST["Comment"]) ? ",Comment = '$Comment'" : "")."
 			WHERE OD_ID = {$id}
 		";
@@ -177,6 +148,71 @@
 				$_SESSION["error"][] = "Данные не были сохранены.";
 			}
 		}
+
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$id.'">');
+		die;
+	}
+
+	// Обновление цвета покраски
+	if( isset($_GET["paint_color"]) )
+	{
+		// Если набор уже покрашен - предупреждение, что нельзя изменить цвет
+		if ($IsPainting == 3) {
+			$_SESSION["error"][] = "Набор покрашен! Изменить цвет не возможно.";
+			exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		}
+
+		$color = convert_str($_POST["color"]);
+		$color = mysqli_real_escape_string($mysqli, $color);
+		$NCS = $_POST["NCS"];
+		$clear = $_POST["clear"];
+
+		// Если цвет не указан - выводим предупреждение
+		if( $color == '' and $NCS == 0) {
+			$_SESSION["error"][] = "Пожалуйста укажите цвет краски.";
+		}
+		else {
+			$query = "
+				INSERT INTO Colors
+				SET
+					color = '{$color}',
+					NCS_ID = {$NCS},
+					clear = {$clear},
+					count = 0
+				ON DUPLICATE KEY UPDATE
+					count = count + 1
+			";
+			mysqli_query( $mysqli, $query ) or die("Invalid query1: " .mysqli_error( $mysqli ));
+			$cl_id = mysqli_insert_id( $mysqli );
+
+			$query = "
+				UPDATE OrdersData
+				SET author = {$_SESSION['id']}
+					,CL_ID = $cl_id
+				WHERE OD_ID = {$id}
+			";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		}
+
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$id.'">');
+		die;
+	}
+
+	// Отмена лакировки
+	if( isset($_GET["paint_reject"]) ) {
+		// Если набор уже покрашен - предупреждение, что нельзя отменить лакировку
+		if ($IsPainting == 3) {
+			$_SESSION["error"][] = "Набор покрашен! Отменить лакировку не возможно.";
+			exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		}
+
+		$query = "
+			UPDATE OrdersData
+			SET author = {$_SESSION['id']}
+				,CL_ID = NULL
+			WHERE OD_ID = {$id}
+		";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$id.'">');
 		die;
@@ -404,8 +440,10 @@
 			,IFNULL(OD.SH_ID, 0) SH_ID
 			,IFNULL(SH.KA_ID, 0) KA_ID
 			,OD.OrderNumber
-			,CL.color Color
+			,Color(OD.CL_ID) Color
+			,CL.color
 			,CL.clear
+			,CL.NCS_ID
 			,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
 			,IF(OD.IsPainting = 3, CONCAT(WD.Name, IF(OD.patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')), '') Name
 			,OD.Comment
@@ -447,7 +485,9 @@
 	$KA_ID = $row['KA_ID'];
 	$OrderNumber = $row['OrderNumber'];
 	$Color = $row['Color'];
+	$color = $row['color'];
 	$clear = $row['clear'];
+	$NCS_ID = $row['NCS_ID'];
 	$IsPainting = $row['IsPainting'];
 	$Name = $row['Name'];
 	$Comment = $row['Comment'];
@@ -555,34 +595,25 @@
 		switch ($IsPainting) {
 			case 0:
 				$class = "empty";
-				//$title = "Без покраски";
 				break;
 			case 1:
 				$class = "notready";
-				//$title = "Не в работе";
 				break;
 			case 2:
 				$class = "inwork";
-				//$title = "В работе";
 				break;
 			case 3:
 				$class = "ready";
-				//$title = "Готово";
-				//if($Name) $title .= " ({$Name})";
 				break;
 		}
+		$delmessage = addslashes("Покраска не требуется?");
 		echo "
 			<td val='{$IsPainting}' class='painting_cell ".(( in_array('order_add_confirm', $Rights) and !$Archive and $Del == 0 and $IsPainting != 0 ) ? "painting " : "")." {$class}'>
 				<div class='painting_workers'>{$Name}</div>
-				<div style='background: lightgrey; cursor: auto;'>
-					<div class='btnset'>
-						<input type='radio' id='clear1' name='clear' value='1' ".($clear == "1" ? "checked" : "").">
-							<label for='clear1'>Прозрачный</label>
-						<input type='radio' id='clear0' name='clear' value='0' ".($clear == "0" ? "checked" : "").">
-							<label for='clear0'>Эмаль</label>
-					</div>
-					<input type='text' id='paint_color' class='colortags' name='Color' style='width: 160px;' ".((!$disabled and !$Del and $editable and $IsPainting != 3) ? "" : "disabled")." value='{$Color}'>
-					<i class='fa fa-question-circle' style='margin: 5px;' title='Прозрачное покрытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'>Подсказка</i>
+				<p>{$Color}</p>
+				<div style='background: lightgrey; cursor: auto; ".((!$disabled and !$Del and $editable) ? "" : "display: none;")."'>
+					<a class='button' id='paint_color_btn' color='{$color}' clear='{$clear}' NCS_ID='{$NCS_ID}' title='Редактировать цвет покраски'><i class='fa fa-pencil-alt fa-lg'></i></a>
+					".($Color ? "<button class='button' title='Отменить покраску' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&paint_reject\")) return false;'><i class='fa fa-times fa-lg'></i></button>" : "")."
 				</div>
 			</td>
 		";
@@ -1035,27 +1066,47 @@ this.subbut.value='Подождите, пожалуйста!';">
 <!-- Конец формы добавления сообщения к набору -->
 
 <!-- Форма изменения цвета краски -->
-<div id='paint_color' title='Цвет краски' style='display:none'>
+<div id='paint_color' class="addproduct" title='Цвет краски' style='display:none'>
 	<form method='post' action='<?=$location?>&paint_color' onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
+			<p style="color: #911;">ВНИМАНИЕ! Обязательно указывайте конкретный цвет. Абстрактные обозначения вроде "в тон пластика" или "по образцу" не допускаются.</p>
 			<div>
-				<label for="message">Описание цвета:</label><br>
-				<input type="text" name="color" style="width: 160px;" value="" autocomplete="off">
+				<label>Описание:</label>
+				<input type="text" name="color" class="colortags" style="width: 300px;" value="" autocomplete="off">
+				<i class='fa fa-question-circle' style='margin: 5px;' title='Поле для описания цвета в свободной форме.'></i>
 			</div>
 			<div>
-				<label for="message" title='Прозрачное покрытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'><i class='fa fa-question-circle' style='margin: 5px;'>Подсказка</i>Тип покрытия:</label><br>
+				<label>Цвет NCS:</label>
+				<select name="NCS" style="width: 200px;">
+					<?
+					$query = "
+						SELECT NCS_ID, IFNULL(NCScolor, '-=NCS цвет не указан=-') NCScolor, HTML, IF(R+G+B < 200, 'white', 'black') txt_color
+						FROM NCScolors
+					";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) ) {
+						echo "<option value={$row["NCS_ID"]} data-html='{$row["HTML"]}' style='color: {$row["txt_color"]}; background: {$row["HTML"]};'>{$row["NCScolor"]}</option>";
+					}
+					?>
+				</select>
+				<div id="NCScolor" style="width: 28px; height: 28px; display: inline-block; border-radius: 50%; margin-left: 5px;"></div>
+				<i class='fa fa-question-circle' style='margin: 5px;' title='Натуральная система цвета NCS (Natural Color System) — проприетарная цветовая модель, предложенная шведским Институтом Цвета. Она основана на системе противоположных цветов и нашла широкое применение в промышленности для описания цвета продукции. Сегодня NCS является одной из наиболее широко используемых систем описания цветов в мире, получила международное научное признание, а кроме того, NCS является национальным стандартом в Швеции, Норвегии, Испании, и Южной Африке.'></i>
+			</div>
+			<div>
+				<label>Тип покрытия:</label>
 				<div class='btnset'>
-					<input type='radio' id='clear1' name='clear' value='1'>
-						<label for='clear1'>Прозрачный</label>
-					<input type='radio' id='clear0' name='clear' value='0'>
+					<input type='radio' id='clear1' name='clear' value='1' required>
+						<label for='clear1'>Прозрачное</label>
+					<input type='radio' id='clear0' name='clear' value='0' required>
 						<label for='clear0'>Эмаль</label>
 				</div>
+				<i class='fa fa-question-circle' style='margin: 5px;' title='Прозрачное покрытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'></i>
 			</div>
 		</fieldset>
 		<div>
 			<hr>
-			<input type='submit' name="subbut" value='Отправить' style='float: right;'>
+			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
 		</div>
 	</form>
 </div>
@@ -1063,15 +1114,29 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <script>
 	$(function(){
-//		// Select2 для выбора салона
-//		$('select[name="Shop"]').select2({
-//			placeholder: "Выберите салон",
-//			language: "ru"
-//		});
+		// Select2 для выбора NCS
+		function format (state) {
+			var originalOption = state.element;
+			if (state.id == 0) return state.text;
+			return "<div style='display: flex;'><span style='width: 50px; height: 16px; margin-right: 5px; background: " + $(originalOption).data('html') + "; border: 1px solid #333;'/></span><span>" + state.text + "</span><div>";
+		};
+		$('select[name="NCS"]').select2({
+			language: "ru",
+			templateResult: format,
+			escapeMarkup: function(m) { return m; }
+		});
 
-		// Деактивация/активация кнопок типа покраски
-		clearonoff('#paint_color');
-
+		// При выборе цвета NCS меняется цвет кружочка справа
+		$('select[name="NCS"]').change(function(){
+			var html = $(this).children('option:selected').attr('data-html');
+			$('#NCScolor').css('background', html);
+			if (html) {
+				$('#NCScolor').css('box-shadow', '0 0 10px #666');
+			}
+			else {
+				$('#NCScolor').css('box-shadow', 'none');
+			}
+		});
 
 		// Сабмит формы набора при изменении
 		$('#order_form input, #order_form select, #order_form textarea').change(function(){
@@ -1098,7 +1163,17 @@ this.subbut.value='Подождите, пожалуйста!';">
 		});
 
 		// Кнопка изменения цвета краски
-		$('.paint_color_btn').click( function() {
+		$('#paint_color_btn').click( function() {
+			var color = $(this).attr('color');
+			var clear = $(this).attr('clear');
+			var NCS_ID = $(this).attr('NCS_ID');
+
+			// Заполнение формы
+			$('#paint_color input[name="color"]').val(color);
+			$('#paint_color select[name="NCS"]').val(NCS_ID).trigger('change');
+			$('#paint_color #clear'+clear).prop('checked', true);
+			$('#paint_color input[type="radio"]').button('refresh');
+
 			$('#paint_color').dialog({
 				width: 500,
 				modal: true,
@@ -1106,6 +1181,11 @@ this.subbut.value='Подождите, пожалуйста!';">
 				hide: 'explode',
 				closeText: 'Закрыть'
 			});
+
+			// Автокомплит поверх диалога
+			$( ".colortags" ).autocomplete( "option", "appendTo", "#paint_color" );
+
+			return false;
 		});
 
 		$( "#wr_order_change_log" ).tabs();

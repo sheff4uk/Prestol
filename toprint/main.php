@@ -142,7 +142,7 @@
 			,DATE_FORMAT(OD.StartDate, '%d.%m<br>%Y') StartDate
 			,DATE_FORMAT(IFNULL(OD.DelDate, IFNULL(OD.ReadyDate, OD.EndDate)), '%d.%m<br>%Y') EndDate
 			,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
-			,Color(OD.CL_ID) Colors
+			,Color_print(OD.CL_ID) Colors
 			,IFNULL(OD.Comment, '') Comment
 			,Ord_price(OD.OD_ID) Price
 			,Ord_discount(OD.OD_ID) discount

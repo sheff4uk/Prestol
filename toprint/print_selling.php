@@ -103,7 +103,7 @@
 			,DATE_FORMAT(OD.ReadyDate, '%d.%m<br>.%Y') ReadyDate
 			,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
 			,OD.OrderNumber
-			,Color(OD.CL_ID) Color
+			,Color_print(OD.CL_ID) Color
 			,IFNULL(OD.sell_comment, '') Comment
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID

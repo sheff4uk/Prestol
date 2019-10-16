@@ -6,25 +6,6 @@ Number.prototype.format = function(n, x) {
 	return this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$& ');
 };
 
-// Функция активирует/деактивирует кнопки типа покрытия
-function clearonoff(element)
-{
-	var length = $(element).val().length;
-	var disabled = $(element).prop("disabled");
-	if( length == 0 || disabled )
-	{
-		$(element).parent().find('.btnset input[type="radio"]').prop('disabled', true);
-//		$('#clear1').prop('checked', false);
-//		$('#clear0').prop('checked', false);
-	}
-	else
-	{
-		$(element).parent().find('.btnset input[type="radio"]').prop('disabled', false);
-	}
-	$(element).parent().find('.btnset input[type="radio"]').button('refresh');
-	return false;
-}
-
 // Функция генерирует форму с этапами производства
 function makeform(odd_id, location)
 {
@@ -85,11 +66,6 @@ function makeform(odd_id, location)
 
 ////////////////////////////////////////////////////////////////////////////////
 $(function(){
-	// При очистке информации о цвете деактивируем кнопки прозрачности
-	$('#paint_color').on("change", function(){
-		clearonoff(this);
-	});
-
 	$( '.checkstatus' ).button();
 	$( '.btnset' ).buttonset();
 		// Fix for http://bugs.jqueryui.com/ticket/7856
@@ -302,19 +278,17 @@ $(function(){
 					case "1":
 						$('#clear1').prop('checked', true);
 						$('#clear0').prop('checked', false);
-						$('#clear1, #clear0').prop('disabled', false);
 						break;
 					case "0":
 						$('#clear1').prop('checked', false);
 						$('#clear0').prop('checked', true);
-						$('#clear1, #clear0').prop('disabled', false);
 						break;
 					default:
 						$('#clear1').prop('checked', false);
 						$('#clear0').prop('checked', false);
-						$('#clear1, #clear0').prop('disabled', false);
 				}
 				$('#clear1, #clear0').button('refresh');
+				$('#paint_color select[name="NCS"]').val(ui.item.NCS_ID).trigger('change');
 			}
 		});
 

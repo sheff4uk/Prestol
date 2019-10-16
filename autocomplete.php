@@ -38,16 +38,16 @@ case "colortags":
 
 	$query = "SELECT color
 					,clear
-					,Color(CL_ID) label
+					,NCS_ID
+					,Color_print(CL_ID) label
 				FROM Colors
-				WHERE color LIKE '%{$term}%'
+				WHERE Color_print(CL_ID) LIKE '%{$term}%'
 					AND clear IS NOT NULL
-					AND count > 0
 				ORDER BY count DESC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$ColorTags[] = array( "label"=>$row["label"], "value"=>$row["color"], "clear"=>$row["clear"] );
+		$ColorTags[] = array( "label"=>$row["label"], "value"=>$row["color"], "clear"=>$row["clear"], "NCS_ID"=>$row["NCS_ID"] );
 	}
 	echo json_encode($ColorTags);
 	break;

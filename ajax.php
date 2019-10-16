@@ -376,7 +376,6 @@ case "ispainting":
 	else {
 		echo "noty({timeout: 3000, text: 'Статус лакировки изменен на <b>{$status}</b>', type: 'success'});";
 	}
-	echo "clearonoff('#paint_color');";
 	break;
 ///////////////////////////////////////////////////////////////////
 
