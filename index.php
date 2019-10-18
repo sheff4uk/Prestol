@@ -57,6 +57,7 @@
 			$query = "CALL Price({$odd_id})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
+		$_SESSION["alert"][] = "Пожалуйста, не забудьте указать цвет лакировки, нажав на <i class='fa fa-pencil-alt fa-lg'></i> в графе <b>Цвет краски</b>.";
 		
 		// Перенаправление на экран деталей набора
 		exit ('<meta http-equiv="refresh" content="0; url=/orderdetail.php?id='.$id.'&odd_id='.$odd_id.'">');
