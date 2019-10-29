@@ -113,6 +113,7 @@ if(isset($_POST['submit'])) {
 			<div><label title="Логин может состоять только из букв английского алфавита и цифр. Логин должен быть не меньше 3-х символов и не больше 30-ти."><i class="fas fa-question-circle"></i>Логин</label><input required type="text" name="login" minlength="3" maxlength="30"></div>
 			<div><label title="Пароль должен быть не меньше 6-ти символов."><i class="fas fa-question-circle"></i>Пароль</label><input required type="password" name="password" minlength="6"></div>
 			<div><label title="На указанный адрес электронной почты придет письмо для подтверждения регистрации."><i class="fas fa-question-circle"></i>Email</label><input required type="email" name="email"></div>
+<!--			<div><label title="На указанный номер телефона придет СМС с кодом для подтверждения регистрации."><i class="fas fa-question-circle"></i>Телефон</label><input required type='text' name='mtel' id='mtel' autocomplete='off' placeholder='Моб. телефон'></div>-->
 			<div style="text-align: right;"><input name="submit" type="submit" value="Зарегистрироваться »"></div>
 		</form>
 		<p><sup>*</sup>КИС - корпоративная информационная система</p>
