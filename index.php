@@ -673,7 +673,7 @@
 		}
 
 		$query .= "
-			,IF(OD.ReadyDate, DATE_FORMAT(OD.EndDate, '%d.%m.%y'), '') format_EndDate
+			,IF(OD.ReadyDate AND {$archive} = 2, DATE_FORMAT(OD.EndDate, '%d.%m.%y'), '') format_EndDate
 			,IF(OD.EndDate AND OD.ReadyDate, IF(DATEDIFF(OD.EndDate, OD.ReadyDate) <= 7, IF(DATEDIFF(OD.EndDate, OD.ReadyDate) <= 0, 'bg-red', 'bg-yellow'), 'bg-green'), '') date_diff_color
 			,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
 			,IFNULL(OD.SH_ID, 0) SH_ID
