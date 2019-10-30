@@ -436,6 +436,8 @@
 			,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 			,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
 			,DATE_FORMAT(OD.DelDate, '%d.%m.%y') DelDate
+			,IF(OD.ReadyDate, DATE_FORMAT(OD.EndDate, '%d.%m.%y'), '') format_EndDate
+			,IF(OD.EndDate AND OD.ReadyDate, IF(DATEDIFF(OD.EndDate, OD.ReadyDate) <= 7, IF(DATEDIFF(OD.EndDate, OD.ReadyDate) <= 0, 'bg-red', 'bg-yellow'), 'bg-green'), '') date_diff_color
 			,IF((SH.retail AND OD.StartDate IS NULL), '<br><b style=\'background-color: silver;\'>Выставка</b>', '') showing
 			,IFNULL(OD.SH_ID, 0) SH_ID
 			,IFNULL(SH.KA_ID, 0) KA_ID
@@ -480,6 +482,8 @@
 	$EndDate = $row['EndDate'];
 	$ReadyDate = $row['ReadyDate'];
 	$DelDate = $row['DelDate'];
+	$format_EndDate = $row['format_EndDate'];
+	$date_diff_color = $row['date_diff_color'];
 	$showing = $row['showing'];
 	$SH_ID = $row['SH_ID'];
 	$KA_ID = $row['KA_ID'];
@@ -516,8 +520,8 @@
 				echo "<th width='20%'>Адрес доставки</th>";
 			}
 			?>
-			<th width="95">Дата продажи</th>
-			<?= ($ReadyDate ? "<th width='95'>Отгружено</th>" : ($DelDate ? "<th width='95'>Удалено</th>" : ($showing ? "" : "<th width='95'>Дата сдачи</th>"))) ?>
+			<th width="95">Продано</th>
+			<?= ($ReadyDate ? "<th width='95'>Отгружено<br><i style='font-size: .8em;'>Сдача</i></th>" : ($DelDate ? "<th width='95'>Удалено</th>" : ($showing ? "" : "<th width='95'>Сдача</th>"))) ?>
 			<th width="125">Подразделение</th>
 			<th width="170">Цвет краски <i class="fa fa-question-circle" html="<b>Цветовой статус лакировки:</b><br><span class='empty'>Покраска не требуется</span><br><span class='notready'>Не дано в покраску</span><br><span class='inwork'>Дано в покраску</span><br><span class='ready'>Покрашено</span>"></i></th>
 			<th width="40">Принят</th>
@@ -574,7 +578,7 @@
 		}
 		else {
 			echo "<td style='text-align: center;'>";
-			echo ($ReadyDate ? $ReadyDate : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date' value='{$EndDate}' autocomplete='off' ".((!$disabled and !$Del and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">"));
+			echo ($ReadyDate ? "<font class='{$date_diff_color}'>{$ReadyDate}</font><br><i style='font-size: .8em;'>{$format_EndDate}</i>" : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date' value='{$EndDate}' autocomplete='off' ".((!$disabled and !$Del and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">"));
 				// Если отгружен и есть право отгружать - показываем кнопку отмены отгрузки
 				if ($ReadyDate and in_array('order_ready', $Rights)) {
 					echo "<br><a href='#' class='undo_shipping' od_id='{$id}' title='Отменить отгрузку'><i style='color:#333;' class='fas fa-flag-checkered fa-2x'></i></a> ";

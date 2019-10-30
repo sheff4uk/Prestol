@@ -588,8 +588,8 @@
 		<tr>
 			<th width="60"><input type="checkbox" disabled value="1" checked name="CD" class="print_col" id="CD"><label for="CD">Код набора</label></th>
 			<th width="5%"><input type="checkbox" disabled value="2" name="CN" class="print_col" id="CN"><label for="CN">Клиент<br>Квитанция</label></th>
-			<th width="60"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Дата<br>продажи</label></th>
-			<th width="60"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED">Дата<br><?=($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))?></label></th>
+			<th width="60"><input type="checkbox" disabled value="3" name="SD" class="print_col" id="SD"><label for="SD">Продано</label></th>
+			<th width="60"><input type="checkbox" disabled value="4" checked name="ED" class="print_col" id="ED"><label for="ED"><?=($archive == 2 ? "Отгружено<br><i style='font-size: .8em;'>сдача</i>" : ($archive == 3 ? "Удалено" : "Сдача"))?></label></th>
 			<th width="5%"><input type="checkbox" disabled value="5" checked name="SH" class="print_col" id="SH"><label for="SH">Подразделение</label></th>
 			<th width="40"><input type="checkbox" disabled value="6" name="ON" class="print_col" id="ON"><label for="ON">Мест</label></th>
 			<th width="25%"><input type="checkbox" disabled value="7" checked name="Z" class="print_col" id="Z"><label for="Z">Набор</label></th>
@@ -673,6 +673,8 @@
 		}
 
 		$query .= "
+			,IF(OD.ReadyDate, DATE_FORMAT(OD.EndDate, '%d.%m.%y'), '') format_EndDate
+			,IF(OD.EndDate AND OD.ReadyDate, IF(DATEDIFF(OD.EndDate, OD.ReadyDate) <= 7, IF(DATEDIFF(OD.EndDate, OD.ReadyDate) <= 0, 'bg-red', 'bg-yellow'), 'bg-green'), '') date_diff_color
 			,IF(OD.ReadyDate IS NOT NULL, 1, 0) Archive
 			,IFNULL(OD.SH_ID, 0) SH_ID
 			,IFNULL(SH.KA_ID, 0) KA_ID
@@ -1004,7 +1006,7 @@
 		}
 
 		echo "<td><span>{$row["StartDate"]}{$invoice}</span></td>";
-		echo "<td><span><span class='{$row["Deadline"]}'>{$row["EndDate"]}</span></span></td>";
+		echo "<td><span><span class='{$row["Deadline"]} {$row["date_diff_color"]}'>{$row["EndDate"]}</span><br><i style='font-size: .8em;'>{$row["format_EndDate"]}</i></span></td>";
 		echo "<td class='".( (in_array('order_add', $Rights) and !$is_lock and !$is_del and $editable) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}' style='background: {$row["CTColor"]};'><span style='background: {$row["CTColor"]};'>".($row["retail"] ? "&bull; " : "")."{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
 		echo "<td><span></span></td>";
 
