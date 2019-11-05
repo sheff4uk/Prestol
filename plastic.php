@@ -154,7 +154,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<th width="20%">Материал</th>
 			<th width="60">Код</th>
 			<th width="40">Принят</th>
-			<th width="70">Работник</th>
+			<th width="70">Столешница</th>
 			<th width="40%">Набор</th>
 			<th width="20%">Цвет</th>
 			<th width="130">Клиент<br>Продажа - Сдача<br>Подразделение</th>
@@ -282,7 +282,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$class = 'not_confirmed';
 		}
 		echo "<td class='{$class}'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
-		echo "<td><span class='nowrap'>{$worker}</span></td>";
+		echo "<td><span>{$worker}</span></td>";
 		echo "<td><span class='nowrap'>{$zakaz}</span></td>";
 
 		switch ($row["IsPainting"]) {
