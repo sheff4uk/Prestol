@@ -1,21 +1,52 @@
 <?
 	// Список названий контрагентов для автокомплита
 	include "config.php";
-	include "checkrights.php";
+//	include "checkrights.php";
 
-if( isset($_GET["KA_ID"]) ) { // Если указан контрагент - показываем только его
-	if( $_GET["KA_ID"] == "0" ) { // Если розница - показываем не привязанных к салонам
-		$query = "SELECT KA.KA_ID, Naimenovanie, IFNULL(Jur_adres, '') Jur_adres, IFNULL(Fakt_adres, '') Fakt_adres, IFNULL(Telefony, '') Telefony, IFNULL(INN, '') INN, IFNULL(OKPO, '') OKPO, IFNULL(KPP, '') KPP, IFNULL(Pasport, '') Pasport, IFNULL(Email, '') Email, IFNULL(Schet, '') Schet, IFNULL(Bank, '') Bank, IFNULL(BIK, '') BIK, IFNULL(KS, '') KS, IFNULL(Bank_adres, '') Bank_adres FROM Kontragenty KA LEFT JOIN Shops SH ON SH.KA_ID = KA.KA_ID WHERE Naimenovanie LIKE '%{$_GET["term"]}%' AND SH.KA_ID IS NULL ORDER BY Naimenovanie";
-	}
-	else { // Показываем этого контрагента и остальных
-		$query = "SELECT KA_ID, Naimenovanie, IFNULL(Jur_adres, '') Jur_adres, IFNULL(Fakt_adres, '') Fakt_adres, IFNULL(Telefony, '') Telefony, IFNULL(INN, '') INN, IFNULL(OKPO, '') OKPO, IFNULL(KPP, '') KPP, IFNULL(Pasport, '') Pasport, IFNULL(Email, '') Email, IFNULL(Schet, '') Schet, IFNULL(Bank, '') Bank, IFNULL(BIK, '') BIK, IFNULL(KS, '') KS, IFNULL(Bank_adres, '') Bank_adres FROM Kontragenty WHERE KA_ID = {$_GET["KA_ID"]}
+if( isset($_GET["KA_ID"]) ) { // Если указан контрагент - показываем его всегда
+	$query = "
+		SELECT KA_ID
+			,Naimenovanie
+			,IFNULL(Jur_adres, '') Jur_adres
+			,IFNULL(Fakt_adres, '') Fakt_adres
+			,IFNULL(Telefony, '') Telefony
+			,IFNULL(INN, '') INN
+			,IFNULL(OKPO, '') OKPO, IFNULL(KPP, '') KPP
+			,IFNULL(Pasport, '') Pasport
+			,IFNULL(Email, '') Email
+			,IFNULL(Schet, '') Schet
+			,IFNULL(Bank, '') Bank
+			,IFNULL(BIK, '') BIK
+			,IFNULL(KS, '') KS
+			,IFNULL(Bank_adres, '') Bank_adres
+			,99 score
+		FROM Kontragenty
+		WHERE KA_ID = {$_GET["KA_ID"]}
 		UNION
-		SELECT KA.KA_ID, Naimenovanie, IFNULL(Jur_adres, '') Jur_adres, IFNULL(Fakt_adres, '') Fakt_adres, IFNULL(Telefony, '') Telefony, IFNULL(INN, '') INN, IFNULL(OKPO, '') OKPO, IFNULL(KPP, '') KPP, IFNULL(Pasport, '') Pasport, IFNULL(Email, '') Email, IFNULL(Schet, '') Schet, IFNULL(Bank, '') Bank, IFNULL(BIK, '') BIK, IFNULL(KS, '') KS, IFNULL(Bank_adres, '') Bank_adres FROM Kontragenty KA LEFT JOIN Shops SH ON SH.KA_ID = KA.KA_ID WHERE Naimenovanie LIKE '%{$_GET["term"]}%' AND SH.KA_ID IS NULL";
-	}
+	";
 }
-else { // Иначе показываем контрагентов с подстрокой term
-	$query = "SELECT KA_ID, Naimenovanie, IFNULL(Jur_adres, '') Jur_adres, IFNULL(Fakt_adres, '') Fakt_adres, IFNULL(Telefony, '') Telefony, IFNULL(INN, '') INN, IFNULL(OKPO, '') OKPO, IFNULL(KPP, '') KPP, IFNULL(Pasport, '') Pasport, IFNULL(Email, '') Email, IFNULL(Schet, '') Schet, IFNULL(Bank, '') Bank, IFNULL(BIK, '') BIK, IFNULL(KS, '') KS, IFNULL(Bank_adres, '') Bank_adres FROM Kontragenty WHERE Naimenovanie LIKE '%{$_GET["term"]}%' ORDER BY Naimenovanie";
-}
+
+$query .= "
+	SELECT KA_ID
+		,Naimenovanie
+		,IFNULL(Jur_adres, '') Jur_adres
+		,IFNULL(Fakt_adres, '') Fakt_adres
+		,IFNULL(Telefony, '') Telefony
+		,IFNULL(INN, '') INN
+		,IFNULL(OKPO, '') OKPO
+		,IFNULL(KPP, '') KPP
+		,IFNULL(Pasport, '') Pasport
+		,IFNULL(Email, '') Email
+		,IFNULL(Schet, '') Schet
+		,IFNULL(Bank, '') Bank
+		,IFNULL(BIK, '') BIK
+		,IFNULL(KS, '') KS
+		,IFNULL(Bank_adres, '') Bank_adres
+		,MATCH(Naimenovanie) AGAINST ('{$_GET["term"]}') score
+	FROM Kontragenty
+	HAVING score > 0
+	ORDER BY score DESC
+";
 
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
