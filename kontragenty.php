@@ -42,9 +42,9 @@ $query .= "
 		,IFNULL(BIK, '') BIK
 		,IFNULL(KS, '') KS
 		,IFNULL(Bank_adres, '') Bank_adres
-		,MATCH(Naimenovanie) AGAINST ('{$_GET["term"]}') score
+		,MATCH Naimenovanie AGAINST ('{$_GET["term"]}') score
 	FROM Kontragenty
-	HAVING score > 0
+	WHERE MATCH Naimenovanie AGAINST ('{$_GET["term"]}') > 0
 	ORDER BY score DESC
 ";
 
