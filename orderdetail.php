@@ -732,7 +732,7 @@
 			echo "<div style='position: absolute; top: 77px; left: 340px; font-weight: bold; color: green; font-size: 1.2em;'>Месяц в реализации закрыт (изменения ограничены).</div>";
 		}
 		if ( $Del == 1 ) {
-			echo "<div style='position: absolute; top: 173px; font-weight: bold; color: #911; font-size: 5em; opacity: .3; border: 5px solid;'>Набор удалён</div>";
+			echo "<div style='position: absolute; top: 200px; font-weight: bold; color: #911; font-size: 5em; opacity: .3; border: 5px solid; transform: rotate(-45deg);'>Набор удалён</div>";
 		}
 ?>
 <div class="halfblock">
