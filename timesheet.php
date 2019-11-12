@@ -1,5 +1,4 @@
 <?
-//	session_start();
 	include "config.php";
 	$title = 'Табель';
 	include "header.php";
@@ -150,14 +149,6 @@
 			<option value="12"><?=$MONTHS[12]?></option>
 		</select>
 	</form>
-<!--
-	<form method="post" style="display: flex; float: right;">
-		<label for="normhours">Норма часов за месяц:&nbsp;</label>
-		<input type="number" name="normhours" id="normhours" value="<?=$NormHours?>" min="0" max="300">
-		<div class='spase'></div>
-		<button>Сохранить</button>
-	</form>
--->
 	<span id="normhours" style="float: right;">
 		Норма часов за месяц:
 		<b style="font-size: 1.5em;"></b>
@@ -166,7 +157,7 @@
 
 <table id="timesheet" class="main_table">
 	<thead>
-		<tr>
+		<tr class="nowrap">
 			<th width="100">Работник</th>
 			<?
 				// Получаем производственный календарь на выбранный год
@@ -204,11 +195,10 @@
 				$('#normhours > b').text('<?=$NormHours?>');
 			</script>
 
-			<th width="50">Часы</th>
-			<th width="40">К</th>
+			<th width="45">Часы</th>
 			<th width="55">Сумма</th>
 			<th width="40">%</th>
-			<th width="65">Свой %</th>
+			<th width="50">Свой %</th>
 			<th width="30" title="Не учитывать месячную норму часов">НЧ</th>
 			<th width="65">Премия</th>
 			<th width="50">Итого</th>
@@ -233,7 +223,7 @@
 					FROM WorkersData WD
 					LEFT JOIN TimeSheet TS ON TS.WD_ID = WD.WD_ID AND YEAR(TS.Date) = {$year} AND MONTH(TS.Date) = {$month}
 					LEFT JOIN MonthlyPremiumPercent MPP ON MPP.WD_ID = WD.WD_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
-					WHERE WD.Type IN (2,3)
+					WHERE WD.Type IN (2)
 					GROUP BY WD.WD_ID
 					HAVING IsActive = 1 OR Hours > 0
 					ORDER BY WD.Type, WD.Name
@@ -250,6 +240,8 @@
 						,start2
 						,end2
 						,Hours
+						,FLOOR(Hours) whole
+						,(Hours - FLOOR(Hours)) * 4 frac
 						,Tariff
 						,IFNULL(NightBonus, 0) NightBonus
 						,Comment
@@ -274,10 +266,10 @@
 						$nightstyle = ($subrow["NightBonus"] > 0) ? " background: #666; color: #fff; border-radius: 4px; border: 1px solid #666;" : "";
 
 						echo "
-							<td style='overflow: visible; font-size: 0px; padding: 0px; line-height: 12px;' class='tscell nowrap' date='{$date}' start1='{$subrow["start1"]}' end1='{$subrow["end1"]}' start2='{$subrow["start2"]}' end2='{$subrow["end2"]}' hours='{$subrow["Hours"]}' tariff='{$subrow["Tariff"]}' bonus='{$subrow["NightBonus"]}' comment='{$subrow["Comment"]}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$nighticon}
-								<span style='font-size: 11px;{$nightstyle}'>{$subrow["Hours"]}</span>
-								<div style='background-color: #e78f08; left: ".($subrow["start1"]/60/24*100)."%; width: ".(($subrow["end1"] - $subrow["start1"])/60/24*100)."%; position: absolute; top: 16px; opacity: .5;'>.</div>
-								<div style='background-color: #e78f08; left: ".($subrow["start2"]/60/24*100)."%; width: ".(($subrow["end2"] - $subrow["start2"])/60/24*100)."%; position: absolute; top: 16px; opacity: .5;'>.</div>
+							<td style='overflow: visible; padding: 0px;' class='tscell nowrap' date='{$date}' start1='{$subrow["start1"]}' end1='{$subrow["end1"]}' start2='{$subrow["start2"]}' end2='{$subrow["end2"]}' hours='{$subrow["Hours"]}' tariff='{$subrow["Tariff"]}' bonus='{$subrow["NightBonus"]}' comment='{$subrow["Comment"]}' title='Тариф: {$subrow["Tariff"]}р. ({$subrow["Comment"]})'>{$nighticon}
+								<span style='{$nightstyle}'>{$subrow["whole"]}".($subrow["frac"] == 1 ? "&frac14;" : ($subrow["frac"] == 2 ? "&frac12;" : ($subrow["frac"] == 3 ? "&frac34;" : "")))."</span>
+								<div style='background-color: #e78f08; left: ".($subrow["start1"]/60/24*100)."%; width: ".(($subrow["end1"] - $subrow["start1"])/60/24*100)."%; position: absolute; top: 16px; opacity: .5; height: 13px;'></div>
+								<div style='background-color: #e78f08; left: ".($subrow["start2"]/60/24*100)."%; width: ".(($subrow["end2"] - $subrow["start2"])/60/24*100)."%; position: absolute; top: 16px; opacity: .5; height: 13px;'></div>
 							</td>
 						";
 						$sigmahours = $sigmahours + $subrow["Hours"];
@@ -303,20 +295,22 @@
 				$sigmamoney = round($sigmamoney);
 				$premium = round($premium);
 				$total = $sigmamoney + $premium;
+				$whole = intval($sigmahours);
+				$frac = ($sigmahours - intval($sigmahours)) * 4;
 
-				// Получаем кол-во изделий по работнику за месяц
-				$query = "SELECT SUM(ODD.Amount) amount
-							FROM OrdersData OD
-							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
-							WHERE YEAR(OD.paint_date) = {$year} AND MONTH(OD.paint_date) = {$month} AND OD.WD_ID = {$row["WD_ID"]}";
-				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				$sigma_amount = mysqli_result($subres,0,'amount');		// Общее кол-во отлакированных изделий
+//				// Получаем кол-во изделий по работнику за месяц
+//				$query = "SELECT SUM(ODD.Amount) amount
+//							FROM OrdersData OD
+//							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
+//							WHERE YEAR(OD.paint_date) = {$year} AND MONTH(OD.paint_date) = {$month} AND OD.WD_ID = {$row["WD_ID"]}";
+//				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//				$sigma_amount = mysqli_result($subres,0,'amount');		// Общее кол-во отлакированных изделий
 
-				echo "<td class='txtright' {$green}>{$sigmahours}</td>";					// Сумма часов
-				echo "<td class='txtright'>".(($sigma_amount and $sigmahours) ? round($sigma_amount/$sigmahours, 2) : '')."</td>";			// Коэффициент
+				echo "<td class='txtright' {$green}>{$whole}".($frac == 1 ? "&frac14;" : ($frac == 2 ? "&frac12;" : ($frac == 3 ? "&frac34;" : "")))."</td>";	// Сумма часов
+//				echo "<td class='txtright'>".(($sigma_amount and $sigmahours) ? round($sigma_amount/$sigmahours, 2) : '')."</td>";			// Коэффициент
 				echo "<td class='txtright'>{$sigmamoney}</td>";								// Сумма денег
 				echo "<td class='txtright'>{$row["PremiumPercent"]}%</td>";					// Процент
-				echo "<td><input type='number' name='MP{$row["WD_ID"]}' value='{$row["ManPercent"]}' min='0' max='100'></td>";// Свой процент
+				echo "<td><input type='number' name='MP{$row["WD_ID"]}' value='{$row["ManPercent"]}' min='0' max='100' style='width: 100%;'></td>";// Свой процент
 				echo "<td><input type='checkbox' name='DNH{$row["WD_ID"]}' {$row["DNHcheck"]} value='1'></td>";	// Не учитывать норматив
 				$today = date("d.m.Y");
 				echo "<td><button sign='' class='button edit_pay txtright' location='{$location}' title='Начислить премию' style='width: 100%;' worker='{$row["WD_ID"]}' date='{$today}' comment='Премия за {$MONTHS[$month]} {$year} {$percent}%' pay='{$premium}'>{$premium}</button></td>";						// Премия
@@ -327,7 +321,7 @@
 		</form>
 	</tbody>
 	<thead>
-		<tr>
+		<tr class="nowrap">
 			<th>Работник</th>
 			<?
 				$i = 1;
@@ -353,7 +347,6 @@
 				}
 			?>
 			<th>Часы</th>
-			<th>К</th>
 			<th>Сумма</th>
 			<th>%</th>
 			<th>Свой %</th>
