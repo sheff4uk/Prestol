@@ -44,7 +44,7 @@ $query .= "
 		,IFNULL(Bank_adres, '') Bank_adres
 		,MATCH Naimenovanie AGAINST ('{$_GET["term"]}') score
 	FROM Kontragenty
-	WHERE MATCH Naimenovanie AGAINST ('{$_GET["term"]}') > 0
+	WHERE MATCH Naimenovanie AGAINST ('{$_GET["term"]}') > 0 OR Naimenovanie LIKE '%{$_GET["term"]}%'
 	ORDER BY score DESC
 ";
 
