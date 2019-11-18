@@ -361,12 +361,18 @@
 			<option></option>
 			<option value='0' ".(($_SESSION["f_EndDate"] == "0") ? "selected" : "").">Дата отсутствует</option>
 		";
+		// Меняем на русскую локаль
+		$query = "SET @@lc_time_names='ru_RU';";
+		mysqli_query( $mysqli, $query );
+
 		$query = "
 			SELECT YEARWEEK(OD.EndDate, 1) yearweek
 				,RIGHT(YEARWEEK(OD.EndDate, 1), 2) week
 				,LEFT(YEARWEEK(OD.EndDate, 1), 4) year
 				,RIGHT(YEARWEEK(NOW(), 1), 2) week_now
 				,LEFT(YEARWEEK(NOW(), 1), 4) year_now
+				,DATE_FORMAT(adddate(OD.EndDate, INTERVAL 2-DAYOFWEEK(OD.EndDate) DAY), '%e%b') WeekStart
+				,DATE_FORMAT(adddate(OD.EndDate, INTERVAL 8-DAYOFWEEK(OD.EndDate) DAY), '%e%b') WeekEnd
 			FROM OrdersData OD
 			JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 			WHERE OD.ReadyDate IS NULL
@@ -380,7 +386,7 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$week_now_style = ($row["week"] == $row["week_now"] and $row["year"] == $row["year_now"]) ? "background: coral;" : "";
-			$filter_EndDate .= "<option value='{$row["yearweek"]}' ".(($_SESSION["f_EndDate"] == $row["yearweek"]) ? "selected" : "")." style='$week_now_style'>$eq{$row["week"]} неделя {$row["year"]}$eq</option>";
+			$filter_EndDate .= "<option value='{$row["yearweek"]}' ".(($_SESSION["f_EndDate"] == $row["yearweek"]) ? "selected" : "")." style='$week_now_style'>{$row["week"]} неделя [{$row['WeekStart']}-{$row['WeekEnd']}]</option>";
 		}
 		$filter_EndDate .=  "</select>";
 	}
