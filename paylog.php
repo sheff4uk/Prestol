@@ -371,8 +371,9 @@
 					,TIME(BL.Date) Time
 				FROM BalanceLog BL
 				WHERE WD_ID = {$_GET["worker"]}
+				AND DATEDIFF(NOW(), BL.Date) <= 31
 				ORDER BY BL.Date DESC, BL.Balance DESC
-				LIMIT 100
+				#LIMIT 100
 			";
 
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -436,6 +437,7 @@
 				LEFT JOIN FinanceAccount FA ON FA.FA_ID = PL.FA_ID
 				LEFT JOIN OrdersData OD ON OD.OD_ID = PL.OD_ID
 				WHERE PL.Pay <> 0
+				AND DATEDIFF(NOW(), PL.Date) <= 31
 			";
 			if( isset($_GET["worker"]) ) {
 				$query .= "
@@ -444,7 +446,7 @@
 			}
 			$query .= "
 				ORDER BY PL.PL_ID DESC
-				LIMIT 100
+				#LIMIT 100
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
