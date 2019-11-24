@@ -11,15 +11,14 @@ if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !
 }
 
 // Обработка полученных данных из формы
-if( $_GET["add_bill"] ) {
+if( isset($_GET["add_bill"]) ) {
 
 	// Сохраняем цены и скидки изделий в ODD
 	$summa = 0;
 	foreach ($_POST["item"] as $key => $value) {
-		// Если товар из набора - приписываем вначале код и обновляем цену и скидку
-		if( $_POST["code"][$key] ) {
-			$_POST["tovar_name"][$key] = "[{$_POST["code"][$key]}] {$_POST["tovar_name"][$key]}";
-
+		// Если товар из набора - обновляем цену и скидку
+		if( $_POST["tovar_kod"][$key] ) {
+			$_POST["tovar_kod_status"] = '1'; // Чтобы появилась колонка с кодом
 			$tovar_cena = $_POST["tovar_cena"][$key];
 			$discount = ($_POST["tovar_skidka"][$key] > 0) ? $_POST["tovar_skidka"][$key] : "NULL";
 
@@ -492,7 +491,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		if( typeof odid === "undefined" ) {
 			odid = '';
 		}
-		td0.html('<b id="code">'+code+'</b><input type="hidden" name="odid[]" id="odid" value="'+odid+'"><input type="hidden" name="code[]" id="icode" value="'+code+'">');
+		td0.html('<b id="code">'+code+'</b><input type="hidden" name="odid[]" id="odid" value="'+odid+'"><input type="hidden" name="tovar_kod[]" id="icode" value="'+code+'">');
 		td1.html('<input required type="text" autocomplete="off" value="'+name+'" name="tovar_name[]" id="tovar_name" class="tovar_name" placeholder="Введите код набора для поиска товара"/>');
 		td2.html('<input required type="text" autocomplete="off" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />');
 		td3.html('<input required type="number" autocomplete="off" min="1" value="'+amount+'" name="tovar_kol[]" id="tovar_kol"/>');
