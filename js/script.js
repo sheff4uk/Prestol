@@ -66,6 +66,7 @@ function makeform(odd_id, location)
 
 ////////////////////////////////////////////////////////////////////////////////
 $(function(){
+	$().UItoTop({ easingType: 'easeOutQuart' });
 	$( '.checkstatus' ).button();
 	$( '.btnset' ).buttonset();
 		// Fix for http://bugs.jqueryui.com/ticket/7856

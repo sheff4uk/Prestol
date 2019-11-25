@@ -166,6 +166,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		<thead>
 		<tr class="nowrap">
 			<th>Кромка</th>
+			<th>Наборы</th>
 			<th>Размер</th>
 			<th>Наличие</th>
 			<th>Потребность</th>
@@ -178,6 +179,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		SELECT PVC.PVC_ID
 			,PVC.edge
 			,SUM(ODD.Amount) cnt
+			,GROUP_CONCAT(IF(ODS.IsReady = 0, CONCAT('<a href=\"orderdetail.php?id=', OD.OD_ID, '\" target=\"_blank\" title=\"Посмотреть набор.\"><b class=\"code\">', OD.Code, '</b></a>'), NULL) SEPARATOR '<br>') codes
 
 			,IFNULL(PVCL.cnt2, 0) - CEIL(SUM(IF(ODS.IsReady = 1, (IF(ODD.Width IS NULL, ODD.Length*PI(), (ODD.Length+ODD.Width)*2) + IFNULL(ODD.PieceSize, 0)*IFNULL(ODD.PieceAmount, 1)*2)/1000, 0))) balance2
 
@@ -193,6 +195,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		FROM PVCedge PVC
 		LEFT JOIN OrdersDataDetail ODD ON ODD.PVC_ID = PVC.PVC_ID AND ODD.PVC_ID IS NOT NULL
+		LEFT JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 		LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 			AND ODS.Visible = 1
 			AND ODS.Old != 1
@@ -206,6 +209,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			FROM PVClog
 			GROUP BY PVC_ID
 		) PVCL ON PVCL.PVC_ID = PVC.PVC_ID
+		WHERE OD.DelDate IS NULL
 		GROUP BY PVC.PVC_ID
 		#ORDER BY cnt DESC
 		ORDER BY PVC.edge
@@ -223,6 +227,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		$balance04bg = ($row["balance04"] + $row["ord04"]) < $row["need04"] ? 'bg-red' : '';
 		echo "<tr id='pvc{$row["PVC_ID"]}' style='border-top: 2px solid #bbb;'>";
 		echo "<td class='pvc_label' rowspan='2'><i>{$row["edge"]}</i><a href='#' class='add_pvc_btn' PVC_ID='{$row["PVC_ID"]}' edge='{$row["edge"]}' title='Редактировать название кромки'><i class='fa fa-pencil-alt fa-lg'></i></a></td>";
+		echo "<td rowspan='2'>{$row["codes"]}</td>";
 		echo "<td><i>2mm</i></td>";
 		echo "<td class='txtright {$balance2bg}'>{$balance2}</td>";
 		echo "<td class='txtright'>{$need2}</td>";
@@ -260,6 +265,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		SELECT PVCL_ID
 			,Friendly_date(PVCL.date) date
 			,TIME(PVCL.date) time
+			,PVC.PVC_ID
 			,PVC.edge
 			,PVCL.amount
 			,PVCL.comment
@@ -276,7 +282,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		echo "<tr>";
 		echo "<td><span class='nowrap'><b>{$row["date"]}</b></span></td>";
 		echo "<td><span class='nowrap'>{$row["time"]}</span></td>";
-		echo "<td><span class='nowrap'><i>{$row["edge"]}</i></span></td>";
+		echo "<td><span class='nowrap'><a href='#pvc{$row["PVC_ID"]}'>{$row["edge"]}</a></span></td>";
 		echo "<td><i>{$row["size"]}</i></td>";
 		echo "<td class='txtright'>{$row["amount"]}</td>";
 		echo "<td>{$row["comment"]}</td>";
@@ -306,6 +312,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 	$query = "
 		SELECT Friendly_date(PVCL.date) date
 			,TIME(PVCL.date) time
+			,PVC.PVC_ID
 			,PVC.edge
 			,PVCL.amount
 			,PVCL.comment
@@ -323,7 +330,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		echo "<tr>";
 		echo "<td><span class='nowrap'><b>{$row["date"]}</b></span></td>";
 		echo "<td><span class='nowrap'>{$row["time"]}</span></td>";
-		echo "<td><span class='nowrap'><i>{$row["edge"]}</i></span></td>";
+		echo "<td><span class='nowrap'><a href='#pvc{$row["PVC_ID"]}'>{$row["edge"]}</a></span></td>";
 		echo "<td><i>{$row["size"]}</i></td>";
 		echo "<td class='txtright'>{$row["amount"]}</td>";
 		echo "<td>{$row["comment"]}</td>";

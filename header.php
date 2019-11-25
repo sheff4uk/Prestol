@@ -160,7 +160,7 @@
 	<title><?=$title?></title>
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=69'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=70'>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 <!--	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>-->
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
@@ -174,7 +174,7 @@
 	<script src="js/ui/jquery-ui.js"></script>
 	<script src="js/jquery.ui.datepicker-ru.js"></script>
 	<script src="js/modal.js?v=10"></script>
-	<script src="js/script.js?v=49" type="text/javascript"></script>
+	<script src="js/script.js?v=50" type="text/javascript"></script>
 	<script src="js/jquery.printPage.js" type="text/javascript"></script>
 	<script src="js/jquery.columnhover.js" type="text/javascript"></script>
 	<script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript"></script>
@@ -188,6 +188,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/i18n/ru.js" type="text/javascript"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.js"></script>
+	<script src="/js/jquery.ui.totop.js"></script>
 
 	<script>
 		$(document).ready(function(){
@@ -223,11 +224,11 @@
 				closeMessage: ''
 			});
 
-			// Принудительное перемещение к якорю после перезагрузки страницы
-			var loc = window.location.hash.replace("#","");
-			if (loc != "") {
-				location.replace(document.URL);
-			}
+//			// Принудительное перемещение к якорю после перезагрузки страницы
+//			var loc = window.location.hash.replace("#","");
+//			if (loc != "") {
+//				location.replace(document.URL);
+//			}
 
 			$( 'input[type=submit], input[type=button], .button, button' ).button();
 
@@ -244,7 +245,7 @@
 				}
 			});
 
-			// Плавная прокрутка к якорю
+			// Плавная прокрутка к якорю при загрузке страницы
 			var loc = window.location.hash.replace("#","");
 			if (loc == "") {loc = "main"}
 
@@ -254,6 +255,19 @@
 				$("body:not(:animated)").animate({ scrollTop: destination }, 200);
 				$("html").animate({ scrollTop: destination }, 200);
 			}
+
+			// Плавная прокрутка к якорю при клике на ссылку якоря
+			$('a[href*=#]').click(function() {
+				if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
+					var $target = $(this.hash);
+					//$target = $target.length && $target || $('[name=' + this.hash.slice(1) +']');
+					if ($target.length) {
+						var targetOffset = $target.offset().top - ($(".navbar").outerHeight(true)+ 120);
+						$('html,body').animate({scrollTop: targetOffset}, 500);
+						//return false;
+					}
+				}
+			});
 		});
 
 		// Диалог подтверждения действия
