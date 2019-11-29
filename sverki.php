@@ -652,10 +652,10 @@ this.subbut.value='Подождите, пожалуйста!';">
 				отгруженных наборов.
 				<input type="hidden" name="num_rows">
 			</div>
-			<div class="accordion">
-				<h3>Список наборов</h3>
+			<fieldset style="text-align: left;">
+				<legend>Список наборов:</legend>
 				<div id="orders_to_invoice" style='text-align: left;'></div>
-			</div>
+			</fieldset>
 			<br>
 			<div>
 				<hr>
@@ -696,7 +696,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 <script>
 	// Выбрать все в форме отгрузки
 	function selectall(ch) {
-		$('#orders_to_invoice .chbox.show').prop('checked', ch).change();
+		$('#orders_to_invoice .chbox').prop('checked', ch).change();
 		$('#orders_to_invoice #selectalltop').prop('checked', ch);
 		$('#orders_to_invoice #selectallbottom').prop('checked', ch);
 		return false;
@@ -777,12 +777,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#gruzopoluchatel1 input').val('');
 			$('#gruzopoluchatel_0').prop('checked', true).button('refresh').change();
 			$('#orders_to_invoice').html('');
-			$('#add_invoice_form .accordion').accordion( "option", "active", 1 );
 			$('#date').val('<?=( date('d.m.Y') )?>');
 			$('#num_rows select').val(25);
-			$('#invoice_total').html('0');
-			$('#invoice_discount').html('0');
-			$('#invoice_percent').html('0');
 
 			$('#add_invoice_form').dialog({
 				position: { my: "center top", at: "center top", of: window },
@@ -834,23 +830,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 		$('select[name="KA_ID"]').on('change', function() {
 			var KA_ID = $(this).val();
 			var CT_ID = $(this).find('option:selected').attr('CT_ID');
-			var num_rows = $('#num_rows input').val();
-			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows, dataType: "script", async: false });
-			if( KA_ID ) {
-				$('#add_invoice_form .accordion').accordion( "option", "active", 0 );
-				if( num_rows > 0 ) {
-					$('#selectalltop').prop('checked', false).change();
-				}
-				else {
-					$('#selectalltop').prop('checked', true).change();
-				}
-			}
-			else {
-				$('#add_invoice_form .accordion').accordion( "option", "active", 1 );
-				$('#invoice_total').html('0');
-				$('#invoice_discount').html('0');
-				$('#invoice_percent').html('0');
-			}
+			var num_rows = $('#num_rows input').val(); //Признак возвратной накладной
+			$('#orders_to_invoice').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
+			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows, dataType: "script", async: true });
 		});
 
 		// При смене количества строк записываем значение в скрытое поле и вызываем аякс для подгрузки наборов
@@ -859,6 +841,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			var KA_ID = $('select[name="KA_ID"]').val();
 			var CT_ID = $('select[name="KA_ID"]').find('option:selected').attr('CT_ID');
 			var num_rows = $('#num_rows input').val();
+			$('#orders_to_invoice').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
 			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows, dataType: "script", async: false });
 		});
 
@@ -875,7 +858,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		});
 		$('#orders_to_invoice').on('change', '.chbox', function(){
 			var checked_status = true;
-			$('.chbox.show').each(function(){
+			$('.chbox').each(function(){
 				if( !$(this).prop('checked') )
 				{
 					checked_status = $(this).prop('checked');
@@ -886,24 +869,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			return false;
 		});
 		// Конец обработчиков чекбоксов
-
-		// Фильтр по салонам
-		$('#orders_to_invoice').on('change', '.button_shops', function(){
-			var id = $(this).attr('id');
-			if( $(this).prop('checked') ) {
-				$('#to_invoice .'+id).show('fast');
-				$('#to_invoice .'+id+' input[type=checkbox]').removeClass('hide');
-				$('#to_invoice .'+id+' input[type=checkbox]').addClass('show');
-				$('#to_invoice .'+id+' input[type=checkbox]').change();
-			}
-			else {
-				$('#to_invoice .'+id+' input[type=checkbox]').prop('checked', false);
-				$('#to_invoice .'+id).hide('fast');
-				$('#to_invoice .'+id+' input[type=checkbox]').removeClass('show');
-				$('#to_invoice .'+id+' input[type=checkbox]').addClass('hide');
-				$('#to_invoice .'+id+' input[type=checkbox]').change();
-			}
-		});
 
 		// При включении чекбокса отображается инпут цены
 		$('#orders_to_invoice').on('change', '.chbox', function() {
@@ -991,7 +956,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			else {
 				$( "#platelshik_name" ).autocomplete('search', '');
 				$('#wr_platelshik input').attr('disabled', true);
-				$('#add_invoice_form .accordion').accordion( "option", "active", 1 );
 			}
 		});
 

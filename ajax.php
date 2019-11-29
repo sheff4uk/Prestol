@@ -871,7 +871,7 @@ case "shipment":
 	break;
 ///////////////////////////////////////////////////////////////////
 
-// Форма накладной
+// Список наборов для формы накладной
 case "invoice":
 		$KA_ID = $_GET["KA_ID"] ? $_GET["KA_ID"] : 0;
 		$CT_ID = $_GET["CT_ID"] ? $_GET["CT_ID"] : 0;
@@ -883,18 +883,6 @@ case "invoice":
 		}
 		else {
 			$html = "";
-			// Если доступен только город и у пользователя указан салон - показываем только его
-			if( in_array('sverki_city', $Rights) and $USR_Shop ) {
-				$query = "SELECT SH.SH_ID, SH.Shop FROM Shops SH WHERE SH.SH_ID IN ({$USR_Shop})";
-			}
-			else {
-				$query = "SELECT SH.SH_ID, SH.Shop FROM Shops SH WHERE SH.CT_ID = {$CT_ID} AND SH.KA_ID".($KA_ID ? " = {$KA_ID}" : " IS NULL");
-			}
-			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-			while( $row = mysqli_fetch_array($res) ) {
-				$html .= "<label for='shop{$row["SH_ID"]}'>{$row["Shop"]}</label><input type='checkbox' id='shop{$row["SH_ID"]}' class='button_shops'>";
-			}
-			$html .= "<br><br>";
 
 			$query = "
 				SELECT OD.OD_ID
@@ -1038,6 +1026,9 @@ case "invoice":
 			echo "$('#orders_to_invoice input[type=\"number\"]').hide();";
 			echo "$('#orders_to_invoice input[name=\"price[]\"]').attr('placeholder', 'цена');";
 			echo "$('#orders_to_invoice input[name=\"discount[]\"]').attr('placeholder', 'скидка');";
+			echo "$('#invoice_total').html('0');";
+			echo "$('#invoice_discount').html('0');";
+			echo "$('#invoice_percent').html('NaN');";
 			echo "$('.button_shops').button();";
 			echo "$('.button_shops').prop('checked', true).change();";
 		}
