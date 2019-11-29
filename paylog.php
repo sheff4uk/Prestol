@@ -371,7 +371,7 @@
 					,TIME(BL.Date) Time
 				FROM BalanceLog BL
 				WHERE WD_ID = {$_GET["worker"]}
-				AND DATEDIFF((SELECT MAX(Date) FROM BalanceLog WHERE WD_ID = {$_GET["worker"]}), BL.Date) <= 31
+				AND DATEDIFF((SELECT MAX(Date) FROM BalanceLog WHERE WD_ID = {$_GET["worker"]}), BL.Date) <= 61
 				ORDER BY BL.Date DESC, BL.Balance DESC
 				#LIMIT 100
 			";
@@ -440,13 +440,13 @@
 			";
 			if( isset($_GET["worker"]) ) {
 				$query .= "
-					AND DATEDIFF((SELECT MAX(Date) FROM BalanceLog WHERE WD_ID = {$_GET["worker"]}), PL.Date) <= 31
+					AND DATEDIFF((SELECT MAX(Date) FROM BalanceLog WHERE WD_ID = {$_GET["worker"]}), PL.Date) <= 61
 					AND PL.WD_ID = {$_GET["worker"]}
 				";
 			}
 			else {
 				$query .= "
-					AND DATEDIFF((SELECT MAX(Date) FROM BalanceLog), PL.Date) <= 31
+					AND DATEDIFF((SELECT MAX(Date) FROM BalanceLog), PL.Date) <= 61
 				";
 			}
 			$query .= "
