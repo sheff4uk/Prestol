@@ -578,48 +578,48 @@ this.subbut.value='Подождите, пожалуйста!';">
 							<tr>
 								<td width="200" align="left" valign="top">Название ООО или ИП:</td>
 								<td align="left" valign="top">
-									<input type="text" name="gruzopoluchatel_name" id="gruzopoluchatel_name" class="forminput" placeholder="">
+									<input type="text" name="gruzopoluchatel_name" id="gruzopoluchatel_name" class="forminput" placeholder="" autocomplete="off">
 								</td>
 							</tr>
 							<tr>
 								<td align="left" valign="top">ИНН:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_inn" id="gruzopoluchatel_inn" class="forminput" placeholder=""></td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_inn" id="gruzopoluchatel_inn" class="forminput" placeholder="" autocomplete="off"></td>
 							</tr>
 							<tr>
 								<td align="left" valign="top">КПП:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_kpp" id="gruzopoluchatel_kpp" class="forminput" placeholder=""></td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_kpp" id="gruzopoluchatel_kpp" class="forminput" placeholder="" autocomplete="off"></td>
 							</tr>
 							<tr>
 								<td align="left" valign="top">ОКПО:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_okpo" id="gruzopoluchatel_okpo" class="forminput" placeholder=""></td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_okpo" id="gruzopoluchatel_okpo" class="forminput" placeholder="" autocomplete="off"></td>
 							</tr>
 							<tr>
 								<td align="left" valign="top">Адрес:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_adres" id="gruzopoluchatel_adres" class="forminput" placeholder=""></td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_adres" id="gruzopoluchatel_adres" class="forminput" placeholder="" autocomplete="off"></td>
 							</tr>
 							<tr>
 								<td align="left" valign="top">Телефоны:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_tel" id="gruzopoluchatel_tel" class="forminput" placeholder=""></td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_tel" id="gruzopoluchatel_tel" class="forminput" placeholder="" autocomplete="off"></td>
 							</tr>
 							<tr>
 								<td width="200" align="left" valign="top">Расчетный счет:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_schet" id="gruzopoluchatel_schet" class="forminput" placeholder=""></td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_schet" id="gruzopoluchatel_schet" class="forminput" placeholder="" autocomplete="off"></td>
 							</tr>
 							<tr>
 								<td align="left" valign="top">Наименование банка:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank" id="gruzopoluchatel_bank" class="forminput" placeholder=""></td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank" id="gruzopoluchatel_bank" class="forminput" placeholder="" autocomplete="off"></td>
 							</tr>
 							<tr>
 								<td align="left" valign="top">БИК:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bik" id="gruzopoluchatel_bik" class="forminput" placeholder=""></td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bik" id="gruzopoluchatel_bik" class="forminput" placeholder="" autocomplete="off"></td>
 							</tr>
 							<tr>
 								<td align="left" valign="top">Корреспондентский счет:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_ks" id="gruzopoluchatel_ks" class="forminput" placeholder=""></td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_ks" id="gruzopoluchatel_ks" class="forminput" placeholder="" autocomplete="off"></td>
 							</tr>
 							<tr>
 								<td align="left" valign="top">Местонахождение банка:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank_adres" id="gruzopoluchatel_bank_adres" class="forminput" placeholder=""></td>
+								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank_adres" id="gruzopoluchatel_bank_adres" class="forminput" placeholder="" autocomplete="off"></td>
 							</tr>
 						</tbody>
 					</table>
@@ -631,9 +631,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 							<tr>
 								<td width="200" align="left">Основание:</td>
 								<td align="left">
-									<input type="text" name="osnovanie" id="osnovanie" style="width: 490px;" placeholder="" value="">&nbsp;
-									<input type="text" name="osnovanie_nomer" id="osnovanie_nomer" style="width: 100px;" placeholder="номер" value="">&nbsp;
-									<input type="text" name="osnovanie_data" id="osnovanie_data" class="date" style="width: 90px;" placeholder="дата" value="">
+									<input type="text" name="osnovanie" id="osnovanie" style="width: 490px;" placeholder="" value="" autocomplete="off">&nbsp;
+									<input type="text" name="osnovanie_nomer" id="osnovanie_nomer" style="width: 100px;" placeholder="номер" value="" autocomplete="off">&nbsp;
+									<input type="text" name="osnovanie_data" id="osnovanie_data" class="date" style="width: 90px;" placeholder="дата" value="" autocomplete="off">
 								</td>
 							</tr>
 						</tbody>
