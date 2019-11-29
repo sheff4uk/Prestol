@@ -323,7 +323,7 @@ if( $payer ) {
 			<th>Дата</th>
 			<th>Контрагент</th>
 			<th>Операция/Документ</th>
-			<th>Примечание</th>
+<!--			<th>Примечание</th>-->
 			<th>Файл</th>
 			<th>Автор</th>
 			<th></th>
@@ -405,12 +405,12 @@ while( $row = mysqli_fetch_array($res) ) {
 	echo "<td><a href='sverki.php?year={$year}&payer={$row["KA_ID"]}'>{$row["Naimenovanie"]}</a></td>";
 	echo "<td>{$row["document"]}</td>";
 
-	if( $row["PFI_ID"] and !in_array('sverki_opt', $Rights) ) {
-		echo "<td id='{$row["PFI_ID"]}'><input class='sverki_comment' type='text' value='{$row["comment"]}'></td>";
-	}
-	else {
-		echo "<td>{$row["comment"]}</td>";
-	}
+//	if( $row["PFI_ID"] and !in_array('sverki_opt', $Rights) ) {
+//		echo "<td id='{$row["PFI_ID"]}'><input class='sverki_comment' type='text' value='{$row["comment"]}'></td>";
+//	}
+//	else {
+//		echo "<td>{$row["comment"]}</td>";
+//	}
 
 	if( $row["PFI_ID"] ) {
 		echo "<td><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><i class='fa fa-file-pdf fa-2x'></i></a></td>";
