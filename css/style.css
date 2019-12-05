@@ -1074,8 +1074,8 @@ img.form.standart {
 	display:none;
 	text-decoration:none;
 	position:fixed;
-	bottom:100px;
-	left:20px;
+	bottom: 50vh;
+	right:20px;
 	overflow:hidden;
 	width:51px;
 	height:51px;
@@ -1083,19 +1083,20 @@ img.form.standart {
 	text-indent:100%;
 	background:url(images/ui.totop.png) no-repeat left top;
 	text-align: center;
-	opacity: .8;
+	opacity: .6;
+	z-index: 1000;
 }
 
-#toTopHover {
-	background:url(images/ui.totop.png) no-repeat left -51px;
+#toTop:Hover {
+	background:url(images/ui.totop.png) no-repeat left top;
 	width:51px;
 	height:51px;
 	display:block;
 	overflow:hidden;
 	float:left;
-	opacity: 0;
-	-moz-opacity: 0;
-	filter:alpha(opacity=0);
+	opacity: 1;
+	-moz-opacity: 1;
+	filter:alpha(opacity=1);
 }
 
 #toTop:active, #toTop:focus {
