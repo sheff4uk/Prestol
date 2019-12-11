@@ -87,17 +87,6 @@
 			$_POST["EndDate"] = $_SESSION["end_date"];
 		}
 		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
-		// Если юр.лицо без клиента, то выводим предупреждение
-		if( $_POST["ul"] ) {
-			if( $_POST["ClientName"] ) {
-				$ul = "1";
-			}
-			else {
-				$ul = "0";
-				$_SESSION["alert"][] = "Ведите название юр. лица в поле \"Клиент\".";
-			}
-		}
-		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
 
 		$chars = array("+", " ", "(", ")"); // Символы, которые требуется удалить из строки с телефоном
 		$mtel = $_POST["mtel"] ? '\''.str_replace($chars, "", $_POST["mtel"]).'\'' : 'NULL';
@@ -117,7 +106,6 @@
 			UPDATE OrdersData
 			SET author = {$_SESSION['id']}
 				".(isset($_POST["ClientName"]) ? ",CLientName = '$ClientName'" : "")."
-				".(isset($_POST["ClientName"]) ? ",ul = $ul" : "")."
 				".(isset($_POST["mtel"]) ? ",mtel = $mtel" : "")."
 				".(isset($_POST["address"]) ? ",address = '$address'" : "")."
 				".(isset($_POST["StartDate"]) ? ",StartDate = $StartDate" : "")."
@@ -353,8 +341,8 @@
 
 		if (count($_SESSION["error"]) == 0) { // Если нет препятствий то удаляем
 			// Создание копии набора
-			$query = "INSERT INTO OrdersData(PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, DelDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, author, confirmed)
-			SELECT PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, NOW(), OrderNumber, CL_ID, IF(IsPainting = 2, 1, IsPainting), WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$id}";
+			$query = "INSERT INTO OrdersData(PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, DelDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, author, confirmed)
+			SELECT PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, NOW(), OrderNumber, CL_ID, IF(IsPainting = 2, 1, IsPainting), WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$id}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
@@ -428,7 +416,8 @@
 		SELECT OD.OD_ID
 			,OD.Code
 			,OD.ClientName
-			,OD.ul
+			,IFNULL(KA1.Naimenovanie, KA.Naimenovanie) Naimenovanie
+			,IFNULL(SH.KA_ID, OD.KA_ID) KA_ID
 			,OD.mtel
 			,OD.address
 			,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
@@ -440,7 +429,6 @@
 			,IF(OD.EndDate AND OD.ReadyDate, IF(DATEDIFF(OD.EndDate, OD.ReadyDate) <= 7, IF(DATEDIFF(OD.EndDate, OD.ReadyDate) <= 0, 'bg-red', 'bg-yellow'), 'bg-green'), '') date_diff_color
 			,IF((SH.retail AND OD.StartDate IS NULL), '<br><b style=\'background-color: silver;\'>Выставка</b>', '') showing
 			,IFNULL(OD.SH_ID, 0) SH_ID
-			,IFNULL(SH.KA_ID, 0) KA_ID
 			,OD.OrderNumber
 			,Color(OD.CL_ID) Color
 			,CL.color
@@ -461,10 +449,12 @@
 			,Payment_sum(OD.OD_ID) payment_sum
 			,CheckPayment(OD.OD_ID) attention
 		FROM OrdersData OD
+		LEFT JOIN Kontragenty KA ON KA.KA_ID = OD.KA_ID
 		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
 		LEFT JOIN WorkersData pWD ON pWD.WD_ID = OD.patina_WD_ID
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		LEFT JOIN Kontragenty KA1 ON KA1.KA_ID = SH.KA_ID
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
 		WHERE OD.OD_ID = {$id}
@@ -474,7 +464,6 @@
 
 	$Code = $row['Code'];
 	$ClientName = $row['ClientName'];
-	$ul = $row['ul'];
 	$mtel = $row['mtel'];
 	$address = $row['address'];
 	$AddDate = $row['AddDate'];
@@ -543,10 +532,7 @@
 		if ($retail and $StartDate) {
 			echo "
 				<td>
-					<input type='text' class='clienttags' name='ClientName' style='width: 120px;' value='$ClientName' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." placeholder='Клиент'>
-					<br>
-					<input type='checkbox' id='ul' name='ul' ".($ul == 1 ? "checked" : "")." ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." title='Поставьте галочку если требуется накладная.' ".($PFI_ID ? "onclick='return false;'" : "").">
-					<label for='ul'>юр. лицо</label>
+					<input type='text' class='clienttags' name='ClientName' style='width: 120px;' value='$ClientName' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." placeholder='ФИО'>
 					<br>
 					<input type='text' name='OrderNumber' style='width: 120px;' value='$OrderNumber' ".((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")." autocomplete='off' placeholder='Квитанция'>
 					<br>
@@ -592,6 +578,7 @@
 			<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable and !$USR_Shop) ? "" : "disabled")?> style="width: 100%;">
 				<!--Список салонов выводится аяксом ниже-->
 			</select>
+			<?=($row["Naimenovanie"] ? "<n class='ul'>{$row["Naimenovanie"]}</n><br><a href='/bills.php?payer={$row["KA_ID"]}' target='_blank'>Счета</a>&nbsp;&nbsp;<a href='/sverki.php?payer={$row["KA_ID"]}' target='_blank'>Сверки</a><br>" : "")?>
 			</div>
 		</td>
 
@@ -1158,10 +1145,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 		// Кнопка добавления сообщения к набору
 		$('.add_message_btn').click( function() {
 			$('#add_message').dialog({
+				resizable: false,
 				width: 500,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 		});
@@ -1183,10 +1169,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#paint_color input[type="radio"]').button('refresh');
 
 			$('#paint_color').dialog({
+				resizable: false,
 				width: 500,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 

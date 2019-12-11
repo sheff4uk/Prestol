@@ -168,7 +168,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		SELECT OD.OD_ID
 			,OD.Code
 			,OD.ClientName
-			,OD.ul
+			,KA.Naimenovanie
 			,DATE_FORMAT(OD.StartDate, '%d.%m.%y') StartDate
 			,DATE_FORMAT(OD.EndDate, '%d.%m.%y') EndDate
 			,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS Shop
@@ -182,6 +182,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			,IF(DATEDIFF(OD.EndDate, NOW()) <= 7, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 			,OD.confirmed
 		FROM OrdersData OD
+		LEFT JOIN Kontragenty KA ON KA.KA_ID = OD.KA_ID
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		LEFT JOIN OstatkiShops OS ON OS.year = YEAR(OD.StartDate) AND OS.month = MONTH(OD.StartDate) AND OS.CT_ID = SH.CT_ID
@@ -306,7 +307,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		}
 		echo "<td style='background: {$row["CTColor"]};' class='nowrap'>";
 		echo "<span>";
-		echo "<n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br>";
+		echo "".($row["Naimenovanie"] ? "<n class='ul'>{$row["Naimenovanie"]}</n><br>" : "")."{$row["ClientName"]}<br>";
 		echo "{$row["StartDate"]} - <span class='{$row["Deadline"]}'>{$row["EndDate"]}</span><br>";
 		echo ($row["retail"] ? "&bull; " : "")."{$row["Shop"]}";
 		echo "</span>";

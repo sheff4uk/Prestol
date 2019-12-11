@@ -395,10 +395,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 			// Форма добавления/редактирования заготовок
 			$('#addblank').dialog({
+				resizable: false,
 				width: 500,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 			return false;

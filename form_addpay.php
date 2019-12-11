@@ -161,10 +161,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 			// Вызов формы
 			$('#addpay').dialog({
+				resizable: false,
 				width: 500,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 

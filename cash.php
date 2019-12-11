@@ -1103,17 +1103,52 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<div class="field" id="wr_kontragent">
 				<label for="kontragent">Контрагент:</label><br>
 				<select name="kontragent" id="kontragent" style="width: 300px;">
-					<option value=""></option>
+					<option value="0">-- Нет в списке --</option>
 					<?
-					$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
-								FROM Kontragenty
-								WHERE KA_ID IN ({$KA_IDs})
-								ORDER BY count DESC";
+					// Формируем список контрагентов для дропдауна
+					if (!$USR_Shop) { // Если не продавец - показываем оптовиков
+						echo "<optgroup label='Оптовые покупатели:'>";
+						$query = "
+							SELECT KA.KA_ID
+								,CT.City
+								,KA.Naimenovanie
+								,IFNULL(KA.saldo, 0) saldo
+							FROM Kontragenty KA
+							JOIN Shops SH ON SH.KA_ID = KA.KA_ID
+							JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+							".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
+							GROUP BY KA.KA_ID
+							ORDER BY CT.City, KA.Naimenovanie
+						";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) ) {
+							$saldo_format = number_format($row["saldo"], 0, '', ' ');
+							echo "<option value='{$row["KA_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} ({$saldo_format})</option>";
+						}
+						echo "</optgroup>";
+					}
+
+					// Список розничных контрагентов
+					echo "<optgroup label='Розничные покупатели:'>";
+					$query = "
+						SELECT KA.KA_ID
+							,CT.City
+							,KA.Naimenovanie
+							,IFNULL(KA.saldo, 0) saldo
+						FROM Kontragenty KA
+						JOIN OrdersData OD ON OD.KA_ID = KA.KA_ID
+						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+						JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+						".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
+						GROUP BY KA.KA_ID, CT.CT_ID
+						ORDER BY CT.City, KA.Naimenovanie
+					";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						$saldo_format = number_format($row["saldo"], 0, '', ' ');
-						echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo_format})</option>";
+						echo "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} ({$saldo_format})</option>";
 					}
+					echo "</optgroup>";
 					?>
 				</select>
 			</div>
@@ -1328,10 +1363,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			}
 
 			$('#add_operation').dialog({
-				width: 500,
+				resizable: false,
+				width: 400,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 			return false;
@@ -1344,10 +1378,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#add_send .btnset').buttonset("refresh");
 
 			$('#add_send').dialog({
+				resizable: false,
 				width: 500,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 			return false;
@@ -1387,10 +1420,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			}
 
 			$('#add_account').dialog({
+				resizable: false,
 				width: 400,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 			return false;
@@ -1404,10 +1436,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			});
 
 			$('#add_category').dialog({
+				resizable: false,
 				width: 400,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 			return false;

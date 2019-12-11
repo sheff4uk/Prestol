@@ -32,7 +32,7 @@
 
 		// Получаем права пользователя
 		$query = "SELECT RT_ID FROM Role_Rights WHERE RL_ID = {$USR_Role}";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query1: " .mysqli_error( $mysqli ));
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
 			$Rights[] = $row["RT_ID"];
 		}
@@ -65,58 +65,6 @@
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				$USR_cities .= ','.$row["CT_ID"];
-			}
-		}
-
-		// Получаем список id доступных контрагентов
-		$KA_IDs = "0";
-		$query = "SELECT KA_ID FROM Kontragenty";
-		// Подставляем условие в зависимости от разрешения пользователя
-		if( in_array('sverki_opt', $Rights) ) {
-			$query .= " WHERE KA_ID IN ({$USR_KA})";
-		}
-		elseif( in_array('sverki_city', $Rights) ) {
-			if( $USR_Shop ) {
-				$query .= "
-					WHERE KA_ID IN (
-						SELECT PFI.platelshik_id
-						FROM PrintFormsInvoice PFI
-						JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID AND OD.SH_ID IN ({$USR_Shop})
-						UNION
-						SELECT PFB.pokupatel_id
-						FROM PrintFormsBill PFB
-						WHERE PFB.USR_ID = {$_SESSION['id']}
-					)
-				";
-			}
-			else {
-				$query .= "
-					WHERE KA_ID IN (
-						SELECT SH.KA_ID
-						FROM Shops SH
-						WHERE SH.CT_ID = {$USR_City}
-						UNION
-						SELECT PFI.platelshik_id
-						FROM PrintFormsInvoice PFI
-						JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID
-						JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$USR_City}
-						UNION
-						SELECT PFB.pokupatel_id
-						FROM PrintFormsBill PFB
-						WHERE PFB.USR_ID = {$_SESSION['id']}
-					)
-				";
-			}
-		}
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		// Узнаем сколько вернулось строк для дальнейшей проверки
-		$KA_num_rows = mysqli_num_rows($res);
-		if( $KA_num_rows == 1 ) {
-			$KA_IDs = mysqli_result($res,0,'KA_ID');
-		}
-		else {
-			while( $row = mysqli_fetch_array($res) ) {
-				$KA_IDs .= ",{$row["KA_ID"]}";
 			}
 		}
 	}

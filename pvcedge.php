@@ -352,10 +352,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#addpvc input[type="radio"]').button("refresh");
 
 			$('#addpvc').dialog({
+				resizable: false,
 				width: 500,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 			return false;
@@ -373,10 +372,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			}
 
 			$('#editpvc').dialog({
+				resizable: false,
 				width: 400,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 			return false;

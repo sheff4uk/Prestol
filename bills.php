@@ -10,31 +10,136 @@ if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !
 	die('Недостаточно прав для совершения операции');
 }
 
+// Формируем список контрагентов для дропдауна
+$KA_options = "";
+$KA_IDs = "0";
+if (!$USR_Shop) { // Если не продавец - показываем оптовиков
+	$KA_options .= "<optgroup label='Оптовые покупатели:'>";
+	$query = "
+		SELECT KA.KA_ID
+			,CT.CT_ID
+			,CT.City
+			,KA.Naimenovanie
+			,IFNULL(Jur_adres, '') Jur_adres
+			,IFNULL(Fakt_adres, '') Fakt_adres
+			,IFNULL(Telefony, '') Telefony
+			,IFNULL(INN, '') INN
+			,IFNULL(OKPO, '') OKPO
+			,IFNULL(KPP, '') KPP
+			,IFNULL(Pasport, '') Pasport
+			,IFNULL(Email, '') Email
+			,IFNULL(Schet, '') Schet
+			,IFNULL(Bank, '') Bank
+			,IFNULL(BIK, '') BIK
+			,IFNULL(KS, '') KS
+			,IFNULL(Bank_adres, '') Bank_adres
+			,IFNULL(KA.saldo, 0) saldo
+		FROM Kontragenty KA
+		JOIN Shops SH ON SH.KA_ID = KA.KA_ID
+		JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+		".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
+		GROUP BY KA.KA_ID
+		ORDER BY CT.City, KA.Naimenovanie
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) ) {
+		$saldo_format = number_format($row["saldo"], 0, '', ' ');
+		$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} ({$saldo_format})</option>";
+		$KA_IDs .= ",{$row["KA_ID"]}";
+		$Kontragenty[$row["KA_ID"]] = array( "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+	}
+	$KA_options .= "</optgroup>";
+}
+
+// Список розничных контрагентов
+$KA_options .=  "<optgroup label='Розничные покупатели:'>";
+$query = "
+	SELECT KA.KA_ID
+		,CT.CT_ID
+		,CT.City
+		,KA.Naimenovanie
+		,IFNULL(Jur_adres, '') Jur_adres
+		,IFNULL(Fakt_adres, '') Fakt_adres
+		,IFNULL(Telefony, '') Telefony
+		,IFNULL(INN, '') INN
+		,IFNULL(OKPO, '') OKPO
+		,IFNULL(KPP, '') KPP
+		,IFNULL(Pasport, '') Pasport
+		,IFNULL(Email, '') Email
+		,IFNULL(Schet, '') Schet
+		,IFNULL(Bank, '') Bank
+		,IFNULL(BIK, '') BIK
+		,IFNULL(KS, '') KS
+		,IFNULL(Bank_adres, '') Bank_adres
+		,IFNULL(KA.saldo, 0) saldo
+	FROM Kontragenty KA
+	JOIN OrdersData OD ON OD.KA_ID = KA.KA_ID
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+	".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
+	GROUP BY KA.KA_ID, CT.CT_ID
+	ORDER BY CT.City, KA.Naimenovanie
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+while( $row = mysqli_fetch_array($res) ) {
+	$saldo_format = number_format($row["saldo"], 0, '', ' ');
+	$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} ({$saldo_format})</option>";
+	$KA_IDs .= ",{$row["KA_ID"]}";
+	$Kontragenty[$row["KA_ID"]] = array( "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+}
+$KA_options .= "</optgroup>";
+
+if( isset($_GET["year"]) ) {
+	$year = $_GET["year"];
+}
+else {
+	$year = date('Y');
+}
+if ( $USR_KA ) { // Если пользователь - оптовик
+	$payer = $USR_KA;
+}
+elseif ( $_GET["payer"] and (int)$_GET["payer"] > 0 ) {
+	$query = "SELECT 1 FROM Kontragenty WHERE KA_ID IN ({$KA_IDs}) AND KA_ID = {$_GET["payer"]}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	if( mysqli_num_rows($res) ) {
+		$payer = $_GET["payer"];
+	}
+	else {
+		die('Недостаточно прав для совершения операции');
+	}
+}
+else {
+	$payer = "";
+}
+
 // Обработка полученных данных из формы
 if( isset($_GET["add_bill"]) ) {
 
-	// Сохраняем цены и скидки изделий в ODD
-	$summa = 0;
-	foreach ($_POST["item"] as $key => $value) {
-		// Если товар из набора - обновляем цену и скидку
-		if( $_POST["tovar_kod"][$key] ) {
-			$_POST["tovar_kod_status"] = '1'; // Чтобы появилась колонка с кодом
-			$tovar_cena = $_POST["tovar_cena"][$key];
-			$discount = ($_POST["tovar_skidka"][$key] > 0) ? $_POST["tovar_skidka"][$key] : "NULL";
+	$_POST["tovar_kod_status"] = '1'; // Чтобы появилась колонка с кодом
 
-			$query = "UPDATE OrdersDataDetail SET Price = {$tovar_cena}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$value}";
+	// Скрипт возвратит массив $orders_to_bill со списком кандидатов на добавление в счет
+	$_GET["do"] = "bill";
+	$_GET["KA_ID"] = $_POST["KA_ID"];
+	$_GET["CT_ID"] = $_POST["CT_ID"];
+	include "ajax.php";
+
+	// Сохраняем цены и скидки изделий в OrdersDataDetail. Привязываем контрагента к набору
+	foreach ($_POST["price"] as $key => $value) {
+		$odd_id = $_POST["odd_id"][$key];
+		$discount = ($_POST["discount"][$key] > 0) ? $_POST["discount"][$key] : "NULL";
+		$odid = $_POST["odid"][$key];
+
+		// Набор должен быть в списке кандидатов на добавление в счёт
+		if( in_array($odid, $orders_to_bill) ) {
+			$query = "UPDATE OrdersDataDetail SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$odd_id}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
-		$summa += ($_POST["tovar_cena"][$key] - $_POST["tovar_skidka"][$key]) * $_POST["tovar_kol"][$key];
+		else {
+			$_SESSION["error"][] = "При создании счёта возникла ошибка. Пожалуйста, повторите попытку.";
+			exit ('<meta http-equiv="refresh" content="0; url=bills.php?year='.($year).'&payer='.($payer).'">');
+			die;
+		}
 	}
-
-	// Получаем номер очередного документа
-	$year = date('Y');
-	$date = date('Y-m-d');
-	$query = "SELECT COUNT(1)+1 Cnt FROM PrintFormsBill WHERE YEAR(date) = {$year}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$count = mysqli_result($res,0,'Cnt');
-	$nomer = str_pad($count, 8, '0', STR_PAD_LEFT); // Дописываем нули к номеру накладной
 
 	// Обновляем информацию о плательщике
 	$platelshik_name = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_name"]));
@@ -49,7 +154,7 @@ if( isset($_GET["add_bill"]) ) {
 	$platelshik_ks = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_ks"]));
 	$platelshik_bank_adres = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_bank_adres"]));
 
-	if( $_POST["platelshik_id"] ) {
+	if( $_POST["KA_ID"] ) {
 		$query = "UPDATE Kontragenty SET
 					 Naimenovanie = '{$platelshik_name}'
 					,Jur_adres = IF('{$platelshik_adres}' = '', NULL, '{$platelshik_adres}')
@@ -62,9 +167,9 @@ if( isset($_GET["add_bill"]) ) {
 					,BIK = IF('{$platelshik_bik}' = '', NULL, '{$platelshik_bik}')
 					,KS = IF('{$platelshik_ks}' = '', NULL, '{$platelshik_ks}')
 					,Bank_adres = IF('{$platelshik_bank_adres}' = '', NULL, '{$platelshik_bank_adres}')
-					WHERE KA_ID = {$_POST["platelshik_id"]}";
+					WHERE KA_ID = {$_POST["KA_ID"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$platelshik_id = $_POST["platelshik_id"];
+		$platelshik_id = $_POST["KA_ID"];
 	}
 	else {
 		$query = "INSERT INTO Kontragenty SET
@@ -83,6 +188,12 @@ if( isset($_GET["add_bill"]) ) {
 		$platelshik_id = mysqli_insert_id($mysqli);
 	}
 
+	// Получаем номер очередного документа
+	$year = date('Y');
+	$query = "SELECT MAX(count)+1 count FROM PrintFormsBill WHERE YEAR(date) = {$year}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$count = mysqli_result($res,0,'count') ? mysqli_result($res,0,'count') : 1;
+
 	// Сохраняем в POST необходимую информацию о покупателе
 	$_POST["pokupatel"] = convert_str($_POST["platelshik_name"]);
 	$_POST["pokupatel_adres"] = convert_str($_POST["platelshik_adres"]);
@@ -90,9 +201,50 @@ if( isset($_GET["add_bill"]) ) {
 	$_POST["pokupatel_kpp"] = convert_str($_POST["platelshik_kpp"]);
 
 	// Сохраняем в таблицу информацию по счёту, узнаем его ID.
-	$query = "INSERT INTO PrintFormsBill SET count = {$count}, date = '{$date}', pokupatel_id = {$platelshik_id}, summa = {$summa}, USR_ID = {$_SESSION["id"]}";
+	$date = date( 'Y-m-d', strtotime($_POST["date"]) );
+	$query = "INSERT INTO PrintFormsBill SET summa = {$_POST["summa"]}, discount = {$_POST["total_discount"]}, pokupatel_id = {$platelshik_id}, count = {$count}, date = '{$date}', USR_ID = {$_SESSION["id"]}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$id = mysqli_insert_id($mysqli);
+
+	// Сохраняем у набора контрагента
+	$id_list = "0";
+	foreach ($_POST["ord"] as $key => $value) {
+		$query = "
+			UPDATE OrdersData OD
+			JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			SET OD.KA_ID = IF(SH.KA_ID IS NULL, {$platelshik_id}, NULL), OD.author = {$_SESSION["id"]}
+			WHERE OD.OD_ID = {$value}
+		";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		$id_list .= ",".$value;
+	}
+
+	//Записываем в массив POST данные по товарам
+	$query = "
+		SELECT OD.OD_ID
+			,OD.Code
+			,ODD.ODD_ID
+			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+			,ODD.Amount
+			,ODD.Price - IFNULL(ODD.discount, 0) Price
+			,Zakaz(ODD.ODD_ID) Zakaz
+		FROM OrdersData OD
+		LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
+		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+		WHERE OD.OD_ID IN ({$id_list})
+		ORDER BY OD.OD_ID, PTID DESC, ODD.ODD_ID
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$Counter = 0;
+	while( $row = mysqli_fetch_array($res) ) {
+		$_POST["tovar_name"][$Counter] = $row["Zakaz"];
+		$_POST["tovar_kod"][$Counter] = $row["Code"];
+		$_POST["tovar_ed"][$Counter] = "шт";
+		$_POST["tovar_kol"][$Counter] = $row["Amount"];
+		$_POST["tovar_cena"][$Counter] = $row["Price"];
+		$Counter++;
+	}
 
 	$_POST["nomer"] = $count;
 
@@ -125,36 +277,17 @@ if( isset($_GET["add_bill"]) ) {
 		$url = trim($url);
 		$out = file_get_contents($url);
 
-		$filename = 'schet_'.$id.'_'.$nomer.'.pdf';
+		$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
 		file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
 
 		curl_close($curl);
 
-		exit ('<meta http-equiv="refresh" content="0; url=bills.php">');
+		exit ('<meta http-equiv="refresh" content="0; url=bills.php?year='.($year).'&payer='.($payer).'">');
 		die;
 	}
 }
-
-if( isset($_GET["year"]) ) {
-	$year = $_GET["year"];
-}
-else {
-	$year = date('Y');
-}
-if( $_GET["payer"] and (int)$_GET["payer"] > 0 ) {
-	$query = "SELECT 1 FROM Kontragenty WHERE KA_ID IN ({$KA_IDs}) AND KA_ID = {$_GET["payer"]}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	if( mysqli_num_rows($res) ) {
-		$payer = $_GET["payer"];
-	}
-	else {
-		die('Недостаточно прав для совершения операции');
-	}
-}
-else {
-	$payer = "";
-}
 ?>
+
 <form>
 	<script>
 		$(function() {
@@ -179,77 +312,21 @@ else {
 	<select name="payer" id="payer" onchange="this.form.submit()">
 <?
 	if( in_array('sverki_opt', $Rights) ) {
-		// Выводим контрагентов для оптовиков
-		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
-					FROM Kontragenty
-					WHERE KA_ID IN ({$KA_IDs})";
+		// Выводим контрагента оптовика
+		$query = "
+			SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
+			FROM Kontragenty
+			WHERE KA_ID = {$USR_KA}
+		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) ) {
-			$saldo_format = number_format($row["saldo"], 0, '', ' ');
-			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo})</option>";
-			if( $payer == $row["KA_ID"] ) {
-				$saldo = $row["saldo"];
-			}
-		}
+		$row = mysqli_fetch_array($res);
+		$saldo_format = number_format($row["saldo"], 0, '', ' ');
+		echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo_format})</option>";
 	}
 	else {
-		// Выводим контрагентов для остальных категорий пользователей
-		echo "<option value='0''>-=Все контрагенты=-</option>";
-
-		// Выводим должников
-		$total = 0; // Сумма дебета
-		echo "<optgroup id='debt' label='Должники'>";
-		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
-					FROM Kontragenty
-					WHERE KA_ID IN ({$KA_IDs}) AND IFNULL(saldo, 0) < 0
-					ORDER BY IFNULL(saldo, 0)";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) ) {
-			$saldo_format = number_format($row["saldo"], 0, '', ' ');
-			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo_format})</option>";
-			if( $payer == $row["KA_ID"] ) {
-				$saldo = $row["saldo"];
-			}
-			$total += $row["saldo"];
-		}
-		echo "</optgroup>";
-		$saldo_format = number_format($total, 0, '', ' ');
-		echo "<script>$('#debt').attr('label', 'Должники ({$saldo_format})');</script>";
-
-		// Выводим кредиторов
-		echo "<optgroup id='credit' label='Кредиторы'>";
-		$total = 0; // Сумма кредита
-		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
-					FROM Kontragenty
-					WHERE KA_ID IN ({$KA_IDs}) AND IFNULL(saldo, 0) > 0
-					ORDER BY IFNULL(saldo, 0) DESC";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) ) {
-			$saldo_format = number_format($row["saldo"], 0, '', ' ');
-			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo_format})</option>";
-			if( $payer == $row["KA_ID"] ) {
-				$saldo = $row["saldo"];
-			}
-			$total += $row["saldo"];
-		}
-		echo "</optgroup>";
-		$saldo_format = number_format($total, 0, '', ' ');
-		echo "<script>$('#credit').attr('label', 'Кредиторы ({$saldo_format})');</script>";
-
-		// Выводим нейтральных
-		echo "<optgroup label='Нейтральные'>";
-		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
-					FROM Kontragenty
-					WHERE KA_ID IN ({$KA_IDs}) AND IFNULL(saldo, 0) = 0
-					ORDER BY count DESC";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) ) {
-			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]}</option>";
-			if( $payer == $row["KA_ID"] ) {
-				$saldo = $row["saldo"];
-			}
-		}
-		echo "</optgroup>";
+		// Выводим дропдаун
+		echo "<option value='0'>-=Все контрагенты=-</option>";
+		echo $KA_options;
 	}
 ?>
 	</select>
@@ -276,6 +353,10 @@ else {
 		opacity: 1;
 	}
 
+	#orders_to_bill input[type="number"] {
+		width: 100%;
+		text-align: right;
+	}
 	.forms input {
 		width: 99%;
 	}
@@ -296,16 +377,15 @@ else {
 
 <?
 if( !in_array('sverki_opt', $Rights) ) {
-	echo "<a id='add_bill_btn' href='#' title='Создать счёт'></a>";
+	echo "<div id='add_bill_btn' title='Создать счёт'></div>";
 }
 ?>
-
-<a href="/files/create_bill.webm" target="_blank" style="position: fixed; top: 100px; right: 50px; z-index: 9;"><i class="fas fa-video fa-3x" title="Видео инструкция по выставлению счёта"></i></a>
 
 <table>
 	<thead>
 		<tr>
 			<th>Сумма</th>
+			<th>Скидка</th>
 			<th>Дата</th>
 			<th>Покупатель</th>
 			<th>Номер</th>
@@ -322,6 +402,7 @@ $query = "SELECT PFB.PFB_ID
 				,PFB.count
 				,Friendly_date(PFB.date) date_format
 				,USR_Icon(PFB.USR_ID) Name
+				,ROUND((PFB.discount / (PFB.summa + PFB.discount)) * 100, 1) discount
 			FROM PrintFormsBill PFB
 			LEFT JOIN Kontragenty KA ON KA.KA_ID = PFB.pokupatel_id
 			WHERE YEAR(PFB.date) = {$year}
@@ -331,13 +412,14 @@ $query = "SELECT PFB.PFB_ID
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
 	$summa = number_format($row["summa"], 0, '', ' ');
-	$number = str_pad($row["count"], 8, '0', STR_PAD_LEFT);
+	$discount = ($row["discount"] != 0) ? "<b class='invoice_discount'>{$row["discount"]}%</b>" : "";
 	echo "<tr>";
 	echo "<td class='txtright nowrap' style='color: #16A085;'><b>{$summa}</b></td>";
+	echo "<td class='txtright'>{$discount}</td>";
 	echo "<td><b>{$row["date_format"]}</b></td>";
 	echo "<td><a href='bills.php?year={$year}&payer={$row["KA_ID"]}'>{$row["pokupatel"]}</a></td>";
 	echo "<td><b>{$row["count"]}</b></td>";
-	echo "<td><b><a href='open_print_form.php?type=schet&PFB_ID={$row["PFB_ID"]}&number={$number}' target='_blank'><i class='fa fa-file-pdf fa-2x'></a></b></td>";
+	echo "<td><b><a href='open_print_form.php?type=schet&PFB_ID={$row["PFB_ID"]}&number={$row["count"]}' target='_blank'><i class='fa fa-file-pdf fa-2x'></a></b></td>";
 	echo "<td>{$row["Name"]}</td>";
 	echo "</tr>";
 }
@@ -348,18 +430,35 @@ while( $row = mysqli_fetch_array($res) ) {
 <!-- Форма подготовки счёта -->
 <div id='add_bill_form' style='display:none' title="Счёт на оплату">
 	<h1>Счёт на оплату</h1>
-	<form action="?add_bill=1" method="post" id="formdiv" onsubmit="JavaScript:this.subbut.disabled=true;
+	<form action="?add_bill&year=<?=$year?>&payer=<?=$payer?>" method="post" id="formdiv" onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset style="text-align: left;">
-			<legend>Информация о плательщике:</legend>
+			<legend>Информация о покупателе:</legend>
+			<select name="KA_ID" id="kontragenty" style="width: 100%;">
+				<?
+				echo "<option value=''></option>";
+				// Список регионов для добавления новых розничных контрагентов
+				$query = "
+					SELECT CT.CT_ID, CT.City, CT.R_ID
+					FROM Cities CT
+					WHERE CT.CT_ID IN (SELECT CT_ID FROM Shops WHERE retail = 1)
+					".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
+				";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($res) ) {
+					echo "<option value='0' CT_ID='{$row["CT_ID"]}'>-- Новый покупатель из {$row["City"]} --</option>";
+				}
+
+				// Выводим дропдаун
+				echo $KA_options;
+				?>
+			</select>
+			<input type="hidden" name="CT_ID">
 			<table width="100%" class="forms">
 				<tbody>
 					<tr>
 						<td width="200" align="left" valign="top">Название ООО или ИП:</td>
-						<td align="left" valign="top">
-							<input type="hidden" name="platelshik_id" id="platelshik_id" class="forminput">
-							<input required type="text" autocomplete="off" name="platelshik_name" id="platelshik_name" class="forminput" placeholder="Введите минимум 2 символа для поиска контрагента">
-						</td>
+						<td align="left" valign="top"><input type="text" required autocomplete="off" name="platelshik_name" id="platelshik_name" class="forminput"></td>
 					</tr>
 					<tr>
 						<td align="left" valign="top">ИНН:</td>
@@ -407,239 +506,122 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		<input type="hidden" name="nds" value="0">
 
-		<br>
+		<fieldset style="text-align: left;">
+			<legend>Список наборов:</legend>
+			<div id="orders_to_bill" style='text-align: left;'></div>
+		</fieldset>
 
-		<table width="100%" border="0" cellspacing="4" class="forms" id="tab1">
-			<tbody>
-				<tr>
-					<th colspan="7" align="left"><strong>Наименование товара, подлежащего оплате:</strong></th>
-				</tr>
-				<tr>
-					<th width="60">Код</th>
-					<th width="45%">Наименование товара</th>
-					<th width="40">Ед. измерения</th>
-					<th width="40">Кол-во</th>
-					<th width="80">Цена за шт.</th>
-					<th width="80">Скидка за шт.</th>
-					<th width="20"><p>&nbsp;</p></th>
-				</tr>
-			</tbody>
-
-			<tbody>
-				<tr>
-					<td colspan="7">
-						<i class="fa fa-plus-square fa-2x" style="color: green;" onclick="addRow('шт');"></i>
-						<span onclick="addRow('шт');"><font><font> Добавить строку</font></font></span>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-
-<script type="text/javascript">
-	function addRow(ed, name, amount, min_price, price, discount, item, code, odid)
-	{
-
-		// Находим нужную таблицу
-		var tbody = $('#tab1 tbody:eq(0)');
-
-		// Создаем строку таблицы и добавляем ее
-		var row = $("<tr></tr>");
-		tbody.append(row);
-
-		// Создаем ячейки в вышесозданной строке и добавляем их
-		var td0 = $("<td></td>");
-		var td1 = $("<td></td>");
-		var td2 = $("<td></td>");
-		var td3 = $("<td></td>");
-		var td4 = $("<td></td>");
-		var td5 = $("<td></td>");
-		var td6 = $("<td></td>");
-
-		row.append(td0);
-		row.append(td1);
-		row.append(td2);
-		row.append(td3);
-		row.append(td4);
-		row.append(td5);
-		row.append(td6);
-
-		// Наполняем ячейки
-		if( typeof name === "undefined" ) {
-			name = '';
-		}
-		if( typeof ed === "undefined" ) {
-			ed = '';
-		}
-		if( typeof amount === "undefined" ) {
-			amount = '';
-		}
-		if( typeof price === "undefined" ) {
-			price = '';
-		}
-		if( typeof min_price === "undefined" ) {
-			min_price = '0';
-		}
-		if( typeof discount === "undefined" ) {
-			discount = '';
-		}
-		if( typeof item === "undefined" ) {
-			item = '';
-		}
-		if( typeof code === "undefined" ) {
-			code = '';
-		}
-		if( typeof odid === "undefined" ) {
-			odid = '';
-		}
-		td0.html('<b id="code">'+code+'</b><input type="hidden" name="odid[]" id="odid" value="'+odid+'"><input type="hidden" name="tovar_kod[]" id="icode" value="'+code+'">');
-		td1.html('<input required type="text" autocomplete="off" value="'+name+'" name="tovar_name[]" id="tovar_name" class="tovar_name" placeholder="Введите код набора для поиска товара"/>');
-		td2.html('<input required type="text" autocomplete="off" value="'+ed+'" name="tovar_ed[]" id="tovar_ed" class="f3" />');
-		td3.html('<input required type="number" autocomplete="off" min="1" value="'+amount+'" name="tovar_kol[]" id="tovar_kol"/>');
-		if( min_price > 0 ) {
-			td4.html('<input required type="number" autocomplete="off" min="'+min_price+'" value="'+price+'" name="tovar_cena[]" id="tovar_cena" title="Вычисленная стоимость по прайсу: '+min_price+'"><input type="hidden" name="item[]" id="item" value="'+item+'">');
-
-		}
-		else {
-			td4.html('<input required type="number" autocomplete="off" min="'+min_price+'" value="'+price+'" name="tovar_cena[]" id="tovar_cena"/><input type="hidden" name="item[]" id="item" value="'+item+'">');
-		}
-		td5.html('<input type="number" autocomplete="off" min="0" value="'+discount+'" name="tovar_skidka[]" id="tovar_skidka"/>');
-		td6.html('<i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i>');
-
-		td1.find('.tovar_name').autocomplete({
-			source: "search_prod.php",
-			minLength: 2,
-			select: function( event, ui ) {
-				$(this).parents('tr').find('#code').text(ui.item.code);
-				$(this).parents('tr').find('#icode').val(ui.item.code);
-				$(this).parents('tr').find('#odid').val(ui.item.odid);
-				$(this).parents('tr').find('#item').val(ui.item.id);
-				$(this).parents('tr').find('#tovar_cena').attr('min', ui.item.min_price);
-				if( ui.item.min_price > 0 ) {
-					$(this).parents('tr').find('#tovar_cena').attr('title', 'Вычисленная стоимость по прайсу: '+ui.item.min_price);
-				}
-				$(this).parents('tr').find('#tovar_cena').val(ui.item.Price);
-				$(this).parents('tr').find('#tovar_skidka').val(ui.item.discount);
-				$(this).parents('tr').find('#tovar_kol').val(ui.item.Amount);
-			}
-		});
-
-		td1.find('.tovar_name').on("keyup", function() {
-			if( $(this).val().length < 2 ) {
-				$(this).parents('tr').find('#code').text('');
-				$(this).parents('tr').find('#icode').val('');
-				$(this).parents('tr').find('#odid').val('');
-				$(this).parents('tr').find('#item').val('');
-				$(this).parents('tr').find('#tovar_cena').attr('min', '0');
-				$(this).parents('tr').find('#tovar_cena').attr('title', '');
-				$(this).parents('tr').find('#tovar_cena').val('');
-				$(this).parents('tr').find('#tovar_skidka').val('');
-				$(this).parents('tr').find('#tovar_kol').val('');
-			}
-		});
-	}
-
-	function deleteRow(r)
-	{
-		$(r).parents('tr').remove();
-	}
-</script>
-
-		<br>
-		<div style="text-align: center;">
-			<strong>Сообщение для клиента:</strong>
-			<br>
+		<fieldset style="text-align: left;">
+			<legend>Сообщение для клиента:</legend>
 			<textarea name="text" class="comment">Внимание! Оплата данного счета означает согласие с условиями поставки товара. Уведомление об оплате обязательно, в противном случае не гарантируется наличие товара на складе. Товар отпускается по факту прихода денег на р/с Поставщика, самовывозом, при наличии доверенности и паспорта.</textarea>
-		</div>
+		</fieldset>
 
 		<input name="n" type="hidden" value="1">
 
 		<div>
 			<hr>
+			<h3 style="display: inline-block; margin: 10px;">Сумма счёта: <span id="bill_total" style="color: #16A085;"></span></h3>
+			<h3 style="display: inline-block; margin: 10px;">Сумма скидки: <span id="bill_discount" style="color: #16A085;"></span></h3>
+			<h3 style="display: inline-block; margin: 10px;">Процент скидки: <span id="bill_percent" style="color: #16A085;"></span></h3>
+			<input type="hidden" name="summa" value="0">
+			<input type="hidden" name="total_discount" value="0">
 			<input type='submit' name="subbut" value='Создать счет' style='float: right;'>
 			<input type="text" name="date" id="date" value="<?=date('d.m.Y')?>" class="date" style="float: right; margin: 4px 10px; width: 90px;" readonly>
 		</div>
 	</form>
 </div>
 
-<script language="javascript">
+<script>
+	// Подсчет суммы счёта
+	function bill_total() {
+		var arr_price = Array
+					.from(document.querySelectorAll('#orders_to_bill input[name="price[]"]')) // собираем массив из нод
+					.map((item) => {
+						var item_price = (item.getAttribute('disabled') == "disabled") ? 0 : item.value;
+						var item_amount = item.getAttribute('amount');
+						return item_price * item_amount // трансформируем массив в массив содержащий уже не ноды, а их содержимое
+					})
+					.map(Number); // приводим к числовому типу
+
+		if (arr_price.length != 0) {
+			var total_price = arr_price.reduce((sum, item) => {
+				return sum+item; // считаем сумму массива
+			});
+		}
+		else {
+			var total_price = 0;
+		}
+
+		var arr_discount = Array
+					.from(document.querySelectorAll('#orders_to_bill input[name="discount[]"]')) // собираем массив из нод
+					.map((item) => {
+						var item_price = (item.getAttribute('disabled') == "disabled") ? 0 : item.value;
+						var item_amount = item.getAttribute('amount');
+						return item_price * item_amount // трансформируем массив в массив содержащий уже не ноды, а их содержимое
+					})
+					.map(Number); // приводим к числовому типу
+
+		if (arr_discount.length != 0) {
+			var total_discount = arr_discount.reduce((sum, item) => {
+				return sum+item; // считаем сумму массива
+			});
+		}
+		else {
+			var total_discount = 0;
+		}
+
+		var total = total_price - total_discount;
+		$('input[name="summa"]').val(total);
+		$('input[name="total_discount"]').val(total_discount);
+		total_percent = (total_discount / total_price * 100).toFixed(1);
+		total = total.format();
+		total_discount = total_discount.format();
+		$('#bill_total').html(total);
+		$('#bill_discount').html(total_discount);
+		$('#bill_percent').html(total_percent);
+	}
+
 	$(function() {
+		// Обнуляем сумму счёта
+		bill_total();
+
+		// Массив контрагентов
+		Kontragenty = <?= json_encode($Kontragenty); ?>;
+
 		// Форма составления счёта
 		$('#add_bill_btn').click(function() {
+			<?=($payer ? "$('select[name=\"KA_ID\"]').val('{$payer}').trigger('change');" : "")?>
+
 			$('#add_bill_form').dialog({
-				position: { my: "center top", at: "center top", of: window },
+				resizable: false,
 				draggable: false,
-				width: 700,
+				width: 1000,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 		});
-<?
-	// Получаем список наборов из GET и заполняем таблицу в форме
-	if( isset($_GET["Tables"]) or isset($_GET["Chairs"]) or isset($_GET["Others"]) ) {
 
-		// Формируем список id выбранных наборов из $_GET
-		$id_list = '0';
-		foreach ($_GET["order"] as $k => $v) {
-			$id_list .= ",{$v}";
-		}
-
-		$product_types = "-1";
-		if(isset($_GET["Tables"])) $product_types .= ",2";
-		if(isset($_GET["Chairs"])) $product_types .= ",1";
-		if(isset($_GET["Others"])) $product_types .= ",0";
-
-		$query = "
-			SELECT OD.OD_ID
-				,OD.Code
-				,ODD.ODD_ID
-				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
-				,ODD.Amount
-				,IFNULL(ODD.min_price, 0) min_price
-				,ODD.Price
-				,ODD.discount
-				,Zakaz(ODD.ODD_ID) Zakaz
-			FROM OrdersData OD
-			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
-			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			WHERE ODD.OD_ID IN ({$id_list})
-			HAVING PTID IN({$product_types})
-			ORDER BY OD.OD_ID, PTID DESC, ODD.ODD_ID";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) ) {
-			echo "addRow('шт', escapeHtml('{$row["Zakaz"]}'), '{$row["Amount"]}', '{$row["min_price"]}', '{$row["Price"]}', '{$row["discount"]}', '{$row["ODD_ID"]}', '{$row["Code"]}', '{$row["OD_ID"]}');";
-		}
-		echo "$('#add_bill_btn').click();";
-	}
-	else {
-		echo "addRow('шт');";
-	}
-?>
-
-		// Автокомплит плательщика
-		$( "#platelshik_name" ).autocomplete({
-			source: "kontragenty.php",
-			minLength: 2,
-			autoFocus: true,
-			select: function( event, ui ) {
-				$('#platelshik_id').val(ui.item.id);
-				$('#platelshik_inn').val(ui.item.INN);
-				$('#platelshik_kpp').val(ui.item.KPP);
-				$('#platelshik_okpo').val(ui.item.OKPO);
-				$('#platelshik_adres').val(ui.item.Jur_adres);
-				$('#platelshik_tel').val(ui.item.Telefony);
-				$('#platelshik_schet').val(ui.item.Schet);
-				$('#platelshik_bank').val(ui.item.Bank);
-				$('#platelshik_bik').val(ui.item.BIK);
-				$('#platelshik_ks').val(ui.item.KS);
-				$('#platelshik_bank_adres').val(ui.item.Bank_adres);
+		// Заполнение формы и динамическая подгрузка наборов при выборе контрагента
+		$('select[name="KA_ID"]').on('change', function() {
+			var KA_ID = $(this).val();
+			var CT_ID = $(this).find('option:selected').attr('CT_ID');
+			$('input[name="CT_ID"]').val(CT_ID);
+			if (KA_ID > 0) {
+				var KA_data = Kontragenty[KA_ID];
+				$('#platelshik_name').val(KA_data["Naimenovanie"]);
+				$('#platelshik_inn').val(KA_data["INN"]);
+				$('#platelshik_kpp').val(KA_data["KPP"]);
+				$('#platelshik_okpo').val(KA_data["OKPO"]);
+				$('#platelshik_adres').val(KA_data["Jur_adres"]);
+				$('#platelshik_tel').val(KA_data["Telefony"]);
+				$('#platelshik_schet').val(KA_data["Schet"]);
+				$('#platelshik_bank').val(KA_data["Bank"]);
+				$('#platelshik_bik').val(KA_data["BIK"]);
+				$('#platelshik_ks').val(KA_data["KS"]);
+				$('#platelshik_bank_adres').val(KA_data["Bank_adres"]);
 			}
-		});
-
-		$( "#platelshik_name" ).on("keyup", function() {
-			if( $( "#platelshik_name" ).val().length < 2 ) {
-				$('#platelshik_id').val('');
+			else {
+				$('#platelshik_name').val('');
 				$('#platelshik_inn').val('');
 				$('#platelshik_kpp').val('');
 				$('#platelshik_okpo').val('');
@@ -650,10 +632,39 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#platelshik_bik').val('');
 				$('#platelshik_ks').val('');
 				$('#platelshik_bank_adres').val('');
+				$("#kontragenty").val('');
+			}
+			$('#orders_to_bill').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
+			$.ajax({ url: "ajax.php?do=bill&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&from_js=1", dataType: "script", async: true });
+		});
+
+		// При включении чекбокса отображается инпут цены
+		$('#orders_to_bill').on('change', '.chbox', function() {
+			if( $(this).prop('checked') ) {
+				$(this).parents('tr').find('input[type="hidden"], input[type="number"]').attr('disabled', false);
+				$(this).parents('tr').find('input[type="hidden"], input[type="number"]').show('fast');
+			}
+			else {
+				$(this).parents('tr').find('input[type="hidden"], input[type="number"]').attr('disabled', true);
+				$(this).parents('tr').find('input[type="hidden"], input[type="number"]').hide('fast');
 			}
 		});
 
+		// При редактировании цены или изменении чекбокса пересчитывается сумма накладной
+		$('#orders_to_bill').on('change', 'input[type="number"]', function() {
+			bill_total();
+		});
+		$('#orders_to_bill').on('change', '.chbox', function() {
+			bill_total();
+		});
+
 		$('#payer').select2({ placeholder: 'Выберите контрагента', language: 'ru' });
+		$('#kontragenty').select2({ placeholder: '-=контрагенты=-', language: 'ru' });
+
+		// Костыль для Select2 чтобы работал поиск
+		$.ui.dialog.prototype._allowInteraction = function (e) {
+			return true;
+		};
 
 		$( "#date" ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
 	});

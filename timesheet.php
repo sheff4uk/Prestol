@@ -632,12 +632,11 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 			// Вызов формы
 			$('#dayworklog').dialog({
+				resizable: false,
 				title:		workername+' '+date,
 				width:		600,
 				modal:		true,
 				resizable:	false,
-				show:		'blind',
-				hide:		'explode',
 				closeText:	'Закрыть'
 			});
 

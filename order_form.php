@@ -70,10 +70,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<fieldset id="Client">
 				<legend>Информация о клиенте:</legend>
 				<div id="ClientName">
-					<label>Клиент:</label>
+					<label>ФИО:</label>
 					<div>
 						<input type='text' class='clienttags' name='ClientName' autocomplete='off'>
-						<label title='Поставьте галочку, чтобы была возможность сделать накладную.'><input type="checkbox" name='ul'>юр. лицо<i class='fa fa-question-circle'></i></label>
 					</div>
 				</div>
 				<div id="OrderNumber">
@@ -135,8 +134,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 				resizable: false,
 				width: 500,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 

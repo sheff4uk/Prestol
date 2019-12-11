@@ -10,13 +10,95 @@ if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !
 	die('Недостаточно прав для совершения операции');
 }
 
+// Формируем список контрагентов для дропдауна
+$KA_options = "";
+$KA_IDs = "0";
+if (!$USR_Shop) { // Если не продавец - показываем оптовиков
+	$KA_options .= "<optgroup label='Оптовые покупатели:'>";
+	$query = "
+		SELECT KA.KA_ID
+			,CT.CT_ID
+			,CT.City
+			,KA.Naimenovanie
+			,IFNULL(Jur_adres, '') Jur_adres
+			,IFNULL(Fakt_adres, '') Fakt_adres
+			,IFNULL(Telefony, '') Telefony
+			,IFNULL(INN, '') INN
+			,IFNULL(OKPO, '') OKPO
+			,IFNULL(KPP, '') KPP
+			,IFNULL(Pasport, '') Pasport
+			,IFNULL(Email, '') Email
+			,IFNULL(Schet, '') Schet
+			,IFNULL(Bank, '') Bank
+			,IFNULL(BIK, '') BIK
+			,IFNULL(KS, '') KS
+			,IFNULL(Bank_adres, '') Bank_adres
+			,IFNULL(KA.saldo, 0) saldo
+		FROM Kontragenty KA
+		JOIN Shops SH ON SH.KA_ID = KA.KA_ID
+		JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+		".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
+		GROUP BY KA.KA_ID
+		ORDER BY CT.City, KA.Naimenovanie
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) ) {
+		$saldo_format = number_format($row["saldo"], 0, '', ' ');
+		$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} ({$saldo_format})</option>";
+		$KA_IDs .= ",{$row["KA_ID"]}";
+		$Kontragenty[$row["KA_ID"]] = array( "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+	}
+	$KA_options .= "</optgroup>";
+}
+
+// Список розничных контрагентов
+$KA_options .=  "<optgroup label='Розничные покупатели:'>";
+$query = "
+	SELECT KA.KA_ID
+		,CT.CT_ID
+		,CT.City
+		,KA.Naimenovanie
+		,IFNULL(Jur_adres, '') Jur_adres
+		,IFNULL(Fakt_adres, '') Fakt_adres
+		,IFNULL(Telefony, '') Telefony
+		,IFNULL(INN, '') INN
+		,IFNULL(OKPO, '') OKPO
+		,IFNULL(KPP, '') KPP
+		,IFNULL(Pasport, '') Pasport
+		,IFNULL(Email, '') Email
+		,IFNULL(Schet, '') Schet
+		,IFNULL(Bank, '') Bank
+		,IFNULL(BIK, '') BIK
+		,IFNULL(KS, '') KS
+		,IFNULL(Bank_adres, '') Bank_adres
+		,IFNULL(KA.saldo, 0) saldo
+	FROM Kontragenty KA
+	JOIN OrdersData OD ON OD.KA_ID = KA.KA_ID
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+	".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
+	GROUP BY KA.KA_ID, CT.CT_ID
+	ORDER BY CT.City, KA.Naimenovanie
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+while( $row = mysqli_fetch_array($res) ) {
+	$saldo_format = number_format($row["saldo"], 0, '', ' ');
+	$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} ({$saldo_format})</option>";
+	$KA_IDs .= ",{$row["KA_ID"]}";
+	$Kontragenty[$row["KA_ID"]] = array( "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+}
+$KA_options .= "</optgroup>";
+
 if( $_GET["year"] and (int)$_GET["year"] > 0 ) {
 	$year = $_GET["year"];
 }
 else {
 	$year = date('Y');
 }
-if( $_GET["payer"] and (int)$_GET["payer"] > 0 ) {
+if ( $USR_KA ) { // Если пользователь - оптовик
+	$payer = $USR_KA;
+}
+elseif ( $_GET["payer"] and (int)$_GET["payer"] > 0 ) {
 	$query = "SELECT 1 FROM Kontragenty WHERE KA_ID IN ({$KA_IDs}) AND KA_ID = {$_GET["payer"]}";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	if( mysqli_num_rows($res) ) {
@@ -55,11 +137,6 @@ if( isset($_GET["add_act"]) ) {
 
 	exit ('<meta http-equiv="refresh" content="0; url=?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
 	die;
-}
-
-// Если вернулся только один контрагент - выбираем его в селекте
-if( $KA_num_rows == 1 ) {
-	$payer = $KA_IDs;
 }
 
 $now_date = date('d.m.Y');
@@ -102,87 +179,24 @@ if( isset($_GET["del"]) )
 	<select name="payer" id="payer" onchange="this.form.submit()">
 <?
 	if( in_array('sverki_opt', $Rights) ) {
-		// Выводим контрагентов для оптовиков
-		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
-					FROM Kontragenty
-					WHERE KA_ID IN ({$KA_IDs})";
+		// Выводим контрагента оптовика
+		$query = "
+			SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
+			FROM Kontragenty
+			WHERE KA_ID = {$USR_KA}
+		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) ) {
-			$saldo_format = number_format($row["saldo"], 0, '', ' ');
-			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo})</option>";
-			if( $payer == $row["KA_ID"] ) {
-				$saldo = $row["saldo"];
-			}
-		}
+		$row = mysqli_fetch_array($res);
+		$saldo_format = number_format($row["saldo"], 0, '', ' ');
+		echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo_format})</option>";
 	}
 	else {
-		// Выводим контрагентов для остальных категорий пользователей
-		echo "<option value='0''>-=Все контрагенты=-</option>";
-
-		// Выводим должников
-		$total = 0; // Сумма дебета
-		echo "<optgroup id='debt' label='Должники'>";
-		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
-					FROM Kontragenty
-					WHERE KA_ID IN ({$KA_IDs}) AND IFNULL(saldo, 0) < 0
-					ORDER BY IFNULL(saldo, 0)";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) ) {
-			$saldo_format = number_format($row["saldo"], 0, '', ' ');
-			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo_format})</option>";
-			if( $payer == $row["KA_ID"] ) {
-				$saldo = $row["saldo"];
-			}
-			$total += $row["saldo"];
-		}
-		echo "</optgroup>";
-		$saldo_format = number_format($total, 0, '', ' ');
-		echo "<script>$('#debt').attr('label', 'Должники ({$saldo_format})');</script>";
-
-		// Выводим кредиторов
-		echo "<optgroup id='credit' label='Кредиторы'>";
-		$total = 0; // Сумма кредита
-		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
-					FROM Kontragenty
-					WHERE KA_ID IN ({$KA_IDs}) AND IFNULL(saldo, 0) > 0
-					ORDER BY IFNULL(saldo, 0) DESC";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) ) {
-			$saldo_format = number_format($row["saldo"], 0, '', ' ');
-			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo_format})</option>";
-			if( $payer == $row["KA_ID"] ) {
-				$saldo = $row["saldo"];
-			}
-			$total += $row["saldo"];
-		}
-		echo "</optgroup>";
-		$saldo_format = number_format($total, 0, '', ' ');
-		echo "<script>$('#credit').attr('label', 'Кредиторы ({$saldo_format})');</script>";
-
-		// Выводим нейтральных
-		echo "<optgroup label='Нейтральные'>";
-		$query = "SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
-					FROM Kontragenty
-					WHERE KA_ID IN ({$KA_IDs}) AND IFNULL(saldo, 0) = 0
-					ORDER BY count DESC";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) ) {
-			echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]}</option>";
-			if( $payer == $row["KA_ID"] ) {
-				$saldo = $row["saldo"];
-			}
-		}
-		echo "</optgroup>";
+		// Выводим дропдаун
+		echo "<option value='0'>-=Все контрагенты=-</option>";
+		echo $KA_options;
 	}
 ?>
 	</select>
-	&nbsp;&nbsp;
-	<?
-	if( $payer ) {
-		$saldo_format = number_format($saldo, 0, '', ' ');
-		echo "Сальдо: <b style='color: ".(($saldo < 0) ? "#E74C3C;" : "#16A085;")."'>{$saldo_format}</b>";
-	}
-	?>
 </form>
 <br>
 
@@ -247,10 +261,10 @@ if( isset($_GET["del"]) )
 
 <?
 if( !in_array('sverki_opt', $Rights) ) {
-	echo "<a id='add_invoice_btn' href='#' title='Создать накладную на ОТГРУЗКУ'></a>";
-	echo "<a id='add_invoice_btn_return' href='#' title='Создать накладную на ВОЗВРАТ'></a>";
+	echo "<div id='add_invoice_btn' title='Создать накладную на ОТГРУЗКУ'></div>";
+	echo "<div id='add_invoice_btn_return' title='Создать накладную на ВОЗВРАТ'></div>";
 	if( $payer ) {
-		echo "<a id='add_act_sverki_btn' href='#' title='Создать новый акт сверки' now_date='{$now_date}' payer='{$payer}'></a>";
+		echo "<div id='add_act_sverki_btn' title='Создать новый акт сверки' now_date='{$now_date}' payer='{$payer}'></div>";
 	}
 }
 
@@ -447,12 +461,10 @@ while( $row = mysqli_fetch_array($res) ) {
 
 <!-- Форма подготовки накладной -->
 <div id='add_invoice_form' style='display:none'>
-	<form method='post' action="invoice.php" onsubmit="JavaScript:this.subbut.disabled=true;
+	<form method='post' action="invoice.php?year=<?=$year?>&payer=<?=$payer?>" onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset style="text-align: center;">
 			<div>
-				<input type="hidden" name="year" value="<?=$year?>">
-				<input type="hidden" name="payer" value="<?=$payer?>">
 				<label>Контрагент:</label>
 				<select name="KA_ID" required>
 					<?
@@ -659,9 +671,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<br>
 			<div>
 				<hr>
-				<h3 style="display: inline-block; margin: 10px;">Сумма накладной: <span id="invoice_total" style="color: #16A085;">0</span></h3>
-				<h3 style="display: inline-block; margin: 10px;">Сумма скидки: <span id="invoice_discount" style="color: #16A085;">0</span></h3>
-				<h3 style="display: inline-block; margin: 10px;">Процент скидки: <span id="invoice_percent" style="color: #16A085;">0</span></h3>
+				<h3 style="display: inline-block; margin: 10px;">Сумма накладной: <span id="invoice_total" style="color: #16A085;"></span></h3>
+				<h3 style="display: inline-block; margin: 10px;">Сумма скидки: <span id="invoice_discount" style="color: #16A085;"></span></h3>
+				<h3 style="display: inline-block; margin: 10px;">Процент скидки: <span id="invoice_percent" style="color: #16A085;"></span></h3>
 				<input type="hidden" name="summa" value="0">
 				<input type="hidden" name="total_discount" value="0">
 				<input type='submit' name="subbut" value='Создать накладную' style='float: right;'>
@@ -704,7 +716,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 	// Подсчет суммы накладной
 	function invoice_total() {
-		let arr_price = Array
+		var arr_price = Array
 					.from(document.querySelectorAll('#orders_to_invoice input[name="price[]"]')) // собираем массив из нод
 					.map((item) => {
 						var item_price = (item.getAttribute('disabled') == "disabled") ? 0 : item.value;
@@ -713,11 +725,16 @@ this.subbut.value='Подождите, пожалуйста!';">
 					})
 					.map(Number); // приводим к числовому типу
 
-		let total_price = arr_price.reduce((sum, item) => {
-			return sum+item; // считаем сумму массива
-		});
+		if (arr_price.length != 0) {
+			var total_price = arr_price.reduce((sum, item) => {
+				return sum+item; // считаем сумму массива
+			});
+		}
+		else {
+			var total_price = 0;
+		}
 
-		let arr_discount = Array
+		var arr_discount = Array
 					.from(document.querySelectorAll('#orders_to_invoice input[name="discount[]"]')) // собираем массив из нод
 					.map((item) => {
 						var item_price = (item.getAttribute('disabled') == "disabled") ? 0 : item.value;
@@ -726,9 +743,14 @@ this.subbut.value='Подождите, пожалуйста!';">
 					})
 					.map(Number); // приводим к числовому типу
 
-		let total_discount = arr_discount.reduce((sum, item) => {
-			return sum+item; // считаем сумму массива
-		});
+		if (arr_discount.length != 0) {
+			var total_discount = arr_discount.reduce((sum, item) => {
+				return sum+item; // считаем сумму массива
+			});
+		}
+		else {
+			var total_discount = 0;
+		}
 
 		var total = total_price - total_discount;
 		$('input[name="summa"]').val(total);
@@ -744,12 +766,12 @@ this.subbut.value='Подождите, пожалуйста!';">
 	$(function() {
 		$('#payer').select2({ placeholder: 'Выберите контрагента', language: 'ru' });
 
-		// Редактирование примечания к накладной
-		$('.sverki_comment').on('change', function() {
-			var PFI_ID = $(this).parents('td').attr('id');
-			var val = $(this).val();
-			$.ajax({ url: "ajax.php?do=update_sverki_comment&PFI_ID="+PFI_ID+"&sverki_comment="+val, dataType: "script", async: false });
-		});
+//		// Редактирование примечания к накладной
+//		$('.sverki_comment').on('change', function() {
+//			var PFI_ID = $(this).parents('td').attr('id');
+//			var val = $(this).val();
+//			$.ajax({ url: "ajax.php?do=update_sverki_comment&PFI_ID="+PFI_ID+"&sverki_comment="+val, dataType: "script", async: false });
+//		});
 
 		// Форма составления накладной
 		$('#add_invoice_btn, #add_invoice_btn_return').click(function() {
@@ -779,15 +801,14 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#orders_to_invoice').html('');
 			$('#date').val('<?=( date('d.m.Y') )?>');
 			$('#num_rows select').val(25);
+			invoice_total();
 
 			$('#add_invoice_form').dialog({
-				position: { my: "center top", at: "center top", of: window },
 				title: title,
+				resizable: false,
 				draggable: false,
 				width: 1000,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 
@@ -808,10 +829,10 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#add_act_sverki_form .to').datepicker( "option", "maxDate", now_date );
 
 			$('#add_act_sverki_form').dialog({
+				resizable: false,
+				draggable: false,
 				width: 500,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 		});

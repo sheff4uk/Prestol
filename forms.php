@@ -916,8 +916,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 				resizable: false,
 				width: 600,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 
@@ -1092,8 +1090,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 				resizable: false,
 				width: 750,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 
@@ -1279,8 +1275,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 				resizable: false,
 				width: 600,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 
@@ -1361,8 +1355,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 				resizable: false,
 				width: 700,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 
@@ -1413,10 +1405,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$("#add_payment input[name=location]").val(location);
 
 			$('#add_payment').dialog({
+				resizable: false,
 				width: 650,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 			$('input[name=payment_sum_add]').focus();

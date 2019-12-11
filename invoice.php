@@ -24,7 +24,7 @@ foreach ($_POST["price"] as $key => $value) {
 	// Если набор в накладной - останавливаем, выводим сообщение
 	if( $PFI_ID ) {
 		$_SESSION["error"][] = "При создании накладной возникла ошибка. Пожалуйста, повторите попытку.";
-		exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_POST["year"]).'&payer='.($_POST["payer"]).'">');
+		exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
 		die;
 	}
 
@@ -265,7 +265,7 @@ if( $curl = curl_init() ) {
 
 	curl_close($curl);
 
-	exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_POST["year"]).'&payer='.($_POST["payer"]).'">');
+	exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
 	die;
 }
 ?>

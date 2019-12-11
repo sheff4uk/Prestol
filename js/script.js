@@ -16,10 +16,9 @@ function makeform(odd_id, location)
 	
 	// Диалог добавления этапов
 	$('#steps').dialog({
+		resizable: false,
 		width: 550,
 		modal: true,
-		show: 'blind',
-		hide: 'explode',
 		closeText: 'Закрыть'
 	});
 
@@ -149,10 +148,9 @@ $(function(){
 
 		$("#order_cut").dialog(
 		{
+			resizable: false,
 			width: 500,
 			modal: true,
-			show: 'blind',
-			hide: 'explode',
 			closeText: 'Закрыть'
 		});
 

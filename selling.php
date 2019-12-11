@@ -957,7 +957,7 @@
 				,OD.Code
 				,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 				,IFNULL(OD.ClientName, '') ClientName
-				,OD.ul
+				,KA.Naimenovanie
 				,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 				,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
 				,OD.sell_comment
@@ -979,6 +979,7 @@
 				,PFI.platelshik_id
 				,OD.taken
 			FROM OrdersData OD
+			LEFT JOIN Kontragenty KA ON KA.KA_ID = OD.KA_ID
 			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 AND ".( $SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 			LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
@@ -1086,7 +1087,7 @@
 			echo "
 				</td>
 				<td><span><b class='code'>{$row["Code"]}</b>".(($cnt > 1 and false) ? "<input type='checkbox' value='{$row["OD_ID"]}' name='od[]' class='chbox'>" : "")."<br>{$row["AddDate"]}</span></td>
-				<td><span><n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b></span></td>
+				<td><span>".($row["Naimenovanie"] ? "<n class='ul'>{$row["Naimenovanie"]}</n><br>" : "")."{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>
 				<td><span class='nowrap'>{$zakaz}</span></td>
 				<td><span class='nowrap material'>{$material}</span></td>
 			";
@@ -1304,10 +1305,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#send').prop('checked', false);
 
 			$('#add_cost').dialog({
+				resizable: false,
 				width: 300,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 			$( "#cost_date" ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
@@ -1351,10 +1351,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			}
 			else {
 				$('#order_otkaz').dialog({
+					resizable: false,
 					width: 400,
 					modal: true,
-					show: 'blind',
-					hide: 'explode',
 					closeText: 'Закрыть'
 				});
 			}

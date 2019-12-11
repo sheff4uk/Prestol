@@ -24,7 +24,6 @@
 		$AddDate = date("Y-m-d");
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
 		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
-		$ul = ($_POST["ClientName"] and $_POST["ul"]) ? "1" : "0";
 		$chars = array("+", " ", "(", ")"); // Символы, которые трубуется удалить из строки с телефоном
 		$mtel = $_POST["mtel"] ? '\''.str_replace($chars, "", $_POST["mtel"]).'\'' : 'NULL';
 		$Shop = $_POST["Shop"] > 0 ? $_POST["Shop"] : "NULL";
@@ -41,8 +40,9 @@
 
 		$confirmed = in_array('order_add_confirm', $Rights) ? 1 : 0;
 
-		$query = "INSERT INTO OrdersData(CLientName, ul, mtel, address, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Comment, author, confirmed)
-				  VALUES ('{$ClientName}', $ul, $mtel, '$address', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Comment}', {$_SESSION['id']}, {$confirmed})";
+		$query = "
+			INSERT INTO OrdersData(CLientName, mtel, address, AddDate, StartDate, EndDate, SH_ID, OrderNumber, Comment, author, confirmed)
+			VALUES ('{$ClientName}', $mtel, '$address', '{$AddDate}', $StartDate, $EndDate, $Shop, '{$OrderNumber}', '{$Comment}', {$_SESSION['id']}, {$confirmed})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$id = mysqli_insert_id( $mysqli );
 
@@ -122,8 +122,8 @@
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			// Создание копии набора
-			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, paint_date, WD_ID, tariff, patina_WD_ID, patina_tariff, Comment, IsReady, author, confirmed)
-			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, ul, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, paint_date, WD_ID, tariff, patina_WD_ID, patina_tariff, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, paint_date, WD_ID, tariff, patina_WD_ID, patina_tariff, Comment, IsReady, author, confirmed)
+			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, paint_date, WD_ID, tariff, patina_WD_ID, patina_tariff, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
@@ -336,13 +336,6 @@
 		echo '<input id="post-link" style="position: absolute; z-index: -1;">';
 		echo '<div id="copy_link" data-clipboard-target="#post-link" style="display: none;">';
 		echo '<a id="copy-button" data-clipboard-target="#post-link" style="display: block; height: 100%" title="Скопировать ссылку в буфер обмена"></a>';
-		echo '</div>';
-	}
-
-	// Кнопка печати счета
-	if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) ) {
-		echo '<div id="print_forms" title="Сформировать счёт на оплату" style="display: none;">';
-		echo '<a id="forms" target="_blank"></a>';
 		echo '</div>';
 	}
 
@@ -652,7 +645,7 @@
 			,OD.Code
 			,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 			,IFNULL(OD.ClientName, '') ClientName
-			,OD.ul
+			,KA.Naimenovanie
 			,OD.mtel
 			,OD.address
 			,IF((SH.retail AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) StartDate
@@ -704,6 +697,7 @@
 			,IFNULL(YEAR(OD.StartDate), 0) start_year
 			,IFNULL(MONTH(OD.StartDate), 0) start_month
 		FROM OrdersData OD
+		LEFT JOIN Kontragenty KA ON KA.KA_ID = OD.KA_ID
 	";
 	if (!isset($_GET["shpid"])) {
 		if ($_SESSION["f_Models"] != "" or $MT_IDs != "" or $_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "") {
@@ -848,7 +842,7 @@
 			$query .= " AND (OD.Code LIKE '%{$_SESSION["f_CD"]}%' OR DATE_FORMAT(OD.AddDate, '%d.%m.%y') LIKE '%{$_SESSION["f_CD"]}%')";
 		}
 		if( $_SESSION["f_CN"] != "" ) {
-			$query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%' OR OD.mtel LIKE '%{$_SESSION["f_CN"]}%' OR OD.address LIKE '%{$_SESSION["f_CN"]}%')";
+			$query .= " AND (OD.ClientName LIKE '%{$_SESSION["f_CN"]}%' OR OD.OrderNumber LIKE '%{$_SESSION["f_CN"]}%' OR OD.mtel LIKE '%{$_SESSION["f_CN"]}%' OR OD.address LIKE '%{$_SESSION["f_CN"]}%' OR KA.Naimenovanie LIKE '%{$_SESSION["f_CN"]}%')";
 		}
 		if( $_SESSION["f_EndDate"] != "" and $archive == "0") {
 			if( $_SESSION["f_EndDate"] == "0" ) {
@@ -1001,7 +995,7 @@
 
 		echo "<tr id='ord{$row["OD_ID"]}'>";
 		echo "<td".($row["Archive"] == 1 ? " style='background: #bf8;'" : "")."><input type hidden name='order[]' value='{$row["OD_ID"]}'><span class='nowrap'><b class='code'>{$row["Code"]}</b><br>{$row["AddDate"]}</span></td>";
-		echo "<td><span ".($row["address"] ? "title='{$row["address"]}'><i class='fas fa-home'></i>" : ">")."<n".($row["ul"] ? " class='ul' title='юр. лицо'" : "").">{$row["ClientName"]}</n><br><b>{$row["OrderNumber"]}</b><br>{$row["mtel"]}</span></td>";
+		echo "<td><span ".($row["address"] ? "title='{$row["address"]}'><i class='fas fa-home'></i>" : ">")."".($row["Naimenovanie"] ? "<n class='ul'>{$row["Naimenovanie"]}</n><br>" : "")."{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b><br>{$row["mtel"]}</span></td>";
 
 		// Если набор в накладной - на дате продажи ссылка на накладную
 		if( $row["PFI_ID"] ) {
@@ -1249,7 +1243,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 		var data = $('#printtable').serialize();
 		$("#toprint").attr('href', '/toprint/main.php?' + data);
 		$("#post-link").val('http://<?=$_SERVER['HTTP_HOST']?>/toprint/main.php?' + data);
-		$("#print_forms > a").attr('href', '/bills.php?' + data);
 		$("#labelsbox").attr('href', '/labels_box.php?' + data);
 		return false;
 	}
@@ -1417,11 +1410,10 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 			$('#add_shipment_form').dialog({
 				position: { my: "center top", at: "center top", of: window },
+				resizable: false,
 				draggable: false,
 				width: 1000,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 		});

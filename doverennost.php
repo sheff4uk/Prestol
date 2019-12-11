@@ -157,7 +157,7 @@
 	}
 </style>
 
-<a id='add_doverennost_btn' href='#' title='Создать доверенность'></a>
+<div id='add_doverennost_btn' title='Создать доверенность'></div>
 
 <table>
 	<thead>
@@ -379,12 +379,10 @@ this.subbut.value='Подождите, пожалуйста!';">
 		// Форма составления накладной
 		$('#add_doverennost_btn').click(function() {
 			$('#add_doverennost_form').dialog({
-				position: { my: "center top", at: "center top", of: window },
+				resizable: false,
 				draggable: false,
 				width: 700,
 				modal: true,
-				show: 'blind',
-				hide: 'explode',
 				closeText: 'Закрыть'
 			});
 		});

@@ -8,15 +8,6 @@ if( $_GET["PFB_ID"] ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 		die('Недостаточно прав для совершения операции');
 	}
-	// Проверка, входит ли плательщик данного счета в список доступных контрагентов
-	if( in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
-		$query = "SELECT 1 FROM Kontragenty WHERE KA_ID IN ({$KA_IDs}) AND KA_ID = (SELECT pokupatel_id FROM PrintFormsBill WHERE PFB_ID = {$_GET["PFB_ID"]})";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		if( mysqli_num_rows($res) == 0 ) {
-			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-			die('Недостаточно прав для совершения операции');
-		}
-	}
 	$filename = $_GET["type"].'_'.$_GET["PFB_ID"].'_'.$_GET["number"].'.pdf';
 }
 elseif( $_GET["PFI_ID"] ) {
@@ -24,15 +15,6 @@ elseif( $_GET["PFI_ID"] ) {
 	if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !in_array('sverki_opt', $Rights) ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 		die('Недостаточно прав для совершения операции');
-	}
-	// Проверка, входит ли плательщик данной накладной в список доступных контрагентов
-	if( in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
-		$query = "SELECT 1 FROM Kontragenty WHERE KA_ID IN ({$KA_IDs}) AND KA_ID = (SELECT platelshik_id FROM PrintFormsInvoice WHERE PFI_ID = {$_GET["PFI_ID"]})";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		if( mysqli_num_rows($res) == 0 ) {
-			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-			die('Недостаточно прав для совершения операции');
-		}
 	}
 	$filename = $_GET["type"].'_'.$_GET["PFI_ID"].'_'.$_GET["number"].'.pdf';
 }
