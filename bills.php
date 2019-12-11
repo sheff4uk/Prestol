@@ -432,7 +432,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	<h1>Счёт на оплату</h1>
 	<form action="?add_bill&year=<?=$year?>&payer=<?=$payer?>" method="post" id="formdiv" onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
-		<fieldset style="text-align: left;">
+		<fieldset id="wr_platelshik" style="text-align: left;">
 			<legend>Информация о покупателе:</legend>
 			<select name="KA_ID" id="kontragenty" style="width: 100%;">
 				<?
@@ -585,6 +585,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 		// Обнуляем сумму счёта
 		bill_total();
 
+		// Деактивируем форму с информацией по контрагенту
+		$('#wr_platelshik input').attr('disabled', true);
+
 		// Массив контрагентов
 		Kontragenty = <?= json_encode($Kontragenty); ?>;
 
@@ -603,6 +606,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		// Заполнение формы и динамическая подгрузка наборов при выборе контрагента
 		$('select[name="KA_ID"]').on('change', function() {
+			$('#wr_platelshik input').attr('disabled', false);
 			var KA_ID = $(this).val();
 			var CT_ID = $(this).find('option:selected').attr('CT_ID');
 			$('input[name="CT_ID"]').val(CT_ID);
