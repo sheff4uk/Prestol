@@ -958,6 +958,7 @@
 				,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
 				,IFNULL(OD.ClientName, '') ClientName
 				,KA.Naimenovanie
+				,OD.KA_ID
 				,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 				,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
 				,OD.sell_comment
@@ -1131,7 +1132,7 @@
 			echo "<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
 					<td class='txtright'>{$price}</td>
 					<td class='txtright nowrap'>{$format_discount} p.<br><b class='{$discount_bg}'>{$percent} %</b></td>
-					<td><button ".($row["ul"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' location='{$location}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
+					<td><button ".($row["KA_ID"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' id='{$row["OD_ID"]}' location='{$location}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
 
 					// Если в накладной - выводим ссылку на сверки
 					if( $row["PFI_ID"] ) {
@@ -1158,7 +1159,7 @@
 			echo "</script>";
 
 			// Собираем ошибки если у проданного набора нет предоплаты
-			if ($row["Price"] - $row['discount'] > 0 and $row["StartDate"] and $row["payment_sum"] == 0 and !$row["PFI_ID"] and $row["ul"] == 0 and $row["SH_ID"] != 36) {
+			if ($row["Price"] - $row['discount'] > 0 and $row["StartDate"] and $row["payment_sum"] == 0 and !$row["PFI_ID"] and !$row["KA_ID"] and $row["SH_ID"] != 36) {
 				$_SESSION["error"][] = "Набор <a href='#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a> продан {$row["StartDate"]}, но предоплата не внесена!";
 			}
 		}
