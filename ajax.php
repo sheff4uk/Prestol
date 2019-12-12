@@ -1076,6 +1076,8 @@ case "bill":
 					".($SH_IDs ? "AND SH.SH_ID IN ({$SH_IDs})" : "AND SH.retail = 1 AND SH.CT_ID = {$CT_ID} AND OD.StartDate IS NOT NULL AND OD.is_lock = 0")."
 					# Для продавца только его салоны
 					".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
+					# Есть стоимость
+					AND Ord_price(OD.OD_ID) - Ord_discount(OD.OD_ID) > 0
 					AND OD.SH_ID != 36 #Исключение для Клёна
 				GROUP BY OD.OD_ID
 				ORDER BY SH.Shop, OD.StartDate DESC, OD.OD_ID DESC
@@ -1101,6 +1103,7 @@ case "bill":
 					$html .= "<li>Нет отгрузочной накладной с этим набором;</li>";
 					$html .= "<li>У набора указана дата продажи и месяц в реализации открыт;</li>";
 					$html .= "<li>За набором не числится оплата;</li>";
+					$html .= "<li>У набора не нулевая стоимость;</li>";
 					$html .= "</ul>";
 				}
 
