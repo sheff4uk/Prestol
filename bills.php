@@ -44,7 +44,7 @@ if (!$USR_Shop) { // Если не продавец - показываем оп�
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
 		$saldo_format = number_format($row["saldo"], 0, '', ' ');
-		$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} ({$saldo_format})</option>";
+		$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} (Сальдо: {$saldo_format})</option>";
 		$KA_IDs .= ",{$row["KA_ID"]}";
 		$Kontragenty[$row["KA_ID"]] = array( "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
 	}
@@ -623,6 +623,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#platelshik_bik').val(KA_data["BIK"]);
 				$('#platelshik_ks').val(KA_data["KS"]);
 				$('#platelshik_bank_adres').val(KA_data["Bank_adres"]);
+				noty({timeout: 5000, text: 'ВНИМАНИЕ<br>Чтобы очистить форму - выберите в выпадающем меню "-- Новый покупатель из ..."', type: 'alert'});
 			}
 			else {
 				$('#platelshik_name').val('');
@@ -637,6 +638,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#platelshik_ks').val('');
 				$('#platelshik_bank_adres').val('');
 				$("#kontragenty").val('');
+				noty({timeout: 5000, text: 'ВНИМАНИЕ<br>Перед добавлением нового покупателя - пожалуйста, убедитесь, что его нет в списке контрагентов.', type: 'alert'});
 			}
 			$('#orders_to_bill').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
 			$.ajax({ url: "ajax.php?do=bill&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&from_js=1", dataType: "script", async: true });

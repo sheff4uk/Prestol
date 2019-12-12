@@ -112,8 +112,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#order_form fieldset input[type="text"]').val('');
 			$('#order_form fieldset textarea').val('');
 			$('#order_form fieldset input[name="EndDate"]').val('<?=$_SESSION["end_date"]?>');
-			$('#order_form fieldset input[name="ul"]').val('1');
-			$('#order_form fieldset input[name="ul"]').prop( "checked", false );
 			$('#order_form .btnset input').prop( "checked", false ).button('refresh');
 
 			// Скрытие полей
