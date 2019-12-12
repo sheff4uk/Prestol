@@ -417,6 +417,7 @@
 			,OD.Code
 			,OD.ClientName
 			,IFNULL(KA1.Naimenovanie, KA.Naimenovanie) Naimenovanie
+			,IFNULL(KA1.saldo, KA.saldo) saldo
 			,IFNULL(SH.KA_ID, OD.KA_ID) KA_ID
 			,OD.mtel
 			,OD.address
@@ -578,7 +579,14 @@
 			<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable and !$USR_Shop) ? "" : "disabled")?> style="width: 100%;">
 				<!--Список салонов выводится аяксом ниже-->
 			</select>
-			<?=($row["Naimenovanie"] ? "<n class='ul'>{$row["Naimenovanie"]}</n><br><a href='/bills.php?payer={$row["KA_ID"]}' target='_blank'>Счета</a>&nbsp;&nbsp;<a href='/sverki.php?payer={$row["KA_ID"]}' target='_blank'>Сверки</a><br>" : "")?>
+			<?
+				if ($row["Naimenovanie"]) {
+					$saldo_format = number_format($row["saldo"], 0, '', ' ');
+					echo "<n class='ul'>{$row["Naimenovanie"]}</n><br>";
+					echo "Сальдо: <b style='color: ".(($row["saldo"] < 0) ? "#E74C3C;" : "#16A085;")."'>{$saldo_format}</b><br>";
+					echo "<a href='/bills.php?payer={$row["KA_ID"]}' target='_blank'>Счета</a>&nbsp;&nbsp;<a href='/sverki.php?payer={$row["KA_ID"]}' target='_blank'>Сверки</a>";
+				}
+			?>
 			</div>
 		</td>
 
