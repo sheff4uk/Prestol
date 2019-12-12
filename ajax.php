@@ -1555,7 +1555,7 @@ case "update_shop":
 	// Меняем салон в наборе
 	$query = "UPDATE OrdersData SET SH_ID = {$SH_ID}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 	if( !mysqli_query( $mysqli, $query ) ) {
-		echo "$('.main_table select.select_shops').val({$old_shid});";
+		echo "$('.main_table td#{$OD_ID} select.select_shops').val({$old_shid});";
 		die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	}
 
