@@ -1136,7 +1136,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 							,KA.Naimenovanie
 							,IFNULL(KA.saldo, 0) saldo
 						FROM Kontragenty KA
-						JOIN OrdersData OD ON OD.KA_ID = KA.KA_ID
+						# Исключения для Клёна
+						JOIN (SELECT SH_ID, IF(SH_ID = 36, 155, KA_ID) KA_ID FROM OrdersData) OD ON OD.KA_ID = KA.KA_ID
+						#JOIN OrdersData OD ON OD.KA_ID = KA.KA_ID
 						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 						JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 						".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
