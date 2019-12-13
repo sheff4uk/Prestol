@@ -1113,7 +1113,8 @@
 			if ($shop_num_rows > 1) {
 				echo "<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>";
 			}
-			echo "<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>";
+			//echo "<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>";
+			echo "<td id='{$row["OD_ID"]}'><textarea class='sell_comment' style='width: 100%; resize: vertical;'>{$row["sell_comment"]}</textarea></td>";
 
 			// Если набор в накладной - стоимость набора ведет в накладную, цена не редактируется
 			if( $row["PFI_ID"] ) {
@@ -1377,7 +1378,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 		// Редактирование примечания к реализации
 		$('.sell_comment').on('change', function() {
 			var OD_ID = $(this).parents('td').attr('id');
-			var val = $(this).val();
+			var val = escapeHtml($(this).val());
+			val = val.replace(/\n/g, ' ');
 			$.ajax({ url: "ajax.php?do=update_sell_comment&OD_ID="+OD_ID+"&sell_comment="+val, dataType: "script", async: false });
 		});
 
