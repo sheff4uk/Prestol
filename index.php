@@ -635,6 +635,7 @@
 <?
 	$MT_IDs = (!isset($_GET["shpid"]) and $_SESSION["f_M"] != "") ? implode(",", $_SESSION["f_M"]) : "";
 
+	$is_invoice = 0;	// Если встретится накладная - поменяется на 1
 	$is_orders_ready = 1;	// Собираем готовые наборы чтобы можно ставить дату отгрузки (когда все готовы должна получиться 1)
 	$orders_count = 0;		// Счетчик видимых наборов
 	$orders_IDs = "0";		// Список ID наборов для Select2 материалов
@@ -1063,8 +1064,8 @@
 
 			echo "<br>";
 
-			// Если отгружен и есть право отгружать - показываем кнопку отмены отгрузки
-			if ($row["Archive"] and in_array('order_ready', $Rights)) {
+			// Если отгружен, не в накладной и есть право отгружать - показываем кнопку отмены отгрузки
+			if ($row["Archive"] and !$row["PFI_ID"] and in_array('order_ready', $Rights)) {
 				echo "<a href='#' class='undo_shipping' od_id='{$row["OD_ID"]}' title='Отменить отгрузку'><i style='color:#333;' class='fas fa-flag-checkered fa-lg'></i></a> ";
 			}
 
@@ -1102,6 +1103,11 @@
 		if( !$row["IsReady"] || $row["IsPainting"] == "1" || $row["IsPainting"] == "2" ) {
 			$is_orders_ready = 0;
 		}
+
+		if( $row["PFI_ID"] ) {
+			$is_invoice = 1;
+		}
+
 		$orders_count++;
 	}
 ?>
@@ -1238,6 +1244,29 @@ this.subbut.value='Подождите, пожалуйста!';">
 		}
 	}
 
+	// Функция проверяет можно ли отменить отгрузку
+	function check_undo_shipping(is_invoice, filter) {
+		if( filter ) {
+			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
+			$('#wr_shipping_date font').hide('fast');
+			$('#wr_shipping_date font').html();
+		}
+		else {
+			var shipping_date = $('#wr_shipping_date input[name="shipping_date"]').val();
+			//alert(shipping_date);
+			if(is_invoice && shipping_date) {
+				$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
+				$('#wr_shipping_date font').show('fast');
+				$('#wr_shipping_date font').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Один или несколько наборов в накладной!');
+			}
+			else {
+				$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', false);
+				$('#wr_shipping_date font').hide('fast');
+				$('#wr_shipping_date font').html();
+			}
+		}
+	}
+
 	// Добавляем к ссылке печати столбцы и строки которые будем печатать
 	function changelink() {
 		var data = $('#printtable').serialize();
@@ -1298,7 +1327,10 @@ this.subbut.value='Подождите, пожалуйста!';">
 		});
 
 		// Проверяем можно ли отгружать
-		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?> ,<?=(($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0?>);
+		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?>, <?=(($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0?>);
+
+		// Проверяем можно ли отменить отгрузку
+		check_undo_shipping(<?=$is_invoice?>, <?=(($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0?>);
 
 		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 

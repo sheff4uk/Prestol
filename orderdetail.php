@@ -566,8 +566,8 @@
 		else {
 			echo "<td style='text-align: center;'>";
 			echo ($ReadyDate ? "<font class='{$date_diff_color}'>{$ReadyDate}</font><br><i style='font-size: .8em;'>{$format_EndDate}</i>" : ($DelDate ? $DelDate : "<input type='text' name='EndDate' class='date' value='{$EndDate}' autocomplete='off' ".((!$disabled and !$Del and $editable and $SH_ID and in_array('order_add_confirm', $Rights)) ? "" : "disabled").">"));
-				// Если отгружен и есть право отгружать - показываем кнопку отмены отгрузки
-				if ($ReadyDate and in_array('order_ready', $Rights)) {
+				// Если отгружен, не в накладной и есть право отгружать - показываем кнопку отмены отгрузки
+				if ($ReadyDate and !$PFI_ID and in_array('order_ready', $Rights)) {
 					echo "<br><a href='#' class='undo_shipping' od_id='{$id}' title='Отменить отгрузку'><i style='color:#333;' class='fas fa-flag-checkered fa-2x'></i></a> ";
 				}
 			echo "</td>";
