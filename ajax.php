@@ -1629,13 +1629,13 @@ case "update_shop":
 	echo "$('.shop_cell[id={$OD_ID}]').attr('SH_ID', '{$SH_ID}');";
 	// Если есть оплата в кассу другого салона
 	if( $attention ) {
-		echo "$('.add_payment_btn[id={$OD_ID}]').addClass('attention');";
-		echo "$('.add_payment_btn[id={$OD_ID}]').attr('title', 'Имеются платежи, внесённые в кассу другого салона!');";
+		echo "$('#ord{$OD_ID} .add_payment_btn').addClass('attention');";
+		echo "$('#ord{$OD_ID} .add_payment_btn').attr('title', 'Имеются платежи, внесённые в кассу другого салона!');";
 		echo "noty({text: 'У этого набора имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.', type: 'error'});";
 	}
 	else {
-		echo "$('.add_payment_btn[id={$OD_ID}]').removeClass('attention');";
-		echo "$('.add_payment_btn[id={$OD_ID}]').removeAttr('title');";
+		echo "$('#ord{$OD_ID} .add_payment_btn').removeClass('attention');";
+		echo "$('#ord{$OD_ID} .add_payment_btn').removeAttr('title');";
 	}
 
 	echo "noty({timeout: 3000, text: 'Салон изменен с <b>{$old_shop}</b> на <b>{$new_shop}</b>', type: 'success'});";

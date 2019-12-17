@@ -308,9 +308,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 						<th width="20"><p>&nbsp;</p></th>
 					</tr>
 					<tr>
-						<td><input type="text" name="tovar_name[]" id="rab" class="forminput_TMX" value=""></td>
-						<td><input type="text" name="tovar_kol[]" id="rab" class="forminput_seriya" value=""></td>
-						<td><input type="text" name="tovar_ed[]" id="rab" class="forminput_seriya" value=""></td>
+						<td><input type="text" name="tovar_name[]" class="forminput_TMX" value=""></td>
+						<td><input type="text" name="tovar_kol[]" class="forminput_seriya" value=""></td>
+						<td><input type="text" name="tovar_ed[]" class="forminput_seriya" value=""></td>
 						<td><i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i></td>
 					</tr>
 				</tbody>
@@ -349,9 +349,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 		row.appendChild(td3);
 		row.appendChild(td4);
 		// Наполняем ячейки
-		td1.innerHTML = '<input type="text" name="tovar_name[]" id="rab" class="forminput_TMX" />';
-		td2.innerHTML = '<input type="text" name="tovar_kol[]" id="rab" class="forminput_seriya" />';
-		td3.innerHTML = '<input type="text" name="tovar_ed[]" id="rab" class="forminput_seriya" />';
+		td1.innerHTML = '<input type="text" name="tovar_name[]" class="forminput_TMX" />';
+		td2.innerHTML = '<input type="text" name="tovar_kol[]" class="forminput_seriya" />';
+		td3.innerHTML = '<input type="text" name="tovar_ed[]" class="forminput_seriya" />';
 		td4.innerHTML = '<i class="fa fa-minus-square fa-2x" style="color: red;" onclick="deleteRow(this);"></i>';
 
 	}

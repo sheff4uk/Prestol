@@ -1344,7 +1344,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		// Форма редактирования стоимости набора
 		$('.update_price_btn').click( function() {
-			var OD_ID = $(this).attr('id');
+			var OD_ID = $(this).parents('tr').attr('id');
+			OD_ID = OD_ID.replace('ord', '');
 			var location = $(this).attr("location");
 			$.ajax({ url: "ajax.php?do=update_price&OD_ID="+OD_ID, dataType: "script", async: false });
 
@@ -1397,7 +1398,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		// Кнопка добавления оплаты к набору
 		$('.add_payment_btn').click( function() {
-			var OD_ID = $(this).attr('id');
+			var OD_ID = $(this).parents('tr').attr('id');
+			OD_ID = OD_ID.replace('ord', '');
 			var location = $(this).attr("location");
 			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID, dataType: "script", async: false });
 
