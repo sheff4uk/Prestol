@@ -532,6 +532,14 @@ this.subbut.value='Подождите, пожалуйста!';">
 </div>
 
 <script>
+	// Выбрать все в форме
+	function selectall(ch) {
+		$('#orders_to_bill .chbox').prop('checked', ch).change();
+		$('#orders_to_bill #selectalltop').prop('checked', ch);
+		$('#orders_to_bill #selectallbottom').prop('checked', ch);
+		return false;
+	}
+
 	// Подсчет суммы счёта
 	function bill_total() {
 		var arr_price = Array
@@ -582,6 +590,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 	}
 
 	$(function() {
+		// Деактивируем сабмит
+		$('input[name="subbut"]').prop('disabled', true).button('refresh');
+
 		// Обнуляем сумму счёта
 		bill_total();
 
@@ -590,6 +601,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		// Массив контрагентов
 		Kontragenty = <?= json_encode($Kontragenty); ?>;
+
+		$('#orders_to_bill').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
 
 		// Форма составления счёта
 		$('#add_bill_btn').click(function() {
@@ -643,6 +656,35 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#orders_to_bill').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
 			$.ajax({ url: "ajax.php?do=bill&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&from_js=1", dataType: "script", async: true });
 		});
+
+		// Обработчики чекбоксов в списке наборов
+		$('#orders_to_bill').on('change', '#selectalltop', function(){
+			ch = $('#selectalltop').prop('checked');
+			selectall(ch);
+			return false;
+		});
+		$('#orders_to_bill').on('change', '#selectallbottom', function(){
+			ch = $('#selectallbottom').prop('checked');
+			selectall(ch);
+			return false;
+		});
+		$('#orders_to_bill').on('change', '.chbox', function(){
+			var checked_status = true;
+			var checked_status_submit = true;
+			$('.chbox').each(function(){
+				if( !$(this).prop('checked') ) {
+					checked_status = $(this).prop('checked');
+				}
+				if( $(this).prop('checked') ) {
+					checked_status_submit = !$(this).prop('checked');
+				}
+			});
+			$('#selectalltop').prop('checked', checked_status);
+			$('#selectallbottom').prop('checked', checked_status);
+			$('input[name="subbut"]').prop('disabled', checked_status_submit).button('refresh');
+			return false;
+		});
+		// Конец обработчиков чекбоксов
 
 		// При включении чекбокса отображается инпут цены
 		$('#orders_to_bill').on('change', '.chbox', function() {

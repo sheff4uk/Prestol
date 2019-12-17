@@ -73,7 +73,9 @@ $query = "
 		,IFNULL(Bank_adres, '') Bank_adres
 		,IFNULL(KA.saldo, 0) saldo
 	FROM Kontragenty KA
-	JOIN OrdersData OD ON OD.KA_ID = KA.KA_ID
+	# Исключения для Клёна
+	JOIN (SELECT SH_ID, IF(SH_ID = 36, 155, KA_ID) KA_ID FROM OrdersData) OD ON OD.KA_ID = KA.KA_ID
+	#JOIN OrdersData OD ON OD.KA_ID = KA.KA_ID
 	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 	JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 	".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
@@ -346,65 +348,69 @@ if( $payer ) {
 	<tbody>
 <?
 if( $payer ) {
-	$query = "SELECT PFI.PFI_ID
-					,IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
-					,NULL kredit
-					,KA.KA_ID
-					,KA.Naimenovanie
-					,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
-					,PFI.count
-					,Friendly_date(PFI.date) date_format
-					,PFI.date
-					,USR_Icon(PFI.USR_ID) Name
-					,PFI.del
-					,PFI.rtrn
-					,PFI.comment
-					,ROUND((PFI.discount / (PFI.summa + PFI.discount)) * 100, 1) discount
-				FROM PrintFormsInvoice PFI
-				LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
-				WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID = {$payer}
+	$query = "
+		SELECT PFI.PFI_ID
+			,IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+			,NULL kredit
+			,KA.KA_ID
+			,KA.Naimenovanie
+			,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
+			,PFI.count
+			,Friendly_date(PFI.date) date_format
+			,PFI.date
+			,USR_Icon(PFI.USR_ID) Name
+			,PFI.del
+			,PFI.rtrn
+			,PFI.comment
+			,ROUND((PFI.discount / (PFI.summa + PFI.discount)) * 100, 1) discount
+		FROM PrintFormsInvoice PFI
+		LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
+		WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID = {$payer}
 
-				UNION ALL
+		UNION ALL
 
-				SELECT NULL
-					,NULL debet
-					,F.money kredit
-					,KA.KA_ID
-					,KA.Naimenovanie
-					,CONCAT('Оплата от покупателя, <b>', F.comment, '</b>') document
-					,NULL
-					,Friendly_date(F.date) date_format
-					,F.date
-					,USR_Icon(F.author) Name
-					,NULL
-					,1
-					,NULL
-					,0
-				FROM Finance F
-				LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
-				WHERE YEAR(F.date) = {$year} AND KA.KA_ID = {$payer} AND F.money != 0
+		SELECT NULL
+			,NULL debet
+			,F.money kredit
+			,KA.KA_ID
+			,KA.Naimenovanie
+			,CONCAT('Оплата от покупателя, <b>', F.comment, '</b>') document
+			,NULL
+			,Friendly_date(F.date) date_format
+			,F.date
+			,USR_Icon(F.author) Name
+			,NULL
+			,1
+			,NULL
+			,0
+		FROM Finance F
+		LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
+		WHERE YEAR(F.date) = {$year} AND KA.KA_ID = {$payer} AND F.money != 0
 
-				ORDER BY date DESC, PFI_ID DESC";
+		ORDER BY date DESC, PFI_ID DESC
+	";
 }
 else {
-	$query = "SELECT PFI.PFI_ID
-					,IF(PFI.rtrn = 1, NULL, PFI.summa) debet
-					,IF(PFI.rtrn = 1, PFI.summa, NULL) kredit
-					,KA.KA_ID
-					,KA.Naimenovanie
-					,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
-					,PFI.count
-					,Friendly_date(PFI.date) date_format
-					,PFI.date
-					,USR_Icon(PFI.USR_ID) Name
-					,PFI.del
-					,PFI.rtrn
-					,PFI.comment
-					,ROUND((PFI.discount / (PFI.summa + PFI.discount)) * 100, 1) discount
-				FROM PrintFormsInvoice PFI
-				LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
-				WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID IN ({$KA_IDs})
-				ORDER BY PFI.date DESC, PFI.PFI_ID DESC";
+	$query = "
+		SELECT PFI.PFI_ID
+			,IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+			,NULL kredit
+			,KA.KA_ID
+			,KA.Naimenovanie
+			,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
+			,PFI.count
+			,Friendly_date(PFI.date) date_format
+			,PFI.date
+			,USR_Icon(PFI.USR_ID) Name
+			,PFI.del
+			,PFI.rtrn
+			,PFI.comment
+			,ROUND((PFI.discount / (PFI.summa + PFI.discount)) * 100, 1) discount
+		FROM PrintFormsInvoice PFI
+		LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
+		WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID IN ({$KA_IDs})
+		ORDER BY PFI.date DESC, PFI.PFI_ID DESC
+	";
 }
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
@@ -465,65 +471,22 @@ while( $row = mysqli_fetch_array($res) ) {
 this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset style="text-align: center;">
 			<div>
-				<label>Контрагент:</label>
-				<select name="KA_ID" required>
-					<?
-					echo "<option value='' CT_ID=''>-=Выберите контрагента=-</option>";
-
-					// Если доступен только город - выводим только его
-					if( in_array('sverki_city', $Rights) ) {
-						$query = "SELECT CT_ID, City, Color FROM Cities WHERE CT_ID = {$USR_City}";
-					}
-					else {
-						$query = "SELECT CT_ID, City, Color FROM Cities ORDER BY CT_ID";
-					}
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					while( $row = mysqli_fetch_array($res) ) {
-						echo "<optgroup label='{$row["City"]}' style='background: {$row["Color"]};'>";
-
-						// Если доступен только город и у пользователя указан салон - показываем только его
-						if( in_array('sverki_city', $Rights) and $USR_Shop ) {
-							$query = "SELECT GROUP_CONCAT(SH.Shop) Shop FROM Shops SH WHERE SH.SH_ID IN ({$USR_Shop})";
-							$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-							$Shop = mysqli_result($subres,0,'Shop');
-							echo "<option value='0' CT_ID='{$row["CT_ID"]}'>{$Shop}</option>";
-						}
-						else {
-							// Выводим список контрагентов, связанных с салонами этого города
-							$query = "SELECT KA.KA_ID, KA.Naimenovanie
-										FROM Kontragenty KA
-										JOIN Shops SH ON SH.KA_ID = KA.KA_ID
-										WHERE SH.CT_ID = {$row["CT_ID"]}
-										GROUP BY KA.KA_ID
-										ORDER BY KA.KA_ID";
-							$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-							while( $subrow = mysqli_fetch_array($subres) )
-							{
-								echo "<option value='{$subrow["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$subrow["Naimenovanie"]}</option>";
-							}
-
-							// Если в городе есть розница - показываем "Роница/Склад"
-							$query = "SELECT 1 FROM Shops SH WHERE SH.CT_ID = {$row["CT_ID"]} AND SH.retail = 1";
-							$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-							if( mysqli_num_rows($subres) ) {
-								echo "<option value='0' CT_ID='{$row["CT_ID"]}'>*Розница/Склад*</option>";
-							}
-						}
-						echo "</optgroup>";
-					}
-					?>
-				</select>
-				<br>
-				<br>
 				<fieldset id="wr_platelshik" style="text-align: left;">
 					<legend id="KA_info"></legend>
+					<select name="KA_ID" id="kontragenty" style="width: 100%;">
+						<?
+						echo "<option value=''></option>";
+						// Выводим дропдаун
+						echo $KA_options;
+						?>
+					</select>
+					<input type="hidden" name="CT_ID">
 					<table width="100%" class="forms">
 						<tbody>
 							<tr>
 								<td width="200" align="left" valign="top">Название ООО или ИП:</td>
 								<td align="left" valign="top">
-									<input type="hidden" name="platelshik_id" id="platelshik_id" class="forminput">
-									<input required type="text" autocomplete="off" name="platelshik_name" id="platelshik_name" class="forminput" placeholder="Введите минимум 2 символа для поиска контрагента">
+									<input required type="text" autocomplete="off" name="platelshik_name" id="platelshik_name" class="forminput" placeholder="">
 								</td>
 							</tr>
 							<tr>
@@ -764,7 +727,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	}
 
 	$(function() {
-		$('#payer').select2({ placeholder: 'Выберите контрагента', language: 'ru' });
 
 //		// Редактирование примечания к накладной
 //		$('.sverki_comment').on('change', function() {
@@ -773,8 +735,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 //			$.ajax({ url: "ajax.php?do=update_sverki_comment&PFI_ID="+PFI_ID+"&sverki_comment="+val, dataType: "script", async: false });
 //		});
 
+		// Деактивируем форму с информацией по контрагенту
+		$('#wr_platelshik input').attr('disabled', true);
+
+		// Массив контрагентов
+		Kontragenty = <?= json_encode($Kontragenty); ?>;
+
 		// Форма составления накладной
 		$('#add_invoice_btn, #add_invoice_btn_return').click(function() {
+
 			// Узнаём какая из 2-х кнопок была нажата
 			var this_id = $(this).attr('id');
 			var title;
@@ -798,9 +767,12 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('select[name="KA_ID"]').val('').change();
 			$('#gruzopoluchatel1 input').val('');
 			$('#gruzopoluchatel_0').prop('checked', true).button('refresh').change();
-			$('#orders_to_invoice').html('');
 			$('#date').val('<?=( date('d.m.Y') )?>');
 			$('#num_rows select').val(25);
+			$('input[name="subbut"]').prop('disabled', true).button('refresh');
+			// Деактивируем форму с информацией по контрагенту
+			$('#wr_platelshik input').attr('disabled', true);
+			<?=($payer ? "$('select[name=\"KA_ID\"]').val('{$payer}').trigger('change');" : "")?>
 			invoice_total();
 
 			$('#add_invoice_form').dialog({
@@ -811,9 +783,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 				modal: true,
 				closeText: 'Закрыть'
 			});
-
-			// Автокомплит поверх диалога
-			$( "#platelshik_name" ).autocomplete( "option", "appendTo", "#add_invoice_form" );
 		});
 
 		// Форма подготовки акта сверки
@@ -847,13 +816,48 @@ this.subbut.value='Подождите, пожалуйста!';">
 			}
 		});
 
-		// Динамическая подгрузка наборов при выборе контрагента (в форме накладной)
+		// Заполнение формы и динамическая подгрузка наборов при выборе контрагента
 		$('select[name="KA_ID"]').on('change', function() {
+			$('#wr_platelshik input').attr('disabled', false);
 			var KA_ID = $(this).val();
 			var CT_ID = $(this).find('option:selected').attr('CT_ID');
 			var num_rows = $('#num_rows input').val(); //Признак возвратной накладной
-			$('#orders_to_invoice').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
-			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows, dataType: "script", async: true });
+			$('input[name="CT_ID"]').val(CT_ID);
+			if (KA_ID > 0) {
+				var KA_data = Kontragenty[KA_ID];
+				$('#platelshik_name').val(KA_data["Naimenovanie"]);
+				$('#platelshik_inn').val(KA_data["INN"]);
+				$('#platelshik_kpp').val(KA_data["KPP"]);
+				$('#platelshik_okpo').val(KA_data["OKPO"]);
+				$('#platelshik_adres').val(KA_data["Jur_adres"]);
+				$('#platelshik_tel').val(KA_data["Telefony"]);
+				$('#platelshik_schet').val(KA_data["Schet"]);
+				$('#platelshik_bank').val(KA_data["Bank"]);
+				$('#platelshik_bik').val(KA_data["BIK"]);
+				$('#platelshik_ks').val(KA_data["KS"]);
+				$('#platelshik_bank_adres').val(KA_data["Bank_adres"]);
+			}
+			else {
+				$('#platelshik_name').val('');
+				$('#platelshik_inn').val('');
+				$('#platelshik_kpp').val('');
+				$('#platelshik_okpo').val('');
+				$('#platelshik_adres').val('');
+				$('#platelshik_tel').val('');
+				$('#platelshik_schet').val('');
+				$('#platelshik_bank').val('');
+				$('#platelshik_bik').val('');
+				$('#platelshik_ks').val('');
+				$('#platelshik_bank_adres').val('');
+				$("#kontragenty").val('');
+			}
+			if (CT_ID) {
+				$('#orders_to_invoice').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
+				$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows+"&from_js=1", dataType: "script", async: true });
+			}
+			else {
+				$('#orders_to_invoice').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
+			}
 		});
 
 		// При смене количества строк записываем значение в скрытое поле и вызываем аякс для подгрузки наборов
@@ -866,7 +870,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows, dataType: "script", async: false });
 		});
 
-		// Обработчики чекбоксов в форме отгрузки
+		// Обработчики чекбоксов в списке наборов
 		$('#orders_to_invoice').on('change', '#selectalltop', function(){
 			ch = $('#selectalltop').prop('checked');
 			selectall(ch);
@@ -879,14 +883,18 @@ this.subbut.value='Подождите, пожалуйста!';">
 		});
 		$('#orders_to_invoice').on('change', '.chbox', function(){
 			var checked_status = true;
+			var checked_status_submit = true;
 			$('.chbox').each(function(){
-				if( !$(this).prop('checked') )
-				{
+				if( !$(this).prop('checked') ) {
 					checked_status = $(this).prop('checked');
+				}
+				if( $(this).prop('checked') ) {
+					checked_status_submit = !$(this).prop('checked');
 				}
 			});
 			$('#selectalltop').prop('checked', checked_status);
 			$('#selectallbottom').prop('checked', checked_status);
+			$('input[name="subbut"]').prop('disabled', checked_status_submit).button('refresh');
 			return false;
 		});
 		// Конец обработчиков чекбоксов
@@ -911,74 +919,49 @@ this.subbut.value='Подождите, пожалуйста!';">
 			invoice_total();
 		});
 
-		// Автокомплит плательщика
-		$( "#platelshik_name" ).autocomplete({
+//		// Автокомплит плательщика
+//		$( "#platelshik_name" ).autocomplete({
 //			source: "kontragenty.php",
-			minLength: 2,
-			autoFocus: true,
-			select: function( event, ui ) {
-				$('#platelshik_id').val(ui.item.id);
-				$('#platelshik_inn').val(ui.item.INN);
-				$('#platelshik_kpp').val(ui.item.KPP);
-				$('#platelshik_okpo').val(ui.item.OKPO);
-				$('#platelshik_adres').val(ui.item.Jur_adres);
-				$('#platelshik_tel').val(ui.item.Telefony);
-				$('#platelshik_schet').val(ui.item.Schet);
-				$('#platelshik_bank').val(ui.item.Bank);
-				$('#platelshik_bik').val(ui.item.BIK);
-				$('#platelshik_ks').val(ui.item.KS);
-				$('#platelshik_bank_adres').val(ui.item.Bank_adres);
-			}
-		});
+//			minLength: 2,
+//			autoFocus: true,
+//			select: function( event, ui ) {
+//				$('#platelshik_id').val(ui.item.id);
+//				$('#platelshik_inn').val(ui.item.INN);
+//				$('#platelshik_kpp').val(ui.item.KPP);
+//				$('#platelshik_okpo').val(ui.item.OKPO);
+//				$('#platelshik_adres').val(ui.item.Jur_adres);
+//				$('#platelshik_tel').val(ui.item.Telefony);
+//				$('#platelshik_schet').val(ui.item.Schet);
+//				$('#platelshik_bank').val(ui.item.Bank);
+//				$('#platelshik_bik').val(ui.item.BIK);
+//				$('#platelshik_ks').val(ui.item.KS);
+//				$('#platelshik_bank_adres').val(ui.item.Bank_adres);
+//			}
+//		});
+//
+//		$( "#platelshik_name" ).on("keyup", function() {
+//			if( $( "#platelshik_name" ).val().length < 2 ) {
+//				$('#platelshik_id').val('');
+//				$('#platelshik_inn').val('');
+//				$('#platelshik_kpp').val('');
+//				$('#platelshik_okpo').val('');
+//				$('#platelshik_adres').val('');
+//				$('#platelshik_tel').val('');
+//				$('#platelshik_schet').val('');
+//				$('#platelshik_bank').val('');
+//				$('#platelshik_bik').val('');
+//				$('#platelshik_ks').val('');
+//				$('#platelshik_bank_adres').val('');
+//			}
+//		});
 
-		$( "#platelshik_name" ).on("keyup", function() {
-			if( $( "#platelshik_name" ).val().length < 2 ) {
-				$('#platelshik_id').val('');
-				$('#platelshik_inn').val('');
-				$('#platelshik_kpp').val('');
-				$('#platelshik_okpo').val('');
-				$('#platelshik_adres').val('');
-				$('#platelshik_tel').val('');
-				$('#platelshik_schet').val('');
-				$('#platelshik_bank').val('');
-				$('#platelshik_bik').val('');
-				$('#platelshik_ks').val('');
-				$('#platelshik_bank_adres').val('');
-			}
-		});
+		$('#payer').select2({ placeholder: 'Выберите контрагента', language: 'ru' });
+		$('#kontragenty').select2({ placeholder: '-=контрагенты=-', language: 'ru' });
 
-		// При выборе контрагента форма плательщика становится доступной
-		$('#add_invoice_form').on('change', 'select[name="KA_ID"]', function() {
-			// Очищаем все поля плательщика
-			$('#platelshik_id').val('');
-			$("#platelshik_name").val('');
-			$('#platelshik_inn').val('');
-			$('#platelshik_kpp').val('');
-			$('#platelshik_okpo').val('');
-			$('#platelshik_adres').val('');
-			$('#platelshik_tel').val('');
-			$('#platelshik_schet').val('');
-			$('#platelshik_bank').val('');
-			$('#platelshik_bik').val('');
-			$('#platelshik_ks').val('');
-			$('#platelshik_bank_adres').val('');
-
-			var val = $(this).val();
-			if( val ) {
-				$('#wr_platelshik input').attr('disabled', false);
-				$( "#platelshik_name" ).autocomplete({source: "kontragenty.php?KA_ID="+val});
-				if( val > 0 ) { // Если оптовик - выводим список связанных плательщиков
-					$( "#platelshik_name" ).autocomplete('search', '##');
-				}
-				else {
-					$( "#platelshik_name" ).autocomplete('search', '');
-				}
-			}
-			else {
-				$( "#platelshik_name" ).autocomplete('search', '');
-				$('#wr_platelshik input').attr('disabled', true);
-			}
-		});
+		// Костыль для Select2 чтобы работал поиск
+		$.ui.dialog.prototype._allowInteraction = function (e) {
+			return true;
+		};
 
 		$( "#date" ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
 	});

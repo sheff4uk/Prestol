@@ -6,42 +6,40 @@ session_start();
 // Узнаем тип накладной ОТГРУЗКА/ВОЗВРАТ
 $return = $_POST["num_rows"] ? 1 : 0;
 
+// Скрипт возвратит массив $orders_to_bill со списком кандидатов на добавление в счет
+$_GET["do"] = "invoice";
+$_GET["KA_ID"] = $_POST["KA_ID"];
+$_GET["CT_ID"] = $_POST["CT_ID"];
+$_GET["num_rows"] = $_POST["num_rows"];
+include "ajax.php";
+
 // Сохраняем цены изделий в ODD
 foreach ($_POST["price"] as $key => $value) {
 	$odd_id = $_POST["odd_id"][$key];
 	$discount = ($_POST["discount"][$key] > 0) ? $_POST["discount"][$key] : "NULL";
 	$odid = $_POST["odid"][$key];
 
-	// Узнаем нет ли накладной для очередного набора
-	$query = "
-		SELECT PFI.PFI_ID
-		FROM OrdersData OD
-		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 ".($return ? "AND PFI.rtrn = 1" : "AND PFI.rtrn != 1")."
-		WHERE OD.OD_ID = {$odid}
-	";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$PFI_ID = mysqli_result($res,0,'PFI_ID');
-	// Если набор в накладной - останавливаем, выводим сообщение
-	if( $PFI_ID ) {
+	// Набор должен быть в списке кандидатов на добавление в накладную
+	if( in_array($odid, $orders_to_invoice) ) {
+		// Исключение для Клена
+		$query = "SELECT OD.SH_ID FROM OrdersData OD WHERE OD.OD_ID = {$odid}";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$shop = mysqli_result($res,0,'SH_ID') ? mysqli_result($res,0,'SH_ID') : 1;
+
+		// Если Клен - цену записываем в opt_price
+		if ($shop == 36) {
+			$query = "UPDATE OrdersDataDetail SET opt_price = ".($value - $discount).", author = {$_SESSION["id"]} WHERE ODD_ID = {$odd_id}";
+		}
+		else {
+			$query = "UPDATE OrdersDataDetail SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$odd_id}";
+		}
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	}
+	else {
 		$_SESSION["error"][] = "При создании накладной возникла ошибка. Пожалуйста, повторите попытку.";
 		exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
 		die;
 	}
-
-	// Исключение для Клена
-	$query = "SELECT OD.SH_ID FROM OrdersData OD WHERE OD.OD_ID = {$odid}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$shop = mysqli_result($res,0,'SH_ID') ? mysqli_result($res,0,'SH_ID') : 1;
-
-	// Если Клен - цену записываем в opt_price
-	if ($shop == 36) {
-		$query = "UPDATE OrdersDataDetail SET opt_price = ".($value - $discount).", author = {$_SESSION["id"]} WHERE ODD_ID = {$odd_id}";
-	}
-	else {
-		$query = "UPDATE OrdersDataDetail SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$odd_id}";
-	}
-
-	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 }
 
 // Обновляем информацию о плательщике
@@ -57,7 +55,7 @@ $platelshik_bik = mysqli_real_escape_string($mysqli, convert_str($_POST["platels
 $platelshik_ks = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_ks"]));
 $platelshik_bank_adres = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_bank_adres"]));
 
-if( $_POST["platelshik_id"] ) {
+if( $_POST["KA_ID"] ) {
 	$query = "UPDATE Kontragenty SET
 				 Naimenovanie = '{$platelshik_name}'
 				,Jur_adres = IF('{$platelshik_adres}' = '', NULL, '{$platelshik_adres}')
@@ -70,9 +68,9 @@ if( $_POST["platelshik_id"] ) {
 				,BIK = IF('{$platelshik_bik}' = '', NULL, '{$platelshik_bik}')
 				,KS = IF('{$platelshik_ks}' = '', NULL, '{$platelshik_ks}')
 				,Bank_adres = IF('{$platelshik_bank_adres}' = '', NULL, '{$platelshik_bank_adres}')
-				WHERE KA_ID = {$_POST["platelshik_id"]}";
+				WHERE KA_ID = {$_POST["KA_ID"]}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$platelshik_id = $_POST["platelshik_id"];
+	$platelshik_id = $_POST["KA_ID"];
 }
 else {
 	$query = "INSERT INTO Kontragenty SET
@@ -154,7 +152,7 @@ while( $row = mysqli_fetch_array($res) ) {
 $_POST["nomer"] = $count;
 
 // Информация о грузоотправителе
-$query = "SELECT * FROM Rekvizity WHERE R_ID = 1";
+$query = "SELECT * FROM Rekvizity WHERE R_ID = ".($_GET["CT_ID"] == 24 ? "3" : "1");
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $_POST["gruzootpravitel_name"] = mysqli_result($res,0,'Name');
 $_POST["gruzootpravitel_inn"] = mysqli_result($res,0,'INN');
