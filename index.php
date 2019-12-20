@@ -1008,7 +1008,7 @@
 
 		echo "<td><span>{$row["StartDate"]}{$invoice}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]} {$row["date_diff_color"]}'>{$row["EndDate"]}</span><br><i style='font-size: .8em;'>{$row["format_EndDate"]}</i></span></td>";
-		echo "<td class='".( (in_array('order_add', $Rights) and !$is_lock and !$is_del and $editable) ? "shop_cell" : "" )."' id='{$row["OD_ID"]}' SH_ID='{$row["SH_ID"]}' style='background: {$row["CTColor"]};'><span style='background: {$row["CTColor"]};'>".($row["retail"] ? "&bull; " : "")."{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
+		echo "<td class='".( (in_array('order_add', $Rights) and !$is_lock and !$is_del and $editable) ? "shop_cell" : "" )."' SH_ID='{$row["SH_ID"]}' style='background: {$row["CTColor"]};'><span style='background: {$row["CTColor"]};'>".($row["retail"] ? "&bull; " : "")."{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
 		echo "<td><span></span></td>";
 
 		echo "<td><span class='nowrap'>{$zakaz}</span></td>";
@@ -1044,7 +1044,7 @@
 //		}
 		echo "<td val='{$row["confirmed"]}' class='{$class}' style='text-align: center;'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td class='X' style='text-align: center;'><input type='checkbox' {$checkedX} value='1'></td>";
-		echo "<td class='".( (in_array('order_add_confirm', $Rights) and $is_del == 0 and $editable) ? "comment_cell" : "" )."' id='{$row["OD_ID"]}'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
+		echo "<td class='".( (in_array('order_add_confirm', $Rights) and $is_del == 0 and $editable) ? "comment_cell" : "" )."'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
 		echo "<td style='text-align: center;'>";
 
 		if( $editable ) {
@@ -1459,14 +1459,16 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		// Редактирование салона аяксом
 		$('.shop_cell').dblclick(function() {
-			var OD_ID = $(this).attr('id');
+			var OD_ID = $(this).parents('tr').attr('id');
+			OD_ID = OD_ID.replace('ord', '');
 			var SH_ID = $(this).attr('SH_ID');
 			$.ajax({ url: "ajax.php?do=create_shop_select&OD_ID="+OD_ID+"&SH_ID="+SH_ID, dataType: "script", async: false });
 			$(this).find('span').hide();
 			$(this).find('.select_shops').show().focus();
 		});
 		$('.shop_cell select').change(function() {
-			var OD_ID = $(this).parents('td').attr('id');
+			var OD_ID = $(this).parents('tr').attr('id');
+			OD_ID = OD_ID.replace('ord', '');
 			var val = $(this).val();
 			$.ajax({ url: "ajax.php?do=update_shop&OD_ID="+OD_ID+"&SH_ID="+val, dataType: "script", async: false });
 			$(this).parents('.shop_cell').find('select').hide();
@@ -1484,7 +1486,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$(this).find('textarea').focus();
 		});
 		$('.comment_cell textarea').change(function() {
-			var OD_ID = $(this).parents('td').attr('id');
+			var OD_ID = $(this).parents('tr').attr('id');
+			OD_ID = OD_ID.replace('ord', '');
 			var val = $(this).val();
 			val = val.split("\u000A").join("%0d%0a\u000A"); // Замена символов переноса строки для GET
 			$.ajax({ url: "ajax.php?do=update_comment&OD_ID="+OD_ID+"&val="+val, dataType: "script", async: true });

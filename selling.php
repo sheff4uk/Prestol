@@ -953,215 +953,237 @@
 		<tbody>
 		<?
 		$query = "
-			SELECT OD.OD_ID
-				,OD.Code
-				,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
-				,IFNULL(OD.ClientName, '') ClientName
-				,KA.Naimenovanie
-				,OD.KA_ID
-				,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
-				,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
-				,OD.sell_comment
-				,OD.ReadyDate RD
-				,SH.SH_ID
-				,OD.OrderNumber
-				,Color(OD.CL_ID) Color
-				,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-				,Ord_price(OD.OD_ID) Price
-				,Ord_discount(OD.OD_ID) discount
-				,Ord_opt_price(OD.OD_ID) opt_price
-				,Payment_sum(OD.OD_ID) payment_sum
-				,CheckPayment(OD.OD_ID) attention
-				,Items_count(OD.OD_ID) items
-				,OD.is_lock
-				,OD.confirmed
-				,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
-				,PFI.count
-				,PFI.platelshik_id
-				,OD.taken
+			SELECT SUM(1) cnt
+				,GROUP_CONCAT(OD.OD_ID) OD_IDs
+				,SUM(Ord_price(OD.OD_ID)) Price
+				,SUM(Ord_discount(OD.OD_ID)) discount
+				,SUM(Payment_sum(OD.OD_ID)) payment_sum
 			FROM OrdersData OD
-			LEFT JOIN Kontragenty KA ON KA.KA_ID = OD.KA_ID
 			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 AND ".( $SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
-			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
-			LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
-			LEFT JOIN WorkersData pWD ON pWD.WD_ID = OD.patina_WD_ID
 			WHERE OD.DelDate IS NULL
 			".(($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year)."
-			ORDER BY IFNULL(OD.StartDate, '9999-01-01') ASC, OD.AddDate ASC, OD.OD_ID ASC
+			GROUP BY OD.StartDate, IF(TRIM(IFNULL(OD.ClientName, '')) LIKE '', MD5(OD.OD_ID), OD.ClientName), OD.PFI_ID
+			ORDER BY IFNULL(OD.StartDate, '9999-01-01'), OD.AddDate, OD.OD_ID
 		";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		while( $row = mysqli_fetch_array($res) ) {
-			$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
-			$format_price = number_format($row["Price"] - $row['discount'], 0, '', ' ');
-			$format_opt_price = number_format($row["opt_price"], 0, '', ' ');
-			$format_payment = number_format($row["payment_sum"], 0, '', ' ');
-			$format_discount = number_format($row['discount'], 0, '', ' ');
-			$format_diff = number_format($row["Price"] - $row['discount'] - $row["payment_sum"], 0, '', ' ');
-			$diff_color = (($row["Price"] - $row['discount']) == $row["payment_sum"]) ? "#6f6" : ((($row["Price"] - $row['discount']) < $row["payment_sum"]) ? "#f66" : "#fff");
-			$percent = round($row["discount"] / $row["Price"] * 100, 1);
-			// Подсвечиваем скидку в случае превышения порога
-			if( $percent >= 5 ) {$discount_bg = "bg-red";}
-			elseif( $percent >= 3 ) {$discount_bg = "bg-yellow";}
-			else {$discount_bg = "";}
+		$rowspan = 0;
+		$OD_IDs = "";
+		$overres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $overrow = mysqli_fetch_array($overres) ) {
+			$rowspan = ($overrow["OD_IDs"] != $OD_IDs ? $overrow["cnt"] : $rowspan);
+			$format_diff = number_format($overrow["Price"] - $overrow['discount'] - $overrow["payment_sum"], 0, '', ' ');
+			$diff_color = (($overrow["Price"] - $overrow['discount']) == $overrow["payment_sum"]) ? "#6f6" : ((($overrow["Price"] - $overrow['discount']) < $overrow["payment_sum"]) ? "#ff6" : "#fff");
 
-			echo "
-				<tr id='ord{$row["OD_ID"]}'>
-					<td>
-						<input type='hidden' name='OD_ID[]' form='print_selling' value='{$row["OD_ID"]}'>
-						<span>{$row["ReadyDate"]}</span>
-			";
-
-			// Если набор у клиента
-			if( $row["ReadyDate"] and $row["StartDate"]) {
-				if( $row["taken"] == 1 ) {
-					$class = 'confirmed';
-				}
-				else {
-					$class = 'not_confirmed';
-				}
-				if( $row["StartDate"] and in_array('order_add', $Rights) and !$is_lock ) {
-					$class = $class." taken_confirmed";
-				}
-				echo "<span val='{$row["taken"]}' class='{$class}'><i class='fas fa-handshake fa-2x'></i></td>";
-			}
-
-			// Получаем содержимое набора
 			$query = "
-				SELECT ODD.ODD_ID
-					,ODD.Amount
-					,Zakaz(ODD.ODD_ID) zakaz
-					,ODD.Comment
-					,DATEDIFF(ODD.arrival_date, NOW()) outdate
-					,ODD.IsExist
-					,Friendly_date(ODD.order_date) order_date
-					,Friendly_date(ODD.arrival_date) arrival_date
-					,IFNULL(MT.Material, '') Material
-					,CONCAT(' <b>', SH.Shipper, '</b>') Shipper
-					,ODD.MT_ID
-					,MT.SH_ID
-					,SH.mtype
-					,IF(MT.removed=1, 'removed', '') removed
-					,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
-				FROM OrdersDataDetail ODD
-				LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-				LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-				LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-				WHERE ODD.OD_ID = {$row["OD_ID"]}
-				ORDER BY PTID DESC, ODD.ODD_ID
+				SELECT OD.OD_ID
+					,OD.Code
+					,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
+					,IFNULL(OD.ClientName, '') ClientName
+					,KA.Naimenovanie
+					,OD.KA_ID
+					,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
+					,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
+					,OD.sell_comment
+					,OD.ReadyDate RD
+					,OD.SH_ID
+					,OD.OrderNumber
+					,Color(OD.CL_ID) Color
+					,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
+					,Ord_price(OD.OD_ID) Price
+					,Ord_discount(OD.OD_ID) discount
+					,Ord_opt_price(OD.OD_ID) opt_price
+					,Payment_sum(OD.OD_ID) payment_sum
+					,CheckPayment(OD.OD_ID) attention
+					,Items_count(OD.OD_ID) items
+					,OD.is_lock
+					,OD.confirmed
+					,IF(PFI.rtrn = 1, NULL, OD.PFI_ID) PFI_ID
+					,PFI.count
+					,PFI.platelshik_id
+					,OD.taken
+				FROM OrdersData OD
+				LEFT JOIN Kontragenty KA ON KA.KA_ID = OD.KA_ID
+				LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
+				WHERE OD.OD_ID IN ({$overrow["OD_IDs"]})
+				ORDER BY OD.OD_ID
 			";
-			$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) ) {
+				$is_lock = $row["is_lock"];			// Месяц закрыт в реализации
+				$format_price = number_format($row["Price"] - $row['discount'], 0, '', ' ');
+				$format_opt_price = number_format($row["opt_price"], 0, '', ' ');
+				$format_payment = number_format($row["payment_sum"], 0, '', ' ');
+				$format_discount = number_format($row['discount'], 0, '', ' ');
+//				$format_diff = number_format($row["Price"] - $row['discount'] - $row["payment_sum"], 0, '', ' ');
+//				$diff_color = (($row["Price"] - $row['discount']) == $row["payment_sum"]) ? "#6f6" : ((($row["Price"] - $row['discount']) < $row["payment_sum"]) ? "#ff6" : "#fff");
+				$percent = round($row["discount"] / $row["Price"] * 100, 1);
+				// Подсвечиваем скидку в случае превышения порога
+				if( $percent >= 5 ) {$discount_bg = "bg-red";}
+				elseif( $percent >= 3 ) {$discount_bg = "bg-yellow";}
+				else {$discount_bg = "";}
 
-			// Формируем подробности набора
-			$zakaz = '';
-			$material = '';
-			$color = '';
-			$cnt = 0;
-			while( $subrow = mysqli_fetch_array($subres) ) {
+				echo "
+					<tr id='ord{$row["OD_ID"]}'>
+						<td>
+							<input type='hidden' name='OD_ID[]' form='print_selling' value='{$row["OD_ID"]}'>
+							<span>{$row["ReadyDate"]}</span>
+				";
 
-				// Если в свободных - добавляем чекбокс для печати ценников, узнаем сколько изделий в наборе для ценника на гарнитур
-				if (!$row["StartDate"]) {
-					$zakaz .= "<input type='checkbox' value='{$subrow["ODD_ID"]}' name='odd[]' class='chbox'>";
-					$cnt = $cnt + $subrow["Amount"];
-				}
-				if ($subrow["Comment"]) {
-					$zakaz .= "<b class='material'><i id='prod{$subrow["ODD_ID"]}' title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</i></b><br>";
-				}
-				else {
-					$zakaz .= "<b class='material'><i id='prod{$subrow["ODD_ID"]}'><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</i></b><br>";
-				}
-
-				if ($subrow["IsExist"] == "0") {
-					$color = "bg-red";
-				}
-				elseif ($subrow["IsExist"] == "1") {
-					$color = "bg-yellow' html='Заказано:&nbsp;&nbsp;&nbsp;&nbsp;<b>{$subrow["order_date"]}</b><br>Ожидается:&nbsp;<b>{$subrow["arrival_date"]}</b>";
-				}
-				elseif ($subrow["IsExist"] == "2") {
-					$color = "bg-green";
-				}
-				else {
-					$color = "bg-gray";
-				}
-				$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span shid='{$subrow["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}{$subrow["Shipper"]}</span><input type='text' value='{$subrow["Material"]}' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' ".($subrow["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span><br>";
-			}
-
-			echo "
-				</td>
-				<td><span><b class='code'>{$row["Code"]}</b>".(($cnt > 1 and false) ? "<input type='checkbox' value='{$row["OD_ID"]}' name='od[]' class='chbox'>" : "")."<br>{$row["AddDate"]}</span></td>
-				<td><span>".($row["Naimenovanie"] ? "<n class='ul'>{$row["Naimenovanie"]}</n><br>" : "")."{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>
-				<td><span class='nowrap'>{$zakaz}</span></td>
-				<td><span class='nowrap material'>{$material}</span></td>
-			";
-
-			echo "<td val='{$row["IsPainting"]}'";
-				switch ($row["IsPainting"]) {
-					case 0:
-						$class = "empty";
-						break;
-					case 1:
-						$class = "notready";
-						break;
-					case 2:
-						$class = "inwork";
-						break;
-					case 3:
-						$class = "ready";
-						break;
-				}
-			echo " class='painting_cell {$class}'>{$row["Color"]}</td>";
-
-			if ($shop_num_rows > 1) {
-				echo "<td id='{$row["OD_ID"]}'><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>";
-			}
-			//echo "<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>";
-			echo "<td id='{$row["OD_ID"]}'><textarea class='sell_comment' style='width: 100%; resize: vertical;'>{$row["sell_comment"]}</textarea></td>";
-
-			// Если набор в накладной - стоимость набора ведет в накладную, цена не редактируется
-			if( $row["PFI_ID"] ) {
-				// Исключение для Клена
-				if ($row["SH_ID"] == 36) {
-					$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' location='{$location}'>{$format_price}</button><br><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_opt_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
-				}
-				else {
-					$price = "<a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
-				}
-			}
-			else {
-				$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' location='{$location}'>{$format_price}</button>";
-			}
-
-			echo "<td id='{$row["OD_ID"]}'><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
-					<td class='txtright'>{$price}</td>
-					<td class='txtright nowrap'>{$format_discount} p.<br><b class='{$discount_bg}'>{$percent} %</b></td>
-					<td><button ".($row["KA_ID"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' location='{$location}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
-
-					// Если в накладной - выводим ссылку на сверки
-					if( $row["PFI_ID"] ) {
-						echo "<td><a href='sverki.php?payer={$row["platelshik_id"]}' target='_blank' title='Перейти в сверки'><b>Сверки</b></a></td>";
+				// Если набор у клиента
+				if( $row["ReadyDate"] and $row["StartDate"]) {
+					if( $row["taken"] == 1 ) {
+						$class = 'confirmed';
 					}
 					else {
-						echo "<td class='txtright' style='background: {$diff_color}'>{$format_diff}</td>";
+						$class = 'not_confirmed';
 					}
-					echo "<td>";
+					if( $row["StartDate"] and in_array('order_add', $Rights) and !$is_lock ) {
+						$class = $class." taken_confirmed";
+					}
+					echo "<span val='{$row["taken"]}' class='{$class}'><i class='fas fa-handshake fa-2x'></i></td>";
+				}
 
-			// Если есть права на редактирование набора и набор не закрыт, то показываем карандаш, кнопку разделения и отказа
-			if( in_array('order_add', $Rights) and !$is_lock ) {
-				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить набор' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
-				echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' invoice={$row["PFI_ID"]} location='{$location}' payment='{$row["payment_sum"]}' old_sum='".($row["Price"] - $row["discount"])."' title='Пометить как отказ/замена.'><i class='fa fa-hand-paper fa-lg' aria-hidden='true'></i></a>";
-			}
-			else {
-				echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
-			}
+				// Получаем содержимое набора
+				$query = "
+					SELECT ODD.ODD_ID
+						,ODD.Amount
+						,Zakaz(ODD.ODD_ID) zakaz
+						,ODD.Comment
+						,DATEDIFF(ODD.arrival_date, NOW()) outdate
+						,ODD.IsExist
+						,Friendly_date(ODD.order_date) order_date
+						,Friendly_date(ODD.arrival_date) arrival_date
+						,IFNULL(MT.Material, '') Material
+						,CONCAT(' <b>', SH.Shipper, '</b>') Shipper
+						,ODD.MT_ID
+						,MT.SH_ID
+						,SH.mtype
+						,IF(MT.removed=1, 'removed', '') removed
+						,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+					FROM OrdersDataDetail ODD
+					LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+					LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+					LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+					WHERE ODD.OD_ID = {$row["OD_ID"]}
+					ORDER BY PTID DESC, ODD.ODD_ID
+				";
+				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-			echo "</td></tr>";
-			echo "<script>";
-			echo "$('#ord{$row["OD_ID"]} select').val('{$row["SH_ID"]}');";
-			echo "</script>";
+				// Формируем подробности набора
+				$zakaz = '';
+				$material = '';
+				$color = '';
+				$cnt = 0;
+				while( $subrow = mysqli_fetch_array($subres) ) {
 
-			// Собираем ошибки если у проданного набора нет предоплаты
-			if ($row["Price"] - $row['discount'] > 0 and $row["StartDate"] and $row["payment_sum"] == 0 and !$row["PFI_ID"] and !$row["KA_ID"] and $row["SH_ID"] != 36) {
-				$_SESSION["error"][] = "Набор <a href='#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a> продан {$row["StartDate"]}, но предоплата не внесена!";
+					// Если в свободных - добавляем чекбокс для печати ценников, узнаем сколько изделий в наборе для ценника на гарнитур
+					if (!$row["StartDate"]) {
+						$zakaz .= "<input type='checkbox' value='{$subrow["ODD_ID"]}' name='odd[]' class='chbox'>";
+						$cnt = $cnt + $subrow["Amount"];
+					}
+					if ($subrow["Comment"]) {
+						$zakaz .= "<b class='material'><i id='prod{$subrow["ODD_ID"]}' title='{$subrow["Comment"]}'><i class='fa fa-comment'></i> <b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</i></b><br>";
+					}
+					else {
+						$zakaz .= "<b class='material'><i id='prod{$subrow["ODD_ID"]}'><b style='font-size: 1.3em;'>{$subrow["Amount"]}</b> {$subrow["zakaz"]}</i></b><br>";
+					}
+
+					if ($subrow["IsExist"] == "0") {
+						$color = "bg-red";
+					}
+					elseif ($subrow["IsExist"] == "1") {
+						$color = "bg-yellow' html='Заказано:&nbsp;&nbsp;&nbsp;&nbsp;<b>{$subrow["order_date"]}</b><br>Ожидается:&nbsp;<b>{$subrow["arrival_date"]}</b>";
+					}
+					elseif ($subrow["IsExist"] == "2") {
+						$color = "bg-green";
+					}
+					else {
+						$color = "bg-gray";
+					}
+					$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span shid='{$subrow["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}{$subrow["Shipper"]}</span><input type='text' value='{$subrow["Material"]}' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' ".($subrow["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span><br>";
+				}
+
+				echo "
+					</td>
+					<td><span><b class='code'>{$row["Code"]}</b>".(($cnt > 1 and false) ? "<input type='checkbox' value='{$row["OD_ID"]}' name='od[]' class='chbox'>" : "")."<br>{$row["AddDate"]}</span></td>
+					<td><span>".($row["Naimenovanie"] ? "<n class='ul'>{$row["Naimenovanie"]}</n><br>" : "")."{$row["ClientName"]}<br><b>{$row["OrderNumber"]}</b></span></td>
+					<td><span class='nowrap'>{$zakaz}</span></td>
+					<td><span class='nowrap material'>{$material}</span></td>
+				";
+
+				echo "<td val='{$row["IsPainting"]}'";
+					switch ($row["IsPainting"]) {
+						case 0:
+							$class = "empty";
+							break;
+						case 1:
+							$class = "notready";
+							break;
+						case 2:
+							$class = "inwork";
+							break;
+						case 3:
+							$class = "ready";
+							break;
+					}
+				echo " class='painting_cell {$class}'>{$row["Color"]}</td>";
+
+				if ($shop_num_rows > 1) {
+					echo "<td><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>";
+				}
+				//echo "<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>";
+				echo "<td><textarea class='sell_comment' style='width: 100%; resize: vertical;'>{$row["sell_comment"]}</textarea></td>";
+
+				// Если набор в накладной - стоимость набора ведет в накладную, цена не редактируется
+				if( $row["PFI_ID"] ) {
+					// Исключение для Клена
+					if ($row["SH_ID"] == 36) {
+						$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' location='{$location}'>{$format_price}</button><br><a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_opt_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
+					}
+					else {
+						$price = "<a href='open_print_form.php?type=invoice&PFI_ID={$row["PFI_ID"]}&number={$row["count"]}' target='_blank'><b title='Стоимость по накладной'>{$format_price}<i class='fa fa-question-circle' aria-hidden='true'></i></b></a>";
+					}
+				}
+				else {
+					$price = "<button style='width: 100%;' class='update_price_btn button nowrap txtright' location='{$location}'>{$format_price}</button>";
+				}
+
+				echo "<td><input ".($is_lock ? "disabled" : "")." type='text' class='date sell_date' value='{$row["StartDate"]}' OD_IDs='{$overrow["OD_IDs"]}' readonly ".(($row["StartDate"] and !$is_lock) ? "title='Чтобы стереть дату продажи нажмите на символ ладошки справа.'" : "")."></td>
+				<td class='txtright'>{$price}</td>
+				<td class='txtright nowrap'>{$format_discount} p.<br><b class='{$discount_bg}'>{$percent} %</b></td>
+				<td><button ".($row["KA_ID"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' location='{$location}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
+
+				// Группировка ячеек с суммой доплаты
+				if ($rowspan) {
+					// Если в накладной - выводим ссылку на сверки
+					if( $row["PFI_ID"] ) {
+						echo "<td rowspan='{$rowspan}' style='".($rowspan > 1 ? "border: 2px dotted;" : "")."'><a href='sverki.php?payer={$row["platelshik_id"]}' target='_blank' title='Перейти в сверки'><b>Сверки</b></a></td>";
+					}
+					else {
+						echo "<td rowspan='{$rowspan}' class='txtright' style='background: {$diff_color}; ".($rowspan > 1 ? "border: 2px dotted;" : "")."'>{$format_diff}</td>";
+					}
+					$rowspan = 0;
+
+					// Собираем ошибки если у проданного набора нет предоплаты
+					if ($overrow["Price"] - $overrow['discount'] > 0 and $row["StartDate"] and $overrow["payment_sum"] == 0 and !$row["PFI_ID"] and !$row["KA_ID"] and $row["SH_ID"] != 36) {
+						$_SESSION["error"][] = "Набор <a href='#ord{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a> продан {$row["StartDate"]}, но предоплата не внесена!";
+					}
+				}
+				echo "<td>";
+
+				// Если есть права на редактирование набора и набор не закрыт, то показываем карандаш, кнопку разделения и отказа
+				if( in_array('order_add', $Rights) and !$is_lock ) {
+					echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Редактировать'><i class='fa fa-pencil-alt fa-lg'></i></a> ";
+					echo "<a href='#' id='{$row["OD_ID"]}' class='order_cut' title='Разделить набор' location='{$location}'><i class='fa fa-sliders-h fa-lg'></i></a> ";
+					echo "<a href='#' id='{$row["OD_ID"]}' class='order_otkaz_btn' invoice={$row["PFI_ID"]} location='{$location}' payment='{$row["payment_sum"]}' old_sum='".($row["Price"] - $row["discount"])."' title='Пометить как отказ/замена.'><i class='fa fa-hand-paper fa-lg' aria-hidden='true'></i></a>";
+				}
+				else {
+					echo "<a href='./orderdetail.php?id={$row["OD_ID"]}' class='' title='Посмотреть'><i class='fa fa-eye fa-lg'></i></a> ";
+				}
+
+				echo "</td></tr>";
+				echo "<script>";
+				echo "$('#ord{$row["OD_ID"]} select').val('{$row["SH_ID"]}');";
+				echo "</script>";
 			}
 		}
 		?>
@@ -1363,23 +1385,27 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		// Редактирование салона
 		$('.select_shops').on('change', function() {
-			var OD_ID = $(this).parents('td').attr('id');
+			var OD_ID = $(this).parents('tr').attr('id');
+			OD_ID = OD_ID.replace('ord', '');
 			var val = $(this).val();
 			$.ajax({ url: "ajax.php?do=update_shop&OD_ID="+OD_ID+"&SH_ID="+val, dataType: "script", async: false });
 		});
 
 		// Редактирование даты продажи
 		$('.sell_date').on('change', function() {
-			var OD_ID = $(this).parents('td').attr('id');
+			var OD_ID = $(this).parents('tr').attr('id');
+			OD_ID = OD_ID.replace('ord', '');
+			var OD_IDs = $(this).attr('OD_IDs');
 			var val = $(this).val();
-			$.ajax({ url: "ajax.php?do=update_sell_date&OD_ID="+OD_ID+"&StartDate="+val, dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=update_sell_date&OD_ID="+OD_ID+"&StartDate="+val+"&OD_IDs="+OD_IDs, dataType: "script", async: false });
 		});
 
 		// Редактирование примечания к реализации
 		$('.sell_comment').on('change', function() {
-			var OD_ID = $(this).parents('td').attr('id');
+			var OD_ID = $(this).parents('tr').attr('id');
+			OD_ID = OD_ID.replace('ord', '');
 			var val = escapeHtml($(this).val());
-			val = val.replace(/\n/g, ' ');
+			val = val.replace(/\n/g, ' '); // Замена переноса строки на пробел
 			$.ajax({ url: "ajax.php?do=update_sell_comment&OD_ID="+OD_ID+"&sell_comment="+val, dataType: "script", async: false });
 		});
 

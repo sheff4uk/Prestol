@@ -1576,7 +1576,7 @@ case "create_shop_select":
 	}
 
 	$html = addslashes($html);
-	echo "$('.shop_cell#{$OD_ID} .select_shops').html('{$html}');";
+	echo "$('#ord{$OD_ID} .shop_cell .select_shops').html('{$html}');";
 
 	break;
 ///////////////////////////////////////////////////////////////////
@@ -1624,9 +1624,9 @@ case "update_shop":
 	$attention = mysqli_result($res,0,'attention');
 	$retail = mysqli_result($res,0,'retail');
 
-	echo "$('.shop_cell[id={$OD_ID}] span').html('".($retail ? "&bull; " : "")."{$ShopCity}');";
-	echo "$('.shop_cell[id={$OD_ID}] span').attr('style', 'background: {$CTColor};');";
-	echo "$('.shop_cell[id={$OD_ID}]').attr('SH_ID', '{$SH_ID}');";
+	echo "$('#ord{$OD_ID} .shop_cell span').html('".($retail ? "&bull; " : "")."{$ShopCity}');";
+	echo "$('#ord{$OD_ID} .shop_cell span').attr('style', 'background: {$CTColor};');";
+	echo "$('#ord{$OD_ID} .shop_cell').attr('SH_ID', '{$SH_ID}');";
 	// Если есть оплата в кассу другого салона
 	if( $attention ) {
 		echo "$('#ord{$OD_ID} .add_payment_btn').addClass('attention');";
@@ -1674,6 +1674,7 @@ case "update_comment":
 // Редактирование даты продажи
 case "update_sell_date":
 	$OD_ID = $_GET["OD_ID"];
+	$OD_IDs = $_GET["OD_IDs"];
 	$StartDate = $_GET["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_GET["StartDate"]) ).'\'' : "NULL";
 
 	// Узнаем старую дату продажи
@@ -1681,15 +1682,25 @@ case "update_sell_date":
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	$old_StartDate = mysqli_result($res,0,'StartDate');
 
-	// Меняем дату продажи
-	$query = "UPDATE OrdersData SET StartDate = {$StartDate}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
+	// Меняем дату продажи у группы
+	$query = "UPDATE OrdersData SET StartDate = {$StartDate}, author = {$_SESSION['id']} WHERE OD_ID IN ({$OD_IDs})";
 	if( !mysqli_query( $mysqli, $query ) ) {
-		echo "$('td#{$OD_ID} .sell_date').val('{$old_StartDate}');";
+		echo "$('tr#ord{$OD_ID} .sell_date').val('{$old_StartDate}');";
 		die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	}
-	$old_StartDate = $old_StartDate ? $old_StartDate : "___";
 
-	echo "noty({timeout: 3000, text: 'Дата продажи изменена с <b>{$old_StartDate}</b> на <b>{$_GET["StartDate"]}</b>', type: 'success'});";
+	// Обновляем дату продажи на экране у группы
+	$arrOD_IDs = explode(",", $OD_IDs);
+	foreach ($arrOD_IDs as $value) {
+		echo "$('tr#ord{$value} .sell_date').val('{$_GET["StartDate"]}');";
+	}
+
+	if ($old_StartDate) {
+		echo "noty({timeout: 3000, text: 'Дата продажи изменена с <b>{$old_StartDate}</b> на <b>{$_GET["StartDate"]}</b>', type: 'success'});";
+	}
+	else {
+		echo "noty({timeout: 3000, text: 'Установлена дата продажи <b>{$_GET["StartDate"]}</b>', type: 'success'});";
+	}
 
 	break;
 ///////////////////////////////////////////////////////////////////
@@ -1720,28 +1731,28 @@ case "update_sell_comment":
 ///////////////////////////////////////////////////////////////////
 
 // Редактирование примечания к накладным
-case "update_sverki_comment":
-	$PFI_ID = $_GET["PFI_ID"];
-	$sverki_comment = convert_str($_GET["sverki_comment"]);
-	$sverki_comment = mysqli_real_escape_string($mysqli, $sverki_comment);
-
-	// Узнаем старое примечание
-	$query = "SELECT comment FROM PrintFormsInvoice WHERE PFI_ID = {$PFI_ID}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-	$old_sverki_comment = mysqli_result($res,0,'comment');
-
-	// Меняем примечание
-	$query = "UPDATE PrintFormsInvoice SET comment = '{$sverki_comment}' WHERE PFI_ID = {$PFI_ID}";
-	if( !mysqli_query( $mysqli, $query ) ) {
-		echo "$('td#{$PFI_ID} .sverki_comment').val('{$old_sverki_comment}');";
-		die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-	}
-
-	$old_sverki_comment = $old_sverki_comment ? htmlspecialchars($old_sverki_comment, ENT_QUOTES) : "___";
-	$sverki_comment = $sverki_comment ? htmlspecialchars($sverki_comment, ENT_QUOTES) : "___";
-	echo "noty({timeout: 3000, text: 'Комментарий изменен с <b>{$old_sverki_comment}</b> на <b>{$sverki_comment}</b>', type: 'success'});";
-
-	break;
+//case "update_sverki_comment":
+//	$PFI_ID = $_GET["PFI_ID"];
+//	$sverki_comment = convert_str($_GET["sverki_comment"]);
+//	$sverki_comment = mysqli_real_escape_string($mysqli, $sverki_comment);
+//
+//	// Узнаем старое примечание
+//	$query = "SELECT comment FROM PrintFormsInvoice WHERE PFI_ID = {$PFI_ID}";
+//	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+//	$old_sverki_comment = mysqli_result($res,0,'comment');
+//
+//	// Меняем примечание
+//	$query = "UPDATE PrintFormsInvoice SET comment = '{$sverki_comment}' WHERE PFI_ID = {$PFI_ID}";
+//	if( !mysqli_query( $mysqli, $query ) ) {
+//		echo "$('td#{$PFI_ID} .sverki_comment').val('{$old_sverki_comment}');";
+//		die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+//	}
+//
+//	$old_sverki_comment = $old_sverki_comment ? htmlspecialchars($old_sverki_comment, ENT_QUOTES) : "___";
+//	$sverki_comment = $sverki_comment ? htmlspecialchars($sverki_comment, ENT_QUOTES) : "___";
+//	echo "noty({timeout: 3000, text: 'Комментарий изменен с <b>{$old_sverki_comment}</b> на <b>{$sverki_comment}</b>', type: 'success'});";
+//
+//	break;
 ///////////////////////////////////////////////////////////////////
 
 // Разделение набора

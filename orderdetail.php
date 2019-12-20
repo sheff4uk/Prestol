@@ -575,7 +575,7 @@
 ?>
 
 		<td style="background: <?=$CTColor?>;">
-		<div class='shop_cell' id='<?=$id?>'>
+		<div class='shop_cell'>
 			<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable and !$USR_Shop) ? "" : "disabled")?> style="width: 100%;">
 				<!--Список салонов выводится аяксом ниже-->
 			</select>
