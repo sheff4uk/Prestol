@@ -426,6 +426,7 @@
 			,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 			,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
 			,DATE_FORMAT(OD.DelDate, '%d.%m.%y') DelDate
+			,OD.StartDate StD
 			,IF(OD.ReadyDate, DATE_FORMAT(OD.EndDate, '%d.%m.%y'), '') format_EndDate
 			,IF(OD.EndDate AND OD.ReadyDate, IF(DATEDIFF(OD.EndDate, OD.ReadyDate) <= 7, IF(DATEDIFF(OD.EndDate, OD.ReadyDate) <= 0, 'bg-red', 'bg-yellow'), 'bg-green'), '') date_diff_color
 			,IF((SH.retail AND OD.StartDate IS NULL), '<br><b style=\'background-color: silver;\'>Выставка</b>', '') showing
@@ -472,6 +473,7 @@
 	$EndDate = $row['EndDate'];
 	$ReadyDate = $row['ReadyDate'];
 	$DelDate = $row['DelDate'];
+	$StD = $row['StD'];
 	$format_EndDate = $row['format_EndDate'];
 	$date_diff_color = $row['date_diff_color'];
 	$showing = $row['showing'];
@@ -495,6 +497,22 @@
 	$format_price = number_format($row['Price'], 0, '', ' ');
 	$format_opt_price = number_format($row["opt_price"], 0, '', ' ');
 	$format_payment = number_format($row["payment_sum"], 0, '', ' ');
+
+	// Находим наборы из группы
+	if ($StartDate and $ClientName) {
+		$GroupOrders = "";
+		$query = "
+			SELECT OD.Code
+				,OD.OD_ID
+			FROM OrdersData OD
+			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
+			WHERE OD.DelDate IS NULL AND OD.StartDate = '{$StD}' AND OD.ClientName LIKE '{$ClientName}' AND IFNULL(OD.PFI_ID, 0) = ".($PFI_ID ? $PFI_ID : 0)." AND OD.OD_ID != {$id}
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) ) {
+			$GroupOrders .= "<i class='fas fa-plus'></i><a href='?id={$row["OD_ID"]}' title='Группа из нескольких наборов'><b class='code'>{$row["Code"]}</b></a><br>";
+		}
+	}
 
 	// Если пользователю доступен только один салон в регионе или оптовик или свободный набор и нет админских привилегий, то нельзя редактировать общую информацию набора.
 	$editable = (!($USR_Shop and $SH_ID and !in_array($SH_ID, explode(",", $USR_Shop))) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and ($SH_ID or in_array('order_add_confirm', $Rights)));
@@ -528,7 +546,7 @@
 		</thead>
 		<tbody>
 		<tr class='ord_log_row' lnk='*OD_ID<?=$id?>*' id='ord<?=$id?>'>
-			<td class="nowrap"><h1><?=$Code?></h1><?=$AddDate?></td>
+			<td class="nowrap"><b class='code' style='font-size: 1.6em;'><?=$Code?></b><br><?=$GroupOrders?><br><?=$AddDate?></td>
 <?
 		if ($retail and $StartDate) {
 			echo "
@@ -741,9 +759,8 @@
 	<table class="main_table">
 		<thead>
 		<tr>
-			<th width="50"></th>
+			<th width="55"></th>
 			<th width="40">Кол-во</th>
-			<th width="120">Изделие</th>
 			<th width="100">Этапы</th>
 			<th width="">Материал <i class="fa fa-question-circle" html="<b>Цветовой статус наличия:</b><br><span class='bg-gray'>Неизвестно</span><br><span class='bg-red'>Нет</span><br><span class='bg-yellow'>Заказано</span><br><span class='bg-green'>В наличии</span><br><span class='bg-red removed'>Выведен</span> - нужно менять"></i></th>
 			<th width="">Примечание</th>
@@ -813,23 +830,23 @@
 
 		$format_old_price = ($row["old_Price"] != '') ? '<p class="old_price">'.number_format($row["old_Price"], 0, '', ' ').'</p>' : '';
 		$format_price = ($row["Price"] != '') ? '<p class="price">'.number_format($row["Price"], 0, '', ' ').'</p>' : '';
-		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row ".($row["Del"] == 1 ? 'del' : '')."' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
-		echo "<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."".($row["PF_ID"] ? "<br><img class='form {$row["form_standart"]}' src='/img/form{$row["PF_ID"]}.png' title='{$row["Form"]}'>" : "")."</td>";
-		echo "<td><b style='font-size: 1.3em;'>{$row["Amount"]}</b></td>";
-		echo "<td><b>{$row["Zakaz"]}</b></td>";
+		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
+		echo "<td rowspan='2'>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."".($row["PF_ID"] ? "<br><img class='form {$row["form_standart"]}' src='/img/form{$row["PF_ID"]}.png' title='{$row["Form"]}'>" : "")."</td>";
+		echo "<td colspan='5'><b style='font-size: 1.2em;'>{$row["Zakaz"]}</b></td>";
+		echo "<td rowspan='2'>";
+			echo "<button ".(($disabled or $Del or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Редактировать изделие\'')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}'><i class='fa fa-pencil-alt fa-lg'></i></button>";
+			$delmessage = addslashes("Удалить {$row["Zakaz"]} ({$row["Amount"]} шт.)?<br><b>Внимание! Для удаления набора воспользуйтесь кнопкой <i class=\"fa fa-times fa-2x\"></i> выше.</b>");
+			echo "<button ".(($disabled or $Del or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Удалить изделие из набора\'')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;'><i class='fas fa-trash-alt fa-lg'></i></button>";
+		echo "</td>";
+		echo "</tr>";
+
+		echo "<tr>";
+		echo "<td><b style='font-size: 2em;'>{$row["Amount"]}</b></td>";
 		echo "<td class='td_step ".($confirmed == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'>{$steps}</td>";
 		echo "<td>{$material}{$row["markup"]}</td>";
 		echo "<td>{$row["Comment"]}</td>";
 		echo "<td class='txtright'>{$format_old_price}{$format_price}</td>";
-		echo "<td>";
-		
-		if( $row["Del"] == 0 ) {
-			echo "<button ".(($disabled or $Del or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Редактировать изделие\'')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}'><i class='fa fa-pencil-alt fa-lg'></i></button>";
-
-			$delmessage = addslashes("Удалить {$row["Zakaz"]} ({$row["Amount"]} шт.)?<br><b>Внимание! Для удаления набора воспользуйтесь кнопкой <i class=\"fa fa-times fa-2x\"></i> выше.</b>");
-			echo "<button ".(($disabled or $Del or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Удалить изделие из набора\'')." onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&del={$row["ODD_ID"]}\")) return false;'><i class='fas fa-trash-alt fa-lg'></i></button>";
-		}
-		echo "</td></tr>";
+		echo "</tr>";
 
 		// Выводим ошибку если прозрачное покрытие пластика
 		if( $row["enamel_error"] ) {
@@ -847,6 +864,11 @@
 	<!-- Конец таблицы изделий -->
 </div>
 
+<style>
+	.ord_log_row {
+		border-left: 4px solid white;
+	}
+</style>
 <?
 // Узнаем количество вложенных файлов
 $query = "SELECT COUNT(1) cnt FROM OrdersAttachments WHERE OD_ID = {$id}";
@@ -1209,7 +1231,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('.ord_log_row[lnk="'+lnk+'"]').css('border-left', '4px solid orangered');
 		}, function() {
 			var lnk = $(this).attr('lnk');
-			$('.ord_log_row[lnk="'+lnk+'"]').css('border', 'none');
+			$('.ord_log_row[lnk="'+lnk+'"]').css('border-left', '4px solid white');
 		});
 
 		<?
