@@ -467,6 +467,8 @@
 	$Code = $row['Code'];
 	$ClientName = $row['ClientName'];
 	$Naimenovanie = $row['Naimenovanie'];
+	$saldo = $row['saldo'];
+	$KA_ID = $row['KA_ID'];
 	$mtel = $row['mtel'];
 	$address = $row['address'];
 	$AddDate = $row['AddDate'];
@@ -600,10 +602,10 @@
 			</select>
 			<?
 				if ($Naimenovanie) {
-					$saldo_format = number_format($row["saldo"], 0, '', ' ');
+					$saldo_format = number_format($saldo, 0, '', ' ');
 					echo "<n class='ul'>{$Naimenovanie}</n><br>";
-					echo "Сальдо: <b style='color: ".(($row["saldo"] < 0) ? "#E74C3C;" : "#16A085;")."'>{$saldo_format}</b><br>";
-					echo "<a href='/bills.php?payer={$row["KA_ID"]}' target='_blank'>Счета</a>&nbsp;&nbsp;<a href='/sverki.php?payer={$row["KA_ID"]}' target='_blank'>Сверки</a>";
+					echo "Сальдо: <b style='color: ".(($saldo < 0) ? "#E74C3C;" : "#16A085;")."'>{$saldo_format}</b><br>";
+					echo "<a href='/bills.php?payer={$KA_ID}' target='_blank'>Счета</a>&nbsp;&nbsp;<a href='/sverki.php?payer={$KA_ID}' target='_blank'>Сверки</a>";
 				}
 			?>
 			</div>
