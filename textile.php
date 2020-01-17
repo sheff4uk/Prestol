@@ -312,7 +312,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		echo ($row["retail"] ? "&bull; " : "")."{$row["Shop"]}";
 		echo "</span>";
 		echo "</td>";
-		echo "<td>{$row["Comment"]}</td>";
+		echo "<td class='".( in_array('order_add_confirm', $Rights) ? "comment_cell" : "" )."'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
 		echo "</tr>";
 	}
 ?>

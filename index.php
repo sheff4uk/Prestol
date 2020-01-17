@@ -1478,26 +1478,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$(this).parents('.shop_cell').find('select').hide();
 			$(this).parents('.shop_cell').find('span').show();
 		});
-
-		// Редактирование примечания аяксом
-		$('.comment_cell').dblclick(function() {
-			$(this).find('span').hide();
-			$(this).find('textarea').show();
-			$(this).find('textarea').focus();
-		});
-		$('.comment_cell textarea').change(function() {
-			var OD_ID = $(this).parents('tr').attr('id');
-			OD_ID = OD_ID.replace('ord', '');
-			var val = $(this).val();
-			val = val.split("\u000A").join("%0d%0a\u000A"); // Замена символов переноса строки для GET
-			$.ajax({ url: "ajax.php?do=update_comment&OD_ID="+OD_ID+"&val="+val, dataType: "script", async: true });
-			$(this).parent('.comment_cell').find('textarea').hide();
-			$(this).parent('.comment_cell').find('span').show();
-		});
-		$('.comment_cell textarea').blur(function() {
-			$(this).parent('.comment_cell').find('textarea').hide();
-			$(this).parent('.comment_cell').find('span').show();
-		});
 	});
 </script>
 

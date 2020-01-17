@@ -1665,7 +1665,7 @@ case "update_comment":
 	$query = "UPDATE OrdersData SET Comment = '{$comment}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 	mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
-	echo "$('.comment_cell[id={$OD_ID}] span').html('{$comment}');";
+	echo "$('#ord{$OD_ID} .comment_cell span').html('{$comment}');";
 	echo "noty({timeout: 3000, text: 'Комментарий был обновлен.', type: 'success'});";
 
 	break;
