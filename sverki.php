@@ -867,7 +867,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			var CT_ID = $('select[name="KA_ID"]').find('option:selected').attr('CT_ID');
 			var num_rows = $('#num_rows input').val();
 			$('#orders_to_invoice').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
-			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows, dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows+"&from_js=1", dataType: "script", async: false });
 		});
 
 		// Обработчики чекбоксов в списке наборов
