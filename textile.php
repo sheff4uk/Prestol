@@ -46,34 +46,34 @@
 					  WHERE ODD_ID IN({$ODD_IDs})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
-		if( $_POST["Shipper"] != '' ) {
-			// Обновляем поставщика
-			$query = "SELECT ODD.ODD_ID, MT.Material
-						FROM OrdersDataDetail ODD
-						JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-						WHERE ODD.ODD_ID IN($ODD_IDs)";
-			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			while( $row = mysqli_fetch_array($res) ) {
-				$query = "
-					SELECT MT_ID FROM Materials WHERE Material LIKE '{$row["Material"]}' AND SH_ID = {$Shipper}
-				";
-				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				$subrow = mysqli_fetch_array($subres);
-				if ($subrow["MT_ID"]) {
-					$mt_id = $subrow["MT_ID"];
-				}
-				else {
-					$query = "
-						INSERT INTO Materials SET Material = '{$row["Material"]}', SH_ID = {$Shipper}
-					";
-					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					$mt_id = mysqli_insert_id( $mysqli );
-				}
-
-				$query = "UPDATE OrdersDataDetail SET MT_ID = $mt_id, author = {$_SESSION['id']} WHERE ODD_ID = {$row["ODD_ID"]}";
-				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			}
-		}
+//		if( $_POST["Shipper"] != '' ) {
+//			// Обновляем поставщика
+//			$query = "SELECT ODD.ODD_ID, MT.Material
+//						FROM OrdersDataDetail ODD
+//						JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+//						WHERE ODD.ODD_ID IN($ODD_IDs)";
+//			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//			while( $row = mysqli_fetch_array($res) ) {
+//				$query = "
+//					SELECT MT_ID FROM Materials WHERE Material LIKE '{$row["Material"]}' AND SH_ID = {$Shipper}
+//				";
+//				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//				$subrow = mysqli_fetch_array($subres);
+//				if ($subrow["MT_ID"]) {
+//					$mt_id = $subrow["MT_ID"];
+//				}
+//				else {
+//					$query = "
+//						INSERT INTO Materials SET Material = '{$row["Material"]}', SH_ID = {$Shipper}
+//					";
+//					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//					$mt_id = mysqli_insert_id( $mysqli );
+//				}
+//
+//				$query = "UPDATE OrdersDataDetail SET MT_ID = $mt_id, author = {$_SESSION['id']} WHERE ODD_ID = {$row["ODD_ID"]}";
+//				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//			}
+//		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$_SERVER['REQUEST_URI'].'">');
 		die;
@@ -341,6 +341,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 		</div>
 	</p>
+<!--
 	<p>
 		<label for="Shipper">Поставщик:</label>
 		<select id="Shipper" name="Shipper" style="width: 110px;" title="Поставщик">
@@ -354,6 +355,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			?>
 		</select>
 	</p>
+-->
 	<input type="hidden" name="isex" value="1">
 	<input type='submit' name="subbut" value='Применить'>
 </form>
