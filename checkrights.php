@@ -23,12 +23,24 @@
 	}
 	else {
 		// Узнаем город, роль и иконку пользователя
-		// Формируем иконку пользователя
-		$query = "SELECT CT_ID, RL_ID, USR_Icon(USR_ID) USR_Icon FROM Users WHERE USR_ID = {$_SESSION['id']}";
+		$query = "
+			SELECT USR.CT_ID
+				,USR.RL_ID
+				,USR_Icon(USR.USR_ID) USR_Icon
+				,CT.timezone
+			FROM Users USR
+			LEFT JOIN Cities CT ON CT.CT_ID = USR.CT_ID
+			WHERE USR_ID = {$_SESSION['id']}
+		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$USR_City = mysqli_result($res,0,'CT_ID');
 		$USR_Role = mysqli_result($res,0,'RL_ID');
 		$USR_Icon = mysqli_result($res,0,'USR_Icon');
+		$timezone = mysqli_result($res,0,'timezone');
+
+		// Устанавливаем часовой пояс
+		date_default_timezone_set($timezone);
+		mysqli_query($mysqli, "SET `time_zone`='".date('P')."'");
 
 		// Получаем права пользователя
 		$query = "SELECT RT_ID FROM Role_Rights WHERE RL_ID = {$USR_Role}";
