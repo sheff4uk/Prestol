@@ -264,7 +264,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 	$query = "
 		SELECT PVCL_ID
 			,Friendly_date(PVCL.date) date
-			,TIME(PVCL.date) time
+			,DATE_FORMAT(PVCL.date, '%H:%i') time
 			,PVC.PVC_ID
 			,PVC.edge
 			,PVCL.amount
@@ -311,7 +311,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 <?
 	$query = "
 		SELECT Friendly_date(PVCL.date) date
-			,TIME(PVCL.date) time
+			,DATE_FORMAT(PVCL.date, '%H:%i') time
 			,PVC.PVC_ID
 			,PVC.edge
 			,PVCL.amount

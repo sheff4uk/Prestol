@@ -918,7 +918,7 @@ if( $id != "NULL" ) {
 							,OCL.new_value
 							,USR_Icon(OCL.author) Name
 							,Friendly_date(OCL.date_time) friendly_date
-							,TIME(OCL.date_time) Time
+							,DATE_FORMAT(OCL.date_time, '%H:%i') Time
 						FROM OrdersChangeLog OCL
 						JOIN OrdersFieldName OFN ON OFN.OFN_ID = OCL.OFN_ID
 						LEFT JOIN OrdersDataSteps ODS ON ODS.ODS_ID = OCL.ODS_ID
@@ -980,10 +980,10 @@ if( $id != "NULL" ) {
 							,OM.priority
 							,USR_Icon(OM.author) Name
 							,Friendly_date(OM.date_time) friendly_date
-							,TIME(OM.date_time) Time
+							,DATE_FORMAT(OM.date_time, '%H:%i') Time
 							,IFNULL(USR_Name(OM.read_user), 'СИСТЕМА') read_user
 							,Friendly_date(OM.read_time) read_date
-							,TIME(OM.read_time) read_time
+							,DATE_FORMAT(OM.read_time, '%H:%i') read_time
 							,OM.destination
 							,IF(OM.read_time > NOW(), 0, 1) is_read
 						FROM OrdersMessage OM

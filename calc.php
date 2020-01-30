@@ -97,7 +97,7 @@
 				,Price(ODD.ODD_ID, 3) reg
 				,USR_Icon(OCL.author) Name
 				,Friendly_date(OCL.date_time) friendly_date
-				,TIME(OCL.date_time) Time
+				,DATE_FORMAT(OCL.date_time, '%H:%i') Time
 				,CONCAT('<p class=\"price\">+', IFNULL(MT.markup, SH.markup), 'р.</p>') markup
 			FROM OrdersDataDetail ODD
 			JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID AND PM.PT_ID = 2

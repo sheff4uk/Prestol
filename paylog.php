@@ -368,7 +368,7 @@
 			$query = "
 				SELECT BL.Balance
 					,Friendly_date(BL.Date) date
-					,TIME(BL.Date) Time
+					,DATE_FORMAT(BL.Date, '%H:%i') Time
 				FROM BalanceLog BL
 				WHERE WD_ID = {$_GET["worker"]}
 				AND DATEDIFF((SELECT MAX(Date) FROM BalanceLog WHERE WD_ID = {$_GET["worker"]}), BL.Date) <= 31
@@ -419,7 +419,7 @@
 			$query = "
 				SELECT PL.PL_ID
 					,Friendly_date(PL.Date) date
-					,TIME(PL.Date) Time
+					,DATE_FORMAT(PL.Date, '%H:%i') Time
 					,WD.Name Worker
 					,ABS(PL.Pay) Pay
 					,REPLACE(PL.Comment, '\r\n', '<br>') Comment
