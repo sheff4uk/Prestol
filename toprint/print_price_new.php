@@ -162,7 +162,7 @@
 						<?=($row["size"] ? "{$row["size"]}<br>" : "")?>
 						<?=($row["mechanism"] ? "{$row["mechanism"]}<br>" : "")?>
 						<?=($row["materials"] ? "{$row["materials"]}<br>" : "")?>
-						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "{$row["material"]}" : ""))?>
+						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "пластик {$row["material"]}" : ""))?>
 					</div>
 				</div>
 			</div>
@@ -190,7 +190,7 @@
 						<?=($row["size"] ? "{$row["size"]}<br>" : "")?>
 						<?=($row["mechanism"] ? "{$row["mechanism"]}<br>" : "")?>
 						<?=($row["materials"] ? "{$row["materials"]}<br>" : "")?>
-						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "{$row["material"]}" : ""))?>
+						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "пластик {$row["material"]}" : ""))?>
 					</div>
 				</div>
 			</div>
