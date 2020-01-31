@@ -573,9 +573,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 		width: 70px;
 		text-align: right;
 	}
-	#add_payment input.terminal_payer {
-		width: 180px;
-	}
 </style>
 <div id='add_payment' title='Добавление оплаты' style='display:none' onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
@@ -1368,31 +1365,17 @@ this.subbut.value='Подождите, пожалуйста!';">
 			return false;
 		});
 
-		// При включении галки "терминал" активируется инпут для фамилии
+		// При включении галки "терминал" прячется выбор кассы
 		$('#add_payment').on("change", ".terminal", function() {
 			var ch = $(this).prop('checked');
-			var terminal_payer = $(this).parents('tr').find('input[type="text"].terminal_payer');
-			var terminal_payer_hidden = $(this).parents('tr').find('input[type="hidden"].terminal_payer');
 			var account = $(this).parents('tr').find('select.account');
-			var payment_date = $(this).parents('tr').find('.payment_date');
 			if( ch ) {
-				$(terminal_payer).prop('disabled', false);
-				$(terminal_payer).prop('required', true);
-				$(terminal_payer_hidden).val( $(terminal_payer).val() );
 				$(account).prop('disabled', true);
 				$(account).hide('fast');
-				$(payment_date).datepicker();
-				$(payment_date).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
-				$(payment_date).focus();
 			}
 			else {
-				$(terminal_payer).prop('disabled', true);
-				$(terminal_payer).prop('required', false);
-				$(terminal_payer_hidden).val('');
 				$(account).prop('disabled', false);
 				$(account).show('fast');
-				$(payment_date).datepicker('destroy');
-				$(payment_date).val('<?=( date('d.m.Y') )?>');
 			}
 		});
 

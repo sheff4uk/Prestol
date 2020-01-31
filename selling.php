@@ -43,23 +43,21 @@
 	$location = "selling.php?CT_ID={$CT_ID}&year={$year}&month={$month}";
 
 	// Добавление/редактирование расхода/прихода
-	if( isset($_GET["add_cost"]) )
-	{
+	if( isset($_GET["add_cost"]) ) {
 		$OP_ID = $_POST["OP_ID"];
 		$SH_ID = $_POST["SH_ID"];
 		$cost_name = mysqli_real_escape_string( $mysqli, convert_str($_POST["cost_name"]) );
-		$cost_date = date( 'Y-m-d', strtotime($_POST["cost_date"]) );
 		$cost = $_POST["cost"] ? $_POST["cost"] : 0;
 		$cost = ($_POST["sign"] == '-') ? $cost * -1 : $cost;
 		$send = $_POST["send"] ? $_POST["send"] : "NULL";
 
 		if( $OP_ID != '' ) { // Редактируем расход
-			$query = "UPDATE OrdersPayment SET SH_ID = {$SH_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']} WHERE OP_ID = {$OP_ID}";
+			$query = "UPDATE OrdersPayment SET SH_ID = {$SH_ID}, cost_name = '{$cost_name}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']} WHERE OP_ID = {$OP_ID}";
 			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 		}
 		else { // Добавляем расход
 			if( $cost ) {
-				$query = "INSERT INTO OrdersPayment SET SH_ID = {$SH_ID}, cost_name = '{$cost_name}', payment_date = '{$cost_date}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']}";
+				$query = "INSERT INTO OrdersPayment SET SH_ID = {$SH_ID}, cost_name = '{$cost_name}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']}";
 				if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 			}
 		}
@@ -422,7 +420,7 @@
 								JOIN (
 									SELECT OP.OD_ID
 										,SUM(OP.payment_sum) payment_sum
-										,SUM(IF(OP.terminal_payer IS NOT NULL, OP.payment_sum, 0)) terminal_sum
+										,SUM(IF(OP.terminal = 1, OP.payment_sum, 0)) terminal_sum
 									FROM OrdersPayment OP
 									JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND SH.CT_ID = {$CT_ID}
 									WHERE IFNULL(payment_sum, 0) != 0
@@ -437,7 +435,7 @@
 										AND OP.SH_ID = {$row["SH_ID"]}
 										AND YEAR(OP.payment_date) = {$year}
 										AND MONTH(OP.payment_date) = {$month}
-										AND OP.terminal_payer IS NULL
+										AND OP.terminal = 0
 									GROUP BY OP.OD_ID
 								) OP2 ON OP2.OD_ID = OD.OD_ID
 								JOIN (
@@ -584,7 +582,7 @@
 						LEFT JOIN (
 							SELECT OP.OD_ID
 								,SUM(OP.payment_sum) payment_sum
-								,SUM(IF(OP.terminal_payer IS NOT NULL, OP.payment_sum, 0)) terminal_sum
+								,SUM(IF(OP.terminal = 1, OP.payment_sum, 0)) terminal_sum
 							FROM OrdersPayment OP
 							JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND SH.CT_ID = {$CT_ID}
 							WHERE IFNULL(payment_sum, 0) != 0
@@ -595,7 +593,7 @@
 							FROM OrdersDataDetail ODD
 							GROUP BY ODD.OD_ID
 						) PRICE ON PRICE.OD_ID = OD.OD_ID
-						WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OP.send IS NULL
+						WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal = 0 AND OP.send IS NULL
 						ORDER BY OP.payment_date DESC
 					";
 				}
@@ -620,7 +618,7 @@
 						FROM OrdersPayment OP
 						JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 						LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-						WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal_payer IS NULL AND OP.send IS NULL
+						WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) != 0 AND OP.terminal = 0 AND OP.send IS NULL
 						ORDER BY OP.payment_date DESC
 					";
 				}
@@ -673,7 +671,6 @@
 					$query = "
 						SELECT DATE_FORMAT(OP.payment_date, '%d.%m') payment_date
 							,OP.payment_sum
-							,OP.terminal_payer
 							,OD.Code
 							,IFNULL(YEAR(OD.StartDate), 0) year
 							,IFNULL(MONTH(OD.StartDate), 0) month
@@ -687,7 +684,7 @@
 						WHERE YEAR(OP.payment_date) = {$year}
 							AND MONTH(OP.payment_date) = {$month}
 							AND IFNULL(OP.payment_sum, 0) != 0
-							AND OP.terminal_payer IS NOT NULL
+							AND OP.terminal = 1
 							AND OP.cost_name IS NULL
 						ORDER BY OP.payment_date DESC
 					";
@@ -708,7 +705,6 @@
 						echo "<td width='70' class='txtright'><b>{$format_sum}</b></td>";
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
 						echo "<td width='60'>{$cache_name}</td>";
-						echo "<td width='140' class='nowrap'>{$row["terminal_payer"]}</td>";
 						echo "</tr>";
 					}
 					$format_terminal_sum = number_format($terminal_sum, 0, '', ' ');
@@ -732,7 +728,7 @@
 									,OP.send
 								FROM OrdersPayment OP
 								JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND ".($SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
-								WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal_payer IS NULL AND send IS NOT NULL
+								WHERE YEAR(OP.payment_date) = {$year} AND MONTH(OP.payment_date) = {$month} AND IFNULL(OP.payment_sum, 0) < 0 AND OP.terminal = 0 AND send IS NOT NULL
 								ORDER BY OP.payment_date DESC";
 
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -1202,10 +1198,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<div style="width: 100px; display: inline-block; margin-right: 15px; vertical-align: top;">
 				<label for="cost">Сумма:</label><br>
 				<input type="number" name="cost" min="0" id="cost" style="width: 100%; text-align: right;">
-			</div>
-			<div style="width: 90px; display: inline-block; vertical-align: top;">
-				<label for="cost_date">Дата:</label><br>
-				<input readonly type="text" name="cost_date" class="" id="cost_date" style="width: 100%; text-align: center;">
 			</div>
 			<br><br>
 			<div style="width: 210px; display: inline-block; vertical-align: top;">

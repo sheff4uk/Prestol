@@ -184,10 +184,8 @@ elseif (isset($_GET["add_price"])) {
 // Добавление в базу нового платежа к набору
 elseif( isset($_GET["add_payment"]) ) {
 	$OD_ID = $_GET["OD_ID"];
-	$payment_date = date( 'Y-m-d', strtotime($_POST["payment_date_add"]) );
 	$payment_sum = $_POST["payment_sum_add"];
 	$terminal = $_POST["terminal_add"];
-	$terminal_payer = $terminal ? '\''.mysqli_real_escape_string( $mysqli, convert_str($_POST["terminal_payer_add"]) ).'\'' : 'NULL';
 	$FA_ID_add = $_POST["FA_ID_add"] ? $_POST["FA_ID_add"] : 'NULL';
 	$SH_ID_add = $_POST["FA_ID_add"] ? 'NULL' : $_POST["SH_ID_add"];
 
@@ -195,9 +193,8 @@ elseif( isset($_GET["add_payment"]) ) {
 		// Записываем новый платеж в таблицу платежей
 		$query = "INSERT INTO OrdersPayment
 					 SET OD_ID = {$OD_ID}
-						,payment_date = '{$payment_date}'
 						,payment_sum = {$payment_sum}
-						,terminal_payer = {$terminal_payer}
+						".($terminal ? ",terminal = {$terminal}" : "")."
 						,SH_ID = {$SH_ID_add}
 						,FA_ID = ".($terminal ? "(SELECT SH.FA_ID FROM Shops SH JOIN OrdersData OD ON OD.SH_ID = SH.SH_ID AND OD.OD_ID = {$OD_ID})" : $FA_ID_add)."
 						,author = {$_SESSION['id']}";
@@ -212,7 +209,7 @@ elseif( isset($_GET["add_payment"]) ) {
 	}
 
 	// Помечаем платежи, требующие переноса
-	foreach ($_POST["move_payment"] as $key => $value) {
+	foreach ($_POST["move_payment"] as $value) {
 		$query = "UPDATE OrdersPayment SET OD_ID = IF(OD_ID IS NULL, {$_POST["OD_ID"]}, NULL) WHERE OP_ID = {$value}";
 		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 	}

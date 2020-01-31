@@ -576,7 +576,7 @@ case "read_message":
 		// Получаем статус сообщения
 		$query = "SELECT IFNULL(USR_Name(OM.read_user), 'СИСТЕМА') read_user
 						,Friendly_date(OM.read_time) read_date
-						,TIME(OM.read_time) read_time
+						,DATE_FORMAT(OM.read_time, '%H:%i') read_time
 						,IF(OM.read_time > NOW(), 0, 1) is_read
 						,USR_Icon(OM.read_user) read_user_icon
 					FROM OrdersMessage OM
@@ -1120,7 +1120,7 @@ case "bill":
 					# Для продавца только его салоны
 					".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
 					# Есть стоимость
-					AND Ord_price(OD.OD_ID) - Ord_discount(OD.OD_ID) > 0
+					#AND Ord_price(OD.OD_ID) - Ord_discount(OD.OD_ID) > 0
 					AND OD.SH_ID != 36 #Исключение для Клёна
 				GROUP BY OD.OD_ID
 				ORDER BY SH.Shop, OD.StartDate DESC, OD.OD_ID DESC
@@ -1297,7 +1297,6 @@ case "add_payment":
 	$html .= "<div class='accordion'>";
 	$html .= "<h3>Памятка по внесению оплаты</h3>";
 	$html .= "<div><ul>";
-	$html .= "<li>Менять дату возможно только у терминальных платежей.</li>";
 	$html .= "<li>Ранее добавленные платежи <b>не редактируются</b>. Если нужно изменить или отменить предыдущую запись, то создайте новую корректирующую операцию с отрицательной суммой.</li>";
 	$html .= "<li>Если нужно совершить возврат денег по набору, он так же вносится со знаком минус.</li>";
 	$html .= "<li><b>Для переноса платежа с одного набора на другой: поставьте галку справа от платежа, который требуется перенести, и нажмите \"Сохранить\", затем перейдите к заказу в который нужно принять платёж, в форме добавления оплаты поставьте галку напротив платежа, который нужно принять <span style='border: 2px dashed #911;'>выделен красной рамкой</span>, и нажмите \"Сохранить\".</b></li>";
@@ -1310,8 +1309,7 @@ case "add_payment":
 	$html .= "<th style='width: 56px;'>Касса</th>";
 	$html .= "<th>Дата</th>";
 	$html .= "<th>Сумма</th>";
-	$html .= "<th>Терминал</th>";
-	$html .= "<th>Фамилия</th>";
+	$html .= "<th>Тип оплаты</th>";
 	$html .= "<th>Автор</th>";
 	$html .= "<th><i class='fas fa-exchange-alt' title='Перенести оплату с этого набора на другой.'></i></th>";
 	$html .= "</tr></thead><tbody>";
@@ -1320,10 +1318,10 @@ case "add_payment":
 	$query = "
 		SELECT OP.OD_ID
 			,OP.OP_ID
-			,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
+			,Friendly_date(OP.payment_date) payment_date
+			,DATE_FORMAT(OP.payment_date, '%H:%i') Time
 			,OP.payment_sum
-			,IF(OP.terminal_payer IS NOT NULL AND OP.FA_ID IS NOT NULL, 1, 0) terminal
-			,OP.terminal_payer
+			,OP.terminal
 			,IFNULL(OP.FA_ID, 0) FA_ID
 			,USR_Icon(OP.author) Name
 			,'' account
@@ -1336,13 +1334,13 @@ case "add_payment":
 
 		SELECT OP.OD_ID
 			,OP.OP_ID
-			,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
+			,Friendly_date(OP.payment_date) payment_date
+			,DATE_FORMAT(OP.payment_date, '%H:%i') Time
 			,OP.payment_sum
-			,IF(OP.terminal_payer IS NOT NULL AND OP.FA_ID IS NOT NULL, 1, 0) terminal
-			,OP.terminal_payer
+			,OP.terminal
 			,IFNULL(OP.FA_ID, 0) FA_ID
 			,USR_Icon(OP.author) Name
-			,IF(OP.FA_ID IS NOT NULL AND OP.terminal_payer IS NULL, FA.name, '') account
+			,IF(OP.FA_ID IS NOT NULL AND OP.terminal = 0, FA.name, '') account
 			,SH.Shop
 		FROM OrdersPayment OP
 		LEFT JOIN FinanceAccount FA ON FA.FA_ID = OP.FA_ID
@@ -1367,12 +1365,11 @@ case "add_payment":
 		else {
 			$html .= "<td class='nowrap' style='position: relative;'>".($row["OD_ID"] ? "" : "<div style='position: absolute; color: #911; top: -5px; font-size: .8em;'>Откреплённая денежная операция!</div>").($row["terminal"] ? "" : $row["Shop"])."</td>";
 		}
-		$html .= "<td>{$row["payment_date"]}</td>";
+		$html .= "<td class='txtleft'>{$row["payment_date"]}<br>{$row["Time"]}</td>";
 		$format_payment_sum = number_format($row["payment_sum"], 0, '', ' ');
 		$color = $row["payment_sum"] > 0 ? "#16A085" : "#E74C3C";
 		$html .= "<td class='txtright'><b style='color: {$color};'>{$format_payment_sum}</b></td>";
-		$html .= "<td>".($row["terminal"] ? "<i title='Оплата по терминалу' class='fa fa-credit-card' aria-hidden='true'></i>" : "")."</td>";
-		$html .= "<td>{$row["terminal_payer"]}</td>";
+		$html .= "<td>".($row["terminal"] ? "<i title='Оплата картой' class='fas fa-credit-card fa-lg'></i>" : "<i title='Наличными' class='fas fa-wallet fa-lg'></i>")."</td>";
 		$html .= "<td>{$row["Name"]}</td>";
 		if( $row["account"] or $is_del or $is_lock ) {
 			$html .= "<td></td>";
@@ -1403,17 +1400,15 @@ case "add_payment":
 		$html .= "</select>";
 		$html .= "<input type='hidden' name='SH_ID_add' value='{$SH_ID}'></td>";
 
-		$html .= "<td><input type='text' class='payment_date' style='width: 90px; text-align: center;' name='payment_date_add' value='{$payment_date}' readonly></td>";
+		$html .= "<td></td>";
 
 		$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
 
 		if( $FA_ID ) {
-			$html .= "<td><input type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
-			$html .= "<td><input type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
+			$html .= "<td><label><input type='checkbox' class='terminal' name='terminal_add' value='1'>Оплата картой</label></td>";
 		}
 		else {
-			$html .= "<td><input style='display: none;' type='checkbox' class='terminal' name='terminal_add' value='1'></td>";
-			$html .= "<td><input style='display: none;' type='text' class='terminal_payer' name='terminal_payer_add' value='{$ClientName}'></td>";
+			$html .= "<td></td>";
 		}
 
 		$html .= "<td>{$USR_Icon}</td>";
@@ -2182,9 +2177,9 @@ case "blank_log_table":
 			$query = "SELECT BS.BS_ID
 							,DATE_FORMAT(DATE(BS.Date), '%d.%m.%y') Date
 							,Friendly_date(BS.Date) friendly_date
+							,DATE_FORMAT(BS.Date, '%H:%i') Time
 							,DAY(BS.Date) day
 							,MONTH(BS.Date) month
-							,TIME(BS.Date) Time
 							,WD.Name Worker
 							,BL.Name Blank
 							,BS.Amount
