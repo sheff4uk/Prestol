@@ -201,7 +201,7 @@ elseif( isset($_GET["add_payment"]) ) {
 		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 		else {
 			// Записываем дату продажи набора если ее не было
-			$query = "UPDATE OrdersData SET StartDate = '{$payment_date}', author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
+			$query = "UPDATE OrdersData SET StartDate = NOW(), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID} AND StartDate IS NULL";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
