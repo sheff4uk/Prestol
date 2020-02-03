@@ -2112,7 +2112,7 @@ case "start_balance_blank":
 			) SBS ON SBS.BL_ID = BL.BL_ID
 			LEFT JOIN (
 				SELECT PB.BL_ID
-					,SUM(IF((OD.IsPainting = 3 OR OD.CL_ID IS NULL) AND OD_IsReady(OD.OD_ID), ODD.Amount, 0) * PB.Amount) Ready
+					,SUM(IF(OD.IsPainting = 3 OR (OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0) * PB.Amount) Ready
 				FROM OrdersDataDetail ODD
 				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 				JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
@@ -2120,7 +2120,7 @@ case "start_balance_blank":
 			) SODD ON SODD.BL_ID = BL.BL_ID
 			LEFT JOIN (
 				SELECT ODD.BL_ID
-					,SUM(IF((OD.IsPainting = 3 OR OD.CL_ID IS NULL) AND OD_IsReady(OD.OD_ID), ODD.Amount, 0)) Ready
+					,SUM(IF(OD.IsPainting = 3 OR (OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0)) Ready
 				FROM OrdersDataDetail ODD
 				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 				WHERE ODD.BL_ID IS NOT NULL

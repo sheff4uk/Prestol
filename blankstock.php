@@ -232,7 +232,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 						SELECT PB.BL_ID
 							,SUM(IF(OD.ReadyDate IS NULL AND OD.DelDate IS NULL AND OD.IsPainting != 3 AND !(OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0) * PB.Amount) NeedAmount
 							,SUM(IF(OD.ReadyDate IS NULL AND OD.DelDate IS NULL AND OD.IsPainting != 3 AND !(OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0) * PB.Amount * IFNULL(CL.clear, 0)) ClearNeedAmount
-							,SUM(IF((OD.IsPainting = 3 OR OD.CL_ID IS NULL) AND OD_IsReady(OD.OD_ID), ODD.Amount, 0) * PB.Amount) Ready
+							,SUM(IF(OD.IsPainting = 3 OR (OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0) * PB.Amount) Ready
 							,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount) InPainting
 						FROM OrdersDataDetail ODD
 						JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
@@ -244,7 +244,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 						SELECT ODD.BL_ID
 							,SUM(IF(OD.ReadyDate IS NULL AND OD.DelDate IS NULL AND OD.IsPainting != 3 AND !(OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0)) NeedAmount
 							,SUM(IF(OD.ReadyDate IS NULL AND OD.DelDate IS NULL AND OD.IsPainting != 3 AND !(OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0) * IFNULL(CL.clear, 0)) ClearNeedAmount
-							,SUM(IF((OD.IsPainting = 3 OR OD.CL_ID IS NULL) AND OD_IsReady(OD.OD_ID), ODD.Amount, 0)) Ready
+							,SUM(IF(OD.IsPainting = 3 OR (OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0)) Ready
 							,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0)) InPainting
 						FROM OrdersDataDetail ODD
 						JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
