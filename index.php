@@ -1253,7 +1253,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 		}
 		else {
 			var shipping_date = $('#wr_shipping_date input[name="shipping_date"]').val();
-			//alert(shipping_date);
 			if(is_invoice && shipping_date) {
 				$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
 				$('#wr_shipping_date font').show('fast');
@@ -1326,11 +1325,18 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#main_filter_form').submit();
 		});
 
-		// Проверяем можно ли отгружать
-		check_shipping(<?=$is_orders_ready?>, <?=$orders_count?>, <?=(($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0?>);
-
-		// Проверяем можно ли отменить отгрузку
-		check_undo_shipping(<?=$is_invoice?>, <?=(($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0?>);
+		<?
+		// На экране отгрузки проверяем можно ли отгружать или отменять отгрузку
+		if (isset($_GET['shpid'])) {
+			$filter = (($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0;
+			if ($shipping_date) { // Если отгружено - проверяем можно ли отменить отгрузку
+				echo "check_undo_shipping({$is_invoice}, {$filter});";
+			}
+			else { // Если не отгружено - проверяем можно ли отгрузить
+				echo "check_shipping({$is_orders_ready}, {$orders_count}, {$filter});";
+			}
+		}
+		?>
 
 		new Clipboard('#copy-button'); // Копирование ссылки в буфер
 

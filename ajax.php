@@ -167,12 +167,14 @@ case "ispainting":
 	// Если из отгрузки
 	if( $shpid > 0 ) {
 		// Узнаем все ли этапы завершены
-		$query = "SELECT BIT_AND(IF(OD.IsPainting = 3 OR OD.CL_ID IS NULL, 1, 0)) IsPainting
-						,BIT_AND(IFNULL(ODS.IsReady, 1)) IsReady
-					FROM OrdersData OD
-					LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
-					LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
-					WHERE OD.DelDate IS NULL AND OD.SHP_ID = {$shpid}";
+		$query = "
+			SELECT BIT_AND(IF(OD.IsPainting = 3 OR OD.CL_ID IS NULL, 1, 0)) IsPainting
+				,BIT_AND(IFNULL(ODS.IsReady, 1)) IsReady
+			FROM OrdersData OD
+			LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
+			LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
+			WHERE OD.DelDate IS NULL AND OD.SHP_ID = {$shpid}
+		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$painting = mysqli_result($res,0,'IsPainting');
 		$ready = mysqli_result($res,0,'IsReady');
