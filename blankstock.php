@@ -63,7 +63,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<input type='hidden' name='BS_ID'>
 				<div>
 					<label>Работник:</label>
-					<select required name="Worker" id="worker" style="width: 200px;">
+					<select required name="Worker" id="worker" style="width: 300px;">
 						<option value="">-=Выберите работника=-</option>
 						<option value="0">Без работника</option>
 						<optgroup label="Частые">
@@ -118,15 +118,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 				</div>
 				<div>
 					<label>Заготовка:</label>
-					<select required name="Blank" id="blank" style="width: 200px;">
+					<select required name="Blank" id="blank" style="width: 300px;">
 						<!--Формируется аяксом при выборе работника (blank_dropdown)-->
 					</select>
 				</div>
-				<div style="width: 170px; display: inline-block;">
+				<div style="width: 230px; display: inline-block;">
 					<label>Кол-во:</label>
 					<input required type='number' name='Amount' class='amount'>
 				</div>
-				<div style="width: 130px; display: inline-block;">
+				<div style="width: 170px; display: inline-block;">
 					Тариф:
 					<input type='number' name='Tariff' min='0' step='5' class='tariff'>
 				</div>
@@ -135,7 +135,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				</fieldset>
 				<div>
 					<label>Примечание:</label>
-					<input type='text' name='Comment' style="width: 200px;">
+					<input type='text' name='Comment' style="width: 300px;">
 <!--					<textarea name='Comment' rows='4' cols='25'></textarea>-->
 				</div>
 			</fieldset>
