@@ -211,15 +211,13 @@ this.subbut.value='Подождите, пожалуйста!';">
 						,BL.Name
 						,BL.start_balance
 
-						,IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) AmountBeforePainting
-
-						,IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) + IFNULL(SODD.InPainting, 0) + IFNULL(SODB.InPainting, 0) total_amount
+						,IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) total_amount
 
 						,IFNULL(SODD.InPainting, 0) + IFNULL(SODB.InPainting, 0) AmountInPainting
 
-						,IFNULL(SODD.Amount, 0) - IFNULL(SODD.Painting, 0) + IFNULL(SODB.Amount, 0) - IFNULL(SODB.Painting, 0) BeforePainting
+						,IFNULL(SODD.NeedAmount, 0) + IFNULL(SODB.NeedAmount, 0) BeforePainting
 
-						,IFNULL(SODD.ClearAmount, 0) - IFNULL(SODD.ClearPainting, 0) + IFNULL(SODB.ClearAmount, 0) - IFNULL(SODB.ClearPainting, 0) ClearBeforePainting
+						,IFNULL(SODD.ClearNeedAmount, 0) + IFNULL(SODB.ClearNeedAmount, 0) ClearBeforePainting
 
 					FROM BlankList BL
 					JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID AND PB.BL_ID IS NOT NULL
@@ -232,12 +230,10 @@ this.subbut.value='Подождите, пожалуйста!';">
 					) SBS ON SBS.BL_ID = BL.BL_ID
 					LEFT JOIN (
 						SELECT PB.BL_ID
-								,SUM(ODD.Amount * PB.Amount * IF(OD.DelDate IS NULL, 1, 0)) Amount
-								,SUM(ODD.Amount * PB.Amount * IF(OD.DelDate IS NULL, 1, 0) * IFNULL(CL.clear, 0)) ClearAmount
-								,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 1, 0)) Painting
-								,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 1, 0) * IFNULL(CL.clear, 0)) ClearPainting
-								,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 1, 0)) InPainting
-								,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
+							,SUM(IF(OD.ReadyDate IS NULL AND OD.DelDate IS NULL AND OD.IsPainting != 3, ODD.Amount, 0) * PB.Amount) NeedAmount
+							,SUM(IF(OD.ReadyDate IS NULL AND OD.DelDate IS NULL AND OD.IsPainting != 3, ODD.Amount, 0) * PB.Amount * IFNULL(CL.clear, 0)) ClearNeedAmount
+							,SUM(IF(OD.IsPainting = 3 OR (OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0) * PB.Amount) Painting
+							,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount) InPainting
 						FROM OrdersDataDetail ODD
 						JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 						LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
@@ -246,19 +242,16 @@ this.subbut.value='Подождите, пожалуйста!';">
 					) SODD ON SODD.BL_ID = BL.BL_ID
 					LEFT JOIN (
 						SELECT ODD.BL_ID
-								,SUM(ODD.Amount * IF(OD.DelDate IS NULL, 1, 0)) Amount
-								,SUM(ODD.Amount * IF(OD.DelDate IS NULL, 1, 0) * IFNULL(CL.clear, 0)) ClearAmount
-								,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) Painting
-								,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0) * IFNULL(CL.clear, 0)) ClearPainting
-								,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) InPainting
-								,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
+							,SUM(IF(OD.ReadyDate IS NULL AND OD.DelDate IS NULL AND OD.IsPainting != 3, ODD.Amount, 0)) NeedAmount
+							,SUM(IF(OD.ReadyDate IS NULL AND OD.DelDate IS NULL AND OD.IsPainting != 3, ODD.Amount, 0) * IFNULL(CL.clear, 0)) ClearNeedAmount
+							,SUM(IF(OD.IsPainting = 3 OR (OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0)) Painting
+							,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0)) InPainting
 						FROM OrdersDataDetail ODD
 						JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 						LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
 						WHERE ODD.BL_ID IS NOT NULL
 						GROUP BY ODD.BL_ID
 					) SODB ON SODB.BL_ID = BL.BL_ID
-					WHERE BL.Name NOT LIKE 'Клей'
 					GROUP BY BL.BL_ID
 					ORDER BY BeforePainting DESC, BL.Name ASC
 				";

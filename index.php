@@ -101,7 +101,7 @@
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		// Помечаем наборы как отгруженные
-		$query = "UPDATE OrdersData SET ReadyDate = {$shipping_date}, IsPainting = 3, author = {$_SESSION['id']} WHERE SHP_ID = {$_GET["shpid"]}";
+		$query = "UPDATE OrdersData SET ReadyDate = {$shipping_date}, author = {$_SESSION['id']} WHERE SHP_ID = {$_GET["shpid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		// Перенаправление на экран этой отгрузки

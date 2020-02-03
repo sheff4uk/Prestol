@@ -2100,10 +2100,7 @@ case "start_balance_blank":
 
 		// Узнаем кол-во заготовок верхнего уровня
 		$query = "
-			SELECT
-				IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) AmountBeforePainting
-
-				,IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) - IFNULL(SODD.PaintingDeleted, 0) - IFNULL(SODB.PaintingDeleted, 0) + IFNULL(SODD.InPainting, 0) + IFNULL(SODB.InPainting, 0) total_amount
+			SELECT IFNULL(BL.start_balance, 0) + IFNULL(SBS.Amount, 0) - IFNULL(SODD.Painting, 0) - IFNULL(SODB.Painting, 0) total_amount
 			FROM BlankList BL
 			LEFT JOIN (
 				SELECT BS.BL_ID, SUM(BS.Amount) Amount
@@ -2113,10 +2110,7 @@ case "start_balance_blank":
 			) SBS ON SBS.BL_ID = BL.BL_ID
 			LEFT JOIN (
 				SELECT PB.BL_ID
-					,SUM(ODD.Amount * PB.Amount * IF(OD.DelDate IS NULL, 1, 0)) Amount
-					,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 1, 0)) Painting
-					,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 1, 0)) InPainting
-					,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * PB.Amount * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
+					,SUM(IF(OD.IsPainting = 3 OR (OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0) * PB.Amount) Painting
 				FROM OrdersDataDetail ODD
 				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 				JOIN ProductBlank PB ON PB.PM_ID = ODD.PM_ID
@@ -2124,10 +2118,7 @@ case "start_balance_blank":
 			) SODD ON SODD.BL_ID = BL.BL_ID
 			LEFT JOIN (
 				SELECT ODD.BL_ID
-					,SUM(ODD.Amount * IF(OD.DelDate IS NULL, 1, 0)) Amount
-					,SUM(IF(OD.IsPainting IN(2,3), ODD.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) Painting
-					,SUM(IF(OD.IsPainting = 2, ODD.Amount, 0) * IF(OD.DelDate IS NULL, 1, 0)) InPainting
-					,SUM(IF(OD.IsPainting = 3, ODD.Amount, 0) * IF(OD.DelDate IS NULL, 0, 1)) PaintingDeleted
+					,SUM(IF(OD.IsPainting = 3 OR (OD.CL_ID IS NULL AND OD_IsReady(OD.OD_ID)), ODD.Amount, 0)) Painting
 				FROM OrdersDataDetail ODD
 				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 				WHERE ODD.BL_ID IS NOT NULL
