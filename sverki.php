@@ -271,6 +271,16 @@ if( !in_array('sverki_opt', $Rights) ) {
 }
 
 if( $payer ) {
+	// Узнаем сальдо выбранного контрагента
+	$query = "
+		SELECT IFNULL(saldo, 0) saldo
+		FROM Kontragenty
+		WHERE KA_ID = {$payer}
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$row = mysqli_fetch_array($res);
+	$saldo = $row["saldo"];
+
 	echo "<h1>Акты сверок:</h1>";
 	echo "
 		<table>
