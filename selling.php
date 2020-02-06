@@ -958,7 +958,7 @@
 			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 AND ".( $SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
 			WHERE OD.DelDate IS NULL
 			".(($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year)."
-			GROUP BY OD.StartDate, IF(TRIM(IFNULL(OD.ClientName, '')) LIKE '', MD5(OD.OD_ID), OD.ClientName), OD.PFI_ID
+			GROUP BY OD.StartDate, IF(TRIM(IFNULL(OD.ClientName, '')) LIKE '', MD5(OD.OD_ID), OD.ClientName), OD.PFI_ID, OD.SH_ID
 			ORDER BY IFNULL(OD.StartDate, '9999-01-01'), OD.AddDate, OD.OD_ID
 		";
 		$rowspan = 0;
@@ -1124,7 +1124,7 @@
 				echo " class='painting_cell {$class}'>{$row["Color"]}</td>";
 
 				if ($shop_num_rows > 1) {
-					echo "<td><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'").">{$select_shops}</select></span></td>";
+					echo "<td><span><select style='width: 100%;' ".(($is_lock or $USR_Shop) ? "disabled" : "class='select_shops'")." OD_IDs='{$overrow["OD_IDs"]}'>{$select_shops}</select></span></td>";
 				}
 				//echo "<td id='{$row["OD_ID"]}'><input type='text' class='sell_comment' value='". htmlspecialchars($row["sell_comment"], ENT_QUOTES) ."'></td>";
 				echo "<td><textarea class='sell_comment' style='width: 100%; resize: vertical;'>{$row["sell_comment"]}</textarea></td>";
@@ -1379,8 +1379,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 		$('.select_shops').on('change', function() {
 			var OD_ID = $(this).parents('tr').attr('id');
 			OD_ID = OD_ID.replace('ord', '');
+			var OD_IDs = $(this).attr('OD_IDs');
 			var val = $(this).val();
-			$.ajax({ url: "ajax.php?do=update_shop&OD_ID="+OD_ID+"&SH_ID="+val, dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=update_shop&OD_ID="+OD_ID+"&SH_ID="+val+"&OD_IDs="+OD_IDs, dataType: "script", async: false });
 		});
 
 		// Редактирование даты продажи

@@ -1581,6 +1581,7 @@ case "create_shop_select":
 // Редактирование салона
 case "update_shop":
 	$OD_ID = $_GET["OD_ID"];
+	$OD_IDs = $_GET["OD_IDs"] ? $_GET["OD_IDs"] : $OD_ID;
 	$SH_ID = $_GET["SH_ID"] ? $_GET["SH_ID"] : "NULL";
 
 	// Узнаем название старого салона
@@ -1594,45 +1595,51 @@ case "update_shop":
 	$old_shid = mysqli_result($res,0,'SH_ID');
 	$old_shop = mysqli_result($res,0,'Shop');
 
-	// Меняем салон в наборе
-	$query = "UPDATE OrdersData SET SH_ID = {$SH_ID}, author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
+	// Меняем салон у группы
+	$query = "UPDATE OrdersData SET SH_ID = {$SH_ID}, author = {$_SESSION['id']} WHERE OD_ID IN ({$OD_IDs})";
 	if( !mysqli_query( $mysqli, $query ) ) {
 		echo "$('.main_table td#{$OD_ID} select.select_shops').val({$old_shid});";
 		die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	}
 
-	// Узнаем название нового салона
-	$query = "SELECT IFNULL(SH.Shop, 'Свободные') Shop
-					,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS ShopCity
-					,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
-					,IFNULL(OD.SH_ID, 0) SH_ID
-					,CheckPayment(OD.OD_ID) attention
-					,IFNULL(SH.retail, 0) retail
-				FROM OrdersData OD
-				LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-				LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-				WHERE OD.OD_ID = {$OD_ID}";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-	$new_shop = mysqli_result($res,0,'Shop');
-	$CTColor = mysqli_result($res,0,'CTColor');
-	$ShopCity = mysqli_result($res,0,'ShopCity');
-	$SH_ID = mysqli_result($res,0,'SH_ID');
-	$ShopCity = addslashes($ShopCity);
-	$attention = mysqli_result($res,0,'attention');
-	$retail = mysqli_result($res,0,'retail');
+	// Узнаем данные нового салона
+	$query = "
+		SELECT OD.OD_ID
+			,IFNULL(SH.Shop, 'Свободные') Shop
+			,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS ShopCity
+			,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
+			,IFNULL(OD.SH_ID, 0) SH_ID
+			,CheckPayment(OD.OD_ID) attention
+			,IFNULL(SH.retail, 0) retail
+		FROM OrdersData OD
+		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+		WHERE OD.OD_ID IN ({$OD_IDs})
 
-	echo "$('#ord{$OD_ID} .shop_cell span').html('".($retail ? "&bull; " : "")."{$ShopCity}');";
-	echo "$('#ord{$OD_ID} .shop_cell span').attr('style', 'background: {$CTColor};');";
-	echo "$('#ord{$OD_ID} .shop_cell').attr('SH_ID', '{$SH_ID}');";
-	// Если есть оплата в кассу другого салона
-	if( $attention ) {
-		echo "$('#ord{$OD_ID} .add_payment_btn').addClass('attention');";
-		echo "$('#ord{$OD_ID} .add_payment_btn').attr('title', 'Имеются платежи, внесённые в кассу другого салона!');";
-		echo "noty({text: 'У этого набора имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.', type: 'error'});";
-	}
-	else {
-		echo "$('#ord{$OD_ID} .add_payment_btn').removeClass('attention');";
-		echo "$('#ord{$OD_ID} .add_payment_btn').removeAttr('title');";
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+	while ($row = mysqli_fetch_array($res)) {
+		$new_shop = $row["Shop"];
+		$ShopCity = $row["ShopCity"];
+		$ShopCity = addslashes($ShopCity);
+		$retail = $row["retail"];
+
+		echo "$('#ord{$row["OD_ID"]} .shop_cell span').html('".($row["retail"] ? "&bull; " : "")."{$ShopCity}');";
+		echo "$('#ord{$row["OD_ID"]} .shop_cell span').attr('style', 'background: {$row["CTColor"]};');";
+		echo "$('#ord{$row["OD_ID"]} .shop_cell').attr('SH_ID', '{$row["SH_ID"]}');";
+		// Меняем салон на экране
+		echo "$('#ord{$row["OD_ID"]} select.select_shops').val('{$row["SH_ID"]}');";
+
+		// Если есть оплата в кассу другого салона
+		if( $row["attention"] ) {
+			echo "$('#ord{$row["OD_ID"]} .add_payment_btn').addClass('attention');";
+			echo "$('#ord{$row["OD_ID"]} .add_payment_btn').attr('title', 'Имеются платежи, внесённые в кассу другого салона!');";
+			echo "noty({text: 'За набором числятся платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.', type: 'error'});";
+		}
+		else {
+			echo "$('#ord{$row["OD_ID"]} .add_payment_btn').removeClass('attention');";
+			echo "$('#ord{$row["OD_ID"]} .add_payment_btn').removeAttr('title');";
+		}
 	}
 
 	echo "noty({timeout: 3000, text: 'Салон изменен с <b>{$old_shop}</b> на <b>{$new_shop}</b>', type: 'success'});";
