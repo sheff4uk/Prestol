@@ -1365,20 +1365,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			return false;
 		});
 
-		// При включении галки "терминал" прячется выбор кассы
-		$('#add_payment').on("change", ".terminal", function() {
-			var ch = $(this).prop('checked');
-			var account = $(this).parents('tr').find('select.account');
-			if( ch ) {
-				$(account).prop('disabled', true);
-				$(account).hide('fast');
-			}
-			else {
-				$(account).prop('disabled', false);
-				$(account).show('fast');
-			}
-		});
-
 		// Кнопка добавления оплаты к набору
 		$('.add_payment_btn').click( function() {
 			var OD_ID = $(this).parents('tr').attr('id');

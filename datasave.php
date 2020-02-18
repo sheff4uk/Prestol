@@ -186,18 +186,18 @@ elseif( isset($_GET["add_payment"]) ) {
 	$OD_ID = $_GET["OD_ID"];
 	$payment_sum = $_POST["payment_sum_add"];
 	$terminal = $_POST["terminal_add"];
-	$FA_ID_add = $_POST["FA_ID_add"] ? $_POST["FA_ID_add"] : 'NULL';
-	$SH_ID_add = $_POST["FA_ID_add"] ? 'NULL' : $_POST["SH_ID_add"];
+	$CB_ID = $_POST["cb_id"];
 
 	if( $payment_sum ) {
 		// Записываем новый платеж в таблицу платежей
-		$query = "INSERT INTO OrdersPayment
-					 SET OD_ID = {$OD_ID}
-						,payment_sum = {$payment_sum}
-						".($terminal ? ",terminal = {$terminal}" : "")."
-						,SH_ID = {$SH_ID_add}
-						,FA_ID = ".($terminal ? "(SELECT SH.FA_ID FROM Shops SH JOIN OrdersData OD ON OD.SH_ID = SH.SH_ID AND OD.OD_ID = {$OD_ID})" : $FA_ID_add)."
-						,author = {$_SESSION['id']}";
+		$query = "
+			INSERT INTO OrdersPayment
+			SET OD_ID = {$OD_ID}
+				,payment_sum = {$payment_sum}
+				".($terminal ? ",terminal = {$terminal}" : "")."
+				,CB_ID = {$CB_ID}
+				,author = {$_SESSION['id']}
+		";
 		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 		else {
 			// Записываем дату продажи набора если ее не было

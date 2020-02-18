@@ -123,14 +123,6 @@
 			// Узнаем изменилась ли запись
 			if( mysqli_affected_rows( $mysqli ) ) {
 				$_SESSION["success"][] = "Данные сохранены.";
-
-				// Узнаем есть ли платежи по кассе другого салона
-				$query = "SELECT CheckPayment({$id}) attention";
-				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				$attention = mysqli_result($res,0,'attention');
-				if( $attention ) {
-					$_SESSION["alert"][] = "У этого набора имеются платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.";
-				}
 			}
 			else {
 				$_SESSION["error"][] = "Данные не были сохранены.";
@@ -449,7 +441,6 @@
 			,Ord_price(OD.OD_ID) - Ord_discount(OD.OD_ID) Price
 			,Ord_opt_price(OD.OD_ID) opt_price
 			,Payment_sum(OD.OD_ID) payment_sum
-			,CheckPayment(OD.OD_ID) attention
 		FROM OrdersData OD
 		LEFT JOIN Kontragenty KA ON KA.KA_ID = OD.KA_ID
 		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
@@ -597,7 +588,7 @@
 
 		<td style="background: <?=$CTColor?>;">
 		<div class='shop_cell'>
-			<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable and !$USR_Shop) ? "" : "disabled")?> style="width: 100%;">
+			<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")?> style="width: 100%;">
 				<!--Список салонов выводится аяксом ниже-->
 			</select>
 			<?
@@ -680,7 +671,7 @@
 
 		// Если розница и набор свой - можно вносить оплату
 		if( $retail and $editable ) {
-			echo "<td><button ".($row["KA_ID"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright ".($row["attention"] ? "attention" : "")."' location='{$location}' ".($row["attention"] ? "title='Имеются платежи, внесённые в кассу другого салона!'" : "").">{$format_payment}</button></td>";
+			echo "<td><button ".($row["KA_ID"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright' location='{$location}'>{$format_payment}</button></td>";
 		}
 ?>
 

@@ -1279,22 +1279,31 @@ case "add_payment":
 	$html = "<input type='hidden' name='location'>";
 
 	// Узнаем фамилию клиента, салон, счет терминала в салоне, закрыт ли месяц
-	$query = "SELECT OD.ClientName
-					,SH.SH_ID
-					,SH.Shop
-					,SH.FA_ID
-					,OD.is_lock
-					,IF(OD.DelDate IS NOT NULL, 1, 0) is_del
-				FROM OrdersData OD
-				JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-				WHERE OD.OD_ID = {$OD_ID}";
+	$query = "
+		SELECT OD.ClientName
+			,OD.SH_ID
+			,SH.CT_ID
+			,OD.is_lock
+			,IF(OD.DelDate IS NOT NULL, 1, 0) is_del
+		FROM OrdersData OD
+		JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		WHERE OD.OD_ID = {$OD_ID}
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	$ClientName = mysqli_result($res,0,'ClientName');
 	$SH_ID = mysqli_result($res,0,'SH_ID');
-	$Shop = mysqli_result($res,0,'Shop');
-	$FA_ID = mysqli_result($res,0,'FA_ID');
+	$CT_ID = mysqli_result($res,0,'CT_ID');
 	$is_lock = mysqli_result($res,0,'is_lock');
 	$is_del = mysqli_result($res,0,'is_del');
+
+	// Узнаем нативные кассы для набора по салону
+	$query = "
+		SELECT GROUP_CONCAT(CB.CB_ID) CB_IDs
+		FROM CashBox CB
+		WHERE CB.CB_ID IN (SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID} UNION SELECT CB_ID FROM Shops WHERE SH_ID = {$SH_ID})
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+	$CB_IDs = mysqli_result($res,0,'CB_IDs');
 
 	$html .= "<div class='accordion'>";
 	$html .= "<h3>Памятка по внесению оплаты</h3>";
@@ -1318,6 +1327,7 @@ case "add_payment":
 
 	// Выводим список ранее внесенных платежей
 	$query = "
+		#Открепленные платежи
 		SELECT OP.OD_ID
 			,OP.OP_ID
 			,Friendly_date(OP.payment_date) payment_date
@@ -1327,9 +1337,11 @@ case "add_payment":
 			,IFNULL(OP.FA_ID, 0) FA_ID
 			,USR_Icon(OP.author) Name
 			,'' account
-			,SH.Shop
+			,CB.name
+			,IF({$CT_ID} = {$USR_City}, 1, 0) checkbox
+			,IF(CB.CB_ID IN ({$CB_IDs}), 1, 0) native
 		FROM OrdersPayment OP
-		JOIN Shops SH ON SH.SH_ID = OP.SH_ID AND SH.SH_ID = {$SH_ID}
+		JOIN CashBox CB ON CB.CB_ID = OP.CB_ID AND CB.CB_ID IN (".($USR_Shop ? "SELECT CB_ID FROM Shops WHERE SH_ID IN ({$USR_Shop})" : "SELECT CB_ID FROM Shops WHERE CT_ID = {$CT_ID} UNION SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID}").")
 		WHERE OP.OD_ID IS NULL AND OP.cost_name IS NULL AND IFNULL(OP.payment_sum, 0) != 0
 
 		UNION ALL
@@ -1343,10 +1355,12 @@ case "add_payment":
 			,IFNULL(OP.FA_ID, 0) FA_ID
 			,USR_Icon(OP.author) Name
 			,IF(OP.FA_ID IS NOT NULL AND OP.terminal = 0, FA.name, '') account
-			,SH.Shop
+			,CB.name
+			,IF(CB.CB_ID IN (".($USR_Shop ? "SELECT CB_ID FROM Shops WHERE SH_ID IN ({$USR_Shop})" : "SELECT CB_ID FROM Shops WHERE CT_ID = {$CT_ID} AND CT_ID = {$USR_City} UNION SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID} AND CT_ID = {$USR_City}")."), 1, 0) checkbox
+			,IF(CB.CB_ID IN ({$CB_IDs}), 1, 0) native
 		FROM OrdersPayment OP
 		LEFT JOIN FinanceAccount FA ON FA.FA_ID = OP.FA_ID
-		LEFT JOIN Shops SH ON SH.SH_ID = OP.SH_ID
+		LEFT JOIN CashBox CB ON CB.CB_ID = OP.CB_ID
 		WHERE OP.OD_ID = {$OD_ID} AND IFNULL(OP.payment_sum, 0) != 0
 
 		#ORDER BY OD_ID, OP_ID
@@ -1358,14 +1372,13 @@ case "add_payment":
 			$html .= "<tr>";
 		}
 		else {
-			//$html .= "<tr style='opacity: .5;'><div>Откреплённая денежная операция!</div";
 			$html .= "<tr style='border: 2px dashed #911;'>";
 		}
 		if( $row["account"] ) {
 			$html .= "<td class='nowrap'><b>{$row["account"]}</b></td>";
 		}
 		else {
-			$html .= "<td class='nowrap' style='position: relative;'>".($row["OD_ID"] ? "" : "<div style='position: absolute; color: #911; top: -5px; font-size: .8em;'>Откреплённая денежная операция!</div>").($row["terminal"] ? "" : $row["Shop"])."</td>";
+			$html .= "<td class='nowrap' style='position: relative;'>".($row["OD_ID"] ? "" : "<div style='position: absolute; color: #911; top: -5px; font-size: .8em;'>Откреплённая денежная операция!</div>").($row["native"] ? "<b>{$row["name"]}</b>" : "<b style='color: #911;' title='Эта касса не связана с салоном данного набора!'>{$row["name"]}<i class='fa fa-question-circle'></i></b>")."</td>";
 		}
 		$html .= "<td class='txtleft'>{$row["payment_date"]}<br>{$row["Time"]}</td>";
 		$format_payment_sum = number_format($row["payment_sum"], 0, '', ' ');
@@ -1373,7 +1386,8 @@ case "add_payment":
 		$html .= "<td class='txtright'><b style='color: {$color};'>{$format_payment_sum}</b></td>";
 		$html .= "<td>".($row["terminal"] ? "<i title='Оплата картой' class='fas fa-credit-card fa-lg'></i>" : "<i title='Наличными' class='fas fa-wallet fa-lg'></i>")."</td>";
 		$html .= "<td>{$row["Name"]}</td>";
-		if( $row["account"] or $is_del or $is_lock ) {
+		// Чекбокс перемещения платежа
+		if( $row["account"] or $is_del or $is_lock or !$row["checkbox"] ) {
 			$html .= "<td></td>";
 		}
 		else {
@@ -1381,41 +1395,35 @@ case "add_payment":
 		}
 		$html .= "</tr>";
 	}
-	if ($is_del) {
-		$html .= "<tr style='background: #6f6;'><td colspan='7'><b>Набор удалён. Внесение оплаты невозможно.</b></td></tr>";
-	}
-	elseif ($is_lock) {
-		$html .= "<tr style='background: #6f6;'><td colspan='7'><b>Отчетный период закрыт. Внесение оплаты невозможно.</b></td></tr>";
-	}
-	else { // Если набор не закрыт и не удален то можно добавить оплату
-		$payment_date = date('d.m.Y');
-		$html .= "<tr style='background: #6f6;'>";
-		$html .= "<td><select style='width: 50px;' class='account' name='FA_ID_add'>";
-		$html .= "<option value=''>{$Shop}</option>";
-		if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
-			$query = "SELECT FA.FA_ID, FA.name, IF(FA.bank IS NULL, 'selected', '') selected FROM FinanceAccount FA WHERE FA.USR_ID = {$_SESSION["id"]} AND FA.archive = 0";
-			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-			while( $row = mysqli_fetch_array($res) ) {
-				$html .= "<option ".(in_array('order_add_confirm', $Rights) ? $row["selected"] : "")." value='{$row["FA_ID"]}'>{$row["name"]}</option>";
-			}
+
+	// Узнаем кассу, доступную пользователю по выбранному набору
+	$query = "
+		SELECT CB.CB_ID
+			,CB.name
+		FROM CashBox CB
+		WHERE CB.CB_ID IN (".($USR_Shop ? "SELECT CB_ID FROM Shops WHERE SH_ID = {$SH_ID}" : "SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID} AND CT_ID = {$USR_City}").")
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+	$CB_ID = mysqli_result($res,0,'CB_ID');
+	$CashBox = mysqli_result($res,0,'name');
+	if( $CB_ID ) { //Если доступна касса
+		if ($is_del) {
+			$html .= "<tr style='background: #6f6;'><td colspan='7'><b>Набор удалён. Внесение оплаты невозможно.</b></td></tr>";
 		}
-		$html .= "</select>";
-		$html .= "<input type='hidden' name='SH_ID_add' value='{$SH_ID}'></td>";
-
-		$html .= "<td></td>";
-
-		$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
-
-		if( $FA_ID ) {
+		elseif ($is_lock) {
+			$html .= "<tr style='background: #6f6;'><td colspan='7'><b>Отчетный период закрыт. Внесение оплаты невозможно.</b></td></tr>";
+		}
+		else { // Если набор не закрыт и не удален то можно добавить оплату
+			$payment_date = date('d.m.y');
+			$html .= "<tr style='background: #6f6;'>";
+			$html .= "<td><b>{$CashBox}</b><input type='hidden' name='cb_id' value='{$CB_ID}'></td>";
+			$html .= "<td>{$payment_date}</td>";
+			$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
 			$html .= "<td><label><input type='checkbox' class='terminal' name='terminal_add' value='1'>Оплата картой</label></td>";
-		}
-		else {
+			$html .= "<td>{$USR_Icon}</td>";
 			$html .= "<td></td>";
+			$html .= "</tr>";
 		}
-
-		$html .= "<td>{$USR_Icon}</td>";
-		$html .= "<td></td>";
-		$html .= "</tr>";
 	}
 	$html .= "</tbody></table>";
 
@@ -1609,7 +1617,6 @@ case "update_shop":
 			,IF(OD.SH_ID IS NULL, 'Свободные', CONCAT(CT.City, '/', SH.Shop)) AS ShopCity
 			,IF(OD.SH_ID IS NULL, '#999', CT.Color) CTColor
 			,IFNULL(OD.SH_ID, 0) SH_ID
-			,CheckPayment(OD.OD_ID) attention
 			,IFNULL(SH.retail, 0) retail
 		FROM OrdersData OD
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -1629,17 +1636,6 @@ case "update_shop":
 		echo "$('#ord{$row["OD_ID"]} .shop_cell').attr('SH_ID', '{$row["SH_ID"]}');";
 		// Меняем салон на экране
 		echo "$('#ord{$row["OD_ID"]} select.select_shops').val('{$row["SH_ID"]}');";
-
-		// Если есть оплата в кассу другого салона
-		if( $row["attention"] ) {
-			echo "$('#ord{$row["OD_ID"]} .add_payment_btn').addClass('attention');";
-			echo "$('#ord{$row["OD_ID"]} .add_payment_btn').attr('title', 'Имеются платежи, внесённые в кассу другого салона!');";
-			echo "noty({text: 'За набором числятся платежи, внесённые в кассу другого салона! Проверьте оплату в реализации.', type: 'error'});";
-		}
-		else {
-			echo "$('#ord{$row["OD_ID"]} .add_payment_btn').removeClass('attention');";
-			echo "$('#ord{$row["OD_ID"]} .add_payment_btn').removeAttr('title');";
-		}
 	}
 
 	echo "noty({timeout: 3000, text: 'Салон изменен с <b>{$old_shop}</b> на <b>{$new_shop}</b>', type: 'success'});";

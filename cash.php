@@ -91,12 +91,11 @@
 					,NOW() date
 					,{$FA_ID} FA_ID
 					,3 FC_ID
-					,CONCAT(CT.City, '/', SH.Shop, ' (', OP.cost_name, ')') comment
+					,CONCAT(CB.name, ' (', OP.cost_name, ')') comment
 					,OP.OP_ID
 					,{$_SESSION['id']} author
 				FROM OrdersPayment OP
-				JOIN Shops SH ON SH.SH_ID = OP.SH_ID
-				JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+				JOIN CashBox CB ON CB.CB_ID = OP.CB_ID
 				WHERE OP.OP_ID = {$OP_ID}";
 		if( !mysqli_query( $mysqli, $query ) ) {
 			$_SESSION["error"][] = mysqli_error( $mysqli );
@@ -449,13 +448,10 @@
 						,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
 						,ABS(OP.payment_sum) payment_sum
 						,OP.cost_name
-						,SH.Shop
-						,CT.City
+						,CB.name
 				FROM OrdersPayment OP
-				JOIN Shops SH ON SH.SH_ID = OP.SH_ID
-				JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+				JOIN CashBox CB ON CB.CB_ID = OP.CB_ID AND CB.CB_ID IN (SELECT CB_ID FROM Shops WHERE CT_ID = {$USR_City} UNION SELECT CB_ID FROM Cities WHERE CT_ID = {$USR_City})
 				WHERE send = 1 AND payment_sum < 0
-					".(in_array('finance_account', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
 				ORDER BY OP.payment_date DESC";
 
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -465,7 +461,7 @@
 					<table style='width: 100%;'>
 						<thead>
 							<tr>
-								<th colspan='4'>Отправлено</th>
+								<th colspan='4'>Инкассация:</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -473,10 +469,10 @@
 			while( $row = mysqli_fetch_array($res) ) {
 				$payment_sum = number_format($row["payment_sum"], 0, '', ' ');
 				echo "<tr>";
-				echo "<td>{$row["City"]}/{$row["Shop"]} ({$row["cost_name"]})</td>";
+				echo "<td>{$row["name"]} ({$row["cost_name"]})</td>";
 				echo "<td>{$row["payment_date"]}</td>";
 				echo "<td class='txtright'><b>{$payment_sum}</b></td>";
-				echo "<td><a class='button add_send_btn' OP_ID='{$row["OP_ID"]}' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
+				echo "<td><a class='button add_send_btn' OP_ID='{$row["OP_ID"]}' payment_sum='{$payment_sum}' cashbox='{$row["name"]}' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
 				echo "</tr>";
 			}
 			echo "
@@ -1173,22 +1169,19 @@ this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<input type="hidden" id="OP_ID" name="OP_ID">
 			<div style="text-align: center;">
-				<label for="account">Касса:</label><br>
-					<div class='btnset'>
-					<?
-					if( !in_array('finance_account', $Rights) ) {
-						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0 AND archive = 0";
-					}
-					else {
-						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]} AND archive = 0";
-					}
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					while( $row = mysqli_fetch_array($res) )
-					{
-						echo "<input required type='radio' name='account' id='acc_{$row["FA_ID"]}' value='{$row["FA_ID"]}'>";
-						echo "<label for='acc_{$row["FA_ID"]}'>{$row["name"]}</label>";
-					}
-					?>
+				<div class='btnset'>
+					<p>Принять <b id="payment_sum"></b> из кассы <b id="cashbox"></b> в кассу:</p>
+					<select size="4" name="account" style="width: 100%;" required>
+						<?
+						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]} AND IFNULL(bank, 0) = 0 AND archive = 0";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						$account_cnt = mysqli_num_rows($res);
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option ".(($account_cnt == 1) ? "selected" : "")." value='{$row["FA_ID"]}'>{$row["name"]}</option>";
+						}
+						?>
+					</select>
 				</div>
 			</div>
 			<p style="color: red; text-align: center;"><b>Внимание!</b> Данную операцию отменить невозможно.</p>
@@ -1375,9 +1368,10 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		// Кнопка принятия выручки
 		$('.add_send_btn').click( function() {
+			$('#add_send #payment_sum').html($(this).attr('payment_sum'));
+			$('#add_send #cashbox').html($(this).attr('cashbox'));
 			$('#add_send #OP_ID').val($(this).attr('OP_ID'));
-			$('#add_send input[type="radio"]').prop('checked', false);
-			$('#add_send .btnset').buttonset("refresh");
+			$('#add_send select[name="account"]').val('');
 
 			$('#add_send').dialog({
 				resizable: false,
