@@ -253,7 +253,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 						GROUP BY ODD.BL_ID
 					) SODB ON SODB.BL_ID = BL.BL_ID
 					GROUP BY BL.BL_ID
-					ORDER BY BeforePainting DESC, BL.Name ASC
+					ORDER BY BL.Name ASC
 				";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) )
