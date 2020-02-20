@@ -71,7 +71,7 @@
 	// Обновление основной информации о наборе
 	if( isset($_GET["order_update"]) )
 	{
-		// Узнаем, была ли дата продажи
+		// Узнаем, была ли дата заключения договора
 		$query = "
 			SELECT OD.StartDate
 			FROM OrdersData OD
@@ -522,7 +522,7 @@
 				echo "<th width='20%'>Адрес доставки</th>";
 			}
 			?>
-			<th width="95">Продано</th>
+			<th width="95">Договор от</th>
 			<?= ($ReadyDate ? "<th width='95'>Отгружено<br><i style='font-size: .8em;'>Сдача</i></th>" : ($DelDate ? "<th width='95'>Удалено</th>" : ($showing ? "" : "<th width='95'>Сдача</th>"))) ?>
 			<th width="125">Подразделение</th>
 			<th width="170">Цвет краски <i class="fa fa-question-circle" html="<b>Цветовой статус лакировки:</b><br><span class='empty'>Покраска не требуется</span><br><span class='notready'>Не дано в покраску</span><br><span class='inwork'>Дано в покраску</span><br><span class='ready'>Покрашено</span>"></i></th>

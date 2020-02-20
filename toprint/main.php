@@ -70,7 +70,7 @@
 				<?
 					if(isset($_GET["CD"])) echo "<td width='50'>Код</td>";
 					if(isset($_GET["CN"])) echo "<td width='9%'>Клиент<br>Квитанция</td>";
-					if(isset($_GET["SD"])) echo "<td width='4%'>Дата продажи</td>";
+					if(isset($_GET["SD"])) echo "<td width='4%'>Договор от</td>";
 					if(isset($_GET["ED"])) echo "<td width='4%'>Дата ".($archive == 2 ? "отгрузки" : ($archive == 3 ? "удаления" : "сдачи"))."</td>";
 					if(isset($_GET["SH"])) echo "<td width='6%'>Подразде-ление</td>";
 					if(isset($_GET["Z"])) echo "<td width='20'>Кол-во</td>";

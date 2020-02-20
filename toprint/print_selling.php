@@ -69,7 +69,7 @@
 					echo "<td width='30'>Кол-во</td>";
 					echo "<td width='7%'>Подразде-ление</td>";
 					echo "<td width='10%'>Примечание</td>";
-					echo "<td width='4%'>Дата продажи</td>";
+					echo "<td width='4%'>Договор от</td>";
 
 				?>
 			</tr>
