@@ -494,15 +494,15 @@ case "confirmed":
 	if( $val == 1) {
 		$class = 'confirmed';
 		$status = 'Принят в работу';
-		echo "$('.main_table tr[id=\"ord{$id}\"] td.td_step').addClass('step_confirmed');";
-		echo "$('.main_table tr.ord_log_row td.td_step').addClass('step_confirmed');";
+		//echo "$('.main_table tr[id=\"ord{$id}\"] td.td_step').addClass('step_confirmed');";
+		echo "$('.main_table .td_step').addClass('step_confirmed');";
 		echo "$('#order_in_work_label').show('fast');";
 	}
 	else {
 		$class = 'not_confirmed';
 		$status = 'Не принят в работу';
-		echo "$('.main_table tr[id=\"ord{$id}\"] td.td_step').removeClass('step_confirmed');";
-		echo "$('.main_table tr.ord_log_row td.td_step').removeClass('step_confirmed');";
+		//echo "$('.main_table tr[id=\"ord{$id}\"] td.td_step').removeClass('step_confirmed');";
+		echo "$('.main_table .td_step').removeClass('step_confirmed');";
 		echo "$('#order_in_work_label').hide('fast');";
 	}
 

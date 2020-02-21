@@ -755,7 +755,7 @@
 		<tr>
 			<th width="55"></th>
 			<th width="40">Кол-во</th>
-			<th width="100">Этапы</th>
+			<th width="130">Этапы</th>
 			<th width="">Материал <i class="fa fa-question-circle" html="<b>Цветовой статус наличия:</b><br><span class='bg-gray'>Неизвестно</span><br><span class='bg-red'>Нет</span><br><span class='bg-yellow'>Заказано</span><br><span class='bg-green'>В наличии</span><br><span class='bg-red removed'>Выведен</span> - нужно менять"></i></th>
 			<th width="">Примечание</th>
 			<th width="60">Цена</th>
