@@ -1370,10 +1370,11 @@ this.subbut.value='Подождите, пожалуйста!';">
 			var OD_ID = $(this).parents('tr').attr('id');
 			OD_ID = OD_ID.replace('ord', '');
 			var location = $(this).attr("location");
-			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID, dataType: "script", async: false });
+			$('#add_payment fieldset').html("<input type='hidden' name='location' value='"+location+"'><div><div class=\"lds-ripple\"><div></div><div></div></div></div>"); // Показываем спиннер
+			$.ajax({ url: "ajax.php?do=add_payment&OD_ID="+OD_ID, dataType: "script", async: true });
 
 			$("#add_payment form").attr("action", "datasave.php?OD_ID="+OD_ID+"&add_payment");
-			$("#add_payment input[name=location]").val(location);
+//			$("#add_payment input[name=location]").val(location);
 
 			$('#add_payment').dialog({
 				resizable: false,

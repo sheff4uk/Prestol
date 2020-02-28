@@ -208,9 +208,14 @@ elseif( isset($_GET["add_payment"]) ) {
 		}
 	}
 
-	// Помечаем платежи, требующие переноса
+	// Перенос платежей
 	foreach ($_POST["move_payment"] as $value) {
-		$query = "UPDATE OrdersPayment SET OD_ID = IF(OD_ID IS NULL, {$_POST["OD_ID"]}, NULL) WHERE OP_ID = {$value}";
+		$query = "
+			UPDATE OrdersPayment
+			SET OD_ID = IF(OD_ID IS NULL, {$_POST["OD_ID"]}, NULL)
+				,author = IF(author IS NULL, {$_SESSION['id']}, author)
+			WHERE OP_ID = {$value}
+		";
 		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 	}
 

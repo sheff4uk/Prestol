@@ -1276,7 +1276,7 @@ case "bill":
 case "add_payment":
 	$OD_ID = $_GET["OD_ID"];
 
-	$html = "<input type='hidden' name='location'>";
+	$html = "";
 
 	// Узнаем фамилию клиента, салон, счет терминала в салоне, закрыт ли месяц
 	$query = "
@@ -1304,6 +1304,86 @@ case "add_payment":
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	$CB_IDs = mysqli_result($res,0,'CB_IDs');
+
+	// Узнаем кассу, доступную пользователю по выбранному набору
+	$query = "
+		SELECT CB.CB_ID
+			,CB.name
+			,deviceUuid
+			,gtCloseDate
+		FROM CashBox CB
+		WHERE CB.CB_ID IN (".($USR_Shop ? "SELECT CB_ID FROM Shops WHERE SH_ID = {$SH_ID}" : "SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID} AND CT_ID = {$USR_City}").")
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+	$CB_ID = mysqli_result($res,0,'CB_ID');
+	$CashBox = mysqli_result($res,0,'name');
+	$deviceUuid = mysqli_result($res,0,'deviceUuid');
+	$gtCloseDate = mysqli_result($res,0,'gtCloseDate');
+
+	// Если у кассы есть deviceUuid и gtCloseDate - пробуем получить документы из облака ЭВОТОР
+	if( $deviceUuid and $gtCloseDate ) {
+		// Узнаём storeUuid и X-Authorization магазина
+		$query = "
+			SELECT `storeUuid`, `X-Authorization`
+			FROM Rekvizity
+			WHERE R_ID = (SELECT R_ID FROM Cities WHERE CT_ID = {$CT_ID})
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+		$storeUuid = mysqli_result($res,0,'storeUuid');
+		$Authorization = mysqli_result($res,0,'X-Authorization');
+
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
+		curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate.'&types=PAYBACK,SELL');
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+			'X-Authorization: '.$Authorization
+		));
+		$out = curl_exec($curl);
+		$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE); // Получаем HTTP-код
+		curl_close($curl);
+
+		// Если вернулся код 200 - записываем в базу платежи
+		if( $http_code == "200" ) {
+			$rows = 0; // Счётчик полученных документов
+			$documents = json_decode($out, true);
+			foreach($documents as $value) {
+				foreach($value["transactions"] as $transactions) {
+					if( $transactions["type"] == "PAYMENT" ) {
+						//$html .= $transactions["uuid"]."___".$transactions["creationDate"]."___".$transactions["timezone"]."___".$transactions["sum"]."___".$transactions["paymentType"]."<br>";
+						if( $transactions["paymentType"] == "CASH" or $transactions["paymentType"] == "CARD" ) {
+							$query = "
+								INSERT INTO OrdersPayment
+								SET payment_date = CONVERT_TZ(STR_TO_DATE(SUBSTRING_INDEX('{$transactions["creationDate"]}', '.', 1), '%Y-%m-%dT%T'), '+00:00', CONCAT(IF({$transactions["timezone"]} > 0, '+', ''), TIME_FORMAT(SEC_TO_TIME({$transactions["timezone"]} DIV 1000), '%H:%i')))
+									,payment_sum = {$transactions["sum"]}
+									".($transactions["paymentType"] == "CARD" ? ",terminal = 1" : "")."
+									,uuid = '{$transactions["uuid"]}'
+									,CB_ID = {$CB_ID}
+								ON DUPLICATE KEY UPDATE
+									payment_sum = {$transactions["sum"]}
+							";
+							mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+							$rows += mysqli_affected_rows( $mysqli );
+						}
+						$gtCloseDate = $transactions["creationDate"];
+					}
+				}
+			}
+			if( $rows ) {
+				echo "noty({timeout: 10000, text: 'Из облака ЭВОТОР получены новые документы.', type: 'success'});";
+				// Обновляем дату последнего документа у кассы
+				$query = "
+					UPDATE CashBox
+					SET gtCloseDate = '{$gtCloseDate}'
+					WHERE CB_ID = {$CB_ID}
+				";
+				mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+			}
+		}
+		else { // Иначе выводим алерт с кодом ошибки
+			echo "noty({text: 'Не удалось получить документы из облака ЭВОТОР. Свяжитесь с администратором. Код ошибки: ".$http_code."', type: 'error'});";
+		}
+
+	}
 
 	$html .= "<div class='accordion'>";
 	$html .= "<h3>Памятка по внесению оплаты</h3>";
@@ -1396,21 +1476,14 @@ case "add_payment":
 		$html .= "</tr>";
 	}
 
-	// Узнаем кассу, доступную пользователю по выбранному набору
-	$query = "
-		SELECT CB.CB_ID
-			,CB.name
-		FROM CashBox CB
-		WHERE CB.CB_ID IN (".($USR_Shop ? "SELECT CB_ID FROM Shops WHERE SH_ID = {$SH_ID}" : "SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID} AND CT_ID = {$USR_City}").")
-	";
-	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-	$CB_ID = mysqli_result($res,0,'CB_ID');
-	$CashBox = mysqli_result($res,0,'name');
 	if( $CB_ID ) { //Если доступна касса
-		if ($is_del) {
+		if( $deviceUuid and $gtCloseDate ) {
+			$html .= "<tr style='background: #6f6;'><td colspan='7'><b>Информация об оплате импортируется автоматически.</b></td></tr>";
+		}
+		elseif( $is_del ) {
 			$html .= "<tr style='background: #6f6;'><td colspan='7'><b>Набор удалён. Внесение оплаты невозможно.</b></td></tr>";
 		}
-		elseif ($is_lock) {
+		elseif( $is_lock ) {
 			$html .= "<tr style='background: #6f6;'><td colspan='7'><b>Отчетный период закрыт. Внесение оплаты невозможно.</b></td></tr>";
 		}
 		else { // Если набор не закрыт и не удален то можно добавить оплату
@@ -1428,7 +1501,7 @@ case "add_payment":
 	$html .= "</tbody></table>";
 
 	$html = addslashes($html);
-	echo "$('#add_payment fieldset').html('{$html}');";
+	echo "$('#add_payment fieldset div').html('{$html}');";
 	// Инициируем акордион
 	echo "$('#add_payment .accordion').accordion({collapsible: true, heightStyle: 'content', active: false});";
 
