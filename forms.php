@@ -126,11 +126,13 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<input type='radio' id='1ptn0' name='ptn' value='0' required>
 					<label for='1ptn0'>Нет</label>
 				<input type='radio' id='1ptn1' name='ptn' value='1' required>
-					<label for='1ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
+					<label for='1ptn1'><i class='fa fa-paint-brush fa-lg' style="color: goldenrod;"></i>Золото</label>
 				<input type='radio' id='1ptn2' name='ptn' value='2' required>
 					<label for='1ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
 				<input type='radio' id='1ptn3' name='ptn' value='3' required>
 					<label for='1ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
+				<input type='radio' id='1ptn4' name='ptn' value='4' required>
+					<label for='1ptn4'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Св. зол.</label>
 			</div>
 		</div>
 		<div>
@@ -286,11 +288,13 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<input type='radio' id='2ptn0' name='ptn' value='0' required>
 					<label for='2ptn0'>Нет</label>
 				<input type='radio' id='2ptn1' name='ptn' value='1' required>
-					<label for='2ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
+					<label for='2ptn1'><i class='fa fa-paint-brush fa-lg' style="color: goldenrod;"></i>Золото</label>
 				<input type='radio' id='2ptn2' name='ptn' value='2' required>
 					<label for='2ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
 				<input type='radio' id='2ptn3' name='ptn' value='3' required>
 					<label for='2ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
+				<input type='radio' id='2ptn4' name='ptn' value='4' required>
+					<label for='2ptn4'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Св. зол.</label>
 			</div>
 			<br>
 		</div>
@@ -439,11 +443,13 @@ this.subbut.value='Подождите, пожалуйста!';">
 					<input type='radio' id='0ptn0' name='ptn' value='0' required>
 						<label for='0ptn0'>Нет</label>
 					<input type='radio' id='0ptn1' name='ptn' value='1' required>
-						<label for='0ptn1'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Золото</label>
+						<label for='0ptn1'><i class='fa fa-paint-brush fa-lg' style="color: goldenrod;"></i>Золото</label>
 					<input type='radio' id='0ptn2' name='ptn' value='2' required>
 						<label for='0ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
 					<input type='radio' id='0ptn3' name='ptn' value='3' required>
 						<label for='0ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
+					<input type='radio' id='0ptn4' name='ptn' value='4' required>
+						<label for='0ptn4'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Св. зол.</label>
 				</div>
 			</div>
 			<div>
@@ -911,7 +917,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			// Форма добавления/редактирования стульев
 			$('#addchair').dialog({
 				resizable: false,
-				width: 600,
+				width: 750,
 				modal: true,
 				closeText: 'Закрыть'
 			});
@@ -1270,7 +1276,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$("#addblank").dialog(
 			{
 				resizable: false,
-				width: 600,
+				width: 750,
 				modal: true,
 				closeText: 'Закрыть'
 			});
