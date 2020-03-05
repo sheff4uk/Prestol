@@ -956,7 +956,7 @@ if( $id != "NULL" ) {
 					<th width="">Сообщение
 					<?
 					if ($editable or !$SH_ID) {
-						echo "<br><a href='#' class='add_message_btn button'>".(in_array('order_add_confirm', $Rights) ? "Сообщение с производства" : "Сообщение на производство")."</a>";
+						echo "<br><a href='#' class='add_message_btn button'>".((in_array('order_add_confirm', $Rights) or in_array('step_update', $Rights)) ? "Сообщение с производства" : "Сообщение на производство")."</a>";
 					}
 					?>
 					</th>
