@@ -154,7 +154,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<th width="20%">Материал</th>
 			<th width="60">Код</th>
 			<th width="40">Принят</th>
-			<th width="70">Столешница</th>
+			<th width="70">Раскрой<br>Столешница</th>
 			<th width="40%">Набор</th>
 			<th width="20%">Цвет</th>
 			<th width="130">Клиент<br>Продажа - Сдача<br>Подразделение</th>
@@ -216,8 +216,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				,SH.mtype
 				,IF(MT.removed=1, 'removed', '') removed
 				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
-				,ODS.IsReady
-				,WD.Name
+				,GROUP_CONCAT(CONCAT('<span class=\"', IF(ODS.IsReady = 1, 'ready', 'inwork'), '\" title=\"', ST.Step, '\"><b>', ST.Short, ':</b> ', WD.Name, '</span>') ORDER BY ST.Sort SEPARATOR '<br>') worker
 			FROM OrdersDataDetail ODD
 			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
@@ -225,11 +224,13 @@ this.subbut.value='Подождите, пожалуйста!';">
 			LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 							AND ODS.Visible = 1
 							AND ODS.Old != 1
-							AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ст%' OR Short LIKE '%Об%') OR ODS.ST_ID IS NULL)
+							AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ра%' OR Short LIKE 'Ст%') OR ODS.ST_ID IS NULL)
 			LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+			LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 			WHERE ODD.OD_ID = {$row["OD_ID"]}
 				AND ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
 				".( $MT_IDs ? "AND ODD.MT_ID IN ({$MT_IDs})" : "" )."
+			GROUP BY ODD.ODD_ID
 			ORDER BY PTID DESC, ODD.ODD_ID
 		";
 		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -268,7 +269,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 			$checkbox .= "<input type='checkbox' value='{$subrow["ODD_ID"]}' name='prod[]' class='chbox'><br>";
 
-			$worker .= "<span class='".(($subrow["IsReady"] == 1) ? "ready" : "inwork")."'>{$subrow["Name"]}</span><br>";
+			$worker .= "{$subrow["worker"]}<br>";
 		}
 
 		echo "<tr id='ord{$row["OD_ID"]}'>";

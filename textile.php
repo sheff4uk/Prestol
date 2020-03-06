@@ -226,7 +226,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 							AND ODS.Visible = 1
 							AND ODS.Old != 1
-							AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ст%' OR Short LIKE '%Об%') OR ODS.ST_ID IS NULL)
+							AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE '%Об%') OR ODS.ST_ID IS NULL)
 			LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 			WHERE ODD.OD_ID = {$row["OD_ID"]}
 				AND ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
