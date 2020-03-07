@@ -57,7 +57,7 @@ case "steps":
 	{
 		// Формирование дропдауна со списком рабочих. Сортировка по релевантности.
 		$selectworker = $ready_date ? "" : "<option value=\'\' selected>-=Работник не выбран=-</option>";
-		$selectworker .= "<optgroup label=\'Работающие\'>";
+		//$selectworker .= "<optgroup label=\'Работающие\'>";
 		$query = "
 			SELECT WD.WD_ID
 				,WD.Name
@@ -81,7 +81,7 @@ case "steps":
 			$selected = ( $row["WD_ID"] == $subrow["WD_ID"] ) ? "selected" : "";
 			$selectworker .= "<option {$selected} value=\'{$subrow["WD_ID"]}\'>{$subrow["Name"]}</option>";
 		}
-		$selectworker .= "</optgroup>";
+		//$selectworker .= "</optgroup>";
 		$selectworker .= "<optgroup label=\'Уволенные\'>";
 		$query = "
 			SELECT WD.WD_ID
