@@ -56,7 +56,7 @@ case "steps":
 	while( $row = mysqli_fetch_array($result) )
 	{
 		// Формирование дропдауна со списком рабочих. Сортировка по релевантности.
-		$selectworker = $ready_date ? "" : "<option value=\'\'>-=Выберите работника=-</option>";
+		$selectworker = $ready_date ? "" : "<option value=\'\' selected>-=Работник не выбран=-</option>";
 		$selectworker .= "<optgroup label=\'Работающие\'>";
 		$query = "
 			SELECT WD.WD_ID
@@ -108,14 +108,14 @@ case "steps":
 		}
 		else {
 			$text .= "<tr><td class=\'stage\'><b>{$row["Step"]}</b></td>";
-			$text .= "<td><select name=\'WD_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\'>{$selectworker}</select></td>";
+			$text .= "<td><select name=\'WD_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\' size=\'5\'>{$selectworker}</select></td>";
 			$text .= "<td><input type=\'number\' min=\'0\' name=\'Tariff{$row["ST_ID"]}\' class=\'tariff\' value=\'{$row["Tariff"]}\'></td>";
 			$text .= "<td><input ".($ready_date ? "onclick=\'return false;\'" : "")." type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}><label for=\'IsReady{$row["ST_ID"]}\'></label></td>";
 			$text .= "<td><input ".($ready_date ? "onclick=\'return false;\'" : "")." type=\'checkbox\' name=\'Visible{$row["ST_ID"]}\' value=\'1\' {$row["Visible"]}></td></tr>";
 		}
 	}
 	$text .= "</tbody></table>";
-	echo "window.top.window.$('#formsteps').html('{$text}');";
+	echo "$('#formsteps').html('{$text}');";
 	break;
 ///////////////////////////////////////////////////////////////////
 

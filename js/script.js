@@ -27,24 +27,6 @@ function makeform(odd_id, location)
 		var val = $(this).val();
 		var id = $(this).attr('id');
 		var tbody = $(this).parents('tbody');
-		var stage = $(this).parents('tr').find('.stage').text();
-		
-		if( stage == 'Каркас' ) { // Работник каркаса дублируется на сборку
-			var tr_sborka = $(this).parents('tbody').find('tr:contains("Сборка")');
-			$(tr_sborka).find('select').val(val);
-
-			if( val == '' )
-			{
-				$(tr_sborka).find('.isready').prop('disabled', true);
-				$(tr_sborka).find('.isready').prop('checked', false);
-				$(tr_sborka).find('.isready').button('refresh');
-			}
-			else
-			{
-				$(tr_sborka).find('.isready').prop('disabled', false);
-				$(tr_sborka).find('.isready').button('refresh');
-			}
-		}
 		
 		if( val == '' )
 		{
@@ -60,6 +42,16 @@ function makeform(odd_id, location)
 		return false;
 	});
 	
+	// Работник каркаса дублируется на сборку
+	$('.selectwr').change(function(){
+		var val = $(this).val();
+		var stage = $(this).parents('tr').find('.stage').text();
+		if( stage == 'Каркас' ) {
+			var tr_sborka = $(this).parents('tbody').find('tr:contains("Сборка")');
+			$(tr_sborka).find('select:enabled').val(val).change();
+		}
+	});
+
 	return false;
 }
 
