@@ -1,7 +1,7 @@
 <?
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-include "../config.php";
+include "config.php";
 
 $query = "SELECT `X-Authorization` FROM Rekvizity WHERE R_ID = 1";
 $result = mysqli_query( $mysqli, $query );
@@ -104,7 +104,7 @@ foreach($terminals as $value) {
 		$subject = "[КИС Престол] {$title}";//тема сообщения
 
 		// Отправляем письмо на указанный ящик пользователя через PHPMailer
-		require "../PHPMailer/PHPMailerAutoload.php";
+		require "PHPMailer/PHPMailerAutoload.php";
 		$mail = new PHPMailer(true);
 		$mail->isSMTP();
 		$mail->SMTPAuth = true;
