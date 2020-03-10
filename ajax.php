@@ -1351,7 +1351,6 @@ case "add_payment":
 			foreach($documents as $value) {
 				foreach($value["transactions"] as $transactions) {
 					if( $transactions["type"] == "PAYMENT" ) {
-						//$html .= $transactions["uuid"]."___".$transactions["creationDate"]."___".$transactions["timezone"]."___".$transactions["sum"]."___".$transactions["paymentType"]."<br>";
 						if( $transactions["paymentType"] == "CASH" or $transactions["paymentType"] == "CARD" ) {
 							$query = "
 								INSERT INTO OrdersPayment
