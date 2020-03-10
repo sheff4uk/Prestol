@@ -1,4 +1,6 @@
 <?
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 include "../config.php";
 
 $query = "SELECT `X-Authorization` FROM Rekvizity WHERE R_ID = 1";
