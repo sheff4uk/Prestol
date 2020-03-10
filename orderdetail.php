@@ -955,8 +955,8 @@ if( $id != "NULL" ) {
 					<th width="40"><i class="fas fa-question-circle fa-lg" html="<p>Если нажать на красный конверт слева от сообщения, то конверт станет зеленым - это означает, что сообщение прочитано. Оно так же исчезнет из уведомлений в верхнем-левом углу и там остануться только самые актуальные сообщения.</p><p>Непрочитанные сообщения спустя месяц автоматически закрываются.</p>"></i></th>
 					<th width="">Сообщение
 					<?
-					if ($editable or !$SH_ID) {
-						echo "<br><a href='#' class='add_message_btn button'>".((in_array('order_add_confirm', $Rights) or in_array('step_update', $Rights)) ? "Сообщение с производства" : "Сообщение на производство")."</a>";
+					if( in_array('order_add', $Rights) and ($editable or !$SH_ID) ) {
+						echo "<br><a href='#' class='add_message_btn button'>".(in_array('order_add_confirm', $Rights) ? "Сообщение с производства" : "Сообщение на производство")."</a>";
 					}
 					?>
 					</th>
