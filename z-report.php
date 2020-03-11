@@ -99,7 +99,7 @@ foreach($terminals as $value) {
 	";
 }
 
-		$email = "sheff4uk@gmail.com";
+		$email = "fabrikaprestol@gmail.com";
 		$from = "admin@fabrikaprestol.ru";
 		$subject = "[КИС Престол] {$title}";//тема сообщения
 
