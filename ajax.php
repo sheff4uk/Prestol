@@ -1416,9 +1416,7 @@ case "add_payment":
 			,OP.payment_sum
 			,OP.terminal
 			,OP.uuid
-			,IFNULL(OP.FA_ID, 0) FA_ID
 			,USR_Icon(OP.author) Name
-			,'' account
 			,CB.name
 			,IF({$CT_ID} = {$USR_City}, 1, 0) checkbox
 			,IF(CB.CB_ID IN ({$CB_IDs}), 1, 0) native
@@ -1437,16 +1435,13 @@ case "add_payment":
 			,OP.payment_sum
 			,OP.terminal
 			,OP.uuid
-			,IFNULL(OP.FA_ID, 0) FA_ID
 			,USR_Icon(OP.author) Name
-			,IF(OP.FA_ID IS NOT NULL AND OP.terminal = 0, FA.name, '') account
 			,CB.name
 			,IF(CB.CB_ID IN (".($USR_Shop ? "SELECT CB_ID FROM Shops WHERE SH_ID IN ({$USR_Shop})" : "SELECT CB_ID FROM Shops WHERE CT_ID = {$CT_ID} AND CT_ID = {$USR_City} UNION SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID} AND CT_ID = {$USR_City}")."), 1, 0) checkbox
 			,IF(CB.CB_ID IN ({$CB_IDs}), 1, 0) native
 			,OP.payment_date p_date
 			,'Открепить' label
 		FROM OrdersPayment OP
-		LEFT JOIN FinanceAccount FA ON FA.FA_ID = OP.FA_ID
 		LEFT JOIN CashBox CB ON CB.CB_ID = OP.CB_ID
 		WHERE OP.OD_ID = {$OD_ID} AND IFNULL(OP.payment_sum, 0) != 0
 
@@ -1461,12 +1456,7 @@ case "add_payment":
 		else {
 			$html .= "<tr style='border: 2px dashed #911;'>";
 		}
-		if( $row["account"] ) {
-			$html .= "<td class='nowrap'><b>{$row["account"]}</b></td>";
-		}
-		else {
-			$html .= "<td class='nowrap' style='position: relative;'>".($row["OD_ID"] ? "" : "<div style='position: absolute; color: #911; top: -5px; font-size: .8em;'>Откреплённая денежная операция!</div>").($row["native"] ? "<b>{$row["name"]}</b>" : "<b style='color: #911;' title='Эта касса не связана с салоном данного набора!'>{$row["name"]}<i class='fa fa-question-circle'></i></b>")."</td>";
-		}
+		$html .= "<td class='nowrap' style='position: relative;'>".($row["OD_ID"] ? "" : "<div style='position: absolute; color: #911; top: -5px; font-size: .8em;'>Откреплённая денежная операция!</div>").($row["native"] ? "<b>{$row["name"]}</b>" : "<b style='color: #911;' title='Эта касса не связана с салоном данного набора!'>{$row["name"]}<i class='fa fa-question-circle'></i></b>")."</td>";
 		$html .= "<td class='txtleft'>{$row["payment_date"]}<br>{$row["Time"]}".($row["uuid"] ? " <i class='fas fa-cloud-download-alt' title='Запись получена автоматически'></i>" : "")."</td>";
 		$format_payment_sum = number_format($row["payment_sum"], 0, '', ' ');
 		$color = $row["payment_sum"] > 0 ? "#16A085" : "#E74C3C";
@@ -1474,7 +1464,7 @@ case "add_payment":
 		$html .= "<td>".($row["terminal"] ? "<i title='Оплата картой' class='fas fa-credit-card fa-lg'></i>" : "<i title='Наличными' class='fas fa-wallet fa-lg'></i>")."</td>";
 		$html .= "<td>{$row["Name"]}</td>";
 		// Чекбокс перемещения платежа
-		if( $row["account"] or $is_del or $is_lock or !$row["checkbox"] or !$StartDate ) {
+		if( $is_del or $is_lock or !$row["checkbox"] or !$StartDate ) {
 			$html .= "<td></td>";
 		}
 		else {
