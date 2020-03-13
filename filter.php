@@ -28,12 +28,13 @@ switch( $_GET["do"] )
 		else {
 			$_SESSION["cash_author"] = $_GET["USR_ID"];
 		}
-		if( $_GET["all_kontragent"] ) {							// Контрагенты
-			$_SESSION["cash_kontragent"] = "";
-		}
-		else {
-			$_SESSION["cash_kontragent"] = $_GET["KA_ID"];
-		}
+//		if( $_GET["all_kontragent"] ) {							// Контрагенты
+//			$_SESSION["cash_kontragent"] = "";
+//		}
+//		else {
+//			$_SESSION["cash_kontragent"] = $_GET["KA_ID"];
+//		}
+		$_SESSION["cash_kontragent"] = $_GET["cash_kontragent"];	// Контрагенты
 		$_SESSION["cash_comment"] = $_GET["cash_comment"];		// Комментарий
 	break;
 	

@@ -705,20 +705,26 @@
 					filtered = 1;
 				}
 
-				// Включение чекбоксов в фильтре по контрагентам. Обновление названия колонки контрагент.
-				if( "<?=$_SESSION["cash_kontragent"]?>" == "" ) {
-					$('#kontragent_filter .select_all').prop("checked", true);
-					$('#kontragent_filter .select_all').change();
-				}
-				else {
-					var text = "";
-					$('#kontragent_filter .chbox').each(function(){
-						if( $(this).prop('checked') ) {
-							text = text + $('label[for=' + $(this).attr("id") + '] span').html() + ", ";
-						}
-					});
-					text = escapeHtml(text.substr(0, text.length - 2));
-					$('#kontragent_label').html('<strong title="' + text + '">[' + text + ']</strong>');
+//				// Включение чекбоксов в фильтре по контрагентам. Обновление названия колонки контрагент.
+//				if( "<?=$_SESSION["cash_kontragent"]?>" == "" ) {
+//					$('#kontragent_filter .select_all').prop("checked", true);
+//					$('#kontragent_filter .select_all').change();
+//				}
+//				else {
+//					var text = "";
+//					$('#kontragent_filter .chbox').each(function(){
+//						if( $(this).prop('checked') ) {
+//							text = text + $('label[for=' + $(this).attr("id") + '] span').html() + ", ";
+//						}
+//					});
+//					text = escapeHtml(text.substr(0, text.length - 2));
+//					$('#kontragent_label').html('<strong title="' + text + '">[' + text + ']</strong>');
+//					filtered = 1;
+//				}
+
+				//Обновление названия колонки контрагентов.
+				if( "<?=$_SESSION["cash_kontragent"]?>" ) {
+					$('#kontragent_label').html('<strong title="<?=$_SESSION["cash_kontragent"]?>">[<?=$_SESSION["cash_kontragent"]?>]</strong>');
 					filtered = 1;
 				}
 
@@ -836,23 +842,25 @@
 					</th>
 
 					<th width="150" class="th_filter">
-						<input id="kontragent_search" type="text" style="display: none; position: absolute; width: 110px; z-index: 3;">
+						<input id="kontragent_search" type="text" name="cash_kontragent" form="filter_form" style="display: none; position: absolute; width: 110px; z-index: 3;" value="<?=$_SESSION["cash_kontragent"]?>">
 						<div class="th_name" id="kontragent_label">Все контрагенты</div>
 						<i class="fa fa-filter fa-lg"></i>
+<!--
 						<div id="kontragent_filter" class="filter_block" style="width: 300px; height: 300px;">
 							<div class='btnset'>
 								<?
-								echo "<input id='kontragent_select_all' class='select_all' type='checkbox' name='all_kontragent' value='1' form='filter_form'><label for='kontragent_select_all'>Все контрагенты</label>";
-								$query = "SELECT KA_ID, Naimenovanie FROM Kontragenty ORDER BY Naimenovanie";
-								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-								while( $row = mysqli_fetch_array($res) )
-								{
-									$checked = in_array($row["KA_ID"], $_SESSION["cash_kontragent"]) ? "checked" : "";
-									echo "<input id='kontragent_{$row["KA_ID"]}' class='chbox' {$checked} type='checkbox' name='KA_ID[]' value='{$row["KA_ID"]}' form='filter_form'><label class='chbox_label' for='kontragent_{$row["KA_ID"]}' style='font-weight: normal;'>{$row["Naimenovanie"]}</label>";
-								}
+//								echo "<input id='kontragent_select_all' class='select_all' type='checkbox' name='all_kontragent' value='1' form='filter_form'><label for='kontragent_select_all'>Все контрагенты</label>";
+//								$query = "SELECT KA_ID, Naimenovanie FROM Kontragenty ORDER BY Naimenovanie";
+//								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//								while( $row = mysqli_fetch_array($res) )
+//								{
+//									$checked = in_array($row["KA_ID"], $_SESSION["cash_kontragent"]) ? "checked" : "";
+//									echo "<input id='kontragent_{$row["KA_ID"]}' class='chbox' {$checked} type='checkbox' name='KA_ID[]' value='{$row["KA_ID"]}' form='filter_form'><label class='chbox_label' for='kontragent_{$row["KA_ID"]}' style='font-weight: normal;'>{$row["Naimenovanie"]}</label>";
+//								}
 								?>
 							</div>
 						</div>
+-->
 					</th>
 					<th width="270" class="th_filter">
 						<input id="comment_search" type="text" name="cash_comment" form="filter_form" style="display: none; position: absolute; width: 230px; z-index: 3;" value="<?=$_SESSION["cash_comment"]?>">
@@ -868,7 +876,7 @@
 				$FA_IDs = $_SESSION["cash_account"] != "" ? implode(",", $_SESSION["cash_account"]) : "";
 				$FC_IDs = $_SESSION["cash_category"] != "" ? implode(",", $_SESSION["cash_category"]) : "";
 				$USR_IDs = $_SESSION["cash_author"] != "" ? implode(",", $_SESSION["cash_author"]) : "";
-				$KA_IDs_filter = $_SESSION["cash_kontragent"] != "" ? implode(",", $_SESSION["cash_kontragent"]) : "";
+				//$KA_IDs_filter = $_SESSION["cash_kontragent"] != "" ? implode(",", $_SESSION["cash_kontragent"]) : "";
 
 				$query = "SELECT SF.F_ID
 								,SF.date_sort
@@ -963,7 +971,8 @@
 							".(in_array('finance_account', $Rights) ? "AND SF.account_filter IN(SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]})" : "")."
 							".($FC_IDs != "" ? "AND SF.FC_ID IN ({$FC_IDs})" : "")."
 							".($USR_IDs != "" ? "AND SF.USR_ID IN ({$USR_IDs})" : "")."
-							".($KA_IDs_filter != "" ? "AND SF.KA_ID IN ({$KA_IDs_filter})" : "")."
+							#".($KA_IDs_filter != "" ? "AND SF.KA_ID IN ({$KA_IDs_filter})" : "")."
+							".($_SESSION["cash_kontragent"] ? "AND SF.kontragent LIKE '%{$_SESSION["cash_kontragent"]}%'" : "")."
 							".($_SESSION["cash_comment"] ? "AND SF.comment LIKE '%{$_SESSION["cash_comment"]}%'" : "")."
 							#AND SF.comment LIKE '%возврат%'
 							ORDER BY SF.date_sort DESC, SF.F_ID DESC";
