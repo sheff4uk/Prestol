@@ -75,12 +75,7 @@ th {
 	background: #fdc;
 }
 
-tr:target td {
-/*	background: #dfb;*/
-}
-
-tr:target {
-/*	border: 3px solid #191;*/
+:target {
 	background: yellow !important;
 }
 
