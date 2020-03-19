@@ -9,7 +9,7 @@ $(function() {
 		event.preventDefault();
 		var div = $(this).attr('href');
 		col.prop( "disabled", false );
-		$('#print_tbl thead input[type="checkbox"][value="6"]').prop( "disabled", true );
+//		$('#print_tbl thead input[type="checkbox"][value="6"]').prop( "disabled", true );
 		$('#print_tbl thead input[type="checkbox"][value="11"]').prop( "disabled", true );
 		$('#print_tbl thead input[type="checkbox"][value="12"]').prop( "disabled", true );
 		$('.print_col').button();

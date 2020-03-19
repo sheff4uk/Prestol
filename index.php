@@ -954,10 +954,14 @@
 				,IF(MT.removed=1, 'removed', '') removed
 				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 				,Steps_button(ODD.ODD_ID, ".((!isset($_GET["shpid"]) and ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "")) ? "1" : "0").") Steps
+				,CONCAT('Упаковал: ', WD.Name) packer_name
+				,ODD.boxes
+				,ODD.packer
 			FROM OrdersDataDetail ODD
 			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
+			LEFT JOIN WorkersData WD ON WD.WD_ID = ODD.packer
 			WHERE ODD.OD_ID = {$row["OD_ID"]}
 			ORDER BY PTID DESC, ODD.ODD_ID
 		";
@@ -968,6 +972,7 @@
 		$material = '';
 		$color = '';
 		$steps = '';
+		$boxing = '';
 		while( $subrow = mysqli_fetch_array($subres) ) {
 			// Если есть примечание
 			if ($subrow["Comment"]) {
@@ -992,6 +997,8 @@
 			$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span shid='{$subrow["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}{$subrow["Shipper"]}</span><input type='text' value='{$subrow["Material"]}' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' ".($subrow["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span><br>";
 
 			$steps .= "<a id='{$subrow["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$subrow["Steps"]}</a><br>";
+
+			$boxing .= "<b style='font-size: 1.3em;".(($subrow["boxes"] and !$subrow["packer"]) ? " color: red;" : "")."' title='{$subrow["packer_name"]}'>{$subrow["boxes"]}</b><br>";
 		}
 
 		echo "<tr id='ord{$row["OD_ID"]}'>";
@@ -1009,7 +1016,7 @@
 		echo "<td><span>{$row["StartDate"]}{$invoice}</span></td>";
 		echo "<td><span><span class='{$row["Deadline"]} {$row["date_diff_color"]}'>{$row["EndDate"]}</span><br><i style='font-size: .8em;'>{$row["format_EndDate"]}</i></span></td>";
 		echo "<td class='".( (in_array('order_add', $Rights) and !$is_lock and !$is_del and $editable) ? "shop_cell" : "" )."' SH_ID='{$row["SH_ID"]}' style='background: {$row["CTColor"]};'><span style='background: {$row["CTColor"]};'>".($row["retail"] ? "&bull; " : "")."{$row["Shop"]}</span><select class='select_shops' style='display: none; width: 100%;'></select></td>";
-		echo "<td><span></span></td>";
+		echo "<td style='text-align: center;'>{$boxing}</td>";
 
 		echo "<td><span class='nowrap'>{$zakaz}</span></td>";
 
