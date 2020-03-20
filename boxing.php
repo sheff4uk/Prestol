@@ -77,6 +77,7 @@
 		<thead>
 			<tr class="thead">
 				<th>Код<br>Сдача</th>
+				<th>Цвет</th>
 				<th>Кол-во</th>
 				<th>Набор</th>
 				<th>Упаковал</th>
@@ -112,6 +113,7 @@
 	$query = "
 		SELECT SUM(1) Cnt
 			,OD.Code
+			,Color(OD.CL_ID) Color
 			,DATE_FORMAT(OD.EndDate, '%e %b') EndDate
 			,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 		FROM OrdersData OD
@@ -138,6 +140,7 @@
 
 		echo "<tr>";
 		if($span) echo "<td style='font-size: 20px;' rowspan='{$cnt}' class='nowrap'><b class='code'>{$subrow["Code"]}</b><br><span class='{$subrow["Deadline"]}'>{$subrow["EndDate"]}</span></td>";
+		if($span) echo "<td rowspan='{$cnt}'>{$subrow["Color"]}</td>";
 		echo "<td style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
 		echo "<td id='{$row["ODD_ID"]}' packer='{$row["packer"]}' boxes='{$row["boxes"]}' style='font-size: 16px; cursor: pointer; color: #1c94c4;' class='packer_link'>{$row["Zakaz"]}</td>";
 		echo "<td style='font-size: 16px;'>{$row["Name"]}</td>";
