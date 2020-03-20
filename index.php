@@ -954,7 +954,7 @@
 				,IF(MT.removed=1, 'removed', '') removed
 				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 				,Steps_button(ODD.ODD_ID, ".((!isset($_GET["shpid"]) and ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "")) ? "1" : "0").") Steps
-				,CONCAT('Упаковал: ', WD.Name) packer_name
+				,WD.Name packer_name
 				,ODD.boxes
 				,ODD.packer
 			FROM OrdersDataDetail ODD
