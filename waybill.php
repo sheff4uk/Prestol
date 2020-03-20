@@ -14,6 +14,7 @@ $query = "
 		,ODD.Amount
 		,ODD.Price - IFNULL(ODD.discount, 0) Price
 		,Zakaz(ODD.ODD_ID) Zakaz
+		,ODD.boxes
 	FROM OrdersData OD
 	LEFT JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 	LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -28,6 +29,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$_POST["tovar_ed"][$Counter] = "шт";
 	$_POST["tovar_kol"][$Counter] = $row["Amount"];
 	$_POST["tovar_cena"][$Counter] = $row["Price"];
+	$_POST["tovar_km"][$Counter] = $row["boxes"];
 	$Counter++;
 }
 
