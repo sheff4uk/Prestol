@@ -76,7 +76,7 @@
 	<table>
 		<thead>
 			<tr class="thead">
-				<th>Код<br>Подразделение<br>Сдача</th>
+				<th>Код<br>Группа<br>Сдача</th>
 				<th>Цвет</th>
 				<th>Кол-во</th>
 				<th>Набор</th>
@@ -89,6 +89,7 @@
 	$query = "
 		SELECT OD.OD_ID
 			,ODD.ODD_ID
+			,PM.code
 			,Zakaz(ODD.ODD_ID) Zakaz
 			,CONCAT(' <b>', MT.Material, ' ', SHP.Shipper, '</b>') Material
 			,CONCAT('<b>', ODD.Amount, '</b>') Amount
@@ -147,7 +148,7 @@
 		if($span) echo "<td style='font-size: 20px;' rowspan='{$cnt}'><b class='code nowrap'>{$subrow["Code"]}</b><br>{$subrow["Shop"]}<span class='{$subrow["Deadline"]} nowrap'>{$subrow["EndDate"]}</span></td>";
 		if($span) echo "<td rowspan='{$cnt}'>{$subrow["Color"]}</td>";
 		echo "<td style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
-		echo "<td id='{$row["ODD_ID"]}' packer='{$row["packer"]}' boxes='{$row["boxes"]}' style='font-size: 16px; cursor: pointer; color: #1c94c4;' class='packer_link'>{$row["Zakaz"]}{$row["Material"]}</td>";
+		echo "<td id='{$row["ODD_ID"]}' packer='{$row["packer"]}' boxes='{$row["boxes"]}' style='font-size: 16px; cursor: pointer; color: #1c94c4;' class='packer_link'>".($row["code"] ? "<img style='width: 50px; float: left;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."{$row["Zakaz"]}{$row["Material"]}</td>";
 		echo "<td style='font-size: 16px;'>{$row["Name"]}</td>";
 		echo "<td style='font-size: 20px; text-align: center; ".(($row["boxes"] and !$row["packer"]) ? " color: red;" : "")."'><b>{$row["boxes"]}</b></td>";
 		echo "</tr>";
