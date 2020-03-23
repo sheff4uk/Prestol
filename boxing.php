@@ -76,7 +76,7 @@
 	<table>
 		<thead>
 			<tr class="thead">
-				<th>Код<br>Сдача</th>
+				<th>Код<br>Подразделение<br>Сдача</th>
 				<th>Цвет</th>
 				<th>Кол-во</th>
 				<th>Набор</th>
@@ -90,6 +90,7 @@
 		SELECT OD.OD_ID
 			,ODD.ODD_ID
 			,Zakaz(ODD.ODD_ID) Zakaz
+			,CONCAT(' <b>', MT.Material, ' ', SHP.Shipper, '</b>') Material
 			,CONCAT('<b>', ODD.Amount, '</b>') Amount
 			,WD.Name
 			,ODD.packer
@@ -97,6 +98,8 @@
 			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
+		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+		LEFT JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 		LEFT JOIN WorkersData WD ON WD.WD_ID = ODD.packer
 		WHERE OD.DelDate IS NULL AND OD.ReadyDate IS NULL
@@ -112,12 +115,14 @@
 	// Получаем количество изделий в наборе для группировки ячеек
 	$query = "
 		SELECT SUM(1) Cnt
+			,CONCAT('<b style=\'font-size: 14px; line-height: 16px;\'>', SH.Shop, '</b><br>') Shop
 			,OD.Code
 			,Color(OD.CL_ID) Color
 			,DATE_FORMAT(OD.EndDate, '%e %b') EndDate
 			,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
+		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		WHERE OD.DelDate IS NULL AND OD.ReadyDate IS NULL
 		".($_GET["ct_id"] > 0 ? "AND OD.SH_ID IN (SELECT SH_ID FROM Shops WHERE CT_ID = {$_GET["ct_id"]})" : "AND OD.SH_ID IS NULL")."
 		GROUP BY OD.OD_ID
@@ -139,10 +144,10 @@
 		}
 
 		echo "<tr>";
-		if($span) echo "<td style='font-size: 20px;' rowspan='{$cnt}' class='nowrap'><b class='code'>{$subrow["Code"]}</b><br><span class='{$subrow["Deadline"]}'>{$subrow["EndDate"]}</span></td>";
+		if($span) echo "<td style='font-size: 20px;' rowspan='{$cnt}'><b class='code nowrap'>{$subrow["Code"]}</b><br>{$subrow["Shop"]}<span class='{$subrow["Deadline"]} nowrap'>{$subrow["EndDate"]}</span></td>";
 		if($span) echo "<td rowspan='{$cnt}'>{$subrow["Color"]}</td>";
 		echo "<td style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
-		echo "<td id='{$row["ODD_ID"]}' packer='{$row["packer"]}' boxes='{$row["boxes"]}' style='font-size: 16px; cursor: pointer; color: #1c94c4;' class='packer_link'>{$row["Zakaz"]}</td>";
+		echo "<td id='{$row["ODD_ID"]}' packer='{$row["packer"]}' boxes='{$row["boxes"]}' style='font-size: 16px; cursor: pointer; color: #1c94c4;' class='packer_link'>{$row["Zakaz"]}{$row["Material"]}</td>";
 		echo "<td style='font-size: 16px;'>{$row["Name"]}</td>";
 		echo "<td style='font-size: 20px; text-align: center; ".(($row["boxes"] and !$row["packer"]) ? " color: red;" : "")."'><b>{$row["boxes"]}</b></td>";
 		echo "</tr>";
