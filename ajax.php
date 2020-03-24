@@ -1464,8 +1464,11 @@ case "add_payment":
 		$html .= "<td>".($row["terminal"] ? "<i title='Оплата картой' class='fas fa-credit-card fa-lg'></i>" : "<i title='Наличными' class='fas fa-wallet fa-lg'></i>")."</td>";
 		$html .= "<td>{$row["Name"]}</td>";
 		// Чекбокс перемещения платежа
-		if( $is_del or $is_lock or !$row["checkbox"] or !$StartDate ) {
+		if( $is_del or $is_lock or !$row["checkbox"] ) {
 			$html .= "<td></td>";
+		}
+		elseif( !$StartDate ) {
+			$html .= "<td style='color: #911;'>Не продан.<br>Действие не возможно.</td>";
 		}
 		else {
 			$html .= "<td><label><input type='checkbox' name='move_payment[]' value='{$row["OP_ID"]}'>{$row["label"]}</label></td>";
