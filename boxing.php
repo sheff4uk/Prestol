@@ -27,6 +27,7 @@
 
 	<link rel='stylesheet' type='text/css' href='css/style.css'>
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 	<script src="js/jquery-1.11.3.min.js"></script>
 	<script src="js/ui/jquery-ui.js"></script>
 	<script src="js/script.js"></script>
@@ -57,9 +58,9 @@
 	<?
 	// Кнопки регионов
 	$query = "
-		SELECT 'СВОБОДНЫЕ' City, 0 CT_ID
+		SELECT 'СВОБОДНЫЕ' City, 0 CT_ID, NULL shipment
 		UNION
-		SELECT CT.City, CT.CT_ID
+		SELECT CT.City, CT.CT_ID, MIN(OD.SHP_ID) shipment
 		FROM OrdersData OD
 		JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -69,93 +70,111 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	echo "<div style='position: fixed; top: 0px; left: 0px; background: rgba(0,0,0,0.2); box-shadow: 0 5px 5px rgba(0,0,0,0.2); width: 100%;'>";
 	while( $row = mysqli_fetch_array($res) ) {
-		echo "<a href='?ct_id={$row["CT_ID"]}' class='button' style='font-size: 1.3em; ".($_GET["ct_id"] == $row["CT_ID"] ? 'border: 1px solid #fbd850; color: #eb8f00;' : '')."'>{$row["City"]}</a>";
+		echo "<a href='?ct_id={$row["CT_ID"]}' class='button' style='font-size: 1.3em; ".($_GET["ct_id"] == $row["CT_ID"] ? 'border: 1px solid #fbd850; color: #eb8f00;' : '')."'>{$row["City"]}".($row["shipment"] ? " <i class='fas fa-truck'>" : "")."</i></a>";
 	}
 	echo "</div>";
-	?>
-	<table>
-		<thead>
-			<tr class="thead">
-				<th>Код<br>Группа<br>Сдача</th>
-				<th>Цвет</th>
-				<th>Кол-во</th>
-				<th>Набор</th>
-				<th>Упаковал</th>
-				<th>Мест</th>
-			</tr>
-		</thead>
-		<tbody>
-	<?
+	// Списки отгрузки
 	$query = "
-		SELECT OD.OD_ID
-			,ODD.ODD_ID
-			,PM.code
-			,Zakaz(ODD.ODD_ID) Zakaz
-			,CONCAT(' <b>', MT.Material, ' ', SHP.Shipper, '</b>') Material
-			,CONCAT('<b>', ODD.Amount, '</b>') Amount
-			,WD.Name
-			,ODD.packer
-			,ODD.boxes
-			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
-		FROM OrdersData OD
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
-		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
-		LEFT JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
-		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-		LEFT JOIN WorkersData WD ON WD.WD_ID = ODD.packer
-		WHERE OD.DelDate IS NULL AND OD.ReadyDate IS NULL
-		".($_GET["ct_id"] > 0 ? "AND OD.SH_ID IN (SELECT SH_ID FROM Shops WHERE CT_ID = {$_GET["ct_id"]})" : "AND OD.SH_ID IS NULL")."
-		ORDER BY IFNULL(OD.EndDate, '9999-01-01'), CAST(SUBSTRING_INDEX(OD.Code, '-', 1) AS UNSIGNED) ASC, CAST(SUBSTRING_INDEX(OD.Code, '-', -1) AS UNSIGNED) ASC, OD.OD_ID, PTID DESC, ODD.ODD_ID
+		SELECT SHP.SHP_ID, CONCAT('Запланированная отгрузка (', SHP.title, '):') title
+		FROM Shipment SHP
+		WHERE SHP.CT_ID = {$_GET["ct_id"]} AND SHP.shipping_date IS NULL AND SHP.empty = 0
+		UNION
+		SELECT 0, 'Вне списка на отгрузку:'
 	";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$overres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $overrow = mysqli_fetch_array($overres) ) {
+		echo "
+			<h1>{$overrow["title"]}</h1>
+			<table>
+				<thead>
+					<tr class='thead'>
+						<th>Код<br>Группа<br>Сдача</th>
+						<th>Цвет</th>
+						<th>Кол-во</th>
+						<th>Набор</th>
+						<th>Упаковал</th>
+						<th>Мест</th>
+					</tr>
+				</thead>
+				<tbody>
+		";
+		$query = "
+			SELECT OD.OD_ID
+				,ODD.ODD_ID
+				,PM.code
+				,Zakaz(ODD.ODD_ID) Zakaz
+				,CONCAT(' <b>', MT.Material, ' ', SHP.Shipper, '</b>') Material
+				,CONCAT('<b>', ODD.Amount, '</b>') Amount
+				,WD.Name
+				,ODD.packer
+				,ODD.boxes
+				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
+			FROM OrdersData OD
+			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
+			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
+			LEFT JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
+			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+			LEFT JOIN WorkersData WD ON WD.WD_ID = ODD.packer
+			WHERE OD.DelDate IS NULL
+				AND OD.ReadyDate IS NULL
+				AND IFNULL(OD.SHP_ID, 0) = {$overrow["SHP_ID"]}
+				".($_GET["ct_id"] > 0 ? "AND OD.SH_ID IN (SELECT SH_ID FROM Shops WHERE CT_ID = {$_GET["ct_id"]})" : "AND OD.SH_ID IS NULL")."
+			ORDER BY IFNULL(OD.EndDate, '9999-01-01'), CAST(SUBSTRING_INDEX(OD.Code, '-', 1) AS UNSIGNED) ASC, CAST(SUBSTRING_INDEX(OD.Code, '-', -1) AS UNSIGNED) ASC, OD.OD_ID, PTID DESC, ODD.ODD_ID
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-	// Меняем на русскую локаль
-	$query = "SET @@lc_time_names='ru_RU';";
-	mysqli_query( $mysqli, $query );
+		// Меняем на русскую локаль
+		$query = "SET @@lc_time_names='ru_RU';";
+		mysqli_query( $mysqli, $query );
 
-	// Получаем количество изделий в наборе для группировки ячеек
-	$query = "
-		SELECT SUM(1) Cnt
-			,CONCAT('<b style=\'font-size: 14px; line-height: 16px;\'>', SH.Shop, '</b><br>') Shop
-			,OD.Code
-			,Color(OD.CL_ID) Color
-			,DATE_FORMAT(OD.EndDate, '%e %b') EndDate
-			,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
-		FROM OrdersData OD
-		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
-		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-		WHERE OD.DelDate IS NULL AND OD.ReadyDate IS NULL
-		".($_GET["ct_id"] > 0 ? "AND OD.SH_ID IN (SELECT SH_ID FROM Shops WHERE CT_ID = {$_GET["ct_id"]})" : "AND OD.SH_ID IS NULL")."
-		GROUP BY OD.OD_ID
-		HAVING Cnt > 0
-		ORDER BY IFNULL(OD.EndDate, '9999-01-01'), CAST(SUBSTRING_INDEX(OD.Code, '-', 1) AS UNSIGNED) ASC, CAST(SUBSTRING_INDEX(OD.Code, '-', -1) AS UNSIGNED) ASC, OD.OD_ID
-	";
+		// Получаем количество изделий в наборе для группировки ячеек
+		$query = "
+			SELECT SUM(1) Cnt
+				,CONCAT('<b style=\'font-size: 14px; line-height: 16px;\'>', SH.Shop, '</b><br>') Shop
+				,OD.Code
+				,Color(OD.CL_ID) Color
+				,DATE_FORMAT(OD.EndDate, '%e %b') EndDate
+				,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
+			FROM OrdersData OD
+			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
+			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			WHERE OD.DelDate IS NULL
+				AND OD.ReadyDate IS NULL
+				AND IFNULL(OD.SHP_ID, 0) = {$overrow["SHP_ID"]}
+				".($_GET["ct_id"] > 0 ? "AND OD.SH_ID IN (SELECT SH_ID FROM Shops WHERE CT_ID = {$_GET["ct_id"]})" : "AND OD.SH_ID IS NULL")."
+			GROUP BY OD.OD_ID
+			HAVING Cnt > 0
+			ORDER BY IFNULL(OD.EndDate, '9999-01-01'), CAST(SUBSTRING_INDEX(OD.Code, '-', 1) AS UNSIGNED) ASC, CAST(SUBSTRING_INDEX(OD.Code, '-', -1) AS UNSIGNED) ASC, OD.OD_ID
+		";
 
-	$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$odid = 0;
-	while( $row = mysqli_fetch_array($res) ) {
-		if( $odid != $row["OD_ID"] ) {
-			$subrow = mysqli_fetch_array($subres);
-			$cnt = $subrow["Cnt"];
-			$odid = $row["OD_ID"];
-			$span = 1;
+		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$odid = 0;
+		while( $row = mysqli_fetch_array($res) ) {
+			if( $odid != $row["OD_ID"] ) {
+				$subrow = mysqli_fetch_array($subres);
+				$cnt = $subrow["Cnt"];
+				$odid = $row["OD_ID"];
+				$span = 1;
+			}
+			else {
+				$span = 0;
+			}
+
+			echo "<tr>";
+			if($span) echo "<td style='font-size: 20px;' rowspan='{$cnt}'><b class='code nowrap'>{$subrow["Code"]}</b><br>{$subrow["Shop"]}<span class='{$subrow["Deadline"]} nowrap'>{$subrow["EndDate"]}</span></td>";
+			if($span) echo "<td rowspan='{$cnt}'>{$subrow["Color"]}</td>";
+			echo "<td style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
+			echo "<td id='{$row["ODD_ID"]}' packer='{$row["packer"]}' boxes='{$row["boxes"]}' style='font-size: 16px; cursor: pointer; color: #1c94c4;' class='packer_link'>".($row["code"] ? "<img style='width: 50px; float: left;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."{$row["Zakaz"]}{$row["Material"]}</td>";
+			echo "<td style='font-size: 16px;'>{$row["Name"]}</td>";
+			echo "<td style='font-size: 20px; text-align: center; ".(($row["boxes"] and !$row["packer"]) ? " color: red;" : "")."'><b>{$row["boxes"]}</b></td>";
+			echo "</tr>";
 		}
-		else {
-			$span = 0;
-		}
-
-		echo "<tr>";
-		if($span) echo "<td style='font-size: 20px;' rowspan='{$cnt}'><b class='code nowrap'>{$subrow["Code"]}</b><br>{$subrow["Shop"]}<span class='{$subrow["Deadline"]} nowrap'>{$subrow["EndDate"]}</span></td>";
-		if($span) echo "<td rowspan='{$cnt}'>{$subrow["Color"]}</td>";
-		echo "<td style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
-		echo "<td id='{$row["ODD_ID"]}' packer='{$row["packer"]}' boxes='{$row["boxes"]}' style='font-size: 16px; cursor: pointer; color: #1c94c4;' class='packer_link'>".($row["code"] ? "<img style='width: 50px; float: left;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."{$row["Zakaz"]}{$row["Material"]}</td>";
-		echo "<td style='font-size: 16px;'>{$row["Name"]}</td>";
-		echo "<td style='font-size: 20px; text-align: center; ".(($row["boxes"] and !$row["packer"]) ? " color: red;" : "")."'><b>{$row["boxes"]}</b></td>";
-		echo "</tr>";
+		echo "
+				</tbody>
+			</table>
+		";
 	}
 	?>
-		</tbody>
-	</table>
 
 	<!-- Форма статуса упаковки -->
 	<div id='form_packer' style='display:none'>
