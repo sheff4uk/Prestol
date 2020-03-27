@@ -27,7 +27,8 @@ if( isset($_GET["sms"]) ) {
 	}
 }
 
-if (isset($_POST['submit'])) {
+// Веден номер телефона
+if (isset($_POST['user_mt'])) {
 
 	// проверяем, сущестует ли пользователь с таким телефоном
 	$chars = array("+", " ", "(", ")"); // Символы, которые требуется удалить из строки с телефоном
@@ -53,7 +54,7 @@ if (isset($_POST['submit'])) {
 					// Сохраняем check_id
 					$check_id = $json->check_id;
 					// В цикле опрашиваем SMS.RU чтобы узнать статус звонка
-					for( $i=0; $i<12; $i++ ) {
+					for( $i=0; $i<24; $i++ ) {
 						sleep(5);
 						// Проверка статуса звонка
 						$body = file_get_contents("https://sms.ru/callcheck/status?api_id=".($api_id)."&check_id=".($check_id)."&json=1");
@@ -136,7 +137,8 @@ if (isset($_POST['submit'])) {
 	<script>
 		$(document).ready(function() {
 
-			$('input[name="submit"]').click(function() {
+			$('input[name="subbut"]').click(function() {
+				$('#mtel').attr('readonly', true);
 				$('#call_msg').show();
 				const time = $('.seconds');
 				intervalId = setInterval(timerDecrement, 1000);
@@ -155,13 +157,14 @@ if (isset($_POST['submit'])) {
 		<H1>КИС<sup>*</sup> Престол</H1>
 		<h3>Вход в личный кабинет</h3>
 
-		<form method="POST">
+		<form method="POST" onsubmit="JavaScript:this.subbut.disabled=true;
+	this.subbut.value='Ожидание звонка';">
 			<div>
 				<label>Телефон</label>
 				<input type="text" name="user_mt" id="mtel" style="font-size: 1.5em;" value="" autocomplete="off" placeholder="Моб. телефон">
-				<div id="call_msg" style="display: none;">Ожидание звонка. Осталось: <span class="seconds">60</span> секунд.</div>
+				<div id="call_msg" style="display: none;">Оставшееся время: <span class="seconds">120</span> секунд.</div>
 			</div>
-			<div style="text-align: right;"><input name="submit" type="submit" value="Войти »"></div>
+			<div style="text-align: right;"><input type="submit" name="subbut" value="Войти »"></div>
 		</form>
 		<p><sup>*</sup>КИС - корпоративная информационная система</p>
 	</div>
