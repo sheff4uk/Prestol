@@ -370,11 +370,66 @@
 			});
 		</script>
 <?
-	if (empty($_SESSION['login']) or empty($_SESSION['id'])) {
-		$menu = array ("Вход" => "login.php"
-					  ,"Регистрация" => "reg.php");
+	if( empty($_SESSION['id']) ) {
+		//$menu = array ("Вход" => "login.php", "Регистрация" => "reg.php");
+		$menu = array ();
 	}
 	else {
+		// Записываем в сессию дату сдачи
+		if( empty($_SESSION["end_date"]) ) {
+			// Читаем из базы текущую дату
+			$query = "SELECT value FROM vars WHERE var LIKE 'today'";
+			$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$myrow = mysqli_fetch_array($result);
+			$today = $myrow['value'];
+
+			// Если дата устарела - отсчитываем дату сдачи 30 раб. дней и записываем в базу
+			if ($today != date('d.m.Y')) {
+				// Обновляем в базе текущую дату
+				$query = "UPDATE vars SET value = '".date('d.m.Y')."' WHERE var LIKE 'today'";
+				mysqli_query( $mysqli, $query );
+
+				$end_date = date_create(date('Y-m-d'));
+				$working_days = 0;
+				$year = 0;
+				while ($working_days < 30) {
+					date_modify($end_date, '+1 day');
+					// Если при подсчете рабочих дней изменился год, то получаем новый календарь
+					if( $year != date('Y', strtotime(date_format($end_date, 'd.m.Y'))) ) {
+						$year = date('Y', strtotime(date_format($end_date, 'd.m.Y')));
+						$xml = simplexml_load_file("http://xmlcalendar.ru/data/ru/".$year."/calendar.xml");
+						$json = json_encode($xml);
+						$data = json_decode($json,TRUE);
+					}
+					$day_of_week = date('N', strtotime(date_format($end_date, 'd.m.Y')));
+					$month = date('m', strtotime(date_format($end_date, 'd.m.Y')));
+					$day = date('d', strtotime(date_format($end_date, 'd.m.Y')));
+					// Перебираем массив и если находим дату то проверяем ее тип (тип дня: 1 - выходной день, 2 - рабочий и сокращенный (может быть использован для любого дня недели), 3 - рабочий день (суббота/воскресенье))
+					$t = 0;
+					foreach( $data["days"]["day"] as $key=>$value ) {
+						if( $value["@attributes"]["d"] == $month.".".$day) {
+							$t = $value["@attributes"]["t"];
+						}
+					}
+					// Если очередной день - рабочий, то увеличиваем счетчик
+					if ( !(($day_of_week >= 6 and $t != "3" and $t != "2") or ($t == "1")) ) {
+						++$working_days;
+					}
+				}
+				// Обновляем в базе дату сдачи
+				if ($end_date != date('Y-m-d')) {
+					$query = "UPDATE vars SET value = '".date_format($end_date, 'd.m.Y')."' WHERE var LIKE 'end_date'";
+					mysqli_query( $mysqli, $query );
+				}
+			}
+
+			// Читаем из базы дату сдачи и записываем в сессию
+			$query = "SELECT value FROM vars WHERE var LIKE 'end_date'";
+			$result = mysqli_query( $mysqli, $query );
+			$myrow = mysqli_fetch_array($result);
+			$_SESSION["end_date"] = $myrow['value'];
+		}
+
 		if( in_array('chart', $Rights) ) {
 			$menu["График"] = "chart.php";
 		}

@@ -3,7 +3,7 @@ include "config.php";
 $title = 'Регистрация';
 include "header.php";
 // Проверяем, не пусты ли переменные логина и id пользователя
-if (!empty($_SESSION['login']) and !empty($_SESSION['id'])) {
+if( !empty($_SESSION['id']) ) {
 	exit ('<meta http-equiv="refresh" content="0; url=/">');
 	die;
 }
