@@ -221,32 +221,23 @@
 			echo "<br>";
 
 			// Вычисляем объем и количество коробок
-			$query = "SELECT PT.PT_ID
-							,ROUND(SUM(IFNULL(PMS.space, 0)), 2) space
-							,CEIL(SUM(IFNULL(PMS.space, 0) / PT.box_space)) boxes
-						FROM ProductTypes PT
-						LEFT JOIN (
-							SELECT PM.PT_ID, PM.space * ODD.Amount space
-							FROM OrdersData OD
-							JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
-							JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-							WHERE OD.SHP_ID = {$_GET["shpid"]}
-								".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
-								".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
-						) PMS ON PMS.PT_ID = PT.PT_ID
-						GROUP BY PT.PT_ID
-						ORDER BY PT.PT_ID";
+			$query = "
+				SELECT ROUND(SUM(PM.space * ODD.Amount), 2) space
+					,SUM(ODD.boxes) boxes
+				FROM OrdersData OD
+				JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+				JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
+				JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
+				WHERE OD.SHP_ID = {$_GET["shpid"]}
+					".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
+					".($USR_KA ? "AND SH.KA_ID = {$USR_KA}" : "")."
+			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$chair_space = mysqli_result($res,0,'space');
-			$chair_boxes = mysqli_result($res,0,'boxes');
-			$table_space = mysqli_result($res,1,'space');
-			$table_boxes = mysqli_result($res,1,'boxes');
+			$space = mysqli_result($res,0,'space');
+			$boxes = mysqli_result($res,0,'boxes');
 			echo "
 				<div style='position: absolute; right: 200px; top: 60px; border: 1px solid #bbb; padding: 10px; border-radius: 10px;'>
-					<b class='nowrap'>Объем стульев: {$chair_space} м<sup>3</sup> (Коробок: {$chair_boxes})</b>
-					<br>
-					<b class='nowrap'>Объем столов: {$table_space} м<sup>3</sup> (Коробок: {$table_boxes})</b>
+					<b class='nowrap'>Объем груза: {$space} м<sup>3</sup> (Мест: {$boxes})</b>
 				</div>
 			";
 		}
