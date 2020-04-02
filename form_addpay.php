@@ -1,31 +1,24 @@
 <?
 	// Добавление платежа/редактирование выдачи
-	if( isset($_POST["Pay"]) )
-	{
-		include "config.php";
-		include "header.php";
+	if( isset($_POST["Pay"]) ) {
+		if( $_POST["Pay"] ) {
+			include "config.php";
+			include "header.php";
 
-		$PL_ID = $_POST["pl_id"];
-		$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
-		$Pay = $_POST["Pay"] <> "" ? $_POST["Pay"] : "NULL";
-		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
-		$Sign = $_POST["account"] ? "-" : "";
-		$location = $_POST["location"];
-		$account = $_POST["account"] ? $_POST["account"] : "NULL";
+			$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
+			$PayIn = !$_POST["account"] ? $_POST["Pay"] : "NULL";
+			$PayOut = $_POST["account"] ? $_POST["Pay"] : "NULL";
+			$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
+			$account = $_POST["account"] ? $_POST["account"] : "NULL";
 
-		if( $PL_ID ) { //Редактирование выдачи
-			$query = "UPDATE PayLog
-						SET WD_ID = {$Worker}, Pay = {$Sign}{$Pay}, Comment = '{$Comment}', FA_ID = {$account}, author = {$_SESSION['id']}
-						WHERE PL_ID = {$PL_ID}";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		}
-		else { // Добавление
-			$query = "INSERT INTO PayLog(WD_ID, Pay, Comment, FA_ID, author)
-					  VALUES ({$Worker}, {$Sign}{$Pay}, '{$Comment}', {$account}, {$_SESSION['id']})";
+			$query = "
+				INSERT INTO PayLog(WD_ID, PayIn, PayOut, Comment, FA_ID, author)
+				VALUES ({$Worker}, {$PayIn}, {$PayOut}, '{$Comment}', {$account}, {$_SESSION['id']})
+			";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
 
-		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'">');
 		die;
 	}
 ?>
@@ -35,23 +28,19 @@
 	<form method="post" action="form_addpay.php" onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
-			<input type='hidden' name='pl_id'>
-			<input type='hidden' name='sign'>
 			<input type='hidden' name='location'>
 			<div>
 				<label>Работник:</label>
 				<select required name="Worker" id="worker" style="width: 200px;">
 					<option value="">-=Выберите работника=-</option>
-					<optgroup label="Работающие">
-						<?
-						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE IsActive = 1 ORDER BY WD.Name";
-						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						while( $row = mysqli_fetch_array($res) )
-						{
-							echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
-						}
-						?>
-					</optgroup>
+					<?
+					$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE IsActive = 1 ORDER BY WD.Name";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) )
+					{
+						echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+					}
+					?>
 					<optgroup label="Уволенные">
 						<?
 						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE IsActive = 0 ORDER BY WD.Name";
@@ -66,7 +55,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</div>
 			<div>
 				<label>Сумма:</label>
-				<input required type='number' name='Pay' min='0' style="text-align:right; width: 90px;">
+				<input required type='number' name='Pay' style="text-align:right; width: 90px;">
 			</div>
 			<div id="wr_account">
 				<label>Счёт:</label>
@@ -105,7 +94,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</div>
 			<div>
 				<label>Примечание:</label>
-				<input type='text' name='Comment'>
+				<input type='text' name='Comment' style="width: 100%;" autocomplete="off">
 			</div>
 		</fieldset>
 		<div>
@@ -117,18 +106,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <script>
 	$(document).ready(function() {
-		$('#worker').select2({ placeholder: 'Выберите работника', language: 'ru' });
-
-		// Костыль для Select2 чтобы работал поиск
-		$.ui.dialog.prototype._allowInteraction = function (e) {
-			return true;
-		};
-
 		// Форма добавления платежа
 		$('.edit_pay').click(function() {
-			var id = $(this).attr('id');
 			var location = $(this).attr('location');
-			var sign = $(this).attr('sign');
 			var account = $(this).attr('account');
 			var worker = $(this).attr('worker');
 			var pay = $(this).attr('pay');
@@ -136,21 +116,18 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 			// Очистка диалога
 			$( '#addpay input[type="number"], #addpay select, #addpay input[type="text"], #addpay input[type="hidden"]' ).val('');
-			$('#addpay #worker').trigger('change');
 
 			// Заполнение
-			$('#addpay input[name="pl_id"]').val(id);
 			$('#addpay input[name="location"]').val(location);
-			$('#addpay input[name="sign"]').val(sign);
 			$('#addpay select[name="account"]').val(account);
-			$('#addpay select[name="Worker"]').val(worker).trigger('change');
 			$('#addpay input[name="Pay"]').val(pay);
 			$('#addpay input[name="Comment"]').val(comment);
 
 
-//			if( typeof worker !== "undefined" ) {
-//				$('#addpay select[name="Worker"]').val(worker).trigger('change');
-//			}
+			if( typeof worker !== "undefined" ) {
+				$('#addpay select[name="Worker"]').val(worker);
+				$('#addpay select[name="Worker"] option:not(:selected)').attr('disabled', true);
+			}
 
 //			if( typeof $(this).attr('comment') !== "undefined" ) { // Добавление премии из табеля
 //				var pay = $(this).attr('pay');
@@ -171,13 +148,11 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#addpay').dialog('option', 'title', 'Выдать');
 				$('#wr_account').show();
 				$('#account').prop('required',true);
-				$('#addpay input[name="Pay"]').attr('min', 0);
 			}
 			else {
 				$('#addpay').dialog('option', 'title', 'Начислить');
 				$('#wr_account').hide();
 				$('#account').prop('required',false);
-				$('#addpay input[name="Pay"]').removeAttr('min');
 			}
 			return false;
 		});

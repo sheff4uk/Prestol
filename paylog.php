@@ -22,8 +22,8 @@
 	$account = mysqli_result($res,0,'FA_ID');
 ?>
 	<p>
-		<button class='edit_pay' sign='' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Начислить</button>
-		<button class='edit_pay' sign='-' account='<?=$account?>' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> date='<?= date("d.m.Y") ?>' location='<?=$location?>'>Выдать</button>
+		<button class='edit_pay' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> location='<?=$location?>'>Начислить</button>
+		<button class='edit_pay' account='<?=$account?>' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> location='<?=$location?>'>Выдать</button>
 	</p>
 
 	<? include "form_addpay.php"; ?>
@@ -354,6 +354,7 @@
 		if( isset($_GET["worker"]) ) {
 ?>
 
+<!--
 		<h1>Журнал изменения баланса</h1>
 		<table>
 			<thead>
@@ -364,35 +365,38 @@
 				</tr>
 			</thead>
 			<tbody>
+-->
 <?
-			$query = "
-				SELECT BL.Balance
-					,Friendly_date(BL.Date) date
-					,DATE_FORMAT(BL.Date, '%H:%i') Time
-				FROM BalanceLog BL
-				WHERE WD_ID = {$_GET["worker"]}
-				AND DATEDIFF((SELECT MAX(Date) FROM BalanceLog WHERE WD_ID = {$_GET["worker"]}), BL.Date) <= 31
-				ORDER BY BL.Date DESC, BL.Balance DESC
-				#LIMIT 100
-			";
-
-			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-			while( $row = mysqli_fetch_array($res) ) {
-				$format_balance = number_format($row["Balance"], 0, '', ' ');
-				if( $row["Balance"] < 0 )
-					$color = ' bg-red';
-				else
-					$color = '';
-				echo "<tr>";
-				echo "<td><span class='nowrap'><b>{$row["date"]}</b></span></td>";
-				echo "<td><span class='nowrap'>{$row["Time"]}</span></td>";
-				echo "<td class='txtright'><span class='nowrap{$color}'>{$format_balance}</span></td>";
-				echo "</tr>";
-			}
+//			$query = "
+//				SELECT BL.Balance
+//					,Friendly_date(BL.Date) date
+//					,DATE_FORMAT(BL.Date, '%H:%i') Time
+//				FROM BalanceLog BL
+//				WHERE WD_ID = {$_GET["worker"]}
+//				AND DATEDIFF((SELECT MAX(Date) FROM BalanceLog WHERE WD_ID = {$_GET["worker"]}), BL.Date) <= 31
+//				ORDER BY BL.Date DESC, BL.Balance DESC
+//				#LIMIT 100
+//			";
+//
+//			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//
+//			while( $row = mysqli_fetch_array($res) ) {
+//				$format_balance = number_format($row["Balance"], 0, '', ' ');
+//				if( $row["Balance"] < 0 )
+//					$color = ' bg-red';
+//				else
+//					$color = '';
+//				echo "<tr>";
+//				echo "<td><span class='nowrap'><b>{$row["date"]}</b></span></td>";
+//				echo "<td><span class='nowrap'>{$row["Time"]}</span></td>";
+//				echo "<td class='txtright'><span class='nowrap{$color}'>{$format_balance}</span></td>";
+//				echo "</tr>";
+//			}
 ?>
+<!--
 			</tbody>
 		</table>
+-->
 <?
 		}
 ?>
@@ -408,9 +412,9 @@
 				<th width='30%'>Работник</th>
 				<th width='60'>Начислено</th>
 				<th width='75'>Выдано</th>
+				<th width='75'>Баланс</th>
 				<th width='70%'>Примечание</th>
 				<th width='50'>Автор</th>
-				<th width='25'></th>
 			</tr>
 			</thead>
 			<tbody>
@@ -421,22 +425,21 @@
 					,Friendly_date(PL.Date) date
 					,DATE_FORMAT(PL.Date, '%H:%i') Time
 					,WD.Name Worker
-					,ABS(PL.Pay) Pay
+					,PL.PayIn
+					,PL.PayOut
+					,PL.Balance
 					,REPLACE(PL.Comment, '\r\n', '<br>') Comment
 					,WD.WD_ID
-					,IF(PL.Pay < 0, '-', '') Sign
-					,IF(PL.Archive = 1, 'pl-archive', '') Archive
 					,FA.bank
 					,FA.FA_ID
 					,USR_Icon(PL.author) Name
-					,FA.archive
 					,PL.OD_ID
 					,OD.Code
 				FROM PayLog PL
 				LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
 				LEFT JOIN FinanceAccount FA ON FA.FA_ID = PL.FA_ID
 				LEFT JOIN OrdersData OD ON OD.OD_ID = PL.OD_ID
-				WHERE PL.Pay <> 0
+				WHERE 1
 			";
 			if( isset($_GET["worker"]) ) {
 				$query .= "
@@ -451,25 +454,21 @@
 			}
 			$query .= "
 				ORDER BY PL.PL_ID DESC
-				#LIMIT 100
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
 			{
-				$format_pay = number_format($row["Pay"], 0, '', ' ');
-				echo "<tr class='{$row["Archive"]}' id='pl{$row["PL_ID"]}'>";
+				$format_payin = $row["PayIn"] ? number_format($row["PayIn"], 0, '', ' ') : "";
+				$format_payout = $row["PayOut"] ? number_format($row["PayOut"], 0, '', ' ') : "";
+				$format_balance = $row["Balance"] ? number_format($row["Balance"], 0, '', ' ') : "";
+				$bank = $row["bank"] ? ' <i title="Безнал" class="fa fa-credit-card" aria-hidden="true"></i>' : '';
+				echo "<tr id='pl{$row["PL_ID"]}'>";
 				echo "<td><span class='nowrap'><b>{$row["date"]}</b></span></td>";
 				echo "<td><span>{$row["Time"]}</span></td>";
-				echo "<td class='worker' val='{$row["WD_ID"]}'><span><a href='?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>";
-				if ( $row["FA_ID"] ) {
-					$bank = $row["bank"] ? ' <i title="Безнал" class="fa fa-credit-card" aria-hidden="true"></i>' : '';
-					echo "<td></td>";
-					echo "<td class='pay txtright nowrap' val='{$row["Pay"]}'><b>{$format_pay}{$bank}</b></td>";
-				}
-				else {
-					echo "<td style='color: ".($row["Sign"] == "-" ? "#E74C3C;" : "#16A085")."' class='pay txtright nowrap' val='{$row["Sign"]}{$row["Pay"]}'><b>{$row["Sign"]}{$format_pay}</b></td>";
-					echo "<td></td>";
-				}
+				echo "<td class='worker'><span><a href='?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>";
+				echo "<td style='color: ".($row["PayIn"] < 0 ? "#E74C3C;" : "#16A085;")."' class='txtright nowrap'><b>{$format_payin}</b></td>";
+				echo "<td style='color: ".($row["PayOut"] < 0 ? "#E74C3C;" : "#16A085;")."' class='txtright nowrap'><b>{$format_payout}{$bank}</b></td>";
+				echo "<td class='txtright'><span class='".($row["Balance"] < 0 ? "bg-red " : "")."nowrap'>{$format_balance}</span></td>";
 				echo "<td class='comment nowrap' style='z-index: 2;'><span>";
 				// Если запись из этапов производства - выводим код набора
 				if( $row["OD_ID"] ) {
@@ -477,11 +476,6 @@
 				}
 				echo "{$row["Comment"]}</span></td>";
 				echo "<td>{$row["Name"]}</td>";
-				echo "<td>";
-				if ( $row["FA_ID"] and $row["archive"] == 0 ) {
-					echo "<a href='#' id='{$row["PL_ID"]}' sign='{$row["Sign"]}' worker='{$row["WD_ID"]}' pay = '{$row["Pay"]}' account='{$row["FA_ID"]}' comment='{$row["Comment"]}' class='edit_pay' location='{$location}' title='Редактировать выдачу.'><i class='fa fa-pencil-alt fa-lg'></i></a>";
-				}
-				echo "</td>";
 				echo "</tr>";
 			}
 	?>
