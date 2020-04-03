@@ -927,7 +927,7 @@
 						LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 						LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
 						LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
-						WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= DATE_ADD(STR_TO_DATE('{$cash_to}', '%d.%m.%Y'), INTERVAL 1 DAY)
+						WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= STR_TO_DATE('{$cash_to} 23:59:59', '%d.%m.%Y %T')
 
 						UNION ALL
 
@@ -956,7 +956,7 @@
 						LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 						LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 						LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
-						WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= DATE_ADD(STR_TO_DATE('{$cash_to}', '%d.%m.%Y'), INTERVAL 1 DAY) AND F.to_account IS NOT NULL
+						WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= STR_TO_DATE('{$cash_to} 23:59:59', '%d.%m.%Y %T') AND F.to_account IS NOT NULL
 					) SF
 					WHERE 1
 					".($_SESSION["cash_type"] != "" ? "AND SF.type = {$_SESSION["cash_type"]}" : "")."
@@ -969,7 +969,6 @@
 					#".($KA_IDs_filter != "" ? "AND SF.KA_ID IN ({$KA_IDs_filter})" : "")."
 					".($_SESSION["cash_kontragent"] ? "AND SF.kontragent LIKE '%{$_SESSION["cash_kontragent"]}%'" : "")."
 					".($_SESSION["cash_comment"] ? "AND SF.comment LIKE '%{$_SESSION["cash_comment"]}%'" : "")."
-					#AND SF.comment LIKE '%возврат%'
 					ORDER BY SF.date DESC, SF.F_ID DESC
 				";
 
