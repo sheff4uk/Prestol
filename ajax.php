@@ -1964,7 +1964,7 @@ case "cash_category":
 		$html .= "<select required name='category' id='category' style='width: 300px;'>";
 		$html .= "<option value=''></option>";
 
-		$query = "SELECT FC_ID, name FROM FinanceCategory WHERE type = {$type} AND FC_ID NOT IN (2,3,4,7,8)";
+		$query = "SELECT FC_ID, name FROM FinanceCategory WHERE type = {$type}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
