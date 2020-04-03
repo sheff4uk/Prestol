@@ -34,7 +34,6 @@
 	{
 		$F_ID = $_POST["F_ID"];
 		$sum = $_POST["sum"];
-		$cost_date = date( 'Y-m-d', strtotime($_POST["cost_date"]) );
 		$account = $_POST["account"];
 		$type = $_POST["type"];
 		$category = ( $_POST["category"] and ( $type == -1 or $type == 1) ) ? $_POST["category"] : "NULL";
@@ -44,16 +43,17 @@
 		$coment = mysqli_real_escape_string( $mysqli, $comment );
 
 		if( $F_ID != 'add_operation_btn' ) { // Редактируем операцию
-			$query = "UPDATE Finance
-						SET  money = {$sum}
-							,date = '{$cost_date}'
-							,FA_ID = {$account}
-							,to_account = {$to_account}
-							,FC_ID = {$category}
-							,KA_ID = {$KA_ID}
-							,comment = '{$coment}'
-							,author = {$_SESSION['id']}
-						WHERE F_ID = {$F_ID}";
+			$query = "
+				UPDATE Finance
+				SET  money = {$sum}
+					,FA_ID = {$account}
+					,to_account = {$to_account}
+					,FC_ID = {$category}
+					,KA_ID = {$KA_ID}
+					,comment = '{$coment}'
+					,author = {$_SESSION['id']}
+				WHERE F_ID = {$F_ID}
+			";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
@@ -63,7 +63,6 @@
 				$CT_ID = $_POST["CT_ID"];
 				$query = "INSERT INTO Finance
 							SET  money = {$sum}
-								,date = '{$cost_date}'
 								,FA_ID = {$account}
 								,to_account = {$to_account}
 								,FC_ID = {$category}
@@ -264,8 +263,6 @@
 </style>
 
 <?
-	$now_date = date('d.m.Y');
-
 	//Узнаем дефолтный счет для пользователя
 	$query = "SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION['id']} ORDER BY IFNULL(bank, 0) LIMIT 1";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -389,7 +386,7 @@
 		}
 	}
 
-	echo "<a id='add_operation_btn' href='#' class='add_operation_btn' type='{$type}' cost_date='{$now_date}' account='{$account}' title='Добавить в учёт'></a>";
+	echo "<a id='add_operation_btn' href='#' class='add_operation_btn' type='{$type}' account='{$account}' title='Добавить в учёт'></a>";
 ?>
 
 <div style="width: 1000px; margin: auto;">
@@ -752,6 +749,7 @@
 			<thead class="finance_head">
 				<tr>
 					<th width="60">Дата</th>
+					<th width="60">Время</th>
 					<th width="60" class="th_filter">
 						<div class="th_name" id="type_label">Тип</div>
 						<i class="fa fa-filter fa-lg"></i>
@@ -862,7 +860,7 @@
 						</div>
 -->
 					</th>
-					<th width="270" class="th_filter">
+					<th width="210" class="th_filter">
 						<input id="comment_search" type="text" name="cash_comment" form="filter_form" style="display: none; position: absolute; width: 230px; z-index: 3;" value="<?=$_SESSION["cash_comment"]?>">
 						<div class="th_name" id="comment_label">Комментарии</div>
 						<i class="fa fa-filter fa-lg"></i>
@@ -878,104 +876,102 @@
 				$USR_IDs = $_SESSION["cash_author"] != "" ? implode(",", $_SESSION["cash_author"]) : "";
 				//$KA_IDs_filter = $_SESSION["cash_kontragent"] != "" ? implode(",", $_SESSION["cash_kontragent"]) : "";
 
-				$query = "SELECT SF.F_ID
-								,SF.date_sort
-								,SF.date
-								,SF.cost_date
-								,SF.type
-								,SF.money
-								,SF.account
-								,SF.color
-								,SF.local
-								,SF.category
-								,SF.kontragent
-								,SF.comment
-								,SF.sum
-								,SF.FA_ID
-								,SF.to_account
-								,SF.FC_ID
-								,SF.KA_ID
-								,SF.is_edit
-								,SF.account_filter
-								,SF.receipt
-								,SF.author
-								,SF.USR_ID
-								,SF.archive
-							FROM (
-								SELECT F.F_ID
-									,F.date date_sort
-									,DATE_FORMAT(F.date, '%d.%m.%y') date
-									,DATE_FORMAT(F.date, '%d.%m.%Y') cost_date
-									,IFNULL(FC.type, 0) type
-									,IFNULL(FC.type, -1) * F.money money
-									,FA.name account
-									,FA.color
-									,FA.local
-									,IF(F.to_account IS NULL, FC.name, CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name)) category
-									,KA.Naimenovanie kontragent
-									,F.comment
-									,F.money sum
-									,F.FA_ID
-									,F.to_account
-									,F.FC_ID
-									,F.KA_ID
-									,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
-									,F.FA_ID account_filter
-									,0 receipt
-									,USR_Icon(F.author) author
-									,F.author USR_ID
-									,IF(FA.archive = 1 OR IFNULL(TFA.archive, 0) = 1, 1, 0) archive
-								FROM Finance F
-								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
-								LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
-								LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
-								WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= STR_TO_DATE('{$cash_to}', '%d.%m.%Y')
+				$query = "
+					SELECT SF.F_ID
+						,SF.date
+						,Friendly_date(SF.date) Date
+						,DATE_FORMAT(SF.date, '%H:%i') Time
+						,SF.type
+						,SF.money
+						,SF.account
+						,SF.color
+						,SF.local
+						,SF.category
+						,SF.kontragent
+						,SF.comment
+						,SF.sum
+						,SF.FA_ID
+						,SF.to_account
+						,SF.FC_ID
+						,SF.KA_ID
+						,SF.is_edit
+						,SF.account_filter
+						,SF.receipt
+						,SF.author
+						,SF.USR_ID
+						,SF.archive
+					FROM (
+						SELECT F.F_ID
+							,F.date
+							,IFNULL(FC.type, 0) type
+							,IFNULL(FC.type, -1) * F.money money
+							,FA.name account
+							,FA.color
+							,FA.local
+							,IF(F.to_account IS NULL, FC.name, CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name)) category
+							,KA.Naimenovanie kontragent
+							,F.comment
+							,F.money sum
+							,F.FA_ID
+							,F.to_account
+							,F.FC_ID
+							,F.KA_ID
+							,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
+							,F.FA_ID account_filter
+							,0 receipt
+							,USR_Icon(F.author) author
+							,F.author USR_ID
+							,IF(FA.archive = 1 OR IFNULL(TFA.archive, 0) = 1, 1, 0) archive
+						FROM Finance F
+						LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+						LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
+						LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
+						LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
+						WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= DATE_ADD(STR_TO_DATE('{$cash_to}', '%d.%m.%Y'), INTERVAL 1 DAY)
 
-								UNION ALL
+						UNION ALL
 
-								SELECT F.F_ID
-									,F.date date_sort
-									,DATE_FORMAT(F.date, '%d.%m.%y') date
-									,DATE_FORMAT(F.date, '%d.%m.%Y') cost_date
-									,0 type
-									,F.money
-									,TFA.name account
-									,TFA.color
-									,TFA.local
-									,CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name) category
-									,NULL kontragent
-									,F.comment
-									,F.money sum
-									,F.FA_ID
-									,F.to_account
-									,F.FC_ID
-									,F.KA_ID
-									,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
-									,F.to_account account_filter
-									,1 receipt
-									,USR_Icon(F.author) author
-									,F.author USR_ID
-									,IF(FA.archive = 1 OR IFNULL(TFA.archive, 0) = 1, 1, 0) archive
-								FROM Finance F
-								LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-								LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
-								LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
-								WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= STR_TO_DATE('{$cash_to}', '%d.%m.%Y') AND F.to_account IS NOT NULL
-							) SF
-							WHERE 1
-							".($_SESSION["cash_type"] != "" ? "AND SF.type = {$_SESSION["cash_type"]}" : "")."
-							".($_SESSION["cash_sum_from"] != "" ? "AND SF.sum >= {$_SESSION["cash_sum_from"]}" : "")."
-							".($_SESSION["cash_sum_to"] != "" ? "AND SF.sum <= {$_SESSION["cash_sum_to"]}" : "")."
-							".($FA_IDs != "" ? "AND SF.account_filter IN ({$FA_IDs})" : "")."
-							".(in_array('finance_account', $Rights) ? "AND SF.account_filter IN(SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]})" : "")."
-							".($FC_IDs != "" ? "AND SF.FC_ID IN ({$FC_IDs})" : "")."
-							".($USR_IDs != "" ? "AND SF.USR_ID IN ({$USR_IDs})" : "")."
-							#".($KA_IDs_filter != "" ? "AND SF.KA_ID IN ({$KA_IDs_filter})" : "")."
-							".($_SESSION["cash_kontragent"] ? "AND SF.kontragent LIKE '%{$_SESSION["cash_kontragent"]}%'" : "")."
-							".($_SESSION["cash_comment"] ? "AND SF.comment LIKE '%{$_SESSION["cash_comment"]}%'" : "")."
-							#AND SF.comment LIKE '%возврат%'
-							ORDER BY SF.date_sort DESC, SF.F_ID DESC";
+						SELECT F.F_ID
+							,F.date
+							,0 type
+							,F.money
+							,TFA.name account
+							,TFA.color
+							,TFA.local
+							,CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name) category
+							,NULL kontragent
+							,F.comment
+							,F.money sum
+							,F.FA_ID
+							,F.to_account
+							,F.FC_ID
+							,F.KA_ID
+							,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
+							,F.to_account account_filter
+							,1 receipt
+							,USR_Icon(F.author) author
+							,F.author USR_ID
+							,IF(FA.archive = 1 OR IFNULL(TFA.archive, 0) = 1, 1, 0) archive
+						FROM Finance F
+						LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+						LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
+						LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
+						WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= DATE_ADD(STR_TO_DATE('{$cash_to}', '%d.%m.%Y'), INTERVAL 1 DAY) AND F.to_account IS NOT NULL
+					) SF
+					WHERE 1
+					".($_SESSION["cash_type"] != "" ? "AND SF.type = {$_SESSION["cash_type"]}" : "")."
+					".($_SESSION["cash_sum_from"] != "" ? "AND SF.sum >= {$_SESSION["cash_sum_from"]}" : "")."
+					".($_SESSION["cash_sum_to"] != "" ? "AND SF.sum <= {$_SESSION["cash_sum_to"]}" : "")."
+					".($FA_IDs != "" ? "AND SF.account_filter IN ({$FA_IDs})" : "")."
+					".(in_array('finance_account', $Rights) ? "AND SF.account_filter IN(SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]})" : "")."
+					".($FC_IDs != "" ? "AND SF.FC_ID IN ({$FC_IDs})" : "")."
+					".($USR_IDs != "" ? "AND SF.USR_ID IN ({$USR_IDs})" : "")."
+					#".($KA_IDs_filter != "" ? "AND SF.KA_ID IN ({$KA_IDs_filter})" : "")."
+					".($_SESSION["cash_kontragent"] ? "AND SF.kontragent LIKE '%{$_SESSION["cash_kontragent"]}%'" : "")."
+					".($_SESSION["cash_comment"] ? "AND SF.comment LIKE '%{$_SESSION["cash_comment"]}%'" : "")."
+					#AND SF.comment LIKE '%возврат%'
+					ORDER BY SF.date DESC, SF.F_ID DESC
+				";
 
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				$cash_in = 0; // Сумма видимых операций
@@ -989,7 +985,8 @@
 
 					if( $row["receipt"] == 0 or $FA_IDs != "" or in_array('finance_account', $Rights) ) {
 						echo "<tr>";
-						echo "<td>{$row["date"]}</td>";
+						echo "<td class='nowrap'><b>{$row["Date"]}</b></td>";
+						echo "<td class='nowrap'>{$row["Time"]}</td>";
 						echo "<td style='text-align: center;'>{$type}</td>";
 						echo "<td class='txtright' style='color: {$color};'><b>{$money}</b></td>";
 						echo "<td><span class='nowrap' style='background-color: {$row["color"]}; border-radius: 20%;'>{$row["account"]}</span></td>";
@@ -998,7 +995,7 @@
 						echo "<td><span class='nowrap'><a href='sverki.php?payer={$row["KA_ID"]}' target='_blank' title='Перейти в сверки'><b>{$row["kontragent"]}</b></a></span></td>";
 						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
 						if( $row["is_edit"] and $row["receipt"] == 0 and $row["archive"] == 0 ) {
-							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' cost_date='{$row["cost_date"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil-alt fa-lg'></i></a></td>";
+							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil-alt fa-lg'></i></a></td>";
 						}
 						else {
 							echo "<td></td>";
@@ -1050,10 +1047,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<div class="field">
 				<label for="sum">Сумма:</label><br>
 				<input required type="number" name="sum" min="0" id="sum" autocomplete="off" style="width: 100px; text-align: right; font-size: 20px;">
-			</div>
-			<div class="field">
-				<label for="cost_date">Дата:</label><br>
-				<input required readonly type="text" name="cost_date" class="date" id="cost_date" style="width: 90px;">
 			</div>
 			<br>
 			<div class="field">
@@ -1336,14 +1329,12 @@ this.subbut.value='Подождите, пожалуйста!';">
 		// Кнопка добавления/редактирования операции
 		$('.add_operation_btn').click( function() {
 			var type = $(this).attr('type');
-			var cost_date = $(this).attr('cost_date');
 			var account = $(this).attr('account');
 			var F_ID = $(this).attr('id');
 
 			// Очистка диалога
 			$('#add_operation #F_ID').val(F_ID);
 			$('#add_operation #sum').val('');
-			$('#add_operation #cost_date').val(cost_date);
 			$('#add_operation #account').val(account);
 			$('#type'+type).prop('checked', true).button('refresh');
 			$('#type > #type'+type).change();
@@ -1484,8 +1475,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			}
 		});
 
-		//$( "#cost_date" ).datepicker( "option", "minDate", "<?=( date('d.m.Y', mktime(0, 0, 0, date("m")-1, 1, date("Y"))) )?>" );
-		$( "#cost_date" ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
 	});
 </script>
 
