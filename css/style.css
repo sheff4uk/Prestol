@@ -555,6 +555,9 @@ input.amount {
 	font-size: 1.2em;
 }
 
+.halfblock {
+	overflow: hidden;
+}
 @media (min-width: 1024px) {
 	.halfblock {
 		width: 49%;

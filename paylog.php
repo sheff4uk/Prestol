@@ -21,10 +21,49 @@
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$account = mysqli_result($res,0,'FA_ID');
 ?>
-	<p>
-		<button class='edit_pay' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> location='<?=$location?>'>Начислить</button>
-		<button class='edit_pay' account='<?=$account?>' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> location='<?=$location?>'>Выдать</button>
-	</p>
+
+<style>
+	#add_payin_btn {
+		text-align: center;
+		line-height: 64px;
+		color: #fff;
+		bottom: 100px;
+		cursor: pointer;
+		width: 56px;
+		height: 56px;
+		opacity: .4;
+		position: fixed;
+		right: 100px;
+		z-index: 9;
+		border-radius: 50%;
+		background-color: #16A085;
+		box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
+	}
+
+	#add_payout_btn {
+		text-align: center;
+		line-height: 64px;
+		color: #fff;
+		bottom: 170px;
+		cursor: pointer;
+		width: 56px;
+		height: 56px;
+		opacity: .4;
+		position: fixed;
+		right: 100px;
+		z-index: 9;
+		border-radius: 50%;
+		background-color: #db4437;
+		box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
+	}
+
+	#add_payin_btn:hover, #add_payout_btn:hover {
+		opacity: 1;
+	}
+</style>
+
+	<div id='add_payin_btn' class='edit_pay' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> location='<?=$location?>' title='НАЧИСЛИТЬ заработную плату'><i class="fas fa-2x fa-user-cog"></i></div>
+	<div id='add_payout_btn' class='edit_pay' account='<?=$account?>' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> location='<?=$location?>' title='ВЫДАТЬ заработную плату'><i class="fas fa-2x fa-user-check"></i></div>
 
 	<? include "form_addpay.php"; ?>
 	<? include "forms.php"; ?>
