@@ -161,7 +161,7 @@ if (isset($_POST['user_mt'])) {
 	this.subbut.value='Ожидание звонка';">
 			<div>
 				<label>Телефон</label>
-				<input type="text" name="user_mt" id="mtel" style="font-size: 1.5em;" value="" autocomplete="off" placeholder="Моб. телефон">
+				<input type="text" name="user_mt" id="mtel" style="font-size: 1.5em;" value="" autocomplete="on" placeholder="Моб. телефон">
 				<div id="call_msg" style="display: none;">Оставшееся время: <span class="seconds">120</span> секунд.</div>
 			</div>
 			<div style="text-align: right;"><input type="submit" name="subbut" value="Войти »"></div>
