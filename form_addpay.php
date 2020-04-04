@@ -46,7 +46,13 @@
 	<form method="post" action="form_addpay.php" onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
+			<i class="fas fa-3x fa-user-check" style="color: #fff; position: absolute; right: 30px; top: 20px; display: none;"></i>
+			<i class="fas fa-3x fa-user-cog" style="color: #fff; position: absolute; right: 30px; top: 20px; display: none;"></i>
 			<input type='hidden' name='location'>
+			<div>
+				<label>Сумма:</label>
+				<input required type='number' name='Pay' style="text-align:right; width: 100px; font-size: 20px;">
+			</div>
 			<div>
 				<label>Работник:</label>
 				<select required name="Worker" id="worker" style="width: 200px;">
@@ -70,10 +76,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 						?>
 					</optgroup>
 				</select>
-			</div>
-			<div>
-				<label>Сумма:</label>
-				<input required type='number' name='Pay' style="text-align:right; width: 90px;">
 			</div>
 			<div id="wr_account">
 				<label>Счёт:</label>
@@ -166,11 +168,17 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#addpay').dialog('option', 'title', 'Выдать');
 				$('#wr_account').show();
 				$('#account').prop('required',true);
+				$('#addpay fieldset').css('background', '#f0adab');
+				$('#addpay .fa-user-check').show();
+				$('#addpay .fa-user-cog').hide();
 			}
 			else {
 				$('#addpay').dialog('option', 'title', 'Начислить');
 				$('#wr_account').hide();
 				$('#account').prop('required',false);
+				$('#addpay fieldset').css('background', '#a0d8ce');
+				$('#addpay .fa-user-cog').show();
+				$('#addpay .fa-user-check').hide();
 			}
 			return false;
 		});

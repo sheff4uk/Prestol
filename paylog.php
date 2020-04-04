@@ -471,6 +471,7 @@
 					,USR_Icon(PLF.author) Name
 					,PLF.OD_ID
 					,PLF.Code
+					,PLF.Account
 				FROM (
 					SELECT PL.Date
 						,PL.Pay PayIn
@@ -481,6 +482,7 @@
 						,PL.author
 						,PL.OD_ID
 						,OD.Code
+						,null Account
 					FROM PayLog PL
 					LEFT JOIN BalanceLog BL ON BL.PL_ID = PL.PL_ID
 					LEFT JOIN OrdersData OD ON OD.OD_ID = PL.OD_ID
@@ -497,7 +499,9 @@
 						,F.author
 						,NULL
 						,NULL
+						,FA.name
 					FROM Finance F
+					JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 					LEFT JOIN BalanceLog BL ON BL.F_ID = F.F_ID
 					WHERE ".($_GET["worker"] ? "F.WD_ID = {$_GET["worker"]} AND DATEDIFF(NOW(), F.date) <= 365" : "F.WD_ID IS NOT NULL AND DATEDIFF(NOW(), F.date) <= 31")."
 				) PLF
@@ -515,7 +519,7 @@
 				echo "<td><span>{$row["Time"]}</span></td>";
 				echo "<td class='worker'><span><a href='?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>";
 				echo "<td class='txtright nowrap'><b style='color: ".($row["PayIn"] < 0 ? "#E74C3C;" : "#16A085;")."'>{$format_payin}</b></td>";
-				echo "<td class='txtright nowrap'><b style='color: ".($row["PayOut"] < 0 ? "#E74C3C;" : "#16A085;")."'>{$format_payout}</b></td>";
+				echo "<td class='txtright nowrap'><b style='color: ".($row["PayOut"] < 0 ? "#E74C3C;" : "#16A085;")."'>{$format_payout}</b><br><span style='font-size: .8em; font-weight: bold;'>{$row["Account"]}</span></td>";
 				echo "<td class='txtright'><b class='".($row["Balance"] < 0 ? "bg-red " : "")."nowrap'>{$format_balance}</b></td>";
 				echo "<td class='comment nowrap' style='z-index: 2;'><span>";
 				// Если запись из этапов производства - выводим код набора
