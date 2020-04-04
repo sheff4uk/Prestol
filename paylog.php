@@ -74,7 +74,7 @@
 			$query = "
 				SELECT WD.WD_ID
 					,WD.Name
-					,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
+					,WD.Balance
 					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
 					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
 					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
@@ -127,11 +127,11 @@
 					$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					$avg_pay_out = mysqli_result($subres, 0, 'avg_pay_out');
 
-					if( $row["Sum"] < 0 )
+					if( $row["Balance"] < 0 )
 						$color = ' bg-red';
 					else
 						$color = '';
-					$format_sum = number_format($row["Sum"], 0, '', ' ');
+					$format_sum = number_format($row["Balance"], 0, '', ' ');
 					$format_MPI = number_format($row["PayIn"], 0, '', ' ');
 					$format_MPO = number_format($row["PayOut"], 0, '', ' ');
 					$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
@@ -146,7 +146,7 @@
 					echo "<td class='txtright'><span class='nowrap'>{$format_LMPO}</span></td>";
 					echo "<td class='txtright'><span class='nowrap' style='color: #911;'>{$format_avg_pay_out}</span></td>";
 					echo "</tr>";
-					$total_sum = $total_sum + $row["Sum"];
+					$total_sum = $total_sum + $row["Balance"];
 					$total_MPI = $total_MPI + $row["PayIn"];
 					$total_MPO = $total_MPO + $row["PayOut"];
 					$total_LMPI = $total_LMPI + $row["LastPayIn"];
@@ -182,7 +182,7 @@
 			$query = "
 				SELECT WD.WD_ID
 					,WD.Name
-					,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
+					,WD.Balance
 					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
 					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
 					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
@@ -235,11 +235,11 @@
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$avg_pay_out = mysqli_result($subres, 0, 'avg_pay_out');
 
-						if( $row["Sum"] < 0 )
+						if( $row["Balance"] < 0 )
 							$color = ' bg-red';
 						else
 							$color = '';
-						$format_sum = number_format($row["Sum"], 0, '', ' ');
+						$format_sum = number_format($row["Balance"], 0, '', ' ');
 						$format_MPI = number_format($row["PayIn"], 0, '', ' ');
 						$format_MPO = number_format($row["PayOut"], 0, '', ' ');
 						$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
@@ -254,7 +254,7 @@
 						echo "<td class='txtright'><span class='nowrap'>{$format_LMPO}</span></td>";
 						echo "<td class='txtright'><span class='nowrap' style='color: #911;'>{$format_avg_pay_out}</span></td>";
 						echo "</tr>";
-						$total_sum = $total_sum + $row["Sum"];
+						$total_sum = $total_sum + $row["Balance"];
 						$total_MPI = $total_MPI + $row["PayIn"];
 						$total_MPO = $total_MPO + $row["PayOut"];
 						$total_LMPI = $total_LMPI + $row["LastPayIn"];
@@ -288,7 +288,7 @@
 			$query = "
 				SELECT WD.WD_ID
 					,WD.Name
-					,SUM(IFNULL(MPIO.PayIn, 0) - IFNULL(MPIO.PayOut, 0)) Sum
+					,WD.Balance
 					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayIn, 0), 0)) PayIn
 					,SUM(IF(Year = {$year} AND Month = {$month}, IFNULL(MPIO.PayOut, 0), 0)) PayOut
 					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayIn, 0), 0)) LastPayIn
@@ -341,11 +341,11 @@
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$avg_pay_out = mysqli_result($subres, 0, 'avg_pay_out');
 
-						if( $row["Sum"] < 0 )
+						if( $row["Balance"] < 0 )
 							$color = ' bg-red';
 						else
 							$color = '';
-						$format_sum = number_format($row["Sum"], 0, '', ' ');
+						$format_sum = number_format($row["Balance"], 0, '', ' ');
 						$format_MPI = number_format($row["PayIn"], 0, '', ' ');
 						$format_MPO = number_format($row["PayOut"], 0, '', ' ');
 						$format_LMPI = number_format($row["LastPayIn"], 0, '', ' ');
@@ -360,7 +360,7 @@
 						echo "<td class='txtright'><span class='nowrap'>{$format_LMPO}</span></td>";
 						echo "<td class='txtright'><span class='nowrap' style='color: #911;'>{$format_avg_pay_out}</span></td>";
 						echo "</tr>";
-						$total_sum = $total_sum + $row["Sum"];
+						$total_sum = $total_sum + $row["Balance"];
 						$total_MPI = $total_MPI + $row["PayIn"];
 						$total_MPO = $total_MPO + $row["PayOut"];
 						$total_LMPI = $total_LMPI + $row["LastPayIn"];
@@ -460,39 +460,49 @@
 
 	<?
 			$query = "
-				SELECT PL.PL_ID
-					,Friendly_date(PL.Date) date
-					,DATE_FORMAT(PL.Date, '%H:%i') Time
+				SELECT Friendly_date(PLF.Date) date
+					,DATE_FORMAT(PLF.Date, '%H:%i') Time
+					,PLF.WD_ID
 					,WD.Name Worker
-					,PL.PayIn
-					,PL.PayOut
-					,PL.Balance
-					,REPLACE(PL.Comment, '\r\n', '<br>') Comment
-					,WD.WD_ID
-					,FA.bank
-					,FA.FA_ID
-					,USR_Icon(PL.author) Name
-					,PL.OD_ID
-					,OD.Code
-				FROM PayLog PL
-				LEFT JOIN WorkersData WD ON WD.WD_ID = PL.WD_ID
-				LEFT JOIN FinanceAccount FA ON FA.FA_ID = PL.FA_ID
-				LEFT JOIN OrdersData OD ON OD.OD_ID = PL.OD_ID
-				WHERE 1
-			";
-			if( isset($_GET["worker"]) ) {
-				$query .= "
-					AND DATEDIFF((SELECT MAX(Date) FROM BalanceLog WHERE WD_ID = {$_GET["worker"]}), PL.Date) <= 31
-					AND PL.WD_ID = {$_GET["worker"]}
-				";
-			}
-			else {
-				$query .= "
-					AND DATEDIFF((SELECT MAX(Date) FROM BalanceLog), PL.Date) <= 31
-				";
-			}
-			$query .= "
-				ORDER BY PL.PL_ID DESC
+					,PLF.PayIn
+					,PLF.PayOut
+					,PLF.Balance
+					,REPLACE(PLF.Comment, '\r\n', '<br>') Comment
+					,USR_Icon(PLF.author) Name
+					,PLF.OD_ID
+					,PLF.Code
+				FROM (
+					SELECT PL.Date
+						,PL.Pay PayIn
+						,NULL PayOut
+						,BL.Balance
+						,PL.WD_ID
+						,PL.Comment
+						,PL.author
+						,PL.OD_ID
+						,OD.Code
+					FROM PayLog PL
+					LEFT JOIN BalanceLog BL ON BL.PL_ID = PL.PL_ID
+					LEFT JOIN OrdersData OD ON OD.OD_ID = PL.OD_ID
+					WHERE ".($_GET["worker"] ? "PL.WD_ID = {$_GET["worker"]} AND DATEDIFF(NOW(), PL.Date) <= 365" : "DATEDIFF(NOW(), PL.Date) <= 31")."
+
+					UNION
+
+					SELECT F.date
+						,NULL
+						,IF(F.FC_ID = 1, F.money, -1*F.money)
+						,BL.Balance
+						,F.WD_ID
+						,F.comment
+						,F.author
+						,NULL
+						,NULL
+					FROM Finance F
+					LEFT JOIN BalanceLog BL ON BL.F_ID = F.F_ID
+					WHERE ".($_GET["worker"] ? "F.WD_ID = {$_GET["worker"]} AND DATEDIFF(NOW(), F.date) <= 365" : "F.WD_ID IS NOT NULL AND DATEDIFF(NOW(), F.date) <= 31")."
+				) PLF
+				LEFT JOIN WorkersData WD ON WD.WD_ID = PLF.WD_ID
+				ORDER BY PLF.Date DESC
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
@@ -500,14 +510,13 @@
 				$format_payin = $row["PayIn"] ? number_format($row["PayIn"], 0, '', ' ') : "";
 				$format_payout = $row["PayOut"] ? number_format($row["PayOut"], 0, '', ' ') : "";
 				$format_balance = $row["Balance"] ? number_format($row["Balance"], 0, '', ' ') : "";
-				$bank = $row["bank"] ? ' <i title="Безнал" class="fa fa-credit-card" aria-hidden="true"></i>' : '';
-				echo "<tr id='pl{$row["PL_ID"]}'>";
+				echo "<tr>";
 				echo "<td><span class='nowrap'><b>{$row["date"]}</b></span></td>";
 				echo "<td><span>{$row["Time"]}</span></td>";
 				echo "<td class='worker'><span><a href='?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>";
-				echo "<td style='color: ".($row["PayIn"] < 0 ? "#E74C3C;" : "#16A085;")."' class='txtright nowrap'><b>{$format_payin}</b></td>";
-				echo "<td style='color: ".($row["PayOut"] < 0 ? "#E74C3C;" : "#16A085;")."' class='txtright nowrap'><b>{$format_payout}{$bank}</b></td>";
-				echo "<td class='txtright'><span class='".($row["Balance"] < 0 ? "bg-red " : "")."nowrap'>{$format_balance}</span></td>";
+				echo "<td class='txtright nowrap'><b style='color: ".($row["PayIn"] < 0 ? "#E74C3C;" : "#16A085;")."'>{$format_payin}</b></td>";
+				echo "<td class='txtright nowrap'><b style='color: ".($row["PayOut"] < 0 ? "#E74C3C;" : "#16A085;")."'>{$format_payout}</b></td>";
+				echo "<td class='txtright'><b class='".($row["Balance"] < 0 ? "bg-red " : "")."nowrap'>{$format_balance}</b></td>";
 				echo "<td class='comment nowrap' style='z-index: 2;'><span>";
 				// Если запись из этапов производства - выводим код набора
 				if( $row["OD_ID"] ) {

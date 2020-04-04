@@ -1,21 +1,39 @@
 <?
-	// Добавление платежа/редактирование выдачи
+	// Добавление начисления/выдачи
 	if( isset($_POST["Pay"]) ) {
 		if( $_POST["Pay"] ) {
 			include "config.php";
 			include "header.php";
 
-			$Worker = $_POST["Worker"] <> "" ? $_POST["Worker"] : "NULL";
-			$PayIn = !$_POST["account"] ? $_POST["Pay"] : "NULL";
-			$PayOut = $_POST["account"] ? $_POST["Pay"] : "NULL";
-			$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
-			$account = $_POST["account"] ? $_POST["account"] : "NULL";
+			$Comment = convert_str($_POST["Comment"]);
+			$Comment = mysqli_real_escape_string( $mysqli, $comment );
 
-			$query = "
-				INSERT INTO PayLog(WD_ID, PayIn, PayOut, Comment, FA_ID, author)
-				VALUES ({$Worker}, {$PayIn}, {$PayOut}, '{$Comment}', {$account}, {$_SESSION['id']})
-			";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			//Выдачу сохраняем в Finance
+			if( $_POST["account"] ) {
+				$money = abs($_POST["Pay"]);
+				$category = $_POST["Pay"] > 0 ? 1 : 2;
+				$query = "
+					INSERT INTO Finance
+					SET money = {$money}
+						,FA_ID = {$_POST["account"]}
+						,FC_ID = {$category}
+						,WD_ID = {$_POST["Worker"]}
+						".($Comment ? ",comment = '{$Comment}'" : "")."
+						,author = {$_SESSION['id']}
+				";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			}
+			// Начисление сохраняем в PayLog
+			else {
+				$query = "
+					INSERT INTO PayLog
+					SET WD_ID = {$_POST["Worker"]}
+						,Pay = {$_POST["Pay"]}
+						".($Comment ? ",Comment = '{$Comment}'" : "")."
+						,author = {$_SESSION['id']}
+				";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			}
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'">');

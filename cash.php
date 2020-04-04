@@ -40,7 +40,7 @@
 		$to_account = ( $_POST["to_account"] and $type == 0 ) ? $_POST["to_account"] : "NULL";
 		$KA_ID = ( $_POST["kontragent"] and $category == 9 ) ? $_POST["kontragent"] : "NULL";
 		$comment = convert_str($_POST["comment"]);
-		$coment = mysqli_real_escape_string( $mysqli, $comment );
+		$comment = mysqli_real_escape_string( $mysqli, $comment );
 
 		if( $F_ID != 'add_operation_btn' ) { // Редактируем операцию
 			$query = "
@@ -50,7 +50,7 @@
 					,to_account = {$to_account}
 					,FC_ID = {$category}
 					,KA_ID = {$KA_ID}
-					,comment = '{$coment}'
+					,comment = ".($comment ? "'{$comment}'" : "NULL")."
 					,author = {$_SESSION['id']}
 				WHERE F_ID = {$F_ID}
 			";
@@ -67,7 +67,7 @@
 								,to_account = {$to_account}
 								,FC_ID = {$category}
 								,KA_ID = {$KA_ID}
-								,comment = '{$coment}'
+								,comment = ".($comment ? "'{$comment}'" : "NULL")."
 								,author = {$_SESSION['id']}";
 				if( !mysqli_query( $mysqli, $query ) ) {
 					$_SESSION["error"][] = mysqli_error( $mysqli );
@@ -276,7 +276,7 @@
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 			WHERE F.author = {$_SESSION['id']}
-				AND F.PL_ID IS NULL
+				AND F.WD_ID IS NULL
 				AND F.OP_ID IS NULL
 				AND F.money != 0
 			ORDER BY F.F_ID DESC
@@ -304,7 +304,7 @@
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 			WHERE F.author = {$_SESSION['id']}
-				AND F.PL_ID IS NULL
+				AND F.WD_ID IS NULL
 				AND F.OP_ID IS NULL
 				AND IFNULL(FC.type, 0) = -1
 				AND F.money != 0
@@ -334,7 +334,7 @@
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 			WHERE F.author = {$_SESSION['id']}
-				AND F.PL_ID IS NULL
+				AND F.WD_ID IS NULL
 				AND F.OP_ID IS NULL
 				AND IFNULL(FC.type, 0) = 1
 				AND F.money != 0
@@ -364,7 +364,7 @@
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 			WHERE F.author = {$_SESSION['id']}
-			AND F.PL_ID IS NULL
+			AND F.WD_ID IS NULL
 			AND F.OP_ID IS NULL
 			AND IFNULL(FC.type, 0) = 0
 			AND F.money != 0
@@ -916,7 +916,7 @@
 							,F.to_account
 							,F.FC_ID
 							,F.KA_ID
-							,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
+							,IF(F.WD_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
 							,F.FA_ID account_filter
 							,0 receipt
 							,USR_Icon(F.author) author
@@ -946,7 +946,7 @@
 							,F.to_account
 							,F.FC_ID
 							,F.KA_ID
-							,IF(F.PL_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
+							,IF(F.WD_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
 							,F.to_account account_filter
 							,1 receipt
 							,USR_Icon(F.author) author
