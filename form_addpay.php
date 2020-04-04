@@ -6,7 +6,7 @@
 			include "header.php";
 
 			$Comment = convert_str($_POST["Comment"]);
-			$Comment = mysqli_real_escape_string( $mysqli, $comment );
+			$Comment = mysqli_real_escape_string( $mysqli, $Comment );
 
 			//Выдачу сохраняем в Finance
 			if( $_POST["account"] ) {
