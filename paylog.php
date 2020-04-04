@@ -472,8 +472,10 @@
 					,PLF.OD_ID
 					,PLF.Code
 					,PLF.Account
+					,PLF.ord
 				FROM (
-					SELECT PL.Date
+					SELECT PL.PL_ID ord
+						,PL.Date
 						,PL.Pay PayIn
 						,NULL PayOut
 						,BL.Balance
@@ -490,7 +492,8 @@
 
 					UNION
 
-					SELECT F.date
+					SELECT F.F_ID
+						,F.date
 						,NULL
 						,IF(F.FC_ID = 1, F.money, -1*F.money)
 						,BL.Balance
@@ -506,7 +509,7 @@
 					WHERE ".($_GET["worker"] ? "F.WD_ID = {$_GET["worker"]} AND DATEDIFF(NOW(), F.date) <= 365" : "F.WD_ID IS NOT NULL AND DATEDIFF(NOW(), F.date) <= 31")."
 				) PLF
 				LEFT JOIN WorkersData WD ON WD.WD_ID = PLF.WD_ID
-				ORDER BY PLF.Date DESC
+				ORDER BY PLF.Date DESC, PLF.ord DESC
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) )
