@@ -139,7 +139,7 @@
 					$format_avg_pay_out = number_format($avg_pay_out, 0, '', ' ');
 					echo "<tr>";
 					echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
-					echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
+					echo "<td class='txtright'><b class='{$color} nowrap'>{$format_sum}</b></td>";
 					echo "<td class='txtright'><span class='nowrap'>{$format_MPI}</span></td>";
 					echo "<td class='txtright'><span class='nowrap'>{$format_MPO}</span></td>";
 					echo "<td class='txtright'><span class='nowrap'>{$format_LMPI}</span></td>";
@@ -247,7 +247,7 @@
 						$format_avg_pay_out = number_format($avg_pay_out, 0, '', ' ');
 						echo "<tr>";
 						echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
-						echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
+						echo "<td class='txtright'><b class='{$color} nowrap'>{$format_sum}</b></td>";
 						echo "<td class='txtright'><span class='nowrap'>{$format_MPI}</span></td>";
 						echo "<td class='txtright'><span class='nowrap'>{$format_MPO}</span></td>";
 						echo "<td class='txtright'><span class='nowrap'>{$format_LMPI}</span></td>";
@@ -353,7 +353,7 @@
 						$format_avg_pay_out = number_format($avg_pay_out, 0, '', ' ');
 						echo "<tr>";
 						echo "<td><a href='?worker={$row["WD_ID"]}'>{$row["Name"]}</a></td>";
-						echo "<td class='txtright'><span class='{$color} nowrap'>{$format_sum}</span></td>";
+						echo "<td class='txtright'><b class='{$color} nowrap'>{$format_sum}</b></td>";
 						echo "<td class='txtright'><span class='nowrap'>{$format_MPI}</span></td>";
 						echo "<td class='txtright'><span class='nowrap'>{$format_MPO}</span></td>";
 						echo "<td class='txtright'><span class='nowrap'>{$format_LMPI}</span></td>";
