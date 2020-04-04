@@ -460,7 +460,8 @@
 
 	<?
 			$query = "
-				SELECT Friendly_date(PLF.Date) date
+				SELECT PLF.ord
+					,Friendly_date(PLF.Date) date
 					,DATE_FORMAT(PLF.Date, '%H:%i') Time
 					,PLF.WD_ID
 					,WD.Name Worker
@@ -472,7 +473,7 @@
 					,PLF.OD_ID
 					,PLF.Code
 					,PLF.Account
-					,PLF.ord
+					,PLF.color
 				FROM (
 					SELECT PL.PL_ID ord
 						,PL.Date
@@ -485,6 +486,7 @@
 						,PL.OD_ID
 						,OD.Code
 						,null Account
+						,NULL color
 					FROM PayLog PL
 					LEFT JOIN BalanceLog BL ON BL.PL_ID = PL.PL_ID
 					LEFT JOIN OrdersData OD ON OD.OD_ID = PL.OD_ID
@@ -503,6 +505,7 @@
 						,NULL
 						,NULL
 						,FA.name
+						,FA.color
 					FROM Finance F
 					JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 					LEFT JOIN BalanceLog BL ON BL.F_ID = F.F_ID
@@ -522,7 +525,7 @@
 				echo "<td><span>{$row["Time"]}</span></td>";
 				echo "<td class='worker'><span><a href='?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>";
 				echo "<td class='txtright nowrap'><b style='color: ".($row["PayIn"] < 0 ? "#E74C3C;" : "#16A085;")."'>{$format_payin}</b></td>";
-				echo "<td class='txtright nowrap'><b style='color: ".($row["PayOut"] < 0 ? "#E74C3C;" : "#16A085;")."'>{$format_payout}</b><br><span style='font-size: .8em; font-weight: bold;'>{$row["Account"]}</span></td>";
+				echo "<td class='txtright nowrap'><b style='color: ".($row["PayOut"] < 0 ? "#E74C3C;" : "#16A085;")."'>{$format_payout}</b><br><span style='font-size: .8em; font-weight: bold; background: {$row["color"]};'>{$row["Account"]}</span></td>";
 				echo "<td class='txtright'><b class='".($row["Balance"] < 0 ? "bg-red " : "")."nowrap'>{$format_balance}</b></td>";
 				echo "<td class='comment nowrap' style='z-index: 2;'><span>";
 				// Если запись из этапов производства - выводим код набора
