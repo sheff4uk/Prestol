@@ -437,7 +437,7 @@ if( $payer ) {
 			,F.money * FC.type kredit
 			,KA.KA_ID
 			,KA.Naimenovanie
-			,CONCAT('Оплата от покупателя, <b>', F.comment, '</b>') document
+			,CONCAT('Оплата от покупателя <b>', IFNULL(F.comment, ''), '</b>') document
 			,NULL
 			,Friendly_date(F.date) date_format
 			,F.date
