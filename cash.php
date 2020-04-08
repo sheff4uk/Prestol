@@ -196,7 +196,6 @@
 		$_SESSION["cash_account"] = "";
 		$_SESSION["cash_category"] = "";
 		$_SESSION["cash_author"] = "";
-		$_SESSION["cash_kontragent"] = "";
 		$_SESSION["cash_comment"] = "";
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#operations">');
@@ -583,8 +582,8 @@
 					return false;
 				});
 
-				// Поиск в категориях/контрагентах при вводе текста
-				$('#category_search, #kontragent_search').on("input", function() {
+				// Поиск в категориях при вводе текста
+				$('#category_search').on("input", function() {
 					var search_text = $(this).val();
 					if( search_text ) {
 						$(this).parents('.th_filter').find('label').hide();
@@ -702,29 +701,6 @@
 					filtered = 1;
 				}
 
-//				// Включение чекбоксов в фильтре по контрагентам. Обновление названия колонки контрагент.
-//				if( "<?=$_SESSION["cash_kontragent"]?>" == "" ) {
-//					$('#kontragent_filter .select_all').prop("checked", true);
-//					$('#kontragent_filter .select_all').change();
-//				}
-//				else {
-//					var text = "";
-//					$('#kontragent_filter .chbox').each(function(){
-//						if( $(this).prop('checked') ) {
-//							text = text + $('label[for=' + $(this).attr("id") + '] span').html() + ", ";
-//						}
-//					});
-//					text = escapeHtml(text.substr(0, text.length - 2));
-//					$('#kontragent_label').html('<strong title="' + text + '">[' + text + ']</strong>');
-//					filtered = 1;
-//				}
-
-				//Обновление названия колонки контрагентов.
-				if( "<?=$_SESSION["cash_kontragent"]?>" ) {
-					$('#kontragent_label').html('<strong title="<?=$_SESSION["cash_kontragent"]?>">[<?=$_SESSION["cash_kontragent"]?>]</strong>');
-					filtered = 1;
-				}
-
 				//Обновление названия колонки комментариев.
 				if( "<?=$_SESSION["cash_comment"]?>" ) {
 					$('#comment_label').html('<strong title="<?=$_SESSION["cash_comment"]?>">[<?=$_SESSION["cash_comment"]?>]</strong>');
@@ -800,8 +776,8 @@
 						</div>
 					</th>
 
-					<th width="130" class="th_filter">
-						<input id="category_search" type="text" style="display: none; position: absolute; width: 90px; z-index: 3;">
+					<th width="200" class="th_filter">
+						<input id="category_search" type="text" style="display: none; position: absolute; width: 160px; z-index: 3;">
 						<div class="th_name" id="category_label">Все категории</div>
 						<i class="fa fa-filter fa-lg"></i>
 						<div id="category_filter" class="filter_block" style="width: 200px; height: 300px;">
@@ -827,7 +803,7 @@
 							<div class='btnset'>
 								<?
 								echo "<input id='author_select_all' class='select_all' type='checkbox' name='all_authors' value='1' form='filter_form'><label for='author_select_all'>Все авторы</label>";
-								$query = "SELECT USR_ID, USR_Name(USR_ID) Name FROM Users WHERE Activation = 1 AND KA_ID IS NULL ORDER BY Name";
+								$query = "SELECT USR_ID, USR_Name(USR_ID) Name FROM Users WHERE USR_ID IN (SELECT author FROM Finance) ORDER BY Name";
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 								while( $row = mysqli_fetch_array($res) )
 								{
@@ -839,29 +815,8 @@
 						</div>
 					</th>
 
-					<th width="150" class="th_filter">
-						<input id="kontragent_search" type="text" name="cash_kontragent" form="filter_form" style="display: none; position: absolute; width: 110px; z-index: 3;" value="<?=$_SESSION["cash_kontragent"]?>">
-						<div class="th_name" id="kontragent_label">Все контрагенты</div>
-						<i class="fa fa-filter fa-lg"></i>
-<!--
-						<div id="kontragent_filter" class="filter_block" style="width: 300px; height: 300px;">
-							<div class='btnset'>
-								<?
-//								echo "<input id='kontragent_select_all' class='select_all' type='checkbox' name='all_kontragent' value='1' form='filter_form'><label for='kontragent_select_all'>Все контрагенты</label>";
-//								$query = "SELECT KA_ID, Naimenovanie FROM Kontragenty ORDER BY Naimenovanie";
-//								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//								while( $row = mysqli_fetch_array($res) )
-//								{
-//									$checked = in_array($row["KA_ID"], $_SESSION["cash_kontragent"]) ? "checked" : "";
-//									echo "<input id='kontragent_{$row["KA_ID"]}' class='chbox' {$checked} type='checkbox' name='KA_ID[]' value='{$row["KA_ID"]}' form='filter_form'><label class='chbox_label' for='kontragent_{$row["KA_ID"]}' style='font-weight: normal;'>{$row["Naimenovanie"]}</label>";
-//								}
-								?>
-							</div>
-						</div>
--->
-					</th>
-					<th width="210" class="th_filter">
-						<input id="comment_search" type="text" name="cash_comment" form="filter_form" style="display: none; position: absolute; width: 230px; z-index: 3;" value="<?=$_SESSION["cash_comment"]?>">
+					<th width="280" class="th_filter">
+						<input id="comment_search" type="text" name="cash_comment" form="filter_form" style="display: none; position: absolute; width: 240px; z-index: 3;" value="<?=$_SESSION["cash_comment"]?>">
 						<div class="th_name" id="comment_label">Комментарии</div>
 						<i class="fa fa-filter fa-lg"></i>
 					</th>
@@ -874,7 +829,6 @@
 				$FA_IDs = $_SESSION["cash_account"] != "" ? implode(",", $_SESSION["cash_account"]) : "";
 				$FC_IDs = $_SESSION["cash_category"] != "" ? implode(",", $_SESSION["cash_category"]) : "";
 				$USR_IDs = $_SESSION["cash_author"] != "" ? implode(",", $_SESSION["cash_author"]) : "";
-				//$KA_IDs_filter = $_SESSION["cash_kontragent"] != "" ? implode(",", $_SESSION["cash_kontragent"]) : "";
 
 				$query = "
 					SELECT SF.F_ID
@@ -887,13 +841,15 @@
 						,SF.color
 						,SF.local
 						,SF.category
-						,SF.kontragent
 						,SF.comment
+						,SF.kontragent
+						,SF.KA_ID
+						,SF.Name
+						,SF.WD_ID
 						,SF.sum
 						,SF.FA_ID
 						,SF.to_account
 						,SF.FC_ID
-						,SF.KA_ID
 						,SF.is_edit
 						,SF.account_filter
 						,SF.receipt
@@ -909,14 +865,16 @@
 							,FA.color
 							,FA.local
 							,IF(F.to_account IS NULL, FC.name, CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name)) category
-							,KA.Naimenovanie kontragent
 							,F.comment
+							,KA.Naimenovanie kontragent
+							,F.KA_ID
+							,WD.Name
+							,F.WD_ID
 							,F.money sum
 							,F.FA_ID
 							,F.to_account
 							,F.FC_ID
-							,F.KA_ID
-							,IF(F.WD_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
+							,IF(F.WD_ID IS NULL AND F.OP_ID IS NULL AND F.KA_ID IS NULL AND DATEDIFF(NOW(), F.date) < 1, 1, 0) is_edit
 							,F.FA_ID account_filter
 							,0 receipt
 							,USR_Icon(F.author) author
@@ -927,6 +885,7 @@
 						LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 						LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
 						LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
+						LEFT JOIN WorkersData WD ON WD.WD_ID = F.WD_ID
 						WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= STR_TO_DATE('{$cash_to} 23:59:59', '%d.%m.%Y %T')
 
 						UNION ALL
@@ -939,14 +898,16 @@
 							,TFA.color
 							,TFA.local
 							,CONCAT(FA.name, ' <i class=\'fa fa-arrow-right\'></i> ', TFA.name) category
-							,NULL kontragent
 							,F.comment
+							,NULL
+							,F.KA_ID
+							,NULL
+							,F.WD_ID
 							,F.money sum
 							,F.FA_ID
 							,F.to_account
 							,F.FC_ID
-							,F.KA_ID
-							,IF(F.WD_ID IS NULL AND F.OP_ID IS NULL, 1, 0) is_edit
+							,0 is_edit
 							,F.to_account account_filter
 							,1 receipt
 							,USR_Icon(F.author) author
@@ -967,8 +928,7 @@
 					".($FC_IDs != "" ? "AND SF.FC_ID IN ({$FC_IDs})" : "")."
 					".($USR_IDs != "" ? "AND SF.USR_ID IN ({$USR_IDs})" : "")."
 					#".($KA_IDs_filter != "" ? "AND SF.KA_ID IN ({$KA_IDs_filter})" : "")."
-					".($_SESSION["cash_kontragent"] ? "AND SF.kontragent LIKE '%{$_SESSION["cash_kontragent"]}%'" : "")."
-					".($_SESSION["cash_comment"] ? "AND SF.comment LIKE '%{$_SESSION["cash_comment"]}%'" : "")."
+					".($_SESSION["cash_comment"] ? "AND (SF.comment LIKE '%{$_SESSION["cash_comment"]}%' OR SF.kontragent LIKE '%{$_SESSION["cash_comment"]}%' OR SF.Name LIKE '%{$_SESSION["cash_comment"]}%')" : "")."
 					ORDER BY SF.date DESC, SF.F_ID DESC
 				";
 
@@ -991,9 +951,8 @@
 						echo "<td><span class='nowrap' style='background-color: {$row["color"]}; border-radius: 20%;'>{$row["account"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["category"]}</span></td>";
 						echo "<td>{$row["author"]}</td>";
-						echo "<td><span class='nowrap'><a href='sverki.php?payer={$row["KA_ID"]}' target='_blank' title='Перейти в сверки'><b>{$row["kontragent"]}</b></a></span></td>";
-						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}</span></td>";
-						if( $row["is_edit"] and $row["receipt"] == 0 and $row["archive"] == 0 ) {
+						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}".($row["KA_ID"] ? " <a href='sverki.php?payer={$row["KA_ID"]}' target='_blank' title='Перейти в сверки'><b>{$row["kontragent"]}</b></a>" : ($row["WD_ID"] ? " <a href='paylog.php?worker={$row["WD_ID"]}' target='_blank' title='Перейти в зарплату'><b>{$row["Name"]}</b></a>" : ""))."</span></td>";
+						if( $row["is_edit"] and $row["archive"] == 0 ) {
 							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil-alt fa-lg'></i></a></td>";
 						}
 						else {
@@ -1097,64 +1056,11 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<br>
 			<div id="wr_category" class="field"></div> <!-- Заполняется аяксом -->
 			<br>
-			<div class="field" id="wr_kontragent">
-				<label for="kontragent">Контрагент:</label><br>
-				<select name="kontragent" id="kontragent" style="width: 300px;">
-					<option value="0">-- Нет в списке --</option>
-					<?
-					// Формируем список контрагентов для дропдауна
-					if (!$USR_Shop) { // Если не продавец - показываем оптовиков
-						echo "<optgroup label='Оптовые покупатели:'>";
-						$query = "
-							SELECT KA.KA_ID
-								,CT.City
-								,KA.Naimenovanie
-								,IFNULL(KA.saldo, 0) saldo
-							FROM Kontragenty KA
-							JOIN Shops SH ON SH.KA_ID = KA.KA_ID
-							JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-							".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
-							GROUP BY KA.KA_ID
-							ORDER BY CT.City, KA.Naimenovanie
-						";
-						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						while( $row = mysqli_fetch_array($res) ) {
-							$saldo_format = number_format($row["saldo"], 0, '', ' ');
-							echo "<option value='{$row["KA_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} ({$saldo_format})</option>";
-						}
-						echo "</optgroup>";
-					}
-
-					// Список розничных контрагентов
-					echo "<optgroup label='Розничные покупатели:'>";
-					$query = "
-						SELECT KA.KA_ID
-							,CT.City
-							,KA.Naimenovanie
-							,IFNULL(KA.saldo, 0) saldo
-						FROM Kontragenty KA
-						# Исключения для Клёна
-						JOIN (SELECT SH_ID, IF(SH_ID = 36, 155, KA_ID) KA_ID FROM OrdersData) OD ON OD.KA_ID = KA.KA_ID
-						#JOIN OrdersData OD ON OD.KA_ID = KA.KA_ID
-						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-						JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-						".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
-						GROUP BY KA.KA_ID, CT.CT_ID
-						ORDER BY CT.City, KA.Naimenovanie
-					";
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					while( $row = mysqli_fetch_array($res) ) {
-						$saldo_format = number_format($row["saldo"], 0, '', ' ');
-						echo "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} ({$saldo_format})</option>";
-					}
-					echo "</optgroup>";
-					?>
-				</select>
-			</div>
 			<div>
 				<label for="comment">Комментарии:</label><br>
 				<textarea name="comment" id="comment" rows="3" style="width: 300px;"></textarea>
 			</div>
+			<span style="color: #911;">Отредактировать операцию возможно в течении суток.</span>
 		</fieldset>
 		<div>
 			<hr>
@@ -1461,17 +1367,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 				}
 			}
 			return false;
-		});
-
-		// При выборе категории "Оплата по накладной", показываем контрагента
-		$('#add_operation').on('change', '#category', function() {
-			category = $(this).val();
-			if( category == 9 ) {
-				$('#wr_kontragent').show('fast');
-			}
-			else {
-				$('#wr_kontragent').hide('fast');
-			}
 		});
 
 	});

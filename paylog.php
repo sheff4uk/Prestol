@@ -66,7 +66,6 @@
 	<div id='add_payout_btn' class='edit_pay' account='<?=$account?>' <?=isset($_GET["worker"]) ? "worker='{$_GET["worker"]}'" : "" ?> location='<?=$location?>' title='ВЫДАТЬ заработную плату'><i class="fas fa-2x fa-user-check"></i></div>
 
 	<? include "form_addpay.php"; ?>
-	<? include "forms.php"; ?>
 
 	<div class="halfblock">
 		<?
@@ -497,7 +496,7 @@
 					SELECT F.F_ID
 						,F.date
 						,NULL
-						,IF(F.FC_ID = 1, F.money, -1*F.money)
+						,F.money * FC.type * -1
 						,BL.Balance
 						,F.WD_ID
 						,F.comment
@@ -508,6 +507,7 @@
 						,FA.color
 					FROM Finance F
 					JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
+					JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 					LEFT JOIN BalanceLog BL ON BL.F_ID = F.F_ID
 					WHERE ".($_GET["worker"] ? "F.WD_ID = {$_GET["worker"]} AND DATEDIFF(NOW(), F.date) <= 365" : "F.WD_ID IS NOT NULL AND DATEDIFF(NOW(), F.date) <= 31")."
 				) PLF

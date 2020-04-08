@@ -10,6 +10,38 @@ if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !
 	die('Недостаточно прав для совершения операции');
 }
 
+// Добавление оплаты от контрагента
+if( isset($_POST["Pay"]) ) {
+	if( $_POST["Pay"] ) {
+
+		$Comment = convert_str($_POST["Comment"]);
+		$Comment = mysqli_real_escape_string( $mysqli, $Comment );
+
+		$money = abs($_POST["Pay"]);
+		$category = $_POST["Pay"] > 0 ? 9 : 8;
+		$query = "
+			INSERT INTO Finance
+			SET money = {$money}
+				,FA_ID = {$_POST["account"]}
+				,FC_ID = {$category}
+				,KA_ID = {$_POST["payer"]}
+				".($Comment ? ",comment = '{$Comment}'" : "")."
+				,author = {$_SESSION['id']}
+		";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	}
+
+	exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'">');
+	die;
+}
+
+$location = $_SERVER['REQUEST_URI'];
+
+//Узнаем дефолтный счет для пользователя
+$query = "SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION['id']} ORDER BY IFNULL(bank, 0) LIMIT 1";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+$account = mysqli_result($res,0,'FA_ID');
+
 // Формируем список контрагентов для дропдауна
 $KA_options = "";
 $KA_IDs = "0";
@@ -203,6 +235,23 @@ if( isset($_GET["del"]) )
 <br>
 
 <style>
+	#add_pay_btn {
+		text-align: center;
+		line-height: 68px;
+		color: #fff;
+		bottom: 175px;
+		cursor: pointer;
+		width: 56px;
+		height: 56px;
+		opacity: .4;
+		position: fixed;
+		right: 50px;
+		z-index: 9;
+		border-radius: 50%;
+		background-color: #16A085;
+		box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
+	}
+
 	#add_invoice_btn {
 		background: url(../img/bt_speed_dial_1x.png) no-repeat scroll center center transparent;
 		bottom: 100px;
@@ -220,13 +269,13 @@ if( isset($_GET["del"]) )
 
 	#add_invoice_btn_return {
 		background: url(../img/bt_speed_dial_1x.png) no-repeat scroll center center transparent;
-		bottom: 170px;
+		bottom: 60px;
 		cursor: pointer;
 		width: 36px;
 		height: 36px;
 		opacity: .4;
 		position: fixed;
-		right: 60px;
+		right: 50px;
 		z-index: 9;
 		border-radius: 50%;
 		background-color: #db4437;
@@ -235,7 +284,7 @@ if( isset($_GET["del"]) )
 
 	#add_act_sverki_btn {
 		background: url(../img/print_forms.png) no-repeat scroll center center transparent;
-		bottom: 240px;
+		bottom: 250px;
 		cursor: pointer;
 		width: 56px;
 		height: 56px;
@@ -248,7 +297,7 @@ if( isset($_GET["del"]) )
 		box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
 	}
 
-	#add_invoice_btn:hover, #add_invoice_btn_return:hover, #add_act_sverki_btn:hover {
+	#add_invoice_btn:hover, #add_invoice_btn_return:hover, #add_act_sverki_btn:hover, #add_pay_btn:hover {
 		opacity: 1;
 	}
 
@@ -266,6 +315,7 @@ if( !in_array('sverki_opt', $Rights) ) {
 	echo "<div id='add_invoice_btn' title='Создать накладную на ОТГРУЗКУ'></div>";
 	echo "<div id='add_invoice_btn_return' title='Создать накладную на ВОЗВРАТ'></div>";
 	if( $payer ) {
+		echo "<div id='add_pay_btn' location='{$location}' title='Оплата от покупателя'><i class='fas fa-2x fa-money-bill-alt'></i></div>";
 		echo "<div id='add_act_sverki_btn' title='Создать новый акт сверки' now_date='{$now_date}' payer='{$payer}'></div>";
 	}
 }
@@ -315,9 +365,10 @@ if( $payer ) {
 						UNION ALL
 
 						SELECT NULL debet
-							,F.money kredit
+							,F.money * FC.type kredit
 						FROM Finance F
-						WHERE F.date > '{$row["date_to"]}' AND F.KA_ID = {$payer}
+						JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+						WHERE F.date > STR_TO_DATE('{$row["date_to"]} 23:59:59', '%d.%m.%Y %T') AND F.KA_ID = {$payer}
 					) SUB";
 		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$debet_profit_now = mysqli_result($subres,0,'debet'); // Дебетовый оборот с конечной даты по сегодня
@@ -373,6 +424,8 @@ if( $payer ) {
 			,PFI.rtrn
 			,PFI.comment
 			,ROUND((PFI.discount / (PFI.summa + PFI.discount)) * 100, 1) discount
+			,NULL Account
+			,NULL color
 		FROM PrintFormsInvoice PFI
 		LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
 		WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID = {$payer}
@@ -381,7 +434,7 @@ if( $payer ) {
 
 		SELECT NULL
 			,NULL debet
-			,F.money kredit
+			,F.money * FC.type kredit
 			,KA.KA_ID
 			,KA.Naimenovanie
 			,CONCAT('Оплата от покупателя, <b>', F.comment, '</b>') document
@@ -393,7 +446,11 @@ if( $payer ) {
 			,1
 			,NULL
 			,0
+			,FA.name
+			,FA.color
 		FROM Finance F
+		JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
+		JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 		LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
 		WHERE YEAR(F.date) = {$year} AND KA.KA_ID = {$payer} AND F.money != 0
 
@@ -416,6 +473,8 @@ else {
 			,PFI.rtrn
 			,PFI.comment
 			,ROUND((PFI.discount / (PFI.summa + PFI.discount)) * 100, 1) discount
+			,NULL Account
+			,NULL color
 		FROM PrintFormsInvoice PFI
 		LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
 		WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID IN ({$KA_IDs})
@@ -428,8 +487,8 @@ while( $row = mysqli_fetch_array($res) ) {
 	$kredit = ($row["kredit"] != '') ? number_format($row["kredit"], 0, '', ' ') : '';
 	$discount = ($row["discount"] != 0) ? "<b class='invoice_discount'>{$row["discount"]}%</b>" : "";
 	echo "<tr ".($row["del"] ? "class='del'" : "").">";
-	echo "<td class='txtright nowrap' style='color: #E74C3C;'><b>{$debet}</b></td>";
-	echo "<td class='txtright nowrap' style='color: #16A085;'><b>{$kredit}</b></td>";
+	echo "<td class='txtright nowrap'><b style='color: ".($row["debet"] < 0 ? "#E74C3C;" : "#16A085;")."'>{$debet}</b></td>";
+	echo "<td class='txtright nowrap'><b style='color: ".($row["kredit"] < 0 ? "#E74C3C;" : "#16A085;")."'>{$kredit}</b><br><span style='font-size: .8em; font-weight: bold; background: {$row["color"]};'>{$row["Account"]}</span></td>";
 	echo "<td class='txtright'>{$discount}</td>";
 	echo "<td><b>{$row["date_format"]}</b></td>";
 	echo "<td><a href='sverki.php?year={$year}&payer={$row["KA_ID"]}'>{$row["Naimenovanie"]}</a></td>";
@@ -677,6 +736,66 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</fieldset>
 	</form>
 </div>
+<!-- Конец формы подготовки акта сверки -->
+
+<!-- Форма добавления платежа -->
+<div id='addpay' class="addproduct" style='display:none'>
+	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;
+this.subbut.value='Подождите, пожалуйста!';">
+		<fieldset>
+			<input type='hidden' name='location' value='<?=$location?>'>
+			<input type='hidden' name='payer' value='<?=$payer?>'>
+			<div>
+				<label>Сумма:</label>
+				<input required type='number' name='Pay' style="text-align:right; width: 100px; font-size: 20px;">
+			</div>
+			<div id="wr_account">
+				<label>Счёт:</label>
+				<select name="account" id="account" required>
+					<option value="">-=Выберите счёт=-</option>
+						<?
+						if( !in_array('finance_account', $Rights) ) {
+							echo "<optgroup label='Нал'>";
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0 AND archive = 0";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["FA_ID"]}' ".($row["FA_ID"] == $account ? "selected" : "").">{$row["name"]}</option>";
+							}
+							echo "</optgroup>";
+							echo "<optgroup label='Безнал'>";
+
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 1 AND archive = 0";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["FA_ID"]}' ".($row["FA_ID"] == $account ? "selected" : "").">{$row["name"]}</option>";
+							}
+							echo "</optgroup>";
+						}
+						else {
+							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]} AND archive = 0";
+							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+							while( $row = mysqli_fetch_array($res) )
+							{
+								echo "<option value='{$row["FA_ID"]}' ".($row["FA_ID"] == $account ? "selected" : "").">{$row["name"]}</option>";
+							}
+						}
+						?>
+				</select>
+			</div>
+			<div>
+				<label>Примечание:</label>
+				<input type='text' name='Comment' style="width: 100%;" autocomplete="off">
+			</div>
+		</fieldset>
+		<div>
+			<hr>
+			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
+		</div>
+	</form>
+</div>
+<!-- Конец формы добавления платежа -->
 
 <script>
 	// Выбрать все в форме отгрузки
@@ -750,6 +869,20 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		// Массив контрагентов
 		Kontragenty = <?= json_encode($Kontragenty); ?>;
+
+		// Форма внесения оплаты от контрагента
+		$('#add_pay_btn').click(function() {
+
+			// Вызов формы
+			$('#addpay').dialog({
+				resizable: false,
+				width: 500,
+				modal: true,
+				closeText: 'Закрыть'
+			});
+
+			return false;
+		});
 
 		// Форма составления накладной
 		$('#add_invoice_btn, #add_invoice_btn_return').click(function() {

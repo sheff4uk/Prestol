@@ -40,9 +40,10 @@
 					UNION ALL
 
 					SELECT NULL debet
-						,F.money kredit
+						,F.money * FC.type kredit
 					FROM Finance F
-					WHERE F.date BETWEEN STR_TO_DATE('{$date_from}', '%d.%m.%Y') AND STR_TO_DATE('{$date_to}', '%d.%m.%Y') AND F.KA_ID = {$payer}
+					JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+					WHERE F.date BETWEEN STR_TO_DATE('{$date_from} 00:00:00', '%d.%m.%Y %T') AND STR_TO_DATE('{$date_to} 23:59:59', '%d.%m.%Y %T') AND F.KA_ID = {$payer}
 				) SUB";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$debet_profit = mysqli_result($res,0,'debet'); // Дебетовый оборот
@@ -59,9 +60,10 @@
 					UNION ALL
 
 					SELECT NULL debet
-						,F.money kredit
+						,F.money * FC.type kredit
 					FROM Finance F
-					WHERE F.date > STR_TO_DATE('{$date_to}', '%d.%m.%Y') AND F.KA_ID = {$payer}
+					JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+					WHERE F.date > STR_TO_DATE('{$date_to} 23:59:59', '%d.%m.%Y %T') AND F.KA_ID = {$payer}
 				) SUB";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$debet_profit_now = mysqli_result($res,0,'debet'); // Дебетовый оборот с конечной даты по сегодня
@@ -164,12 +166,13 @@ ___________________________ <?=$platelshik_name?> ______________________________
 
 				SELECT F.F_ID ID
 					,NULL debet
-					,F.money kredit
+					,F.money * FC.type kredit
 					,CONCAT('Оплата от покупателя, <b>', F.comment, '</b>') document
 					,DATE_FORMAT(F.date, '%d.%m.%Y') date_format
 					,F.date
 				FROM Finance F
-				WHERE F.date BETWEEN STR_TO_DATE('{$date_from}', '%d.%m.%Y') AND STR_TO_DATE('{$date_to}', '%d.%m.%Y') AND F.KA_ID = {$payer} AND F.money != 0
+				JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+				WHERE F.date BETWEEN STR_TO_DATE('{$date_from} 00:00:00', '%d.%m.%Y %T') AND STR_TO_DATE('{$date_to} 23:59:59', '%d.%m.%Y %T') AND F.KA_ID = {$payer} AND F.money != 0
 
 				ORDER BY date, ID";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
