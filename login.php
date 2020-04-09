@@ -63,6 +63,7 @@ switch( $_GET["do"] ) {
 		if( count($_SESSION["error"] ) == 0) {
 			// Если звонок поступил - активируем сессию
 			if( $check_status == 401 ) {
+				echo "console.log('{$check_status}');";
 				$query = "SELECT USR_ID, last_url FROM Users WHERE phone='{$_SESSION['mtel']}'";
 				$result = mysqli_query( $mysqli, $query );
 				$myrow = mysqli_fetch_array($result);
