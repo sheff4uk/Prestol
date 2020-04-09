@@ -13,12 +13,12 @@ switch( $_GET["do"] ) {
 			$mtel = str_replace($chars, "", $_GET['mtel']);
 
 			// проверяем, сущестует ли пользователь с таким телефоном
-			$query = "SELECT Activation FROM Users WHERE phone='{$mtel}'";
+			$query = "SELECT act FROM Users WHERE phone='{$mtel}'";
 			$result = mysqli_query( $mysqli, $query );
 			if( mysqli_num_rows($result) ) {
 				$myrow = mysqli_fetch_array($result);
 				// Пользователь актевен?
-				if( $myrow["Activation"] ) {
+				if( $myrow["act"] ) {
 
 					// Отправляем телефон на ожидиние звонка
 					$body = file_get_contents("https://sms.ru/callcheck/add?api_id=".($api_id)."&phone=".($mtel)."&json=1");

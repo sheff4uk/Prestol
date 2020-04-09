@@ -1132,7 +1132,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<select name="USR_ID" id="USR_ID" style="width: 150px;">
 					<option value="">-=Выберите пользователя=-</option>
 					<?
-						$query = "SELECT USR_ID, USR_Name(USR_ID) Name FROM Users WHERE Activation = 1 AND KA_ID IS NULL ORDER BY Name";
+						$query = "SELECT USR_ID, USR_Name(USR_ID) Name FROM Users WHERE act = 1 AND KA_ID IS NULL ORDER BY Name";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{
