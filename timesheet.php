@@ -215,7 +215,7 @@ $days = date('t', $timestamp);
 			// Получаем список работников
 			$query = "
 				SELECT WD.WD_ID, WD.Name
-					,IFNULL(WD.HourlyTariff, 0) deftariff
+					,IFNULL(WD.tariff, 0) deftariff
 					,IFNULL(MPP.PremiumPercent, '') ManPercent
 					,IF(MPP.DisableNormHours = 1, 'checked', '') DNHcheck
 					,WD.act
@@ -223,7 +223,7 @@ $days = date('t', $timestamp);
 				FROM WorkersData WD
 				LEFT JOIN TimeSheet TS ON TS.WD_ID = WD.WD_ID AND YEAR(TS.Date) = {$year} AND MONTH(TS.Date) = {$month}
 				LEFT JOIN MonthlyPremiumPercent MPP ON MPP.WD_ID = WD.WD_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
-				WHERE WD.HourlyTariff IS NOT NULL
+				WHERE WD.tariff IS NOT NULL
 				GROUP BY WD.WD_ID
 				HAVING act = 1 OR Hours > 0
 				ORDER BY WD.Type, WD.Name

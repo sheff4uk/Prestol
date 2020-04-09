@@ -198,7 +198,7 @@
 						ORDER BY ODD_ID DESC
 						LIMIT 100
 					) ODD ON ODD.packer = WD.WD_ID
-					WHERE WD.HourlyTariff IS NOT NULL and WD.act = 1
+					WHERE WD.tariff IS NOT NULL and WD.act = 1
 					GROUP BY WD.WD_ID
 					ORDER BY CNT DESC
 				";
@@ -213,7 +213,7 @@
 					SELECT WD.WD_ID
 						,WD.Name
 					FROM WorkersData WD
-					WHERE WD.HourlyTariff IS NOT NULL AND WD.act = 0
+					WHERE WD.tariff IS NOT NULL AND WD.act = 0
 					ORDER BY WD.Name
 				";
 				$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
