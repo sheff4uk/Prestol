@@ -2244,7 +2244,6 @@ case "blank_log_table":
 	";
 
 			$query = "SELECT BS.BS_ID
-							,DATE_FORMAT(DATE(BS.Date), '%d.%m.%y') Date
 							,Friendly_date(BS.Date) friendly_date
 							,DATE_FORMAT(BS.Date, '%H:%i') Time
 							,DAY(BS.Date) day
@@ -2285,7 +2284,7 @@ case "blank_log_table":
 					<td class='blank {$row["Bold"]} nowrap' val='{$row["BL_ID"]}'><span>{$row["Blank"]}</span></td>
 					<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$row["Amount"]}</b></td>
 					<td class='tariff txtright'>{$row["Tariff"]}</td>
-					<td class='comment'><pre>{$row["Comment"]}</pre></td>
+					<td class='comment nowrap'><span><pre>{$row["Comment"]}</pre></span></td>
 					<td>{$row["Name"]}</td>
 					</tr>
 				";
