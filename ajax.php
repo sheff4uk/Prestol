@@ -2284,7 +2284,7 @@ case "blank_log_table":
 					<td class='blank {$row["Bold"]} nowrap' val='{$row["BL_ID"]}'><span>{$row["Blank"]}</span></td>
 					<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$row["Amount"]}</b></td>
 					<td class='tariff txtright'>{$row["Tariff"]}</td>
-					<td class='comment nowrap'><span><pre>{$row["Comment"]}</pre></span></td>
+					<td class='comment nowrap'><pre><span>{$row["Comment"]}</span></pre></td>
 					<td>{$row["Name"]}</td>
 					</tr>
 				";
