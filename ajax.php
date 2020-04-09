@@ -2252,7 +2252,7 @@ case "blank_log_table":
 							,BL.Name Blank
 							,BS.Amount
 							,BS.Tariff
-							,IF(BS.adj = 1, 'Коррекция', BS.Comment) Comment
+							,IF(BS.adj = 1, 'Коррекция', REPLACE(BS.Comment, '\r\n', '<br>')) Comment
 							,WD.WD_ID
 							,BL.BL_ID
 							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
@@ -2284,7 +2284,7 @@ case "blank_log_table":
 					<td class='blank {$row["Bold"]} nowrap' val='{$row["BL_ID"]}'><span>{$row["Blank"]}</span></td>
 					<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$row["Amount"]}</b></td>
 					<td class='tariff txtright'>{$row["Tariff"]}</td>
-					<td class='comment nowrap'><pre><span>{$row["Comment"]}</span></pre></td>
+					<td class='comment nowrap'><span>{$row["Comment"]}</span></td>
 					<td>{$row["Name"]}</td>
 					</tr>
 				";
