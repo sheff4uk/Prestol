@@ -2229,15 +2229,15 @@ case "blank_log_table":
 		<table>
 			<thead>
 			<tr>
-				<th></th>
-				<th>Дата</th>
-				<th>Время</th>
-				<th>Работник</th>
-				<th>Заготовка</th>
-				<th>Кол-во</th>
-				<th>Тариф</th>
-				<th>Примечание</th>
-				<th></th>
+				<th width='20'></th>
+				<th width='60'>Дата</th>
+				<th width='60'>Время</th>
+				<th width='20%'>Работник</th>
+				<th width='20%'>Заготовка</th>
+				<th width='50'>Кол-во</th>
+				<th width='50'>Тариф</th>
+				<th width='20%'>Примечание</th>
+				<th width='50'>Автор</th>
 			</tr>
 			</thead>
 			<tbody>
