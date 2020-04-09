@@ -67,10 +67,8 @@ switch( $_GET["do"] ) {
 				$result = mysqli_query( $mysqli, $query );
 				$myrow = mysqli_fetch_array($result);
 				$_SESSION["id"] = $myrow["USR_ID"];
-				echo "console.log('{$check_status}');";
-				echo "console.log('{$_SESSION["id"]}');";
 				unset($_SESSION['mtel']);
-				echo "location.href = '{$myrow["last_url"]}'";
+				echo "location.href = '{$myrow["last_url"]}';";
 			}
 		}
 		// Иначе перезагружаем страницу
