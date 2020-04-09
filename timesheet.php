@@ -1,96 +1,102 @@
 <?
-	include "config.php";
-	$title = 'Табель';
-	include "header.php";
+include "config.php";
+$title = 'Табель';
+include "header.php";
 
-	// Проверка прав на доступ к экрану
-	if( !in_array('screen_timesheet', $Rights) ) {
-		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-		die('Недостаточно прав для совершения операции');
-	}
+// Проверка прав на доступ к экрану
+if( !in_array('screen_timesheet', $Rights) ) {
+	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+	die('Недостаточно прав для совершения операции');
+}
 
-	$location = $_SERVER['REQUEST_URI'];
+$location = $_SERVER['REQUEST_URI'];
 
-	if( isset($_GET["year"]) ) {
-		$year = $_GET["year"];
-	}
-	else {
-		$year = date('Y');
-	}
+if( isset($_GET["year"]) ) {
+	$year = $_GET["year"];
+}
+else {
+	$year = date('Y');
+}
 
-	if( isset($_GET["month"]) ) {
-		$month = $_GET["month"];
-	}
-	else {
-		$month = date('n');
-	}
+if( isset($_GET["month"]) ) {
+	$month = $_GET["month"];
+}
+else {
+	$month = date('n');
+}
 
-	// Обновление/добавление часов в табель
-	if( isset($_POST["date"]) )
+// Узнаем базовый процент месячной премии
+$query = "SELECT value FROM vars WHERE var LIKE 'premium'";
+$res = mysqli_query( $mysqli, $query );
+$row = mysqli_fetch_array($res);
+$premium_percent = $row["value"];
+
+// Обновление/добавление часов в табель
+if( isset($_POST["date"]) ) {
+	$Date = '\''.date( 'Y-m-d', strtotime($_POST["date"]) ).'\'';
+	$Worker = $_POST["worker"];
+	$start1 = ($_POST["start1"] != $_POST["end1"]) ? $_POST["start1"] : 'NULL';
+	$end1 = ($_POST["start1"] != $_POST["end1"]) ? $_POST["end1"] : 'NULL';
+	$start2 = ($_POST["start2"] != $_POST["end2"]) ? $_POST["start2"] : 'NULL';
+	$end2 = ($_POST["start2"] != $_POST["end2"]) ? $_POST["end2"] : 'NULL';
+	$Hours = $_POST["hours"];
+	$Tariff = $_POST["tariff"];
+
+	$query = "
+		INSERT INTO TimeSheet
+		SET WD_ID = {$Worker}
+			,Date = {$Date}
+			,start1 = {$start1}
+			,end1 = {$end1}
+			,start2 = {$start2}
+			,end2 = {$end2}
+			,Hours = {$Hours}
+			,Tariff = {$Tariff}
+			,author = {$_SESSION["id"]}
+		ON DUPLICATE KEY UPDATE
+			 start1 = {$start1}
+			,end1 = {$end1}
+			,start2 = {$start2}
+			,end2 = {$end2}
+			,Hours = {$Hours}
+			,Tariff = {$Tariff}
+			,author = {$_SESSION["id"]}
+	";
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+	exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+	die;
+}
+
+// Сохранение данных из таблицы табеля
+if( isset($_POST["TYear"]) and isset($_POST["TMonth"]) ) {
+	$tyear = $_POST["TYear"];
+	$tmonth = $_POST["TMonth"];
+	foreach( $_POST as $k => $v)
 	{
-		$Date = '\''.date( 'Y-m-d', strtotime($_POST["date"]) ).'\'';
-		$Worker = $_POST["worker"];
-		$start1 = ($_POST["start1"] != $_POST["end1"]) ? $_POST["start1"] : 'NULL';
-		$end1 = ($_POST["start1"] != $_POST["end1"]) ? $_POST["end1"] : 'NULL';
-		$start2 = ($_POST["start2"] != $_POST["end2"]) ? $_POST["start2"] : 'NULL';
-		$end2 = ($_POST["start2"] != $_POST["end2"]) ? $_POST["end2"] : 'NULL';
-		$Hours = $_POST["hours"];
-		$Tariff = $_POST["tariff"];
-
-		$query = "
-			INSERT INTO TimeSheet
-			SET WD_ID = {$Worker}
-				,Date = {$Date}
-				,start1 = {$start1}
-				,end1 = {$end1}
-				,start2 = {$start2}
-				,end2 = {$end2}
-				,Hours = {$Hours}
-				,Tariff = {$Tariff}
-				,author = {$_SESSION["id"]}
-			ON DUPLICATE KEY UPDATE
-				 start1 = {$start1}
-				,end1 = {$end1}
-				,start2 = {$start2}
-				,end2 = {$end2}
-				,Hours = {$Hours}
-				,Tariff = {$Tariff}
-				,author = {$_SESSION["id"]}
-		";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
-		die;
-	}
-
-	// Сохранение данных из таблицы табеля
-	if( isset($_POST["TYear"]) and isset($_POST["TMonth"]) )
-	{
-		$tyear = $_POST["TYear"];
-		$tmonth = $_POST["TMonth"];
-		foreach( $_POST as $k => $v)
+		if( strpos($k,"MP") === 0 ) // Сохраняем ручной процент премии
 		{
-			if( strpos($k,"MP") === 0 ) // Сохраняем ручной процент премии
-			{
-				$worker = (int)str_replace( "MP", "", $k );
-				$ManPercent = $v <> '' ? $v : 'NULL' ;
-				$DNH = $_POST["DNH".$worker] ? $_POST["DNH".$worker] : 'NULL';
-				$query = "REPLACE INTO MonthlyPremiumPercent (Year, Month, WD_ID, PremiumPercent, DisableNormHours)
-						  VALUES ({$year}, {$month}, {$worker}, {$ManPercent}, {$DNH})";
-				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			}
-			$query = "DELETE FROM MonthlyPremiumPercent WHERE PremiumPercent IS NULL AND DisableNormHours IS NULL";
+			$worker = (int)str_replace( "MP", "", $k );
+			$ManPercent = $v <> '' ? $v : 'NULL' ;
+			$DNH = $_POST["DNH".$worker] ? $_POST["DNH".$worker] : 'NULL';
+			$query = "
+				REPLACE INTO MonthlyPremiumPercent (Year, Month, WD_ID, PremiumPercent, DisableNormHours)
+				VALUES ({$year}, {$month}, {$worker}, {$ManPercent}, {$DNH})
+			";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
-		//header( "Location: ".$_SERVER['REQUEST_URI'] );
-		exit ('<meta http-equiv="refresh" content="0; url='.$_SERVER['REQUEST_URI'].'">');
-		die;
+		$query = "DELETE FROM MonthlyPremiumPercent WHERE PremiumPercent IS NULL AND DisableNormHours IS NULL";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
+	//header( "Location: ".$_SERVER['REQUEST_URI'] );
+	exit ('<meta http-equiv="refresh" content="0; url='.$_SERVER['REQUEST_URI'].'">');
+	die;
+}
 
-	// Узнаем кол-во дней в выбранном месяце
-	$strdate = '01.'.$month.'.'.$year;
-	$timestamp = strtotime($strdate);
-	$days = date('t', $timestamp);
+// Узнаем кол-во дней в выбранном месяце
+$strdate = '01.'.$month.'.'.$year;
+$timestamp = strtotime($strdate);
+$days = date('t', $timestamp);
 ?>
 
 <div style="overflow: auto;">
@@ -210,7 +216,6 @@
 			$query = "
 				SELECT WD.WD_ID, WD.Name
 					,IFNULL(WD.HourlyTariff, 0) deftariff
-					,IFNULL(WD.PremiumPercent, 0) PremiumPercent
 					,IFNULL(MPP.PremiumPercent, '') ManPercent
 					,IF(MPP.DisableNormHours = 1, 'checked', '') DNHcheck
 					,WD.IsActive
@@ -218,7 +223,7 @@
 				FROM WorkersData WD
 				LEFT JOIN TimeSheet TS ON TS.WD_ID = WD.WD_ID AND YEAR(TS.Date) = {$year} AND MONTH(TS.Date) = {$month}
 				LEFT JOIN MonthlyPremiumPercent MPP ON MPP.WD_ID = WD.WD_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
-				WHERE WD.Type IN (2)
+				WHERE WD.HourlyTariff IS NOT NULL
 				GROUP BY WD.WD_ID
 				HAVING IsActive = 1 OR Hours > 0
 				ORDER BY WD.Type, WD.Name
@@ -273,7 +278,7 @@
 					}
 					$i++;
 				}
-				$percent = $row["ManPercent"] == '' ? $row["PremiumPercent"] : $row["ManPercent"];
+				$percent = $row["ManPercent"] == '' ? $premium_percent : $row["ManPercent"];
 				if ($sigmahours >= $NormHours or $row["DNHcheck"] == 'checked') {
 					$premium = round($sigmamoney * $percent / 100);
 					$green = "style='color: #191;'";
@@ -288,18 +293,9 @@
 				$whole = intval($sigmahours);
 				$frac = ($sigmahours - intval($sigmahours)) * 4;
 
-//				// Получаем кол-во изделий по работнику за месяц
-//				$query = "SELECT SUM(ODD.Amount) amount
-//							FROM OrdersData OD
-//							JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
-//							WHERE YEAR(OD.paint_date) = {$year} AND MONTH(OD.paint_date) = {$month} AND OD.WD_ID = {$row["WD_ID"]}";
-//				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-//				$sigma_amount = mysqli_result($subres,0,'amount');		// Общее кол-во отлакированных изделий
-
 				echo "<td class='txtright' {$green}>{$whole}".($frac == 1 ? "&frac14;" : ($frac == 2 ? "&frac12;" : ($frac == 3 ? "&frac34;" : "")))."</td>";	// Сумма часов
-//				echo "<td class='txtright'>".(($sigma_amount and $sigmahours) ? round($sigma_amount/$sigmahours, 2) : '')."</td>";			// Коэффициент
 				echo "<td class='txtright'>{$sigmamoney}</td>";								// Сумма денег
-				echo "<td class='txtright'>{$row["PremiumPercent"]}%</td>";					// Процент
+				echo "<td class='txtright'>{$premium_percent}%</td>";					// Процент
 				echo "<td><input type='number' name='MP{$row["WD_ID"]}' value='{$row["ManPercent"]}' min='0' max='100' style='width: 100%;'></td>";// Свой процент
 				echo "<td><input type='checkbox' name='DNH{$row["WD_ID"]}' {$row["DNHcheck"]} value='1'></td>";	// Не учитывать норматив
 				echo "<td><button class='button edit_pay txtright' location='{$location}' title='Начислить премию' style='width: 100%;' worker='{$row["WD_ID"]}' comment='Премия за {$MONTHS[$month]} {$year} {$percent}%' pay='{$premium}'>{$premium}</button></td>";						// Премия
