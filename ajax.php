@@ -2226,7 +2226,7 @@ case "blank_log_table":
 
 	$html = "
 		<h1>Журнал сдачи заготовок</h1>
-		<table>
+		<table class='main_table'>
 			<thead>
 			<tr>
 				<th width='20'></th>
@@ -2281,8 +2281,8 @@ case "blank_log_table":
 					<td>".($row["is_parent"] ? "<i class='fa fa-arrow-right'></i>" : "")."</td>
 					<td><b class='nowrap'>{$row["friendly_date"]}</b></td>
 					<td>{$row["Time"]}</td>
-					<td class='worker' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>
-					<td class='blank {$row["Bold"]}' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>
+					<td class='worker nowrap' val='{$row["WD_ID"]}'><span><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>
+					<td class='blank {$row["Bold"]} nowrap' val='{$row["BL_ID"]}'><span>{$row["Blank"]}</span></td>
 					<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$row["Amount"]}</b></td>
 					<td class='tariff txtright'>{$row["Tariff"]}</td>
 					<td class='comment'><pre>{$row["Comment"]}</pre></td>
@@ -2307,8 +2307,8 @@ case "blank_log_table":
 							<td></td>
 							<td></td>
 							<td></td>
-							<td class='nowrap'>{$subrow["Worker"]}</td>
-							<td class='nowrap'>{$subrow["Blank"]}</td>
+							<td class='nowrap'><span>{$subrow["Worker"]}</span></td>
+							<td class='nowrap'><span>{$subrow["Blank"]}</span></td>
 							<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$subrow["Amount"]}</b></td>
 							<td class='tariff txtright'></td>
 							<td class='comment'><pre></pre></td>
