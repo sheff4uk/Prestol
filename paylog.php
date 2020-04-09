@@ -80,7 +80,7 @@
 					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
 				FROM WorkersData WD
 				LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
-				WHERE WD.IsActive = 1 AND WD.Type = 1
+				WHERE WD.act = 1 AND WD.Type = 1
 			";
 			if( isset($_GET["worker"]) ) {
 				$query .= " AND WD.WD_ID = {$_GET["worker"]}";
@@ -188,7 +188,7 @@
 					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
 				FROM WorkersData WD
 				LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
-				WHERE WD.IsActive = 1 AND WD.Type = 2
+				WHERE WD.act = 1 AND WD.Type = 2
 			";
 
 			if( isset($_GET["worker"]) ) {
@@ -294,7 +294,7 @@
 					,SUM(IF(Year = {$lastyear} AND Month = {$lastmonth}, IFNULL(MPIO.PayOut, 0), 0)) LastPayOut
 				FROM WorkersData WD
 				LEFT JOIN MonthlyPayInOut MPIO ON MPIO.WD_ID = WD.WD_ID
-				WHERE WD.IsActive = 1 AND WD.Type = 3
+				WHERE WD.act = 1 AND WD.Type = 3
 			";
 
 			if( isset($_GET["worker"]) ) {

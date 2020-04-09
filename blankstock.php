@@ -72,7 +72,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 								SELECT WD.WD_ID, WD.Name, COUNT(1) cnt
 								FROM WorkersData WD
 								JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 90
-								WHERE WD.IsActive = 1
+								WHERE WD.act = 1
 								GROUP BY BS.WD_ID
 								ORDER BY cnt DESC
 							";
@@ -89,7 +89,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 								SELECT WD.WD_ID, WD.Name
 								FROM WorkersData WD
 								LEFT JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 90
-								WHERE WD.IsActive = 1 AND WD.Type = 1 AND BS.WD_ID IS NULL
+								WHERE WD.act = 1 AND WD.Type = 1 AND BS.WD_ID IS NULL
 								ORDER BY WD.Name
 							";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -104,7 +104,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 							$query = "
 								SELECT WD.WD_ID, WD.Name
 								FROM WorkersData WD
-								WHERE WD.IsActive = 0 AND WD.Type = 1
+								WHERE WD.act = 0 AND WD.Type = 1
 								ORDER BY WD.Name
 							";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

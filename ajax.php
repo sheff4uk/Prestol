@@ -71,7 +71,7 @@ case "steps":
 				ORDER BY ODS.ODD_ID DESC
 				LIMIT 100
 			) ODS ON ODS.WD_ID = WD.WD_ID
-			WHERE WD.Type = 1 AND WD.IsActive = 1
+			WHERE WD.Type = 1 AND WD.act = 1
 			GROUP BY WD.WD_ID
 			ORDER BY CNT DESC
 		";
@@ -87,7 +87,7 @@ case "steps":
 			SELECT WD.WD_ID
 				,WD.Name
 			FROM WorkersData WD
-			WHERE WD.Type = 1 AND WD.IsActive = 0
+			WHERE WD.Type = 1 AND WD.act = 0
 			ORDER BY WD.Name
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
@@ -277,7 +277,7 @@ case "ispainting":
 				ORDER BY OD.OD_ID DESC
 				LIMIT 100
 			) SOD ON SOD.WD_ID = WD.WD_ID
-			WHERE WD.Type = 3 AND WD.IsActive = 1
+			WHERE WD.Type = 3 AND WD.act = 1
 			GROUP BY WD.WD_ID
 			ORDER BY CNT DESC
 		";
@@ -291,7 +291,7 @@ case "ispainting":
 		$query = "
 			SELECT WD.WD_ID ,WD.Name
 			FROM WorkersData WD
-			WHERE WD.Type = 3 AND WD.IsActive = 0
+			WHERE WD.Type = 3 AND WD.act = 0
 			ORDER BY WD.Name
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
@@ -318,7 +318,7 @@ case "ispainting":
 				ORDER BY OD.OD_ID DESC
 				LIMIT 100
 			) SOD ON SOD.patina_WD_ID = WD.WD_ID
-			WHERE WD.Type = 3 AND WD.IsActive = 1
+			WHERE WD.Type = 3 AND WD.act = 1
 			GROUP BY WD.WD_ID
 			ORDER BY CNT DESC
 		";
@@ -332,7 +332,7 @@ case "ispainting":
 		$query = "
 			SELECT WD.WD_ID ,WD.Name
 			FROM WorkersData WD
-			WHERE WD.Type = 3 AND WD.IsActive = 0
+			WHERE WD.Type = 3 AND WD.act = 0
 			ORDER BY WD.Name
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");

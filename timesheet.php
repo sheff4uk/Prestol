@@ -218,14 +218,14 @@ $days = date('t', $timestamp);
 					,IFNULL(WD.HourlyTariff, 0) deftariff
 					,IFNULL(MPP.PremiumPercent, '') ManPercent
 					,IF(MPP.DisableNormHours = 1, 'checked', '') DNHcheck
-					,WD.IsActive
+					,WD.act
 					,IFNULL(SUM(TS.Hours), 0) Hours
 				FROM WorkersData WD
 				LEFT JOIN TimeSheet TS ON TS.WD_ID = WD.WD_ID AND YEAR(TS.Date) = {$year} AND MONTH(TS.Date) = {$month}
 				LEFT JOIN MonthlyPremiumPercent MPP ON MPP.WD_ID = WD.WD_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
 				WHERE WD.HourlyTariff IS NOT NULL
 				GROUP BY WD.WD_ID
-				HAVING IsActive = 1 OR Hours > 0
+				HAVING act = 1 OR Hours > 0
 				ORDER BY WD.Type, WD.Name
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
