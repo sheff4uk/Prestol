@@ -54,6 +54,7 @@ switch( $_GET["do"] ) {
 			if( $json->status == "OK" ) { // Запрос выполнился
 				// Сохраняем check_status
 				$check_status = $json->check_status;
+				echo "check_status = {$check_status};";
 			}
 			else $_SESSION["error"][] = "Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...) Код ошибки: $json->status_code Текст ошибки: $json->status_text";
 		}
@@ -61,7 +62,7 @@ switch( $_GET["do"] ) {
 
 		// Если не было ошибок - проверяем check_id
 		if( count($_SESSION["error"] ) == 0) {
-			// Если звонок поступил - активируем сессию
+			// Если звонок поступил - активируем сессию и заходим в систему
 			if( $check_status == 401 ) {
 				$query = "SELECT USR_ID, last_url FROM Users WHERE phone='{$_SESSION['mtel']}'";
 				$result = mysqli_query( $mysqli, $query );
@@ -181,7 +182,7 @@ switch( $_GET["do"] ) {
 
 					progressbar.progressbar( "value", val + 5 );
 
-					if ( val < 100 && stop_status != 1) {
+					if ( val < 100 && stop_status != 1 && check_status != 401 ) {
 						setTimeout( function() { status(check_id); }, 3000 );
 					}
 				}
