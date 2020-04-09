@@ -179,10 +179,10 @@ switch( $_GET["do"] ) {
 
 					var val = progressbar.progressbar( "value" ) || 0;
 
-					progressbar.progressbar( "value", val + 1 );
+					progressbar.progressbar( "value", val + 5 );
 
 					if ( val < 100 && stop_status != 1) {
-						setTimeout( function() { status(check_id); }, 1200 );
+						setTimeout( function() { status(check_id); }, 3000 );
 					}
 				}
 
