@@ -2281,8 +2281,8 @@ case "blank_log_table":
 					<td>".($row["is_parent"] ? "<i class='fa fa-arrow-right'></i>" : "")."</td>
 					<td><b class='nowrap'>{$row["friendly_date"]}</b></td>
 					<td>{$row["Time"]}</td>
-					<td class='worker nowrap' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>
-					<td class='blank {$row["Bold"]} nowrap' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>
+					<td class='worker' val='{$row["WD_ID"]}'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></td>
+					<td class='blank {$row["Bold"]}' val='{$row["BL_ID"]}'>{$row["Blank"]}</td>
 					<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$row["Amount"]}</b></td>
 					<td class='tariff txtright'>{$row["Tariff"]}</td>
 					<td class='comment'><pre>{$row["Comment"]}</pre></td>
