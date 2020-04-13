@@ -24,7 +24,7 @@
 	else {
 		// Узнаем город, роль и иконку пользователя
 		$query = "
-			SELECT USR.CT_ID
+			SELECT IFNULL(USR.CT_ID, 0) CT_ID
 				,USR.RL_ID
 				,USR_Icon(USR.USR_ID) USR_Icon
 				,CT.timezone

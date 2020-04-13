@@ -472,7 +472,6 @@
 	$date_diff_color = $row['date_diff_color'];
 	$showing = $row['showing'];
 	$SH_ID = $row['SH_ID'];
-	$KA_ID = $row['KA_ID'];
 	$OrderNumber = $row['OrderNumber'];
 	$Color = $row['Color'];
 	$color = $row['color'];
@@ -648,8 +647,8 @@
 		if( $SH_ID == 0 ) {
 			$price = "";
 		}
-		// Если редактируемый и пользователь не оптовик то цена редактируемая
-		elseif( $editable and !$USR_KA ) {
+		// Если редактируемый и пользователь не оптовик и есть разрешение на добавление набора, то цена редактируемая
+		elseif( $editable and !$USR_KA and in_array('order_add', $Rights) ) {
 			// Если набор в накладной - сумма набора ведет в накладную, цена не редактируется
 			if( $row["PFI_ID"] ) {
 				// Исключение для Клена
@@ -671,7 +670,7 @@
 
 		// Если розница и набор свой - можно вносить оплату
 		if( $retail and $editable ) {
-			echo "<td><button ".($row["KA_ID"] ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright' location='{$location}'>{$format_payment}</button></td>";
+			echo "<td><button ".(( $KA_ID or !(in_array('selling_all', $Rights) or in_array('selling_city', $Rights)) ) ? "disabled" : "")." style='width: 100%;' class='add_payment_btn button nowrap txtright' location='{$location}'>{$format_payment}</button></td>";
 		}
 ?>
 
