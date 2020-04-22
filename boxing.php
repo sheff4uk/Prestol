@@ -19,7 +19,7 @@
 
 	$_GET["ct_id"] = ($_GET["ct_id"] > 0 ? $_GET["ct_id"] : 0);
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -164,7 +164,7 @@
 			if($span) echo "<td style='font-size: 20px;' rowspan='{$cnt}'><b class='code nowrap'>{$subrow["Code"]}</b><br>{$subrow["Shop"]}<span class='{$subrow["Deadline"]} nowrap'>{$subrow["EndDate"]}</span></td>";
 			if($span) echo "<td rowspan='{$cnt}'>{$subrow["Color"]}</td>";
 			echo "<td style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
-			echo "<td id='{$row["ODD_ID"]}' packer='{$row["packer"]}' boxes='{$row["boxes"]}' style='font-size: 16px; cursor: pointer; color: #1c94c4;' class='packer_link'>".($row["code"] ? "<img style='width: 50px; float: left;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."{$row["Zakaz"]}{$row["Material"]}</td>";
+			echo "<td id='{$row["ODD_ID"]}' packer='{$row["packer"]}' boxes='{$row["boxes"]}' style='font-size: 16px; cursor: pointer; color: #1c94c4;' class='packer_link'>".($row["code"] ? "<img style='width: 50px; float: left;' src='https://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."{$row["Zakaz"]}{$row["Material"]}</td>";
 			echo "<td style='font-size: 16px;'>{$row["Name"]}</td>";
 			echo "<td style='font-size: 20px; text-align: center; ".(($row["boxes"] and !$row["packer"]) ? " color: red;" : "")."'><b>{$row["boxes"]}</b></td>";
 			echo "</tr>";

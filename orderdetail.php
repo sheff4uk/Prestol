@@ -824,7 +824,7 @@
 		$format_old_price = ($row["old_Price"] != '') ? '<p class="old_price">'.number_format($row["old_Price"], 0, '', ' ').'</p>' : '';
 		$format_price = ($row["Price"] != '') ? '<p class="price">'.number_format($row["Price"], 0, '', ' ').'</p>' : '';
 		echo "<tr id='prod{$row["ODD_ID"]}' class='ord_log_row' lnk='*ODD_ID{$row["ODD_ID"]}*'>";
-		echo "<td rowspan='2'>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."".($row["PF_ID"] ? "<br><img class='form {$row["form_standart"]}' src='/img/form{$row["PF_ID"]}.png' title='{$row["Form"]}'>" : "")."</td>";
+		echo "<td rowspan='2'>".($row["code"] ? "<img style='width: 50px;' src='https://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."".($row["PF_ID"] ? "<br><img class='form {$row["form_standart"]}' src='/img/form{$row["PF_ID"]}.png' title='{$row["Form"]}'>" : "")."</td>";
 		echo "<td colspan='5'><b style='font-size: 1.2em;'>{$row["Zakaz"]}</b></td>";
 		echo "<td rowspan='2'>";
 			echo "<button ".(($disabled or $Del or $PFI_ID or !$editable) ? 'disabled' : 'title=\'Редактировать изделие\'')." id='{$row["ODD_ID"]}' class='edit_product{$row["PT_ID"]}' location='{$location}'><i class='fa fa-pencil-alt fa-lg'></i></button>";
