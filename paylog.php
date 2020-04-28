@@ -81,9 +81,9 @@
 
 	ul {
 		padding-left: 20px;
-		font-size: .9em;
-		line-height: 1.5em;
+		line-height: 2em;
 	}
+	ul a {font-size: 1.2em;}
 </style>
 
 	<div id='add_payin_btn' class='edit_pay' worker_name='<?=$USR_ShortName?>' worker='<?=$worker?>' location='<?=$location?>' title='НАЧИСЛИТЬ заработную плату'><i class="fas fa-2x fa-user-cog"></i></div>
@@ -100,16 +100,22 @@
 
 			$query = "
 				SELECT USR_Name(USR.USR_ID) Name
+					,USR_Icon(USR.USR_ID) Icon
 					,USR.Balance
+					,SUM(PL.Pay) pay_today
 				FROM Users USR
+				LEFT JOIN PayLog PL ON PL.USR_ID = USR.USR_ID AND PL.Date >= CURDATE()
 				WHERE USR.USR_ID = {$usr_id}
+				GROUP BY USR.USR_ID
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$row = mysqli_fetch_array($res);
 
+			$dot = $row["pay_today"] ? "&nbsp;<i class='fas fa-circle' style='color: #FFBB55' title='Начислено сегодня'></i>" : "";
+
 			$format_balance = $row["Balance"] ? number_format($row["Balance"], 0, '', ' ') : "";
 
-			echo "<li><a href='?worker={$usr_id}' ".(($usr_id == $worker) ? "style='color: #333; font-weight: bold;'" : "").">{$row["Name"]}</a>&nbsp;<b class='".($row["Balance"] < 0 ? "bg-red " : "")."nowrap'>{$format_balance}</b>";
+			echo "<li>{$row["Icon"]}&nbsp;<a href='?worker={$usr_id}' ".(($usr_id == $worker) ? "style='color: #333; font-weight: bold;'" : "").">{$row["Name"]}</a>&nbsp;<b class='".($row["Balance"] < 0 ? "bg-red " : "")."nowrap'>{$format_balance}</b>{$dot}";
 
 			// Выводим потомков, если есть
 			$query = "
@@ -121,7 +127,7 @@
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			if( mysqli_num_rows($res) ) {
-				echo ":<ul>";
+				echo "<ul>";
 				while( $row = mysqli_fetch_array($res) ) {
 					user_tree( $row["USR_ID"] );
 				}
@@ -132,7 +138,7 @@
 		}
 		// Конец рекурсивной функции
 
-		echo "<ul style='font-size: 1.6em;'>";
+		echo "<ul>";
 		user_tree( $_SESSION['id'] );
 		echo "</ul>";
 ?>
