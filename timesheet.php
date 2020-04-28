@@ -216,6 +216,7 @@ $days = date('t', $timestamp);
 			$query = "
 				SELECT USR.USR_ID
 					,USR_ShortName(USR.USR_ID) Name
+					,USR_Icon(USR.USR_ID) Icon
 					,IFNULL(USR.tariff, 0) deftariff
 					,IFNULL(MPP.PremiumPercent, '') ManPercent
 					,IF(MPP.DisableNormHours = 1, 'checked', '') DNHcheck
@@ -232,7 +233,7 @@ $days = date('t', $timestamp);
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
-				echo "<tr><td class='worker' val='{$row["USR_ID"]}' deftariff='{$row["deftariff"]}'><span class='nowrap'><a href='/paylog.php?worker={$row["USR_ID"]}'>{$row["Name"]}</a></span>";
+				echo "<tr><td class='worker' val='{$row["USR_ID"]}' deftariff='{$row["deftariff"]}'><span class='nowrap'><a href='/paylog.php?worker={$row["USR_ID"]}'>{$row["Icon"]}&nbsp;{$row["Name"]}</a></span>";
 
 				// Получаем список часов по работнику за месяц
 				$query = "
