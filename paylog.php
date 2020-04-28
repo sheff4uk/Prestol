@@ -102,20 +102,29 @@
 				SELECT USR_Name(USR.USR_ID) Name
 					,USR_Icon(USR.USR_ID) Icon
 					,USR.Balance
-					,SUM(PL.Pay) pay_today
 				FROM Users USR
-				LEFT JOIN PayLog PL ON PL.USR_ID = USR.USR_ID AND PL.Date >= CURDATE()
 				WHERE USR.USR_ID = {$usr_id}
-				GROUP BY USR.USR_ID
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$row = mysqli_fetch_array($res);
 
-			$dot = $row["pay_today"] ? "&nbsp;<i class='fas fa-circle' style='color: #FFBB55' title='Начислено сегодня'></i>" : "";
-
 			$format_balance = $row["Balance"] ? number_format($row["Balance"], 0, '', ' ') : "";
 
-			echo "<li>{$row["Icon"]}&nbsp;<a href='?worker={$usr_id}' ".(($usr_id == $worker) ? "style='color: #333; font-weight: bold;'" : "").">{$row["Name"]}</a>&nbsp;<b class='".($row["Balance"] < 0 ? "bg-red " : "")."nowrap'>{$format_balance}</b>{$dot}";
+			echo "<li>{$row["Icon"]}&nbsp;<a href='?worker={$usr_id}' ".(($usr_id == $worker) ? "style='color: #333; font-weight: bold;'" : "").">{$row["Name"]}</a>&nbsp;<b class='".($row["Balance"] < 0 ? "bg-red " : "")."nowrap'>{$format_balance}</b>";
+
+			// Маркер начислений сегодня
+			$query = "SELECT 1 FROM PayLog PL WHERE PL.USR_ID = {$usr_id} AND PL.Date >= CURDATE() AND PL.Pay != 0";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			if( mysqli_num_rows($res) ) {
+				echo "&nbsp;<i class='fas fa-circle' style='color: #16A085;' title='Начислено сегодня'></i>";
+			}
+
+			// Маркер выдач сегодня
+			$query = "SELECT 1 FROM Finance F WHERE F.USR_ID = {$usr_id} AND F.date >= CURDATE() AND F.money != 0";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			if( mysqli_num_rows($res) ) {
+				echo "&nbsp;<i class='fas fa-circle' style='color: #db4437;' title='Выдано сегодня'></i>";
+			}
 
 			// Выводим потомков, если есть
 			$query = "
