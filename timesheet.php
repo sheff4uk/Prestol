@@ -160,7 +160,7 @@ $days = date('t', $timestamp);
 <table id="timesheet" class="main_table">
 	<thead>
 		<tr class="nowrap">
-			<th width="100">Работник</th>
+			<th></th>
 			<?
 				// Получаем производственный календарь на выбранный год
 				$xml = simplexml_load_file("http://xmlcalendar.ru/data/ru/".$year."/calendar.xml");
@@ -233,7 +233,7 @@ $days = date('t', $timestamp);
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
-				echo "<tr><td class='worker' val='{$row["USR_ID"]}' deftariff='{$row["deftariff"]}'><span class='nowrap'><a href='/paylog.php?worker={$row["USR_ID"]}'>{$row["Icon"]}&nbsp;{$row["Name"]}</a></span>";
+				echo "<tr><td class='worker' val='{$row["USR_ID"]}' deftariff='{$row["deftariff"]}' worker='{$row["Name"]}'><a href='/paylog.php?worker={$row["USR_ID"]}'>{$row["Icon"]}</a>";
 
 				// Получаем список часов по работнику за месяц
 				$query = "
@@ -310,7 +310,7 @@ $days = date('t', $timestamp);
 	</tbody>
 	<thead>
 		<tr class="nowrap">
-			<th>Работник</th>
+			<th></th>
 			<?
 				$i = 1;
 				while ($i <= $days) {
@@ -352,6 +352,7 @@ $days = date('t', $timestamp);
 		<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
 			<fieldset>
+				<legend style="font-weight: bold; font-size: 1.5em;"></legend>
 				<input type="hidden" name="date">
 				<input type="hidden" name="worker">
 
@@ -517,7 +518,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		// Форма добавления часов
 		$('.tscell').click(function() {
-			var workername = $(this).parents('tr').find('.worker a ').html();
+			var workername = $(this).parents('tr').find('.worker').attr('worker');
 			var date = $(this).attr('date');
 			var worker = $(this).parents('tr').find('.worker').attr('val');
 			var deftariff = $(this).parents('tr').find('.worker').attr('deftariff');
@@ -572,10 +573,11 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$( "#slider-range2" ).slider( "option", "values", [ 720, 720 ] );
 			}
 
+			$('#dayworklog fieldset legend').text(workername+' '+date);
+
 			// Вызов формы
 			$('#dayworklog').dialog({
 				resizable: false,
-				title:		workername+' '+date,
 				width:		600,
 				modal:		true,
 				resizable:	false,
