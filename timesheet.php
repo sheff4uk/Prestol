@@ -44,7 +44,7 @@ if( isset($_POST["date"]) ) {
 
 	$query = "
 		INSERT INTO TimeSheet
-		SET WD_ID = {$Worker}
+		SET USR_ID = {$Worker}
 			,Date = {$Date}
 			,start1 = {$start1}
 			,end1 = {$end1}
@@ -80,7 +80,7 @@ if( isset($_POST["TYear"]) and isset($_POST["TMonth"]) ) {
 			$ManPercent = $v <> '' ? $v : 'NULL' ;
 			$DNH = $_POST["DNH".$worker] ? $_POST["DNH".$worker] : 'NULL';
 			$query = "
-				REPLACE INTO MonthlyPremiumPercent (Year, Month, WD_ID, PremiumPercent, DisableNormHours)
+				REPLACE INTO MonthlyPremiumPercent (Year, Month, USR_ID, PremiumPercent, DisableNormHours)
 				VALUES ({$year}, {$month}, {$worker}, {$ManPercent}, {$DNH})
 			";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -214,23 +214,25 @@ $days = date('t', $timestamp);
 		<?
 			// Получаем список работников
 			$query = "
-				SELECT WD.WD_ID, WD.Name
-					,IFNULL(WD.tariff, 0) deftariff
+				SELECT USR.USR_ID
+					,USR_ShortName(USR.USR_ID) Name
+					,IFNULL(USR.tariff, 0) deftariff
 					,IFNULL(MPP.PremiumPercent, '') ManPercent
 					,IF(MPP.DisableNormHours = 1, 'checked', '') DNHcheck
-					,WD.act
+					,USR.act
 					,IFNULL(SUM(TS.Hours), 0) Hours
-				FROM WorkersData WD
-				LEFT JOIN TimeSheet TS ON TS.WD_ID = WD.WD_ID AND YEAR(TS.Date) = {$year} AND MONTH(TS.Date) = {$month}
-				LEFT JOIN MonthlyPremiumPercent MPP ON MPP.WD_ID = WD.WD_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
-				WHERE WD.tariff IS NOT NULL
-				GROUP BY WD.WD_ID
+				FROM Users USR
+				LEFT JOIN TimeSheet TS ON TS.USR_ID = USR.USR_ID AND YEAR(TS.Date) = {$year} AND MONTH(TS.Date) = {$month}
+				LEFT JOIN MonthlyPremiumPercent MPP ON MPP.USR_ID = USR.USR_ID AND MPP.Year = {$year} AND MPP.Month = {$month}
+				WHERE USR.tariff IS NOT NULL
+					AND USR.USR_ID IN ({$USR_tree})
+				GROUP BY USR.USR_ID
 				HAVING act = 1 OR Hours > 0
-				ORDER BY WD.Type, WD.Name
+				ORDER BY Name
 			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
-				echo "<tr><td class='worker' val='{$row["WD_ID"]}' deftariff='{$row["deftariff"]}'><span class='nowrap'><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Name"]}</a></span>";
+				echo "<tr><td class='worker' val='{$row["USR_ID"]}' deftariff='{$row["deftariff"]}'><span class='nowrap'><a href='/paylog.php?worker={$row["USR_ID"]}'>{$row["Name"]}</a></span>";
 
 				// Получаем список часов по работнику за месяц
 				$query = "
@@ -244,7 +246,7 @@ $days = date('t', $timestamp);
 						,(Hours - FLOOR(Hours)) * 4 frac
 						,Tariff
 					FROM TimeSheet
-					WHERE YEAR(Date) = {$year} AND MONTH(Date) = {$month} AND WD_ID = {$row["WD_ID"]}
+					WHERE YEAR(Date) = {$year} AND MONTH(Date) = {$month} AND USR_ID = {$row["USR_ID"]}
 				";
 				$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
@@ -296,9 +298,9 @@ $days = date('t', $timestamp);
 				echo "<td class='txtright' {$green}>{$whole}".($frac == 1 ? "&frac14;" : ($frac == 2 ? "&frac12;" : ($frac == 3 ? "&frac34;" : "")))."</td>";	// Сумма часов
 				echo "<td class='txtright'>{$sigmamoney}</td>";								// Сумма денег
 				echo "<td class='txtright'>{$premium_percent}%</td>";					// Процент
-				echo "<td><input type='number' name='MP{$row["WD_ID"]}' value='{$row["ManPercent"]}' min='0' max='100' style='width: 100%;'></td>";// Свой процент
-				echo "<td><input type='checkbox' name='DNH{$row["WD_ID"]}' {$row["DNHcheck"]} value='1'></td>";	// Не учитывать норматив
-				echo "<td><button class='button edit_pay txtright' location='{$location}' title='Начислить премию' style='width: 100%;' worker='{$row["WD_ID"]}' comment='Премия за {$MONTHS[$month]} {$year} {$percent}%' pay='{$premium}'>{$premium}</button></td>";						// Премия
+				echo "<td><input type='number' name='MP{$row["USR_ID"]}' value='{$row["ManPercent"]}' min='0' max='100' style='width: 100%;'></td>";// Свой процент
+				echo "<td><input type='checkbox' name='DNH{$row["USR_ID"]}' {$row["DNHcheck"]} value='1'></td>";	// Не учитывать норматив
+				echo "<td><button class='button edit_pay txtright' location='{$location}' title='Начислить премию' style='width: 100%;' worker_name='{$row["Name"]}' worker='{$row["USR_ID"]}' comment='Премия за {$MONTHS[$month]} {$year} {$percent}%' pay='{$premium}'>{$premium}</button></td>";						// Премия
 				echo "<td class='txtright'>{$total}</td>";								// Премия + Сумма
 				echo "</tr>";
 			}

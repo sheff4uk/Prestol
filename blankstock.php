@@ -22,16 +22,16 @@
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 
 		// Добавление заготовок
-		$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, Tariff, Comment, author)
+		$query = "INSERT INTO BlankStock(USR_ID, BL_ID, Amount, Tariff, Comment, author)
 				  VALUES ({$Worker}, {$Blank}, {$Amount}, {$Tariff}, '{$Comment}', {$_SESSION["id"]})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$bs_id = mysqli_insert_id( $mysqli );
 
 		// Добавление связанных заготовок
-		foreach ($_POST["wd_id"] as $key => $value) {
+		foreach ($_POST["usr_id"] as $key => $value) {
 			$value = $value > 0 ? $value : "NULL";
 			$sub_amount = $_POST["amount"][$key] * $Amount * -1;
-			$query = "INSERT INTO BlankStock(WD_ID, BL_ID, Amount, PBS_ID, author)
+			$query = "INSERT INTO BlankStock(USR_ID, BL_ID, Amount, PBS_ID, author)
 					  VALUES ({$value}, {$_POST["bll_id"][$key]}, {$sub_amount}, {$bs_id}, {$_SESSION["id"]})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
@@ -69,48 +69,48 @@ this.subbut.value='Подождите, пожалуйста!';">
 						<optgroup label="Частые">
 							<?
 							$query = "
-								SELECT WD.WD_ID, WD.Name, COUNT(1) cnt
-								FROM WorkersData WD
-								JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 90
-								WHERE WD.act = 1
-								GROUP BY BS.WD_ID
+								SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name, COUNT(1) cnt
+								FROM Users USR
+								JOIN BlankStock BS ON BS.USR_ID = USR.USR_ID AND DATEDIFF(NOW(), Date) <= 90
+								WHERE USR.act = 1
+								GROUP BY USR.USR_ID
 								ORDER BY cnt DESC
 							";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) )
 							{
-								echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+								echo "<option value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
 							}
 							?>
 						</optgroup>
 						<optgroup label="Остальные">
 							<?
 							$query = "
-								SELECT WD.WD_ID, WD.Name
-								FROM WorkersData WD
-								LEFT JOIN BlankStock BS ON BS.WD_ID = WD.WD_ID AND DATEDIFF(NOW(), Date) <= 90
-								WHERE WD.act = 1 AND WD.Type = 1 AND BS.WD_ID IS NULL
-								ORDER BY WD.Name
+								SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name
+								FROM Users USR
+								LEFT JOIN BlankStock BS ON BS.USR_ID = USR.USR_ID AND DATEDIFF(NOW(), Date) <= 90
+								WHERE USR.act = 1 AND USR.RL_ID = 10 AND BS.USR_ID IS NULL
+								ORDER BY Name
 							";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) )
 							{
-								echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+								echo "<option value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
 							}
 							?>
 						</optgroup>
 						<optgroup label="Уволенные">
 							<?
 							$query = "
-								SELECT WD.WD_ID, WD.Name
-								FROM WorkersData WD
-								WHERE WD.act = 0 AND WD.Type = 1
-								ORDER BY WD.Name
+								SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name
+								FROM Users USR
+								WHERE USR.act = 0 AND USR.RL_ID = 10
+								ORDER BY Name
 							";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) )
 							{
-								echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+								echo "<option value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
 							}
 							?>
 						</optgroup>
@@ -183,17 +183,22 @@ this.subbut.value='Подождите, пожалуйста!';">
 						echo "</tr>";
 
 						// Вывод запасов заготовок поименно
-						$query = "SELECT BC.BL_ID, BC.WD_ID, IFNULL(WD.Name, 'Без работника') Name, (BC.count + BC.start_balance) Amount, BC.start_balance
-									FROM BlankCount BC
-									LEFT JOIN WorkersData WD ON WD.WD_ID = BC.WD_ID
-									WHERE BC.BL_ID = {$row["BLL_ID"]}";
+						$query = "
+							SELECT BC.BL_ID
+								,BC.USR_ID
+								,IFNULL(USR_ShortName(BC.USR_ID), 'Без работника') Name
+								,(BC.count + BC.start_balance) Amount
+								,BC.start_balance
+							FROM BlankCount BC
+							WHERE BC.BL_ID = {$row["BLL_ID"]}
+						";
 						$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $subrow = mysqli_fetch_array($subres) )
 						{
 							$subcolor = ( $subrow["Amount"] < 0 ) ? ' bg-red' : '';
-							echo "<tr id='blank_{$row["BLL_ID"]}_{$subrow["WD_ID"]}'>";
+							echo "<tr id='blank_{$row["BLL_ID"]}_{$subrow["USR_ID"]}'>";
 							echo "<td style='color: #666;'><i>{$tabs}-{$subrow["Name"]}</i></td>";
-							echo "<td class='txtright'><input type='number' class='amount start_balance_worker' wd_id='{$subrow["WD_ID"]}' bl_id='{$subrow["BL_ID"]}' value='{$subrow["start_balance"]}'></td>";
+							echo "<td class='txtright'><input type='number' class='amount start_balance_worker' usr_id='{$subrow["USR_ID"]}' bl_id='{$subrow["BL_ID"]}' value='{$subrow["start_balance"]}'></td>";
 							echo "<td style='color: #666;' class='txtright blank_amount'><span><i class='{$subcolor}'>{$subrow["Amount"]}</i></span></td>";
 							echo "<td class='txtright'></td>";
 							echo "<td class='txtright'></td>";
@@ -328,9 +333,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 		// Редактирование аяксом начального значения заготовок по рабочим
 		$('.start_balance_worker').on('blur', function() {
 			var val = $(this).val();
-			var wd_id = $(this).attr('wd_id');
+			var usr_id = $(this).attr('usr_id');
 			var bl_id = $(this).attr('bl_id');
-			$.ajax({ url: "ajax.php?do=start_balance_worker&wd_id="+wd_id+"&bl_id="+bl_id+"&val="+val, dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=start_balance_worker&usr_id="+usr_id+"&bl_id="+bl_id+"&val="+val, dataType: "script", async: false });
 		});
 
 		// Редактирование аяксом начального значения заготовок верхнего уровня
@@ -350,15 +355,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#addblank #blank').prop('disabled', true);
 				$('#addblank #blank').val('').change();
 			}
-			$.ajax({ url: "ajax.php?do=blank_dropdown&wd_id="+val, dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=blank_dropdown&usr_id="+val, dataType: "script", async: false });
 		});
 
 		// При выборе заготовки выводится аяксом список задействованных заготовок
 		$('#addblank #blank').change( function() {
 			val = $(this).val();
-			wd_id = $('#addblank #worker').val();
+			usr_id = $('#addblank #worker').val();
 			if( val == '' ) { val = 0; }
-			$.ajax({ url: "ajax.php?do=subblank_dropdown&bl_id="+val+"&wd_id="+wd_id, dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=subblank_dropdown&bl_id="+val+"&usr_id="+usr_id, dataType: "script", async: false });
 		});
 
 		// Форма добавления заготовок

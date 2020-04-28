@@ -218,16 +218,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 				,IF(MT.removed=1, 'removed', '') removed
 				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 				,ODS.IsReady
-				,WD.Name
+				,USR_ShortName(ODS.USR_ID) Name
 			FROM OrdersDataDetail ODD
 			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = {$product}
 			LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
-							AND ODS.Visible = 1
-							AND ODS.Old != 1
-							AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE '%Об%') OR ODS.ST_ID IS NULL)
-			LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+				AND ODS.Visible = 1
+				AND ODS.Old != 1
+				AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE '%Об%') OR ODS.ST_ID IS NULL)
 			WHERE ODD.OD_ID = {$row["OD_ID"]}
 				AND ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
 				".( $MT_IDs ? "AND ODD.MT_ID IN ({$MT_IDs})" : "" )."

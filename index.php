@@ -122,8 +122,8 @@
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 			// Создание копии набора
-			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, paint_date, WD_ID, tariff, patina_WD_ID, patina_tariff, Comment, IsReady, author, confirmed)
-			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, paint_date, WD_ID, tariff, patina_WD_ID, patina_tariff, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
+			$query = "INSERT INTO OrdersData(SHP_ID, PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, paint_date, USR_ID, patina_USR_ID, tariff, patina_tariff, Comment, IsReady, author, confirmed)
+			SELECT SHP_ID, PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, ReadyDate, OrderNumber, CL_ID, IsPainting, paint_date, USR_ID, patina_USR_ID, tariff, patina_tariff, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$OD_ID}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
@@ -146,8 +146,8 @@
 					$query = "UPDATE OrdersDataDetail SET Amount = {$left}, author = NULL WHERE ODD_ID = {$value}";
 						mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					// Вставляем в новый набор переносимые изделия
-					$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, piece_stored, MT_ID, IsExist, Amount, packer, boxes, Comment, order_date, arrival_date, min_price, Price, discount, opt_price, standart, sister_ID, author, ptn)
-					SELECT {$newOD_ID}, PM_ID, BL_ID, Other, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, piece_stored, MT_ID, IsExist, {$right}, packer, IF(packer, 0, NULL), Comment, order_date, arrival_date, min_price, Price, discount, opt_price, standart, {$value}, {$_SESSION['id']}, ptn FROM OrdersDataDetail WHERE ODD_ID = {$value}";
+					$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, piece_stored, MT_ID, IsExist, Amount, USR_ID, boxes, Comment, order_date, arrival_date, min_price, Price, discount, opt_price, standart, sister_ID, author, ptn)
+					SELECT {$newOD_ID}, PM_ID, BL_ID, Other, PF_ID, PME_ID, Length, Width, PieceAmount, PieceSize, piece_stored, MT_ID, IsExist, {$right}, USR_ID, IF(USR_ID, 0, NULL), Comment, order_date, arrival_date, min_price, Price, discount, opt_price, standart, {$value}, {$_SESSION['id']}, ptn FROM OrdersDataDetail WHERE ODD_ID = {$value}";
 					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				}
 			}
@@ -472,19 +472,37 @@
 					<option value="01" <?= ($_SESSION["f_PR"] === "01") ? 'selected' : '' ?>>Не назначен! - Стулья</option>
 					<option value="00" <?= ($_SESSION["f_PR"] === "00") ? 'selected' : '' ?>>Не назначен! - Прочее</option>
 					<?
-						$query = "SELECT ODS.WD_ID, WD.Name, COUNT(1) Cnt
-									FROM OrdersDataSteps ODS
-									LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
-									WHERE ODS.WD_ID IS NOT NULL
-									GROUP BY ODS.WD_ID
-									ORDER BY Cnt DESC";
+						$query = "
+							SELECT USR.USR_ID
+								,USR_ShortName(USR.USR_ID) Name
+							FROM Users USR
+							WHERE USR.act = 1 AND USR.RL_ID = 10
+							ORDER BY Name
+						";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
 						{
-							echo "<option value='{$row["WD_ID"]}' ";
-							if( $_SESSION["f_PR"] == $row["WD_ID"] ) echo "selected";
+							echo "<option value='{$row["USR_ID"]}' ";
+							if( $_SESSION["f_PR"] == $row["USR_ID"] ) echo "selected";
 							echo ">{$row["Name"]}</option>";
 						}
+
+						echo "<optgroup label='Уволенные'>";
+						$query = "
+							SELECT USR.USR_ID
+								,USR_ShortName(USR.USR_ID) Name
+							FROM Users USR
+							WHERE USR.act = 0 AND USR.RL_ID = 10
+							ORDER BY Name
+						";
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) )
+						{
+							echo "<option value='{$row["USR_ID"]}' ";
+							if( $_SESSION["f_PR"] == $row["USR_ID"] ) echo "selected";
+							echo ">{$row["Name"]}</option>";
+						}
+						echo "</optgroup>";
 					?>
 				</select>
 				<select name="f_ST" style="width:30%;" onchange="this.form.submit()" class="<?=($_SESSION["f_ST"] != "") ? "filtered" : ""?>">
@@ -675,7 +693,7 @@
 			,OD.Comment
 			,Color(OD.CL_ID) Color
 			,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-			,IF(OD.IsPainting = 3, CONCAT(WD.Name, IF(OD.patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')), '') Name
+			,IF(OD.IsPainting = 3, CONCAT(USR_ShortName(OD.USR_ID), IF(OD.patina_USR_ID IS NOT NULL, CONCAT(' + ', USR_ShortName(OD.patina_USR_ID)), '')), '') Name
 			,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 			,OD_IsReady(OD.OD_ID) IsReady
 			,IFNULL(OD.SHP_ID, 0) SHP_ID
@@ -743,24 +761,24 @@
 				";
 				if ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "") {
 					$query .= "
-						AND ODS.WD_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}
+						AND ODS.USR_ID = {$_SESSION["f_PR"]} AND ODS.IsReady = {$_SESSION["f_ST"]}
 					";
 				}
 				elseif ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] == "") {
 					if (strpos($_SESSION["f_PR"], "0") === 0) {
 						$query .= "
-							AND ODS.WD_ID IS NULL
+							AND ODS.USR_ID IS NULL
 						";
 					}
 					else {
 						$query .= "
-							AND ODS.WD_ID = {$_SESSION["f_PR"]}
+							AND ODS.USR_ID = {$_SESSION["f_PR"]}
 						";
 					}
 				}
 				elseif ($_SESSION["f_PR"] == "" and $_SESSION["f_ST"] != "") {
 					$query .= "
-						AND ODS.WD_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}
+						AND ODS.USR_ID IS NOT NULL AND ODS.IsReady = {$_SESSION["f_ST"]}
 					";
 				}
 			}
@@ -771,12 +789,12 @@
 				";
 				if (strpos($_SESSION["f_PR"], "0") === 0) {
 					$query .= "
-						AND ODS.WD_ID IS NULL
+						AND ODS.USR_ID IS NULL
 					";
 				}
 				else {
 					$query .= "
-						AND ODS.WD_ID = {$_SESSION["f_PR"]}
+						AND ODS.USR_ID = {$_SESSION["f_PR"]}
 					";
 				}
 			}
@@ -786,8 +804,6 @@
 	$query .= "
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
-		LEFT JOIN WorkersData pWD ON pWD.WD_ID = OD.patina_WD_ID
 		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 		WHERE IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
 		".($USR_Shop ? "AND (SH.SH_ID IN ({$USR_Shop}) OR (OD.StartDate IS NULL AND SH.retail = 1) OR OD.SH_ID IS NULL)" : "")."
@@ -851,7 +867,7 @@
 			$query .= " AND IF(OD.CL_ID IS NULL, 0, OD.IsPainting) = {$_SESSION["f_IP"]}";
 		}
 		if( $_SESSION["f_CR"] != "" ) {
-			$query .= " AND (Color_print(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%' OR WD.Name LIKE '%{$_SESSION["f_CR"]}%')";
+			$query .= " AND (Color_print(OD.CL_ID) LIKE '%{$_SESSION["f_CR"]}%' OR USR_ShortName(OD.USR_ID) LIKE '%{$_SESSION["f_CR"]}%' OR USR_ShortName(OD.patina_USR_ID) LIKE '%{$_SESSION["f_CR"]}%')";
 		}
 		if( $_SESSION["f_CF"] != "" ) {
 			$query .= " AND OD.confirmed = {$_SESSION["f_CF"]}";
@@ -945,14 +961,13 @@
 				,IF(MT.removed=1, 'removed', '') removed
 				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 				,Steps_button(ODD.ODD_ID, ".((!isset($_GET["shpid"]) and ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "")) ? "1" : "0").") Steps
-				,WD.Name packer_name
+				,USR_ShortName(ODD.USR_ID) packer_name
 				,ODD.boxes
-				,ODD.packer
+				,ODD.USR_ID packer
 			FROM OrdersDataDetail ODD
 			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
-			LEFT JOIN WorkersData WD ON WD.WD_ID = ODD.packer
 			WHERE ODD.OD_ID = {$row["OD_ID"]}
 			ORDER BY PTID DESC, ODD.ODD_ID
 		";

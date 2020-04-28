@@ -234,12 +234,12 @@ elseif (isset($_POST["ODD_ID"])) {
 		if (strpos($k,"Tariff") === 0) {
 			$sid = (int)str_replace( "Tariff", "", $k ); // ID этапа
 			$tariff = $v ? "$v" : "NULL";
-			$worker = $_POST["WD_ID".$sid] ? $_POST["WD_ID".$sid] : "NULL";
+			$worker = $_POST["USR_ID".$sid] ? $_POST["USR_ID".$sid] : "NULL";
 			$isready = $_POST["IsReady".$sid] ? $_POST["IsReady".$sid] : 0;
 			$visible = $_POST["Visible".$sid] ? $_POST["Visible".$sid] : 0;
 			$query = "
 				UPDATE OrdersDataSteps
-				SET WD_ID = {$worker}, Tariff = {$tariff}, IsReady = {$isready}, Visible = {$visible}, author = {$_SESSION['id']}
+				SET USR_ID = {$worker}, Tariff = {$tariff}, IsReady = {$isready}, Visible = {$visible}, author = {$_SESSION['id']}
 				WHERE ODD_ID = {$_POST["ODD_ID"]} AND IFNULL(ST_ID, 0) = {$sid}
 			";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

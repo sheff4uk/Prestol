@@ -79,5 +79,12 @@
 				$USR_cities .= ','.$row["CT_ID"];
 			}
 		}
+
+		// Получаем список подчиненных работников из дерева
+		$USR_tree = "{$_SESSION['id']}";
+		$query = "SELECT USR_tree({$_SESSION['id']}) array";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$row = mysqli_fetch_array($res);
+		if( $row["array"] ) $USR_tree .= ','.$row["array"];
 	}
 ?>

@@ -105,13 +105,12 @@
 					END,
 				'')
 			), '') Material
-			,GROUP_CONCAT(IF(ODS.ODD_ID, CONCAT(IF(ODS.IsReady, CONCAT('<b>', IFNULL(ST.Short, 'Этап'), '</b>'), IFNULL(ST.Short, 'Этап')), '(<i>', IFNULL(WD.Name, '---'), '</i>)'), '') ORDER BY ST.Sort SEPARATOR '<br>') Steps
+			,GROUP_CONCAT(IF(ODS.ODD_ID, CONCAT(IF(ODS.IsReady, CONCAT('<b>', IFNULL(ST.Short, 'Этап'), '</b>'), IFNULL(ST.Short, 'Этап')), '(<i>', IFNULL(USR_ShortName(ODS.USR_ID), '---'), '</i>)'), '') ORDER BY ST.Sort SEPARATOR '<br>') Steps
 			,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
 		LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1 AND ODS.Old = 0
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-		LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
 		LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 		LEFT JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID

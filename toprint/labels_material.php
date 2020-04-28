@@ -54,7 +54,7 @@
 	<?
 	$query = "
 		SELECT CONCAT(MT.Material, IFNULL(CONCAT(' <b>', SHP.Shipper, '</b>'), '')) Material
-			,CONCAT('<i>', IF(SHP.mtype = 1, CONCAT(ROUND(ODD.MT_amount, 1), '<br>м.п.'), WD.Name), '</i>') MT_amount
+			,CONCAT('<i>', IF(SHP.mtype = 1, CONCAT(ROUND(ODD.MT_amount, 1), '<br>м.п.'), GROUP_CONCAT(CONCAT('<b>', ST.Short, ':</b> ', USR_ShortName(ODS.USR_ID)) ORDER BY ST.Sort SEPARATOR '<br>')), '</i>') MT_amount
 			,ODD.Amount
 			,Zakaz(ODD.ODD_ID) Zakaz
 			,OD.Code
@@ -63,10 +63,11 @@
 		JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 		JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
 		LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
-						AND ODS.Visible = 1
-						AND ODS.Old != 1
-						AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ст%') OR ODS.ST_ID IS NULL)
-		LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+			AND ODS.Visible = 1
+			AND ODS.Old != 1
+			AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ра%' OR Short LIKE 'Ст%') OR ODS.ST_ID IS NULL)
+		LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+		GROUP BY ODD.ODD_ID
 		ORDER BY OD.OD_ID
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

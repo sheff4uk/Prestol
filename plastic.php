@@ -216,16 +216,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 				,SH.mtype
 				,IF(MT.removed=1, 'removed', '') removed
 				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
-				,GROUP_CONCAT(CONCAT('<span class=\"', IF(ODS.IsReady = 1, 'ready', 'inwork'), '\" title=\"', ST.Step, '\"><b>', ST.Short, ':</b> ', WD.Name, '</span>') ORDER BY ST.Sort SEPARATOR '<br>') worker
+				,GROUP_CONCAT(CONCAT('<span class=\"', IF(ODS.IsReady = 1, 'ready', 'inwork'), '\" title=\"', ST.Step, '\"><b>', ST.Short, ':</b> ', USR_ShortName(ODS.USR_ID), '</span>') ORDER BY ST.Sort SEPARATOR '<br>') worker
 			FROM OrdersDataDetail ODD
 			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
 			JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = {$product}
 			LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
-							AND ODS.Visible = 1
-							AND ODS.Old != 1
-							AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ра%' OR Short LIKE 'Ст%') OR ODS.ST_ID IS NULL)
-			LEFT JOIN WorkersData WD ON WD.WD_ID = ODS.WD_ID
+				AND ODS.Visible = 1
+				AND ODS.Old != 1
+				AND (ODS.ST_ID IN(SELECT ST_ID FROM StepsTariffs WHERE Short LIKE 'Ра%' OR Short LIKE 'Ст%') OR ODS.ST_ID IS NULL)
 			LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 			WHERE ODD.OD_ID = {$row["OD_ID"]}
 				AND ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."

@@ -275,7 +275,7 @@
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 			WHERE F.author = {$_SESSION['id']}
-				AND F.WD_ID IS NULL
+				AND F.USR_ID IS NULL
 				AND F.OP_ID IS NULL
 				AND F.money != 0
 			ORDER BY F.F_ID DESC
@@ -303,7 +303,7 @@
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 			WHERE F.author = {$_SESSION['id']}
-				AND F.WD_ID IS NULL
+				AND F.USR_ID IS NULL
 				AND F.OP_ID IS NULL
 				AND IFNULL(FC.type, 0) = -1
 				AND F.money != 0
@@ -333,7 +333,7 @@
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 			WHERE F.author = {$_SESSION['id']}
-				AND F.WD_ID IS NULL
+				AND F.USR_ID IS NULL
 				AND F.OP_ID IS NULL
 				AND IFNULL(FC.type, 0) = 1
 				AND F.money != 0
@@ -363,7 +363,7 @@
 			FROM Finance F
 			LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 			WHERE F.author = {$_SESSION['id']}
-			AND F.WD_ID IS NULL
+			AND F.USR_ID IS NULL
 			AND F.OP_ID IS NULL
 			AND IFNULL(FC.type, 0) = 0
 			AND F.money != 0
@@ -845,7 +845,7 @@
 						,SF.kontragent
 						,SF.KA_ID
 						,SF.Name
-						,SF.WD_ID
+						,SF.USR_ID
 						,SF.sum
 						,SF.FA_ID
 						,SF.to_account
@@ -853,8 +853,8 @@
 						,SF.is_edit
 						,SF.account_filter
 						,SF.receipt
+						,SF.author_name
 						,SF.author
-						,SF.USR_ID
 						,SF.archive
 					FROM (
 						SELECT F.F_ID
@@ -868,24 +868,23 @@
 							,F.comment
 							,KA.Naimenovanie kontragent
 							,F.KA_ID
-							,WD.Name
-							,F.WD_ID
+							,USR_ShortName(F.USR_ID) Name
+							,F.USR_ID
 							,F.money sum
 							,F.FA_ID
 							,F.to_account
 							,F.FC_ID
-							,IF(F.WD_ID IS NULL AND F.OP_ID IS NULL AND F.KA_ID IS NULL AND DATEDIFF(NOW(), F.date) < 1, 1, 0) is_edit
+							,IF(F.USR_ID IS NULL AND F.OP_ID IS NULL AND F.KA_ID IS NULL AND DATEDIFF(NOW(), F.date) < 1, 1, 0) is_edit
 							,F.FA_ID account_filter
 							,0 receipt
-							,USR_Icon(F.author) author
-							,F.author USR_ID
+							,USR_Icon(F.author) author_name
+							,F.author
 							,IF(FA.archive = 1 OR IFNULL(TFA.archive, 0) = 1, 1, 0) archive
 						FROM Finance F
 						LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
 						LEFT JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 						LEFT JOIN FinanceAccount TFA ON TFA.FA_ID = F.to_account
 						LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
-						LEFT JOIN WorkersData WD ON WD.WD_ID = F.WD_ID
 						WHERE F.money > 0 AND F.date >= STR_TO_DATE('{$cash_from}', '%d.%m.%Y') AND F.date <= STR_TO_DATE('{$cash_to} 23:59:59', '%d.%m.%Y %T')
 
 						UNION ALL
@@ -902,7 +901,7 @@
 							,NULL
 							,F.KA_ID
 							,NULL
-							,F.WD_ID
+							,F.USR_ID
 							,F.money sum
 							,F.FA_ID
 							,F.to_account
@@ -910,8 +909,8 @@
 							,0 is_edit
 							,F.to_account account_filter
 							,1 receipt
-							,USR_Icon(F.author) author
-							,F.author USR_ID
+							,USR_Icon(F.author) author_name
+							,F.author
 							,IF(FA.archive = 1 OR IFNULL(TFA.archive, 0) = 1, 1, 0) archive
 						FROM Finance F
 						LEFT JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
@@ -926,7 +925,7 @@
 					".($FA_IDs != "" ? "AND SF.account_filter IN ({$FA_IDs})" : "")."
 					".(in_array('finance_account', $Rights) ? "AND SF.account_filter IN(SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]})" : "")."
 					".($FC_IDs != "" ? "AND SF.FC_ID IN ({$FC_IDs})" : "")."
-					".($USR_IDs != "" ? "AND SF.USR_ID IN ({$USR_IDs})" : "")."
+					".($USR_IDs != "" ? "AND SF.author IN ({$USR_IDs})" : "")."
 					#".($KA_IDs_filter != "" ? "AND SF.KA_ID IN ({$KA_IDs_filter})" : "")."
 					".($_SESSION["cash_comment"] ? "AND (SF.comment LIKE '%{$_SESSION["cash_comment"]}%' OR SF.kontragent LIKE '%{$_SESSION["cash_comment"]}%' OR SF.Name LIKE '%{$_SESSION["cash_comment"]}%')" : "")."
 					ORDER BY SF.date DESC, SF.F_ID DESC
@@ -950,8 +949,8 @@
 						echo "<td class='txtright' style='color: {$color};'><b>{$money}</b></td>";
 						echo "<td><span class='nowrap' style='background-color: {$row["color"]}; border-radius: 20%;'>{$row["account"]}</span></td>";
 						echo "<td><span class='nowrap'>{$row["category"]}</span></td>";
-						echo "<td>{$row["author"]}</td>";
-						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}".($row["KA_ID"] ? " <a href='sverki.php?payer={$row["KA_ID"]}' target='_blank' title='Перейти в сверки'><b>{$row["kontragent"]}</b></a>" : ($row["WD_ID"] ? " <a href='paylog.php?worker={$row["WD_ID"]}' target='_blank' title='Перейти в зарплату'><b>{$row["Name"]}</b></a>" : ""))."</span></td>";
+						echo "<td>{$row["author_name"]}</td>";
+						echo "<td class='comment'><span class='nowrap'>{$row["comment"]}".($row["KA_ID"] ? " <a href='sverki.php?payer={$row["KA_ID"]}' target='_blank' title='Перейти в сверки'><b>{$row["kontragent"]}</b></a>" : ($row["USR_ID"] ? " <a href='paylog.php?worker={$row["USR_ID"]}' target='_blank' title='Перейти в зарплату'><b>{$row["Name"]}</b></a>" : ""))."</span></td>";
 						if( $row["is_edit"] and $row["archive"] == 0 ) {
 							echo "<td><a href='#' class='add_operation_btn' id='{$row["F_ID"]}' sum='{$row["sum"]}' type='{$row["type"]}' account='{$row["FA_ID"]}' category='{$row["FC_ID"]}' to_account='{$row["to_account"]}' kontragent='{$row["KA_ID"]}' title='Изменить операцию'><i class='fa fa-pencil-alt fa-lg'></i></a></td>";
 						}

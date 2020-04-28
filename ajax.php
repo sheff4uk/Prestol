@@ -29,8 +29,8 @@ case "steps":
 	$query = "
 		SELECT IFNULL(ODS.ST_ID, 0) ST_ID
 			,IFNULL(ST.Step, '-') Step
-			,ODS.WD_ID
-			,IF(ODS.WD_ID IS NULL, 'disabled', '') disabled
+			,ODS.USR_ID
+			,IF(ODS.USR_ID IS NULL, 'disabled', '') disabled
 			,ODS.Tariff
 			,IF (ODS.IsReady, 'checked', '') IsReady
 			,IF(ODS.Visible = 1, 'checked', '') Visible
@@ -59,42 +59,42 @@ case "steps":
 		$selectworker = $ready_date ? "" : "<option value=\'\' selected>-=Работник не выбран=-</option>";
 		//$selectworker .= "<optgroup label=\'Работающие\'>";
 		$query = "
-			SELECT WD.WD_ID
-				,WD.Name
+			SELECT USR.USR_ID
+				,USR_ShortName(USR.USR_ID) Name
 				,SUM(IFNULL(ODS.Amount, 0)) CNT
-			FROM WorkersData WD
+			FROM Users USR
 			LEFT JOIN (
-				SELECT ODS.*, ODD.Amount
+				SELECT ODS.USR_ID, ODD.Amount
 				FROM OrdersDataSteps ODS
 				JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
-				WHERE ODS.WD_ID IS NOT NULL AND IFNULL(ODS.ST_ID, 0) = {$row["ST_ID"]}
+				WHERE ODS.USR_ID IS NOT NULL AND IFNULL(ODS.ST_ID, 0) = {$row["ST_ID"]}
 				ORDER BY ODS.ODD_ID DESC
 				LIMIT 100
-			) ODS ON ODS.WD_ID = WD.WD_ID
-			WHERE WD.Type = 1 AND WD.act = 1
-			GROUP BY WD.WD_ID
+			) ODS ON ODS.USR_ID = USR.USR_ID
+			WHERE USR.RL_ID = 10 AND USR.act = 1
+			GROUP BY USR.USR_ID
 			ORDER BY CNT DESC
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $subrow = mysqli_fetch_array($res) )
 		{
-			$selected = ( $row["WD_ID"] == $subrow["WD_ID"] ) ? "selected" : "";
-			$selectworker .= "<option {$selected} value=\'{$subrow["WD_ID"]}\'>{$subrow["Name"]}</option>";
+			$selected = ( $row["USR_ID"] == $subrow["USR_ID"] ) ? "selected" : "";
+			$selectworker .= "<option {$selected} value=\'{$subrow["USR_ID"]}\'>{$subrow["Name"]}</option>";
 		}
 		//$selectworker .= "</optgroup>";
 		$selectworker .= "<optgroup label=\'Уволенные\'>";
 		$query = "
-			SELECT WD.WD_ID
-				,WD.Name
-			FROM WorkersData WD
-			WHERE WD.Type = 1 AND WD.act = 0
-			ORDER BY WD.Name
+			SELECT USR.USR_ID
+				,USR_ShortName(USR.USR_ID) Name
+			FROM Users USR
+			WHERE USR.RL_ID = 10 AND USR.act = 0
+			ORDER BY Name
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $subrow = mysqli_fetch_array($res) )
 		{
-			$selected = ( $row["WD_ID"] == $subrow["WD_ID"] ) ? "selected" : "";
-			$selectworker .= "<option {$selected} value=\'{$subrow["WD_ID"]}\'>{$subrow["Name"]}</option>";
+			$selected = ( $row["USR_ID"] == $subrow["USR_ID"] ) ? "selected" : "";
+			$selectworker .= "<option {$selected} value=\'{$subrow["USR_ID"]}\'>{$subrow["Name"]}</option>";
 		}
 		$selectworker .= "</optgroup>";
 		// Конец дропдауна со списком рабочих
@@ -108,7 +108,7 @@ case "steps":
 		}
 		else {
 			$text .= "<tr><td class=\'stage\'><b>{$row["Step"]}</b></td>";
-			$text .= "<td><select name=\'WD_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\' size=\'5\'>{$selectworker}</select></td>";
+			$text .= "<td><select name=\'USR_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\' size=\'5\'>{$selectworker}</select></td>";
 			$text .= "<td><input type=\'number\' min=\'0\' name=\'Tariff{$row["ST_ID"]}\' class=\'tariff\' value=\'{$row["Tariff"]}\'></td>";
 			$text .= "<td><input ".($ready_date ? "onclick=\'return false;\'" : "")." type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}><label for=\'IsReady{$row["ST_ID"]}\'></label></td>";
 			$text .= "<td><input ".($ready_date ? "onclick=\'return false;\'" : "")." type=\'checkbox\' name=\'Visible{$row["ST_ID"]}\' value=\'1\' {$row["Visible"]}></td></tr>";
@@ -134,13 +134,13 @@ case "ispainting":
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
 	// Получаем статус лакировки, отгрузку, лакировщиков и тарифы
-	$query = "SELECT IsPainting, IFNULL(SHP_ID, 0) SHP_ID, WD_ID, tariff, patina_WD_ID, patina_tariff FROM OrdersData WHERE OD_ID = {$id}";
+	$query = "SELECT IsPainting, IFNULL(SHP_ID, 0) SHP_ID, USR_ID, patina_USR_ID, tariff, patina_tariff FROM OrdersData WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	$val = mysqli_result($res,0,'IsPainting');
 	$SHP_ID = mysqli_result($res,0,'SHP_ID');
-	$WD_ID = mysqli_result($res,0,'WD_ID');
+	$USR_ID = mysqli_result($res,0,'USR_ID');
+	$patina_USR_ID = mysqli_result($res,0,'patina_USR_ID');
 	$tariff = mysqli_result($res,0,'tariff');
-	$patina_WD_ID = mysqli_result($res,0,'patina_WD_ID');
 	$patina_tariff = mysqli_result($res,0,'patina_tariff');
 
 	switch ($val) {
@@ -194,7 +194,7 @@ case "ispainting":
 		if ($tariff == "0" or $patina_tariff == "0") {
 			if ($tariff == "0") {
 				// Узнаём имя лакировщика
-				$query = "SELECT WD.Name FROM WorkersData WD WHERE WD.WD_ID = {$WD_ID}";
+				$query = "SELECT USR_ShortName({$USR_ID}) Name";
 				$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 				$painting_name = mysqli_result($res,0,'Name');
 				// Форма лакировщика
@@ -205,7 +205,7 @@ case "ispainting":
 			}
 			if ($patina_tariff == "0") {
 				// Узнаём имя патинировщика
-				$query = "SELECT WD.Name FROM WorkersData WD WHERE WD.WD_ID = {$patina_WD_ID}";
+				$query = "SELECT USR_ShortName({$patina_USR_ID}) Name";
 				$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 				$patina_name = mysqli_result($res,0,'Name');
 				// Форма патинировщика
@@ -225,7 +225,7 @@ case "ispainting":
 							\$noty.close();
 							var tariff = \$('#tariff').val();
 							var patina_tariff = \$('#patina_tariff').val();
-							\$.ajax({ url: 'ajax.php?do=painting_workers_reject&wd_id={$WD_ID}&tariff='+tariff+'&patina_wd_id={$patina_WD_ID}&patina_tariff='+patina_tariff+'&od_id={$id}', dataType: 'script', async: false });
+							\$.ajax({ url: 'ajax.php?do=painting_workers_reject&usr_id={$USR_ID}&tariff='+tariff+'&patina_usr_id={$patina_USR_ID}&patina_tariff='+patina_tariff+'&od_id={$id}', dataType: 'script', async: false });
 						}
 						}
 					],
@@ -235,17 +235,17 @@ case "ispainting":
 		}
 		else {
 			// Если отмена лакировки - убираем из начислений
-			if ($WD_ID > 0 and $tariff > 0) {
+			if ($USR_ID > 0 and $tariff > 0) {
 				$query = "
-					INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
-					VALUES ({$id}, {$WD_ID}, -1 * {$tariff}, 'Лакировка', {$_SESSION['id']})
+					INSERT INTO PayLog(OD_ID, USR_ID, Pay, Comment, author)
+					VALUES ({$id}, {$USR_ID}, -1 * {$tariff}, 'Лакировка', {$_SESSION['id']})
 				";
 				mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 			}
-			if ($patina_WD_ID > 0 and $patina_tariff > 0) {
+			if ($patina_USR_ID > 0 and $patina_tariff > 0) {
 				$query = "
-					INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
-					VALUES ({$id}, {$patina_WD_ID}, -1 * {$patina_tariff}, 'Патинирование', {$_SESSION['id']})
+					INSERT INTO PayLog(OD_ID, USR_ID, Pay, Comment, author)
+					VALUES ({$id}, {$patina_USR_ID}, -1 * {$patina_tariff}, 'Патинирование', {$_SESSION['id']})
 				";
 				mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 			}
@@ -264,40 +264,40 @@ case "ispainting":
 		$patina_cnt = $row["cnt"];
 
 		// Формирование дропдауна со списком лакировщиков. Сортировка по релевантности.
-		$painting_workers = "<select id='painting_wd_id' size='10'>";
+		$painting_workers = "<select id='painting_usr_id' size='10'>";
 		$painting_workers .= "<option selected value='0'>-=Выберите работника=-</option>";
 		$painting_workers .= "<optgroup label='Работающие'>";
 		$query = "
-			SELECT WD.WD_ID, WD.Name, SUM(1) CNT
-			FROM WorkersData WD
+			SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name, SUM(1) CNT
+			FROM Users USR
 			LEFT JOIN (
-				SELECT OD.WD_ID
+				SELECT OD.USR_ID
 				FROM OrdersData OD
-				WHERE OD.WD_ID IS NOT NULL
+				WHERE OD.USR_ID IS NOT NULL
 				ORDER BY OD.OD_ID DESC
 				LIMIT 100
-			) SOD ON SOD.WD_ID = WD.WD_ID
-			WHERE WD.Type = 3 AND WD.act = 1
-			GROUP BY WD.WD_ID
+			) SOD ON SOD.USR_ID = USR.USR_ID
+			WHERE USR.RL_ID = 12 AND USR.act = 1
+			GROUP BY USR.USR_ID
 			ORDER BY CNT DESC
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
-			$painting_workers .= "<option ".($row["WD_ID"] == $WD_ID ? "selected" : "")." value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+			$painting_workers .= "<option ".($row["USR_ID"] == $USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
 		}
 		$painting_workers .= "</optgroup>";
 		$painting_workers .= "<optgroup label='Уволенные'>";
 		$query = "
-			SELECT WD.WD_ID ,WD.Name
-			FROM WorkersData WD
-			WHERE WD.Type = 3 AND WD.act = 0
-			ORDER BY WD.Name
+			SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name
+			FROM Users USR
+			WHERE USR.RL_ID = 12 AND USR.act = 0
+			ORDER BY Name
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
-			$painting_workers .= "<option ".($row["WD_ID"] == $WD_ID ? "selected" : "")." value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+			$painting_workers .= "<option ".($row["USR_ID"] == $USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
 		}
 		$painting_workers .= "</optgroup>";
 		$painting_workers .= "</select>";
@@ -305,40 +305,40 @@ case "ispainting":
 		// Конец дропдауна со списком лакировщиков
 
 		// Формирование дропдауна со списком патинировщиков. Сортировка по релевантности.
-		$patina_workers = "<select id='patina_wd_id' size='10'>";
+		$patina_workers = "<select id='patina_usr_id' size='10'>";
 		$patina_workers .= "<option selected value='0'>-=Выберите работника=-</option>";
 		$patina_workers .= "<optgroup label='Работающие'>";
 		$query = "
-			SELECT WD.WD_ID, WD.Name, SUM(1) CNT
-			FROM WorkersData WD
+			SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name, SUM(1) CNT
+			FROM Users USR
 			LEFT JOIN (
-				SELECT OD.patina_WD_ID
+				SELECT OD.patina_USR_ID
 				FROM OrdersData OD
-				WHERE OD.patina_WD_ID IS NOT NULL
+				WHERE OD.patina_USR_ID IS NOT NULL
 				ORDER BY OD.OD_ID DESC
 				LIMIT 100
-			) SOD ON SOD.patina_WD_ID = WD.WD_ID
-			WHERE WD.Type = 3 AND WD.act = 1
-			GROUP BY WD.WD_ID
+			) SOD ON SOD.patina_USR_ID = USR.USR_ID
+			WHERE USR.RL_ID = 12 AND USR.act = 1
+			GROUP BY USR.USR_ID
 			ORDER BY CNT DESC
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
-			$patina_workers .= "<option ".($row["WD_ID"] == $patina_WD_ID ? "selected" : "")." value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+			$patina_workers .= "<option ".($row["USR_ID"] == $patina_USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
 		}
 		$patina_workers .= "</optgroup>";
 		$patina_workers .= "<optgroup label='Уволенные'>";
 		$query = "
-			SELECT WD.WD_ID ,WD.Name
-			FROM WorkersData WD
-			WHERE WD.Type = 3 AND WD.act = 0
-			ORDER BY WD.Name
+			SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name
+			FROM Users USR
+			WHERE USR.RL_ID = 12 AND USR.act = 0
+			ORDER BY Name
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		while( $row = mysqli_fetch_array($res) )
 		{
-			$patina_workers .= "<option ".($row["WD_ID"] == $patina_WD_ID ? "selected" : "")." value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
+			$patina_workers .= "<option ".($row["USR_ID"] == $patina_USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
 		}
 		$patina_workers .= "</optgroup>";
 		$patina_workers .= "</select>";
@@ -361,11 +361,11 @@ case "ispainting":
 				buttons: [
 					{addClass: 'btn btn-primary', text: 'Ok', onClick: function (\$noty) {
 						\$noty.close();
-						var wd_id = \$('#painting_wd_id').val();
+						var usr_id = \$('#painting_usr_id').val();
 						var tariff = \$('#tariff').val();
-						var patina_wd_id = \$('#patina_wd_id').val();
+						var patina_usr_id = \$('#patina_usr_id').val();
 						var patina_tariff = \$('#patina_tariff').val();
-						\$.ajax({ url: 'ajax.php?do=painting_workers&wd_id='+wd_id+'&tariff='+tariff+'&patina_wd_id='+patina_wd_id+'&patina_tariff='+patina_tariff+'&od_id={$id}', dataType: 'script', async: false });
+						\$.ajax({ url: 'ajax.php?do=painting_workers&usr_id='+usr_id+'&tariff='+tariff+'&patina_usr_id='+patina_usr_id+'&patina_tariff='+patina_tariff+'&od_id={$id}', dataType: 'script', async: false });
 					}
 					}
 				],
@@ -385,45 +385,45 @@ case "ispainting":
 case "painting_workers":
 
 	$id = $_GET["od_id"];
-	$wd_id = $_GET["wd_id"];
+	$usr_id = $_GET["usr_id"];
+	$patina_usr_id = $_GET["patina_usr_id"];
 	$tariff = $_GET["tariff"];
-	$patina_wd_id = $_GET["patina_wd_id"];
 	$patina_tariff = $_GET["patina_tariff"];
 
-	if( $wd_id > 0 ) {
+	if( $usr_id > 0 ) {
 		// Узнаем имя лакировщика
-		$query = "SELECT Name FROM WorkersData WHERE WD_ID = {$wd_id}";
+		$query = "SELECT USR_ShortName({$usr_id}) Name";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$Name = mysqli_result($res,0,'Name');
 
-		$query = "UPDATE OrdersData SET WD_ID = {$wd_id}, tariff = ".($tariff > 0 ? $tariff : "NULL").", author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+		$query = "UPDATE OrdersData SET USR_ID = {$usr_id}, tariff = ".($tariff > 0 ? $tariff : "NULL").", author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$painting_workers = $Name;
 
 		if ($tariff > 0) {
 			$query = "
-				INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
-				VALUES ({$id}, {$wd_id}, {$tariff}, 'Лакировка', {$_SESSION['id']})
+				INSERT INTO PayLog(OD_ID, USR_ID, Pay, Comment, author)
+				VALUES ({$id}, {$usr_id}, {$tariff}, 'Лакировка', {$_SESSION['id']})
 			";
 			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		}
 	}
 
 
-	if( $patina_wd_id > 0 ) {
+	if( $patina_usr_id > 0 ) {
 		// Узнаем имя лакировщика
-		$query = "SELECT Name FROM WorkersData WHERE WD_ID = {$patina_wd_id}";
+		$query = "SELECT USR_ShortName({$patina_usr_id}) Name";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$Name = mysqli_result($res,0,'Name');
 
-		$query = "UPDATE OrdersData SET patina_WD_ID = {$patina_wd_id}, patina_tariff = ".($patina_tariff > 0 ? $patina_tariff : "NULL").", author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+		$query = "UPDATE OrdersData SET patina_USR_ID = {$patina_usr_id}, patina_tariff = ".($patina_tariff > 0 ? $patina_tariff : "NULL").", author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$painting_workers .= " + {$Name}";
 
 		if ($patina_tariff > 0) {
 			$query = "
-				INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
-				VALUES ({$id}, {$patina_wd_id}, {$patina_tariff}, 'Патинирование', {$_SESSION['id']})
+				INSERT INTO PayLog(OD_ID, USR_ID, Pay, Comment, author)
+				VALUES ({$id}, {$patina_usr_id}, {$patina_tariff}, 'Патинирование', {$_SESSION['id']})
 			";
 			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		}
@@ -440,33 +440,33 @@ case "painting_workers":
 case "painting_workers_reject":
 
 	$id = $_GET["od_id"];
-	$wd_id = $_GET["wd_id"];
+	$usr_id = $_GET["usr_id"];
 	$tariff = $_GET["tariff"];
-	$patina_wd_id = $_GET["patina_wd_id"];
+	$patina_usr_id = $_GET["patina_usr_id"];
 	$patina_tariff = $_GET["patina_tariff"];
 
-	if( $wd_id > 0 ) {
-		$query = "UPDATE OrdersData SET WD_ID = {$wd_id}, tariff = ".($tariff > 0 ? $tariff : "NULL").", author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+	if( $usr_id > 0 ) {
+		$query = "UPDATE OrdersData SET USR_ID = {$usr_id}, tariff = ".($tariff > 0 ? $tariff : "NULL").", author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
 		if ($tariff > 0) {
 			$query = "
-				INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
-				VALUES ({$id}, {$wd_id}, -1 * {$tariff}, 'Лакировка', {$_SESSION['id']})
+				INSERT INTO PayLog(OD_ID, USR_ID, Pay, Comment, author)
+				VALUES ({$id}, {$usr_id}, -1 * {$tariff}, 'Лакировка', {$_SESSION['id']})
 			";
 			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		}
 	}
 
 
-	if( $patina_wd_id > 0 ) {
-		$query = "UPDATE OrdersData SET patina_WD_ID = {$patina_wd_id}, patina_tariff = ".($patina_tariff > 0 ? $patina_tariff : "NULL").", author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+	if( $patina_usr_id > 0 ) {
+		$query = "UPDATE OrdersData SET patina_USR_ID = {$patina_usr_id}, patina_tariff = ".($patina_tariff > 0 ? $patina_tariff : "NULL").", author = {$_SESSION['id']} WHERE OD_ID = {$id}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
 		if ($patina_tariff > 0) {
 			$query = "
-				INSERT INTO PayLog(OD_ID, WD_ID, Pay, Comment, author)
-				VALUES ({$id}, {$patina_wd_id}, -1 * {$patina_tariff}, 'Патинирование', {$_SESSION['id']})
+				INSERT INTO PayLog(OD_ID, USR_ID, Pay, Comment, author)
+				VALUES ({$id}, {$patina_usr_id}, -1 * {$patina_tariff}, 'Патинирование', {$_SESSION['id']})
 			";
 			mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		}
@@ -1982,16 +1982,16 @@ case "cash_category":
 
 // Формирование выпадающего списка заготовок при выборе работника в форме добавления заготовок
 case "blank_dropdown":
-	$wd_id = $_GET["wd_id"];
+	$usr_id = $_GET["usr_id"];
 	$min_size = 4;
 	$html = "";
 
-	if( $wd_id != "null" ) {
+	if( $usr_id != "null" ) {
 		// Список частых заготовок
 		$html .= "<optgroup label='Частые'>";
 		$query = "SELECT BL.BL_ID, BL.Name
 					FROM BlankList BL
-					JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND IFNULL(BS.WD_ID, 0) = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 90
+					JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND IFNULL(BS.USR_ID, 0) = {$usr_id} AND DATEDIFF(NOW(), BS.Date) <= 90
 					LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID AND PB.BL_ID IS NOT NULL
 					LEFT JOIN ProductModels PM ON PM.PM_ID = PB.PM_ID
 					WHERE IFNULL(PM.archive, 0) = 0
@@ -2010,7 +2010,7 @@ case "blank_dropdown":
 		$html .= "<optgroup label='Остальные'>";
 		$query = "SELECT BL.BL_ID, BL.Name
 					FROM BlankList BL
-					LEFT JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND IFNULL(BS.WD_ID, 0) = {$wd_id} AND DATEDIFF(NOW(), BS.Date) <= 90
+					LEFT JOIN BlankStock BS ON BS.BL_ID = BL.BL_ID AND IFNULL(BS.USR_ID, 0) = {$usr_id} AND DATEDIFF(NOW(), BS.Date) <= 90
 					LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID AND PB.BL_ID IS NOT NULL
 					LEFT JOIN ProductModels PM ON PM.PM_ID = PB.PM_ID
 					WHERE BS.BL_ID IS NULL AND IFNULL(PM.archive, 0) = 0
@@ -2038,7 +2038,7 @@ case "blank_dropdown":
 // Формирование списка задействованых заготовок при выборе заготовки в форме добавления заготовок
 case "subblank_dropdown":
 	$bl_id = $_GET["bl_id"];
-	$wd_id = $_GET["wd_id"];
+	$usr_id = $_GET["usr_id"];
 	$html = "<legend style='text-align: left;'>Задействованы:</legend>";
 	$count = 0;
 
@@ -2057,17 +2057,18 @@ case "subblank_dropdown":
 			$count++;
 
 			// Формируем выпадающий список со связанными заготовками
-			$query = "SELECT IFNULL(BC.WD_ID, 0) WD_ID, (BC.count + BC.start_balance) count, IFNULL(WD.Name, 'Без работника') Name
-						FROM BlankCount BC
-						LEFT JOIN WorkersData WD ON WD.WD_ID = BC.WD_ID
-						WHERE BL_ID = {$row["BLL_ID"]}";
+			$query = "
+				SELECT IFNULL(BC.USR_ID, 0) USR_ID, (BC.count + BC.start_balance) count, IFNULL(USR_ShortName(BC.USR_ID), 'Без работника') Name
+				FROM BlankCount BC
+				WHERE BC.BL_ID = {$row["BLL_ID"]}
+			";
 			$subres = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-			$select = "<select required name='wd_id[]' style='width: 250px;'>";
+			$select = "<select required name='usr_id[]' style='width: 250px;'>";
 			$select .= "<option value=''>-=Выберите вариант из списка=-</option>";
 			while( $subrow = mysqli_fetch_array($subres) )
 			{
-				$selected = ($subrow["count"] > 0 and $subrow["WD_ID"] == $wd_id) ? "selected" : "";
-				$select .= "<option {$selected} value='{$subrow["WD_ID"]}'>({$subrow["count"]} шт.) {$subrow["Name"]}</option>";
+				$selected = ($subrow["count"] > 0 and $subrow["USR_ID"] == $usr_id) ? "selected" : "";
+				$select .= "<option {$selected} value='{$subrow["USR_ID"]}'>({$subrow["count"]} шт.) {$subrow["Name"]}</option>";
 			}
 			$select .= "</select>";
 
@@ -2091,12 +2092,12 @@ case "subblank_dropdown":
 
 // Обновление начального значения заготовок по рабочим
 case "start_balance_worker":
-	$wd_id = $_GET["wd_id"];
+	$usr_id = $_GET["usr_id"];
 	$bl_id = $_GET["bl_id"];
 	$val = $_GET["val"] ? $_GET["val"] : "0";
 
 	// Узнаем какое было раньше начальное значение у рабочего
-	$query = "SELECT start_balance FROM BlankCount WHERE BL_ID = {$bl_id} AND WD_ID = {$wd_id}";
+	$query = "SELECT start_balance FROM BlankCount WHERE BL_ID = {$bl_id} AND USR_ID = {$usr_id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	$start_balance = mysqli_result($res,0,'start_balance');
 
@@ -2105,12 +2106,12 @@ case "start_balance_worker":
 		$diff = $val - $start_balance;
 
 		// Добавление в журнал сдачи заготовок информацию о корректировке
-		$query = "INSERT INTO BlankStock(BL_ID, WD_ID, Amount, adj, author)
-				  VALUES ({$bl_id}, ".($wd_id == 0 ? "NULL" : $wd_id).", {$diff}, 1, {$_SESSION["id"]})";
+		$query = "INSERT INTO BlankStock(BL_ID, USR_ID, Amount, adj, author)
+				  VALUES ({$bl_id}, ".($usr_id == 0 ? "NULL" : $usr_id).", {$diff}, 1, {$_SESSION["id"]})";
 		mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
 		// Обновляем начальное значение заготовки у рабочего
-		$query = "UPDATE BlankCount SET start_balance = {$val}, last_date = NOW() WHERE BL_ID = {$bl_id} AND WD_ID = {$wd_id}";
+		$query = "UPDATE BlankCount SET start_balance = {$val}, last_date = NOW() WHERE BL_ID = {$bl_id} AND USR_ID = {$usr_id}";
 		mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 
 		// Узнаем общее кол-во заготовки и начальное значение
@@ -2128,7 +2129,7 @@ case "start_balance_worker":
 		// Узнаем общее кол-во заготовки у рабочего
 		$query = "SELECT (BC.count + BC.start_balance) Amount
 					FROM BlankCount BC
-					WHERE BC.BL_ID = {$bl_id} AND BC.WD_ID = {$wd_id}";
+					WHERE BC.BL_ID = {$bl_id} AND BC.USR_ID = {$usr_id}";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$worker_amount = mysqli_result($res,0,'Amount');
 		$sub_color = ( $worker_amount < 0 ) ? ' bg-red' : '';
@@ -2139,13 +2140,13 @@ case "start_balance_worker":
 
 		echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').hide('fast');";
 		echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').hide('fast');";
-		echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').hide('fast');";
+		echo "$('#exist_blank #blank_{$bl_id}_{$usr_id} .blank_amount span').hide('fast');";
 		echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').val('{$start_balance}');";
 		echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').html('{$html}');";
-		echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').html('{$sub_html}');";
+		echo "$('#exist_blank #blank_{$bl_id}_{$usr_id} .blank_amount span').html('{$sub_html}');";
 		echo "$('#exist_blank .sub_blank#{$bl_id} .start_balance').show('fast');";
 		echo "$('#exist_blank .sub_blank#{$bl_id} .blank_amount span').show('fast');";
-		echo "$('#exist_blank #blank_{$bl_id}_{$wd_id} .blank_amount span').show('fast');";
+		echo "$('#exist_blank #blank_{$bl_id}_{$usr_id} .blank_amount span').show('fast');";
 		echo "noty({timeout: 3000, text: 'Начальное значение обновлено на: <b>\"{$val}\"</b>', type: 'success'});";
 		echo "blank_log_table();";	// Обновляем таблицу сдачи заготовок
 	}
@@ -2248,19 +2249,18 @@ case "blank_log_table":
 							,DATE_FORMAT(BS.Date, '%H:%i') Time
 							,DAY(BS.Date) day
 							,MONTH(BS.Date) month
-							,WD.Name Worker
+							,USR_ShortName(BS.USR_ID) Worker
 							,BL.Name Blank
 							,BS.Amount
 							,BS.Tariff
 							,IF(BS.adj = 1, 'Коррекция', REPLACE(BS.Comment, '\r\n', '<br>')) Comment
-							,WD.WD_ID
+							,BS.USR_ID
 							,BL.BL_ID
 							,IF(BLL.BLL_ID IS NULL, 'bold', '') Bold
 							,USR_Icon(BS.author) Name
 							,PBS.BS_ID is_parent
 						FROM BlankStock BS
 						LEFT JOIN BlankStock PBS ON PBS.PBS_ID = BS.BS_ID
-						LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
 						LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
 						LEFT JOIN (
 							SELECT BL.BL_ID, BLL.BLL_ID
@@ -2280,7 +2280,7 @@ case "blank_log_table":
 					<td>".($row["is_parent"] ? "<i class='fa fa-arrow-right'></i>" : "")."</td>
 					<td><b class='nowrap'>{$row["friendly_date"]}</b></td>
 					<td>{$row["Time"]}</td>
-					<td class='worker nowrap' val='{$row["WD_ID"]}'><span><a href='/paylog.php?worker={$row["WD_ID"]}'>{$row["Worker"]}</a></span></td>
+					<td class='worker nowrap' val='{$row["USR_ID"]}'><span><a href='/paylog.php?worker={$row["USR_ID"]}'>{$row["Worker"]}</a></span></td>
 					<td class='blank {$row["Bold"]} nowrap' val='{$row["BL_ID"]}'><span>{$row["Blank"]}</span></td>
 					<td class='amount txtright'><b style='font-size: 1.2em; color: {$color};'>{$row["Amount"]}</b></td>
 					<td class='tariff txtright'>{$row["Tariff"]}</td>
@@ -2289,12 +2289,11 @@ case "blank_log_table":
 					</tr>
 				";
 				if( $row["is_parent"] ) {
-					$query = "SELECT GROUP_CONCAT(IFNULL(WD.Name, 'Без работника') SEPARATOR '<br>') Worker
+					$query = "SELECT GROUP_CONCAT(IFNULL(USR_ShortName(BS.USR_ID), 'Без работника') SEPARATOR '<br>') Worker
 									,GROUP_CONCAT(BL.Name SEPARATOR '<br>') Blank
 									,GROUP_CONCAT(BS.Amount SEPARATOR '<br>') Amount
 									,MAX(BS.Amount) max_amount
 								FROM BlankStock BS
-								LEFT JOIN WorkersData WD ON WD.WD_ID = BS.WD_ID
 								LEFT JOIN BlankList BL ON BL.BL_ID = BS.BL_ID
 								WHERE BS.PBS_ID = {$row["BS_ID"]}";
 					$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -2498,7 +2497,7 @@ case "odd_data":
 			,ODD.IsExist
 			,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
 			,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
-			,IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
+			,IF(SUM(ODS.USR_ID) IS NULL, 0, 1) inprogress
 			,ODD.ptn
 			,SH.mtype
 		FROM OrdersDataDetail ODD

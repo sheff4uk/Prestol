@@ -36,6 +36,8 @@ body, td {
 	font-size: 10pt;
 }
 
+#body_wraper {display: none;}
+
 #overlay {
 	z-index: 10;
 	position: fixed;

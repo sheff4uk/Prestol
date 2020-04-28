@@ -7,7 +7,7 @@
 		$boxes = ($_POST["boxes"] ? $_POST["boxes"] : ($_POST["packer"] ? 0 : "NULL"));
 		$query = "
 			UPDATE OrdersDataDetail
-			SET packer = {$packer}
+			SET USR_ID = {$packer}
 				,boxes = {$boxes}
 			WHERE ODD_ID = {$_POST["ODD_ID"]}
 		";
@@ -105,8 +105,8 @@
 				,Zakaz(ODD.ODD_ID) Zakaz
 				,CONCAT(' <b>', MT.Material, ' ', SHP.Shipper, '</b>') Material
 				,CONCAT('<b>', ODD.Amount, '</b>') Amount
-				,WD.Name
-				,ODD.packer
+				,IF(ODD.USR_ID IS NULL, '', USR_Icon(ODD.USR_ID)) Name
+				,ODD.USR_ID packer
 				,ODD.boxes
 				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 			FROM OrdersData OD
@@ -114,7 +114,6 @@
 			LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 			LEFT JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
 			LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
-			LEFT JOIN WorkersData WD ON WD.WD_ID = ODD.packer
 			WHERE OD.DelDate IS NULL
 				AND OD.ReadyDate IS NULL
 				AND IFNULL(OD.SHP_ID, 0) = {$overrow["SHP_ID"]}
@@ -187,40 +186,40 @@
 				// Формирование дропдауна со списком рабочих. Сортировка по релевантности.
 				$selectworker = $ready_date ? "" : "<option value='' selected>-=Работник не выбран=-</option>";
 				$query = "
-					SELECT WD.WD_ID
-						,WD.Name
+					SELECT USR.USR_ID
+						,USR_ShortName(USR.USR_ID) Name
 						,SUM(IFNULL(ODD.boxes, 0)) CNT
-					FROM WorkersData WD
+					FROM Users USR
 					LEFT JOIN (
-						SELECT packer, boxes
+						SELECT USR_ID, boxes
 						FROM OrdersDataDetail
-						WHERE packer IS NOT NULL
+						WHERE USR_ID IS NOT NULL
 						ORDER BY ODD_ID DESC
 						LIMIT 100
-					) ODD ON ODD.packer = WD.WD_ID
-					WHERE WD.tariff IS NOT NULL and WD.act = 1
-					GROUP BY WD.WD_ID
+					) ODD ON ODD.USR_ID = USR.USR_ID
+					WHERE USR.tariff IS NOT NULL and USR.act = 1
+					GROUP BY USR.USR_ID
 					ORDER BY CNT DESC
 				";
 				$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 				while( $subrow = mysqli_fetch_array($res) )
 				{
-					$selected = ( $row["WD_ID"] == $subrow["WD_ID"] ) ? "selected" : "";
-					$selectworker .= "<option {$selected} value='{$subrow["WD_ID"]}'>{$subrow["Name"]}</option>";
+					$selected = ( $row["USR_ID"] == $subrow["USR_ID"] ) ? "selected" : "";
+					$selectworker .= "<option {$selected} value='{$subrow["USR_ID"]}'>{$subrow["Name"]}</option>";
 				}
 				$selectworker .= "<optgroup label='Уволенные'>";
 				$query = "
-					SELECT WD.WD_ID
-						,WD.Name
-					FROM WorkersData WD
-					WHERE WD.tariff IS NOT NULL AND WD.act = 0
-					ORDER BY WD.Name
+					SELECT USR.USR_ID
+						,USR_ShortName(USR.USR_ID) Name
+					FROM Users USR
+					WHERE USR.tariff IS NOT NULL AND USR.act = 0
+					ORDER BY Name
 				";
 				$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 				while( $subrow = mysqli_fetch_array($res) )
 				{
-					$selected = ( $row["WD_ID"] == $subrow["WD_ID"] ) ? "selected" : "";
-					$selectworker .= "<option {$selected} value=\'{$subrow["WD_ID"]}\'>{$subrow["Name"]}</option>";
+					$selected = ( $row["USR_ID"] == $subrow["USR_ID"] ) ? "selected" : "";
+					$selectworker .= "<option {$selected} value=\'{$subrow["USR_ID"]}\'>{$subrow["Name"]}</option>";
 				}
 				$selectworker .= "</optgroup>";
 				// Конец дропдауна со списком рабочих

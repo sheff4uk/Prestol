@@ -316,7 +316,7 @@
 
 		// Узнаем приступили ли к производству изделия
 		$query = "
-			SELECT IF(SUM(ODS.WD_ID) IS NULL, 0, 1) inprogress
+			SELECT IF(SUM(ODS.USR_ID) IS NULL, 0, 1) inprogress
 			FROM OrdersDataDetail ODD
 			LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID AND ODS.Visible = 1
 			WHERE ODD.ODD_ID = {$odd_id}
@@ -333,8 +333,8 @@
 
 		if (count($_SESSION["error"]) == 0) { // Если нет препятствий то удаляем
 			// Создание копии набора
-			$query = "INSERT INTO OrdersData(PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, DelDate, OrderNumber, CL_ID, IsPainting, WD_ID, Comment, IsReady, author, confirmed)
-			SELECT PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, NOW(), OrderNumber, CL_ID, IF(IsPainting = 2, 1, IsPainting), WD_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$id}";
+			$query = "INSERT INTO OrdersData(PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, DelDate, OrderNumber, CL_ID, IsPainting, USR_ID, Comment, IsReady, author, confirmed)
+			SELECT PFI_ID, Code, SH_ID, ClientName, KA_ID, mtel, address, AddDate, StartDate, EndDate, NOW(), OrderNumber, CL_ID, IF(IsPainting = 2, 1, IsPainting), USR_ID, Comment, IsReady, {$_SESSION['id']}, confirmed FROM OrdersData WHERE OD_ID = {$id}";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$newOD_ID = mysqli_insert_id($mysqli);
 
@@ -429,7 +429,7 @@
 			,CL.clear
 			,IFNULL(CL.NCS_ID, 0) NCS_ID
 			,IF(OD.CL_ID IS NULL, 0, OD.IsPainting) IsPainting
-			,IF(OD.IsPainting = 3, CONCAT(WD.Name, IF(OD.patina_WD_ID IS NOT NULL, CONCAT(' + ', pWD.Name), '')), '') Name
+			,IF(OD.IsPainting = 3, CONCAT(USR_ShortName(OD.USR_ID), IF(OD.patina_USR_ID IS NOT NULL, CONCAT(' + ', USR_ShortName(OD.patina_USR_ID)), '')), '') Name
 			,OD.Comment
 			,IF(OD.SH_ID IS NULL, '#999', IFNULL(CT.Color, '#fff')) CTColor
 			,IFNULL(SH.retail, 0) retail
@@ -444,8 +444,6 @@
 		FROM OrdersData OD
 		LEFT JOIN Kontragenty KA ON KA.KA_ID = OD.KA_ID
 		LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
-		LEFT JOIN WorkersData WD ON WD.WD_ID = OD.WD_ID
-		LEFT JOIN WorkersData pWD ON pWD.WD_ID = OD.patina_WD_ID
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		LEFT JOIN Kontragenty KA1 ON KA1.KA_ID = SH.KA_ID
 		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID

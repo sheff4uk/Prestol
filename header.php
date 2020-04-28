@@ -160,7 +160,7 @@
 	<title><?=$title?></title>
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=74'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=75'>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 <!--	<link rel='stylesheet' type='text/css' href='css/font-awesome.min.css'>-->
 	<link rel='stylesheet' type='text/css' href='css/buttons.css'>
@@ -202,7 +202,7 @@
 				$('body').css('overflow', '');
 			});
 
-			$('#body_wraper').show();
+			$('#body_wraper').fadeIn('slow');
 			$('#loading').hide();
 
 			//Проверка браузера
@@ -457,10 +457,10 @@
 		}
 		if( in_array('screen_paylog', $Rights) or in_array('screen_timesheet', $Rights) ) {
 			if( in_array('screen_paylog', $Rights) ) {
-				$menu["Рабочие"]["Зарплата"] = "paylog.php";
+				$menu["Сотрудники"]["Зарплата"] = "paylog.php";
 			}
 			if( in_array('screen_timesheet', $Rights) ) {
-				$menu["Рабочие"]["Табель"] = "timesheet.php";
+				$menu["Сотрудники"]["Табель"] = "timesheet.php";
 			}
 		}
 		if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {

@@ -17,7 +17,7 @@
 					SET money = {$money}
 						,FA_ID = {$_POST["account"]}
 						,FC_ID = {$category}
-						,WD_ID = {$_POST["Worker"]}
+						,USR_ID = {$_POST["Worker"]}
 						".($Comment ? ",comment = '{$Comment}'" : "")."
 						,author = {$_SESSION['id']}
 				";
@@ -27,7 +27,7 @@
 			else {
 				$query = "
 					INSERT INTO PayLog
-					SET WD_ID = {$_POST["Worker"]}
+					SET USR_ID = {$_POST["Worker"]}
 						,Pay = {$_POST["Pay"]}
 						".($Comment ? ",Comment = '{$Comment}'" : "")."
 						,author = {$_SESSION['id']}
@@ -55,27 +55,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</div>
 			<div>
 				<label>Работник:</label>
-				<select required name="Worker" id="worker" style="width: 200px;">
-					<option value="">-=Выберите работника=-</option>
-					<?
-					$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE WD.act = 1 ORDER BY WD.Name";
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					while( $row = mysqli_fetch_array($res) )
-					{
-						echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
-					}
-					?>
-					<optgroup label="Уволенные">
-						<?
-						$query = "SELECT WD.WD_ID, WD.Name FROM WorkersData WD WHERE WD.act = 0 ORDER BY WD.Name";
-						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-						while( $row = mysqli_fetch_array($res) )
-						{
-							echo "<option value='{$row["WD_ID"]}'>{$row["Name"]}</option>";
-						}
-						?>
-					</optgroup>
-				</select>
+				<b id="worker_name"></b>
+				<input type="hidden" name="Worker">
 			</div>
 			<div id="wr_account">
 				<label>Счёт:</label>
@@ -114,7 +95,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</div>
 			<div>
 				<label>Примечание:</label>
-				<input type='text' name='Comment' style="width: 100%;" autocomplete="off">
+				<input type='text' name='Comment' style="width: 300px;" autocomplete="off">
 			</div>
 		</fieldset>
 		<div>
@@ -131,30 +112,20 @@ this.subbut.value='Подождите, пожалуйста!';">
 			var location = $(this).attr('location');
 			var account = $(this).attr('account');
 			var worker = $(this).attr('worker');
+			var worker_name = $(this).attr('worker_name');
 			var pay = $(this).attr('pay');
 			var comment = $(this).attr('comment');
 
 			// Очистка диалога
-			$( '#addpay input[type="number"], #addpay select, #addpay input[type="text"], #addpay input[type="hidden"]' ).val('');
+			$( '#addpay input[type="number"], #addpay input[type="text"], #addpay input[type="hidden"]' ).val('');
 
 			// Заполнение
 			$('#addpay input[name="location"]').val(location);
 			$('#addpay select[name="account"]').val(account);
 			$('#addpay input[name="Pay"]').val(pay);
+			$('#addpay input[name="Worker"]').val(worker);
+			$('#addpay #worker_name').html(worker_name);
 			$('#addpay input[name="Comment"]').val(comment);
-
-
-			if( typeof worker !== "undefined" ) {
-				$('#addpay select[name="Worker"]').val(worker);
-				$('#addpay select[name="Worker"] option:not(:selected)').attr('disabled', true);
-			}
-
-//			if( typeof $(this).attr('comment') !== "undefined" ) { // Добавление премии из табеля
-//				var pay = $(this).attr('pay');
-//				var comment = $(this).attr('comment');
-//				$('#addpay input[name="Pay"]').val(pay);
-//				$('#addpay input[name="Comment"]').val(comment);
-//			}
 
 			// Вызов формы
 			$('#addpay').dialog({
