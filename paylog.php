@@ -29,11 +29,6 @@
 
 	$location = $_SERVER['REQUEST_URI'];
 
-	$year = date("Y");
-	$month = date("n");
-	$lastyear = $month == 1 ? $year - 1 : $year;
-	$lastmonth = $month == 1 ? 12 : $month - 1;
-
 	//Узнаем дефолтный счет для пользователя
 	$query = "SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION['id']} ORDER BY IFNULL(bank, 0) LIMIT 1";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -155,6 +150,79 @@
 
 	<div class="log-pay halfblock">
 		<h1><?=$USR_Name?></h1>
+		<?
+			echo "<div id='accordion'>";
+			echo "<h3>Аналитика</h3>";
+			echo "<div>";
+			echo "<table>";
+			echo "<thead>";
+			echo "<tr>";
+			echo "<th>Период</th>";
+			echo "<th>Начислено</th>";
+			echo "<th>Выдано</th>";
+			echo "</tr>";
+			echo "</thead>";
+			echo "<tbody>";
+
+			$query = "SET @@lc_time_names='ru_RU'";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$query = "
+				SELECT
+					DATE_FORMAT(CONCAT(Year, '-', Month, '-01'), '%b %Y') month_year
+					,PayIn
+					,PayOut
+				FROM MonthlyPayInOut
+				WHERE USR_ID = {$worker} AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365
+				ORDER BY Year DESC, Month DESC
+			";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) ) {
+				$format_payin = number_format($row["PayIn"], 0, '', ' ');
+				$format_payout = number_format($row["PayOut"], 0, '', ' ');
+				echo "<tr>";
+				echo "<td><b>{$row["month_year"]}</b></td>";
+				echo "<td class='txtright'>{$format_payin}</td>";
+				echo "<td class='txtright'>{$format_payout}</td>";
+				echo "</tr>";
+			}
+
+			echo "</tbody>";
+
+			// Узнаем среднегодовую получку
+			$query = "
+				SELECT ROUND(AVG(PayIn)) PayIn
+					,ROUND(AVG(PayOut)) PayOut
+				FROM MonthlyPayInOut
+				WHERE USR_ID = {$worker} AND NOT ( Year = YEAR(NOW()) AND Month = MONTH(NOW()) ) AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365
+			";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$row = mysqli_fetch_array($res);
+			$format_payin = number_format($row["PayIn"], 0, '', ' ');
+			$format_payout = number_format($row["PayOut"], 0, '', ' ');
+
+			echo "<thead>";
+			echo "<tr>";
+			echo "<th title='Среднее значение за последние 11 полных месяцев.'><b>В среднем</b>&nbsp;<i class='fas fa-question-circle'></i></th>";
+			echo "<th class='txtright'>{$format_payin}</th>";
+			echo "<th class='txtright'>{$format_payout}</th>";
+			echo "</tr>";
+			echo "</thead>";
+
+			echo "</table>";
+			echo "</div>";
+			echo "</div>";
+		?>
+		<script>
+			$(document).ready(function() {
+				$( "#accordion" ).accordion({
+				active: false,
+				collapsible: true,
+				heightStyle: "content"
+		});
+
+			});
+		</script>
+
 		<table class='main_table'>
 			<thead>
 			<tr>
