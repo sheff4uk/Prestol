@@ -132,7 +132,7 @@
 				,CONCAT('<b style=\'font-size: 14px; line-height: 16px;\'>', SH.Shop, '</b><br>') Shop
 				,OD.Code
 				,Color(OD.CL_ID) Color
-				,DATE_FORMAT(OD.EndDate, '%e %b') EndDate
+				,Friendly_date(OD.EndDate) EndDate
 				,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 			FROM OrdersData OD
 			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
