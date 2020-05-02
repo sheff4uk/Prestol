@@ -153,7 +153,11 @@
 		<?
 			echo "<div id='accordion'>";
 			echo "<h3>Аналитика</h3>";
+			echo "<div style='display: flex; justify-content: space-around;'>";
+
+			// Персональная аналитика
 			echo "<div>";
+			echo "<b>Личная:</b>";
 			echo "<table>";
 			echo "<thead>";
 			echo "<tr>";
@@ -207,8 +211,85 @@
 			echo "<th class='txtright'>{$format_payout}</th>";
 			echo "</tr>";
 			echo "</thead>";
-
 			echo "</table>";
+			echo "</div>";
+			///////////////////////////
+
+			// Аналитика по подразделению
+			// Получаем список подчиненных работников из дерева
+			$query = "SELECT USR_tree({$worker}) array";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$row = mysqli_fetch_array($res);
+			$USR_tree_division = $row["array"];
+
+			if( $USR_tree_division ) {
+				echo "<div>";
+				echo "<b>По подразделению:</b>";
+				echo "<table>";
+				echo "<thead>";
+				echo "<tr>";
+				echo "<th>Период</th>";
+				echo "<th>Начислено</th>";
+				echo "<th>Выдано</th>";
+				echo "</tr>";
+				echo "</thead>";
+				echo "<tbody>";
+
+				$query = "SET @@lc_time_names='ru_RU'";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$query = "
+					SELECT
+						DATE_FORMAT(CONCAT(Year, '-', Month, '-01'), '%b %Y') month_year
+						,SUM(PayIn) PayIn
+						,SUM(PayOut) PayOut
+					FROM MonthlyPayInOut
+					WHERE USR_ID IN ({$USR_tree_division}) AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365
+					GROUP BY month_year
+					ORDER BY Year DESC, Month DESC
+				";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($res) ) {
+					$format_payin = number_format($row["PayIn"], 0, '', ' ');
+					$format_payout = number_format($row["PayOut"], 0, '', ' ');
+					echo "<tr>";
+					echo "<td><b>{$row["month_year"]}</b></td>";
+					echo "<td class='txtright'>{$format_payin}</td>";
+					echo "<td class='txtright'>{$format_payout}</td>";
+					echo "</tr>";
+				}
+
+				echo "</tbody>";
+
+				// Узнаем среднегодовую получку
+				$query = "
+				SELECT ROUND(AVG(sMP.PayIn)) PayIn
+					,ROUND(AVG(sMP.PayOut)) PayOut
+				FROM (
+					SELECT
+						DATE_FORMAT(CONCAT(Year, '-', Month, '-01'), '%b %Y') month_year
+						,SUM(PayIn) PayIn
+						,SUM(PayOut) PayOut
+					FROM MonthlyPayInOut
+					WHERE USR_ID IN ({$USR_tree_division}) AND NOT ( Year = YEAR(NOW()) AND Month = MONTH(NOW()) ) AND DATEDIFF(NOW(), DATE( CONCAT( Year, '-', Month, '-01' ) )) <= 365
+					GROUP BY month_year
+				) sMP
+				";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				$row = mysqli_fetch_array($res);
+				$format_payin = number_format($row["PayIn"], 0, '', ' ');
+				$format_payout = number_format($row["PayOut"], 0, '', ' ');
+
+				echo "<thead>";
+				echo "<tr>";
+				echo "<th title='Среднее значение за последние 11 полных месяцев.'><b>В среднем</b>&nbsp;<i class='fas fa-question-circle'></i></th>";
+				echo "<th class='txtright'>{$format_payin}</th>";
+				echo "<th class='txtright'>{$format_payout}</th>";
+				echo "</tr>";
+				echo "</thead>";
+				echo "</table>";
+				echo "</div>";
+			}
+
 			echo "</div>";
 			echo "</div>";
 		?>
