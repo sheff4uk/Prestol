@@ -4,13 +4,13 @@ include "checkrights.php";
 session_start();
 
 // Узнаем тип накладной ОТГРУЗКА/ВОЗВРАТ
-$return = $_POST["num_rows"] ? 1 : 0;
+$return = $_POST["shipping_year"] ? 1 : 0;
 
 // Скрипт возвратит массив $orders_to_bill со списком кандидатов на добавление в счет
 $_GET["do"] = "invoice";
 $_GET["KA_ID"] = $_POST["KA_ID"];
 $_GET["CT_ID"] = $_POST["CT_ID"];
-$_GET["num_rows"] = $_POST["num_rows"];
+$_GET["shipping_year"] = $_POST["shipping_year"] ? $_POST["shipping_year"] : 0;
 include "ajax.php";
 
 // Сохраняем цены изделий в ODD

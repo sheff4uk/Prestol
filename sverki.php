@@ -691,7 +691,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</div>
 			<div id="shipping_year" style="display: none;">
 				Год отгрузки
-				<select>
+				<select name="shipping_year">
 				<?
 					$query = "
 						SELECT YEAR(date) year FROM PrintFormsInvoice GROUP BY YEAR(date)
