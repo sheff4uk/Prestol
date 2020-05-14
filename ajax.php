@@ -878,7 +878,7 @@ case "shipment":
 case "invoice":
 		$KA_ID = $_GET["KA_ID"] ? $_GET["KA_ID"] : 0;
 		$CT_ID = $_GET["CT_ID"] ? $_GET["CT_ID"] : 0;
-		$num_rows = $_GET["num_rows"]; // Если не пусто, то это накладная на возврат
+		$shipping_year = $_GET["shipping_year"]; // Если не пусто, то это накладная на возврат
 
 		// Проверяем права на акты сверок
 		if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !in_array('sverki_opt', $Rights) ) {
@@ -914,13 +914,13 @@ case "invoice":
 					AND OD.ReadyDate IS NOT NULL
 					AND Payment_sum(OD.OD_ID) = 0
 					AND OD.is_lock = 0
-					".($num_rows > 0 ? "AND PFI.PFI_ID IS NOT NULL" : "AND PFI.PFI_ID IS NULL")."
+					".($shipping_year ? "AND PFI.PFI_ID IS NOT NULL AND YEAR(OD.ReadyDate) = {$shipping_year}" : "AND PFI.PFI_ID IS NULL")."
 					# Для оптовика показываем его подразделения, для розницы показываем розничные наборы связанные с KA_ID с датой продажи из открытого месяца
 					".($SH_IDs ? "AND SH.SH_ID IN ({$SH_IDs})" : "AND SH.retail = 1 AND IF(SH.SH_ID = 36, 155, OD.KA_ID) = {$KA_ID} AND OD.StartDate IS NOT NULL AND OD.is_lock = 0")."
 					# Для продавца только его салоны
 					".($USR_Shop ? "AND SH.SH_ID IN ({$USR_Shop})" : "")."
 				GROUP BY OD.OD_ID
-				ORDER BY OD.ReadyDate ".($num_rows > 0 ? "DESC LIMIT {$num_rows}" : "ASC")."
+				ORDER BY OD.ReadyDate ".($shipping_year ? "DESC" : "ASC")."
 			";
 
 			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
@@ -930,7 +930,7 @@ case "invoice":
 
 				$html = "<font color='#911'><b>Критерии для отображения:</b></font>";
 
-				if ($num_rows > 0) { // Если возвратная накладная
+				if ($shipping_year) { // Если возвратная накладная
 					$html .= "<ul>";
 					$html .= "<li>Набор не удалён;</li>";
 					$html .= "<li>Есть товарная накладная с этим набором;</li>";
@@ -980,9 +980,9 @@ case "invoice":
 							,IF(MT.removed=1, 'removed', '') removed
 							,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.PT_ID, 2), 0) PTID
 							,IFNULL(ODD.min_price, 0) min_price
-							,IFNULL(ODD.Price, ".($num_rows > 0 ? "0" : "''").") price
-							,IFNULL((ODD.Price - IFNULL(ODD.discount, 0)), ".($num_rows > 0 ? "0" : "''").") opt_price
-							,IFNULL(ODD.discount, ".($num_rows > 0 ? "0" : "''").") discount
+							,IFNULL(ODD.Price, ".($shipping_year ? "0" : "''").") price
+							,IFNULL((ODD.Price - IFNULL(ODD.discount, 0)), ".($shipping_year ? "0" : "''").") opt_price
+							,IFNULL(ODD.discount, ".($shipping_year ? "0" : "''").") discount
 							,IF(ODD.opt_price IS NOT NULL, (ODD.Price - IFNULL(ODD.discount, 0) - ODD.opt_price), '') opt_discount
 						FROM OrdersDataDetail ODD
 						LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -1023,12 +1023,12 @@ case "invoice":
 
 						// Исключение для клена
 						if ($row["SH_ID"] == 36) {
-							$price .= "<input type='hidden' name='odid[]' value='{$row["OD_ID"]}'><input type='hidden' name='odd_id[]' value='{$subrow["ODD_ID"]}'><input ".($num_rows > 0 ? "readonly" : "")." required type='number' min='0' name='price[]' value='{$subrow["opt_price"]}' amount='{$subrow["Amount"]}'><br>";
-							$discount .= "<input ".($num_rows > 0 ? "readonly" : "")." type='number' min='0' name='discount[]' value='{$subrow["opt_discount"]}' amount='{$subrow["Amount"]}'><br>";
+							$price .= "<input type='hidden' name='odid[]' value='{$row["OD_ID"]}'><input type='hidden' name='odd_id[]' value='{$subrow["ODD_ID"]}'><input ".($shipping_year ? "readonly" : "")." required type='number' min='0' name='price[]' value='{$subrow["opt_price"]}' amount='{$subrow["Amount"]}'><br>";
+							$discount .= "<input ".($shipping_year ? "readonly" : "")." type='number' min='0' name='discount[]' value='{$subrow["opt_discount"]}' amount='{$subrow["Amount"]}'><br>";
 						}
 						else {
-							$price .= "<input type='hidden' name='odid[]' value='{$row["OD_ID"]}'><input type='hidden' name='odd_id[]' value='{$subrow["ODD_ID"]}'><input ".($num_rows > 0 ? "readonly" : "")." required type='number' min='{$subrow["min_price"]}' name='price[]' value='{$subrow["price"]}' amount='{$subrow["Amount"]}' ".(($subrow["min_price"] > 0) ? "title='Вычисленная стоимость по прайсу: {$subrow["min_price"]}'" : "")."><br>";
-							$discount .= "<input ".($num_rows > 0 ? "readonly" : "")." type='number' min='0' name='discount[]' value='{$subrow["discount"]}' amount='{$subrow["Amount"]}'><br>";
+							$price .= "<input type='hidden' name='odid[]' value='{$row["OD_ID"]}'><input type='hidden' name='odd_id[]' value='{$subrow["ODD_ID"]}'><input ".($shipping_year ? "readonly" : "")." required type='number' min='{$subrow["min_price"]}' name='price[]' value='{$subrow["price"]}' amount='{$subrow["Amount"]}' ".(($subrow["min_price"] > 0) ? "title='Вычисленная стоимость по прайсу: {$subrow["min_price"]}'" : "")."><br>";
+							$discount .= "<input ".($shipping_year ? "readonly" : "")." type='number' min='0' name='discount[]' value='{$subrow["discount"]}' amount='{$subrow["Amount"]}'><br>";
 						}
 					}
 
@@ -1221,8 +1221,8 @@ case "bill":
 						}
 						$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span class='{$subrow["removed"]} material {$color}'>{$subrow["Material"]}</span></span><br>";
 
-						$price .= "<input type='hidden' name='odid[]' value='{$row["OD_ID"]}'><input type='hidden' name='odd_id[]' value='{$subrow["ODD_ID"]}'><input ".($num_rows > 0 ? "readonly" : "")." required type='number' min='{$subrow["min_price"]}' name='price[]' value='{$subrow["price"]}' amount='{$subrow["Amount"]}' ".(($subrow["min_price"] > 0) ? "title='Вычисленная стоимость по прайсу: {$subrow["min_price"]}'" : "")."><br>";
-						$discount .= "<input ".($num_rows > 0 ? "readonly" : "")." type='number' min='0' name='discount[]' value='{$subrow["discount"]}' amount='{$subrow["Amount"]}'><br>";
+						$price .= "<input type='hidden' name='odid[]' value='{$row["OD_ID"]}'><input type='hidden' name='odd_id[]' value='{$subrow["ODD_ID"]}'><input ".($shipping_year ? "readonly" : "")." required type='number' min='{$subrow["min_price"]}' name='price[]' value='{$subrow["price"]}' amount='{$subrow["Amount"]}' ".(($subrow["min_price"] > 0) ? "title='Вычисленная стоимость по прайсу: {$subrow["min_price"]}'" : "")."><br>";
+						$discount .= "<input ".($shipping_year ? "readonly" : "")." type='number' min='0' name='discount[]' value='{$subrow["discount"]}' amount='{$subrow["Amount"]}'><br>";
 					}
 
 					$html .= "<tr class='shop{$row["SH_ID"]}'>";

@@ -199,9 +199,12 @@ if( isset($_GET["del"]) )
 	<label for="year">Год:</label>
 	<select name="year" id="year" onchange="this.form.submit()">
 <?
-	$query = "SELECT YEAR(date) year FROM PrintFormsInvoice GROUP BY YEAR(date)
-				UNION
-				SELECT YEAR(NOW())";
+	$query = "
+		SELECT YEAR(date) year FROM PrintFormsInvoice GROUP BY YEAR(date)
+		UNION
+		SELECT YEAR(NOW())
+		ORDER BY year
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
 		echo "<option value='{$row["year"]}'>{$row["year"]}</option>";
@@ -686,17 +689,22 @@ this.subbut.value='Подождите, пожалуйста!';">
 					</table>
 				</fieldset>
 			</div>
-			<div id="num_rows" style="display: none;">
-				Ниже показаны последние
-				<select style="margin: 10px;">
-					<option value="25">25</option>
-					<option value="50">50</option>
-					<option value="100">100</option>
-					<option value="250">250</option>
-					<option value="500">500</option>
+			<div id="shipping_year" style="display: none;">
+				Год отгрузки
+				<select>
+				<?
+					$query = "
+						SELECT YEAR(date) year FROM PrintFormsInvoice GROUP BY YEAR(date)
+						UNION
+						SELECT YEAR(NOW())
+						ORDER BY year
+					";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) ) {
+						echo "<option value='{$row["year"]}'>{$row["year"]}</option>";
+					}
+				?>
 				</select>
-				отгруженных наборов.
-				<input type="hidden" name="num_rows">
 			</div>
 			<fieldset style="text-align: left;">
 				<legend>Список наборов:</legend>
@@ -895,16 +903,16 @@ this.subbut.value='Подождите, пожалуйста!';">
 			if( this_id == 'add_invoice_btn' ) {
 				title = 'Накладная на ОТГРУЗКУ';
 				$('#KA_info').html('Информация о плательщике:');
-				$('#num_rows').hide();
-				$('#num_rows input').val(0);
+				$('#shipping_year').hide();
+				$('#shipping_year select').attr('disabled', true);
 				$('#return_message').hide();
 				$('#wr_gruzopoluchatel').show();
 			}
 			else {
 				title = 'Накладная на ВОЗВРАТ'
 				$('#KA_info').html('Информация о грузоотправителе:');
-				$('#num_rows').show();
-				$('#num_rows input').val(25);
+				$('#shipping_year').show();
+				$('#shipping_year select').attr('disabled', false);
 				$('#return_message').show();
 				$('#wr_gruzopoluchatel').hide();
 			}
@@ -913,7 +921,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#gruzopoluchatel1 input').val('');
 			$('#gruzopoluchatel_0').prop('checked', true).button('refresh').change();
 			$('#date').val('<?=( date('d.m.Y') )?>');
-			$('#num_rows select').val(25);
+			$('#shipping_year select').val(<?=date('Y')?>);
 			$('input[name="subbut"]').prop('disabled', true).button('refresh');
 			// Деактивируем форму с информацией по контрагенту
 			$('#wr_platelshik input').attr('disabled', true);
@@ -966,7 +974,12 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#wr_platelshik input').attr('disabled', false);
 			var KA_ID = $(this).val();
 			var CT_ID = $(this).find('option:selected').attr('CT_ID');
-			var num_rows = $('#num_rows input').val(); //Признак возвратной накладной
+			if( $('#shipping_year select').is(':enabled') ) {
+				var shipping_year = $('#shipping_year select').val();
+			}
+			else {
+				var shipping_year = 0;
+			}
 			$('input[name="CT_ID"]').val(CT_ID);
 			if (KA_ID > 0) {
 				var KA_data = Kontragenty[KA_ID];
@@ -998,21 +1011,25 @@ this.subbut.value='Подождите, пожалуйста!';">
 			}
 			if (CT_ID) {
 				$('#orders_to_invoice').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
-				$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows+"&from_js=1", dataType: "script", async: true });
+				$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&shipping_year="+shipping_year+"&from_js=1", dataType: "script", async: true });
 			}
 			else {
 				$('#orders_to_invoice').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
 			}
 		});
 
-		// При смене количества строк записываем значение в скрытое поле и вызываем аякс для подгрузки наборов
-		$('#num_rows select').on('change', function() {
-			$('#num_rows input').val($(this).val());
+		// При выборе года отгрузки, вызываем аякс для подгрузки наборов
+		$('#shipping_year select').on('change', function() {
 			var KA_ID = $('select[name="KA_ID"]').val();
 			var CT_ID = $('select[name="KA_ID"]').find('option:selected').attr('CT_ID');
-			var num_rows = $('#num_rows input').val();
+			if( $('#shipping_year select').is(':enabled') ) {
+				var shipping_year = $('#shipping_year select').val();
+			}
+			else {
+				var shipping_year = 0;
+			}
 			$('#orders_to_invoice').html('<div class=\"lds-ripple\"><div></div><div></div></div>'); // Показываем спиннер
-			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&num_rows="+num_rows+"&from_js=1", dataType: "script", async: false });
+			$.ajax({ url: "ajax.php?do=invoice&KA_ID="+KA_ID+"&CT_ID="+CT_ID+"&shipping_year="+shipping_year+"&from_js=1", dataType: "script", async: false });
 		});
 
 		// Обработчики чекбоксов в списке наборов
