@@ -355,21 +355,23 @@ if( $payer ) {
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
 		// Вычисление оборота за период
-		$query = "SELECT SUM(SUB.debet) debet, SUM(SUB.kredit) kredit
-					FROM (
-						SELECT IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
-							,NULL kredit
-						FROM PrintFormsInvoice PFI
-						WHERE PFI.date > '{$row["date_to"]}' AND PFI.platelshik_id = {$payer} AND PFI.del = 0
+		$query = "
+			SELECT SUM(SUB.debet) debet, SUM(SUB.kredit) kredit
+			FROM (
+				SELECT IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+					,NULL kredit
+				FROM PrintFormsInvoice PFI
+				WHERE PFI.date > '{$row["date_to"]}' AND PFI.platelshik_id = {$payer} AND PFI.del = 0
 
-						UNION ALL
+				UNION ALL
 
-						SELECT NULL debet
-							,F.money * FC.type kredit
-						FROM Finance F
-						JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-						WHERE F.date > STR_TO_DATE('{$row["date_to"]} 23:59:59', '%d.%m.%Y %T') AND F.KA_ID = {$payer}
-					) SUB";
+				SELECT NULL debet
+					,F.money * FC.type kredit
+				FROM Finance F
+				JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+				WHERE F.date > '{$row["date_to"]} 23:59:59' AND F.KA_ID = {$payer}
+			) SUB
+		";
 		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$debet_profit_now = mysqli_result($subres,0,'debet'); // Дебетовый оборот с конечной даты по сегодня
 		$kredit_profit_now = mysqli_result($subres,0,'kredit'); // Кредитовый оборот с конечной даты по сегодня
