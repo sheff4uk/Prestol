@@ -177,7 +177,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		?>
 		<div>
 		<?
-			if (in_array('order_add_confirm', $Rights)) {
+			if( in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights) ) {
 				echo "<label>Примечание:</label>";
 				echo "<textarea name='Comment' rows='3' cols='38'></textarea>";
 			}
@@ -366,7 +366,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</div>
 		<div>
 		<?
-			if (in_array('order_add_confirm', $Rights)) {
+			if( in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights) ) {
 				echo "<label>Примечание:</label>";
 				echo "<textarea name='Comment' rows='3' cols='38'></textarea>";
 			}
@@ -508,7 +508,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			?>
 			<div>
 		<?
-			if (in_array('order_add_confirm', $Rights)) {
+			if( in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights) ) {
 				echo "<label>Примечание:</label>";
 				echo "<textarea name='Comment' rows='3' cols='38'></textarea>";
 			}

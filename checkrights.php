@@ -1,5 +1,5 @@
 <?
-	ini_set("session.gc_maxlifetime",10);
+	//ini_set("session.gc_maxlifetime",10);
 	session_start();
 
 	// Функция обрабатывает строки перед сохранением в БД

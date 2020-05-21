@@ -4,7 +4,13 @@
 	include "header.php";
 	$page = "calc";
 	include "forms.php";
-	include "order_form.php";
+	include "form_order.php";
+
+	// Проверка прав на доступ к экрану
+	if( !in_array('selling_all', $Rights) and !in_array('selling_city', $Rights) and !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !in_array('sverki_opt', $Rights) ) {
+		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+		die('Недостаточно прав для совершения операции');
+	}
 
 	// Узнаем какие цены можно показывать пользователю: 0 - все; 1 - розница; 2 - опт; 3 - региональный опт
 	$query = "

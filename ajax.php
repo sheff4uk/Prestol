@@ -557,6 +557,7 @@ case "read_message":
 		JOIN OrdersData OD ON OD.OD_ID = OM.OD_ID
 		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 		WHERE OM.OM_ID = {$om_id} AND IFNULL(SH.CT_ID, 0) IN ({$USR_cities})
+		".(in_array('order_add_free', $Rights) ? "AND 0" : "")."
 		".($USR_Shop ? "AND (SH.SH_ID IN ({$USR_Shop}) OR OD.SH_ID IS NULL)" : "")."
 		".($USR_KA ? "AND (SH.KA_ID = {$USR_KA} OR OD.SH_ID IS NULL)" : "")."
 	";
@@ -1626,7 +1627,7 @@ case "create_shop_select":
 		";
 	}
 	else {
-		if( (in_array('order_add_confirm', $Rights) and !$ReadyDate) or $SH_ID == 0 ) {
+		if( ((in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and !$ReadyDate) or $SH_ID == 0 ) {
 			$html .= "<option value='0' selected style='background: #999;'>Свободные</option>";
 		}
 		$query .= "

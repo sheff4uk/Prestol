@@ -3,7 +3,7 @@ include "config.php";
 include "header.php";
 
 // Проверка прав на доступ к экрану
-if( !in_array('order_add', $Rights) ) {
+if( !in_array('order_add', $Rights) and !in_array('order_add_free', $Rights) ) {
 	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 	die('Недостаточно прав для совершения операции');
 }
@@ -11,7 +11,7 @@ if( !in_array('order_add', $Rights) ) {
 	if( isset($_GET["id"]) ) {
 		// Узнаём какие подразделения доступны пользователю при добавлении набора
 		$SH_IDs = "";
-		if( in_array('order_add_confirm', $Rights) ) {
+		if( in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights) ) {
 			$SH_IDs .= "0,";
 		}
 		$query = "

@@ -17,7 +17,7 @@
 	// Добавление в базу нового набора
 	if( isset($_POST["Shop"]) )
 	{
-		if( !in_array('order_add', $Rights) ) {
+		if( !in_array('order_add', $Rights) and !in_array('order_add_free', $Rights) ) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 			die('Недостаточно прав для совершения операции');
 		}
@@ -165,7 +165,7 @@
 	<div id="filter_overlay" style="z-index: 10; position: fixed; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; display: none;"></div>
 	<?
 		include "forms.php";
-		include "order_form.php";
+		include "form_order.php";
 	?>
 
 	<div style="position: absolute; top: 75px; width: 300px; left: calc(50% - 150px); font-size: 16px; text-align: center;">
@@ -306,7 +306,7 @@
 	<?
 	}
 	// Кнопка добавления набора
-	if( in_array('order_add', $Rights) and !isset($_GET["shpid"]) ) {
+	if( (in_array('order_add', $Rights) or in_array('order_add_free', $Rights)) and !isset($_GET["shpid"]) ) {
 		echo "<div id='add_btn' class='add_order' title='Добавить новый набор'></div>";
 	}
 
@@ -934,10 +934,10 @@
 		$is_del = $row["is_del"];			// Набор удален
 		$confirmed = $row["confirmed"];		// Набор принят в работу
 		// Запрет на редактирование
-		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$is_lock and !$row["Archive"] );
+		$disabled = !( (in_array('order_add', $Rights) or in_array('order_add_free', $Rights)) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$is_lock and !$row["Archive"] );
 
 		// Если пользователю доступен только один салон в регионе или оптовик или свободный набор и нет админских привилегий, то нельзя редактировать общую информацию набора.
-		$editable = (!($USR_Shop and $row["SH_ID"] and !in_array($row["SH_ID"], explode(",", $USR_Shop))) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and ($row["SH_ID"] or in_array('order_add_confirm', $Rights)));
+		$editable = (!($USR_Shop and $row["SH_ID"] and !in_array($row["SH_ID"], explode(",", $USR_Shop))) and !($USR_KA and $row["SH_ID"] and $USR_KA != $row["KA_ID"]) and ($row["SH_ID"] or in_array('order_add_free', $Rights) or in_array('order_add_confirm', $Rights)));
 
 		$orders_IDs .= ",".$row["OD_ID"]; // Собираем ID видимых наборов для фильтра материалов
 
@@ -1057,7 +1057,7 @@
 //		}
 		echo "<td val='{$row["confirmed"]}' class='{$class}' style='text-align: center;'><i class='fa fa-check-circle fa-2x' aria-hidden='true'></i></td>";
 		echo "<td class='X' style='text-align: center;'><input type='checkbox' {$checkedX} value='1'></td>";
-		echo "<td class='".( (in_array('order_add_confirm', $Rights) and $is_del == 0 and $editable) ? "comment_cell" : "" )."'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
+		echo "<td class='".( ((in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and $is_del == 0 and $editable) ? "comment_cell" : "" )."'><span>{$row["Comment"]}</span><textarea style='display: none; width: 100%; resize: vertical;' rows='5'>{$row["Comment"]}</textarea></td>";
 		echo "<td style='text-align: center;'>";
 
 		if( $editable ) {
@@ -1107,7 +1107,7 @@
 		}
 
 		// Если есть право на добавление набора - показываем кнопку клонирования
-		if( in_array('order_add', $Rights) ) {
+		if( in_array('order_add', $Rights) or (in_array('order_add_free', $Rights) and !$row["SH_ID"]) ) {
 			echo "<a href='#' class='clone' od_id='{$row["OD_ID"]}' title='Клонировать набор'><i class='fa fa-clone fa-lg' aria-hidden='true'></i></a>";
 		}
 		echo "<br>";

@@ -53,7 +53,7 @@
 		include "header.php";
 
 		// Запрет на редактирование
-		$disabled = !( in_array('order_add', $Rights) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$is_lock and !$Archive );
+		$disabled = !( (in_array('order_add', $Rights) or in_array('order_add_free', $Rights)) and ($confirmed == 0 or in_array('order_add_confirm', $Rights)) and !$is_lock and !$Archive );
 
 		if( !$OD_ID and (int)$_GET["id"] > 0) {
 			header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
@@ -288,7 +288,7 @@
 			$query = "CALL Price({$odd_id})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-			exit ('<meta http-equiv="refresh" content="0; url='.$location.'#'.$odd_id.'">');
+			exit ('<meta http-equiv="refresh" content="0; url='.$location.'#prod'.$odd_id.'">');
 		}
 		else {
 			exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'">');
@@ -506,7 +506,7 @@
 	}
 
 	// Если пользователю доступен только один салон в регионе или оптовик или свободный набор и нет админских привилегий, то нельзя редактировать общую информацию набора.
-	$editable = (!($USR_Shop and $SH_ID and !in_array($SH_ID, explode(",", $USR_Shop))) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and ($SH_ID or in_array('order_add_confirm', $Rights)));
+	$editable = (!($USR_Shop and $SH_ID and !in_array($SH_ID, explode(",", $USR_Shop))) and !($USR_KA and $SH_ID and $USR_KA != $KA_ID) and ($SH_ID or in_array('order_add_free', $Rights) or in_array('order_add_confirm', $Rights)));
 ?>
 	<form method='post' id='order_form' action='<?=$location?>&order_update'>
 	<table class="main_table">
@@ -673,8 +673,8 @@
 ?>
 
 		<td>
-			<? if (!in_array('order_add_confirm', $Rights)) echo "<i class='fa fa-question-circle' title='Обо всех дополнительных особенностях набора сообщайте через кнопку \"Сообщение на производство\".'></i>"; ?>
-			<textarea name='Comment' rows='6' <?=( (in_array('order_add_confirm', $Rights) and !$Del and $editable) ? "" : "disabled" )?> style='width: 100%;'><?=$Comment?></textarea>
+			<? if (!in_array('order_add_confirm', $Rights) and !in_array('order_add_free', $Rights)) echo "<i class='fa fa-question-circle' title='Обо всех дополнительных особенностях набора сообщайте через кнопку \"Сообщение на производство\".'></i>"; ?>
+			<textarea name='Comment' rows='6' <?=( ((in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and !$Del and $editable) ? "" : "disabled" )?> style='width: 100%;'><?=$Comment?></textarea>
 		</td>
 		<td style="text-align: center;">
 
@@ -980,7 +980,7 @@ if( $id != "NULL" ) {
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				if( $row["is_read"] ) {
-					if( (in_array('order_add_confirm', $Rights) and $row["destination"] == 1) or (!in_array('order_add_confirm', $Rights) and $row["destination"] == 0) ) {
+					if( ((in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and $row["destination"] == 1) or ((!in_array('order_add_confirm', $Rights) or !in_array('order_add_free', $Rights)) and $row["destination"] == 0) ) {
 						$letter_btn = "<a href='#' class='read_message_btn' id='msg{$row["OM_ID"]}' val='1'><i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: green;' title='Прочитано: {$row["read_user"]} {$row["read_date"]} {$row["read_time"]}'></a>";
 					}
 					else {
@@ -988,7 +988,7 @@ if( $id != "NULL" ) {
 					}
 				}
 				else {
-					if( (in_array('order_add_confirm', $Rights) and $row["destination"] == 1) or (!in_array('order_add_confirm', $Rights) and $row["destination"] == 0) ) {
+					if( ((in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and $row["destination"] == 1) or ((!in_array('order_add_confirm', $Rights) or !in_array('order_add_free', $Rights)) and $row["destination"] == 0) ) {
 						$letter_btn = "<a href='#' class='read_message_btn' id='msg{$row["OM_ID"]}' val='0'><i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: red;'></a>";
 					}
 					else {

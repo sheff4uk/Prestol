@@ -5,7 +5,7 @@ include "header.php";
 
 // Обновление параметров изделия
 if ($_GET["oddid"] and isset($_POST["Amount"])) {
-	if (!in_array('order_add', $Rights)) {
+	if( !in_array('order_add', $Rights) and !in_array('order_add_free', $Rights) ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 		die('Недостаточно прав для совершения операции');
 	}

@@ -356,10 +356,8 @@
 			</div>
 			<?
 			}
-			if (!empty($_SESSION['id'])) {
-			?>
-			<a href="calc.php" id="navbar_calc" title="Калькулятор стоимости стола"><i class="fas fa-calculator fa-2x"></i></a>
-			<?
+			if( in_array('selling_all', $Rights) or in_array('selling_city', $Rights) or in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
+				echo "<a href='calc.php' id='navbar_calc' title='Калькулятор стоимости стола'><i class='fas fa-calculator fa-2x'></i></a>";
 			}
 			?>
 		</div>

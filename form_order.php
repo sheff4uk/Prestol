@@ -10,17 +10,21 @@ this.subbut.value='Подождите, пожалуйста!';">
 					if( !$USR_Shop ) {
 						echo "<option value=''>-=Выберите подразделение=-</option>";
 					}
-					if( in_array('order_add_confirm', $Rights) ) {
-						echo "<option value='0' style='background: #999;'>-=Свободные=-</option>";
-					}
 
 					$num_rows = 0;
+
+					if( in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights) ) {
+						echo "<option value='0' style='background: #999;'>-=Свободные=-</option>";
+						++$num_rows;
+						$sh_id = 0;
+					}
 
 					$query = "
 						SELECT CT.CT_ID
 							,CT.City
 						FROM Cities CT
 						WHERE CT.CT_ID IN ({$USR_cities})
+							".(in_array('order_add_free', $Rights) ? "AND 0" : "")."
 							".($USR_Shop ? "AND CT.CT_ID IN (SELECT CT_ID FROM Shops WHERE SH_ID IN ({$USR_Shop}))" : "")."
 							".($USR_KA ? "AND CT.CT_ID IN (SELECT CT_ID FROM Shops WHERE KA_ID = {$USR_KA})" : "")."
 						ORDER BY CT.City
@@ -90,8 +94,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</fieldset>
 			<fieldset>
 				<legend>Примечание:</legend>
-				<? if (!in_array('order_add_confirm', $Rights)) echo "<i class='fa fa-question-circle' title='Обо всех дополнительных особенностях набора сообщайте через кнопку \"Сообщение на производство\".'></i>"; ?>
-				<textarea name='Comment' rows='3' style='width: 100%;' <?=( in_array('order_add_confirm', $Rights) ? "" : "disabled" )?>></textarea>
+				<? if (!in_array('order_add_confirm', $Rights) and !in_array('order_add_free', $Rights)) echo "<i class='fa fa-question-circle' title='Обо всех дополнительных особенностях набора сообщайте через кнопку \"Сообщение на производство\".'></i>"; ?>
+				<textarea name='Comment' rows='3' style='width: 100%; resize: vertical;' <?=( (in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) ? "" : "disabled" )?>></textarea>
 			</fieldset>
 		</fieldset>
 		<div>
