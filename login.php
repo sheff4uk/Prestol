@@ -25,8 +25,11 @@ switch( $_GET["do"] ) {
 					$json = json_decode($body);
 					if( $json ) { // Получен ответ от сервера
 						if( $json->status == "OK" ) { // Запрос выполнился
-							// Сохраняем check_id
+							// Сохраняем check_id и call_phone_html
 							$check_id = $json->check_id;
+							//$call_phone_html = "&lt;a href=\"tel:{$json->call_phone}\"&gt;{$json->call_phone_pretty}&lt;\/a&gt;";
+							$call_phone_html = $json->call_phone_html;
+							$call_phone_html = str_replace("callto:", "tel:", $call_phone_html);
 						}
 						else $_SESSION["error"][] = "Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...) Код ошибки: $json->status_code Текст ошибки: $json->status_text";
 					} else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
@@ -41,6 +44,7 @@ switch( $_GET["do"] ) {
 		if( count($_SESSION["error"] ) == 0) {
 			$_SESSION['mtel'] = $mtel;
 			echo "var check_id = '{$check_id}';";
+			echo "noty({text: 'Позвоните по этому номеру для авторизации: {$call_phone_html}', type: 'alert'});";
 		}
 		// Иначе перезагружаем страницу
 		else echo "location.reload();";
