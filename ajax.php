@@ -1628,7 +1628,7 @@ case "create_shop_select":
 	}
 	else {
 		if( ((in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and !$ReadyDate) or $SH_ID == 0 ) {
-			$html .= "<option value='0' selected style='background: #999;'>Свободные</option>";
+			$html .= "<option value='0' ".($SH_ID == 0 ? "selected" : "")." style='background: #999;'>Свободные</option>";
 		}
 		$query .= "
 			UNION
