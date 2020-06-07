@@ -175,7 +175,8 @@ switch( $_GET["do"] ) {
 					value: false,
 					complete: function() {
 						progressLabel.text( "Звонок не поступил" );
-						setTimeout( function() { $('#smscode button').click(); }, 1000 );
+						setTimeout( function() { location.reload(); }, 3000 );
+						//setTimeout( function() { $('#smscode button').click(); }, 1000 );
 					}
 				});
 
@@ -184,7 +185,7 @@ switch( $_GET["do"] ) {
 
 					var val = progressbar.progressbar( "value" ) || 0;
 
-					progressbar.progressbar( "value", val + 5 );
+					progressbar.progressbar( "value", val + 1 );
 
 					if ( val < 100 && stop_status != 1 && check_status != 401 ) {
 						setTimeout( function() { status(check_id); }, 3000 );
