@@ -786,7 +786,7 @@
 			,Friendly_date(ODD.arrival_date) arrival_date
 			,Steps_button(ODD.ODD_ID, 0) Steps
 			,IF(CL.clear = 1 AND PM.enamel = 1, 1, 0) enamel_error
-			,CONCAT('<p class=\"price\">+', IFNULL(MT.markup, SH.markup), 'р.</p>') markup
+			#,CONCAT('<p class=\"price\">+', IFNULL(MT.markup, SH.markup), 'р.</p>') markup
 		FROM OrdersDataDetail ODD
 		JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
 		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID

@@ -92,7 +92,7 @@ case "plastictags":
 			,MT.SH_ID
 			,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
 			,MT.removed
-			,CONCAT('<b> +', IFNULL(MT.markup, SH.markup), 'р.</b>') markup
+			#,CONCAT('<b> +', IFNULL(MT.markup, SH.markup), 'р.</b>') markup
 		FROM Materials MT
 		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 2
 		LEFT JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID
