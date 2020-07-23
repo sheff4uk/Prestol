@@ -10,26 +10,41 @@ if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !
 	die('Недостаточно прав для совершения операции');
 }
 
-// Добавление оплаты от контрагента
+// Добавление оплаты от контрагента/редактирование оплаты
 if( isset($_POST["Pay"]) ) {
-	if( $_POST["Pay"] ) {
 
-		$Comment = convert_str($_POST["Comment"]);
-		$Comment = mysqli_real_escape_string( $mysqli, $Comment );
+	$Comment = convert_str($_POST["Comment"]);
+	$Comment = mysqli_real_escape_string( $mysqli, $Comment );
 
-		$money = abs($_POST["Pay"]);
-		$category = $_POST["Pay"] > 0 ? 9 : 8;
+	$money = abs($_POST["Pay"]);
+	$category = $_POST["Pay"] >= 0 ? 9 : 8;
+
+	// Редактирование
+	if( $_POST["F_ID"] ) {
+		$query = "
+			UPDATE Finance
+			SET money = {$money}
+				,FA_ID = {$_POST["account"]}
+				,FC_ID = {$category}
+				,KA_ID = {$_POST["payer"]}
+				,comment = '{$Comment}'
+				,author = {$_SESSION['id']}
+			WHERE F_ID = {$_POST["F_ID"]}
+		";
+	}
+	// Добавление
+	else {
 		$query = "
 			INSERT INTO Finance
 			SET money = {$money}
 				,FA_ID = {$_POST["account"]}
 				,FC_ID = {$category}
 				,KA_ID = {$_POST["payer"]}
-				".($Comment ? ",comment = '{$Comment}'" : "")."
+				,comment = '{$Comment}'
 				,author = {$_SESSION['id']}
 		";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
+	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'">');
 	die;
@@ -318,7 +333,7 @@ if( !in_array('sverki_opt', $Rights) ) {
 	echo "<div id='add_invoice_btn' title='Создать накладную на ОТГРУЗКУ'></div>";
 	echo "<div id='add_invoice_btn_return' title='Создать накладную на ВОЗВРАТ'></div>";
 	if( $payer ) {
-		echo "<div id='add_pay_btn' location='{$location}' title='Оплата от покупателя'><i class='fas fa-2x fa-money-bill-alt'></i></div>";
+		echo "<div id='add_pay_btn' class='add_pay_btn' location='{$location}' title='Оплата от покупателя'><i class='fas fa-2x fa-money-bill-alt'></i></div>";
 		echo "<div id='add_act_sverki_btn' title='Создать новый акт сверки' now_date='{$now_date}' payer='{$payer}'></div>";
 	}
 }
@@ -430,7 +445,10 @@ if( $payer ) {
 			,PFI.comment
 			,ROUND((PFI.discount / (PFI.summa + PFI.discount)) * 100, 1) discount
 			,NULL Account
+			,NULL FA_ID
 			,NULL color
+			,NULL F_ID
+			,NULL comment
 		FROM PrintFormsInvoice PFI
 		LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
 		WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID = {$payer}
@@ -452,7 +470,10 @@ if( $payer ) {
 			,NULL
 			,0
 			,FA.name
+			,FA.FA_ID
 			,FA.color
+			,F.F_ID
+			,F.comment
 		FROM Finance F
 		JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 		JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
@@ -517,6 +538,9 @@ while( $row = mysqli_fetch_array($res) ) {
 
 	if( $row["del"] == "0" and $row["rtrn"] == "0" and !in_array('sverki_opt', $Rights) ) {
 		echo "<td><button class='del_invoice' pfi_id='{$row["PFI_ID"]}' count='{$row["count"]}' title='Удалить'><i class='fa fa-times fa-lg'></i></button></td>";
+	}
+	elseif( $row["FA_ID"] ) {
+		echo "<td><a href='#' class='add_pay_btn' location='{$location}' F_ID='{$row["F_ID"]}' FA_ID='{$row["FA_ID"]}' Pay='{$row["kredit"]}' Comment='{$row["comment"]}'><i class='fa fa-pencil-alt fa-lg'></i></a></td>";
 	}
 	else {
 		echo "<td></td>";
@@ -753,6 +777,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
+			<input type='hidden' name='F_ID'>
 			<input type='hidden' name='location' value='<?=$location?>'>
 			<input type='hidden' name='payer' value='<?=$payer?>'>
 			<div>
@@ -880,8 +905,25 @@ this.subbut.value='Подождите, пожалуйста!';">
 		// Массив контрагентов
 		Kontragenty = <?= json_encode($Kontragenty); ?>;
 
-		// Форма внесения оплаты от контрагента
-		$('#add_pay_btn').click(function() {
+		// Форма внесения оплаты от контрагента/редактирование оплаты
+		$('.add_pay_btn').click( function() {
+			var FA_ID = $(this).attr('FA_ID');
+
+			// Очистка диалога
+			$('#addpay input[name="F_ID"]').val('');
+			$('#addpay input[name="Pay"]').val('');
+			$('#addpay select[name="account"]').val('');
+			$('#addpay input[name="Comment"]').val('');
+
+			if( FA_ID > 0 ) {
+				var F_ID = $(this).attr('F_ID'),
+					Pay = $(this).attr('Pay'),
+					Comment = $(this).attr('Comment');
+				$('#addpay input[name="F_ID"]').val(F_ID);
+				$('#addpay input[name="Pay"]').val(Pay);
+				$('#addpay select[name="account"]').val(FA_ID);
+				$('#addpay input[name="Comment"]').val(Comment);
+			}
 
 			// Вызов формы
 			$('#addpay').dialog({
@@ -890,7 +932,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 				modal: true,
 				closeText: 'Закрыть'
 			});
-
 			return false;
 		});
 
