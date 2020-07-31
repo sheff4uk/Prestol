@@ -99,7 +99,7 @@
 					Изготовитель: ООО «Престол», г.Киров ул.Луганская 59<br>
 					8(909)131-77-32<br>
 					fabrikaprestol@gmail.com<br>
-					фабрикастульев.рф
+					fabrikaprestol.ru
 				</div>
 			</div>
 			<div class="body-wr">

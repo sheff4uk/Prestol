@@ -124,7 +124,7 @@
 
 			echo "
 				<tr>
-					<td>".($row["code"] ? "<img style='width: 50px;' src='http://фабрикастульев.рф/images/prodlist/{$row["code"]}.jpg'/>" : "")."</td>
+					<td>".($row["code"] ? "<img style='width: 50px;' src='http://fabrikaprestol.ru/images/prodlist/{$row["code"]}.jpg'/>" : "")."</td>
 					<td>".($row["PF_ID"] ? "<img class='form {$row["form_standart"]}' src='/img/form{$row["PF_ID"]}.png' title='{$row["Form"]}'>" : "")."</td>
 					<td><b>{$row["Zakaz"]}</b></td>
 					<td>{$material}{$row["markup"]}</td>

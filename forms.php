@@ -133,6 +133,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 					<label for='1ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
 				<input type='radio' id='1ptn4' name='ptn' value='4' required>
 					<label for='1ptn4'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Св. зол.</label>
+				<input type='radio' id='1ptn5' name='ptn' value='5' required>
+					<label for='1ptn5'><i class='fa fa-paint-brush fa-lg' style="color: #eae2cf;"></i>Шампань</label>
 			</div>
 		</div>
 		<div>
@@ -295,6 +297,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 					<label for='2ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
 				<input type='radio' id='2ptn4' name='ptn' value='4' required>
 					<label for='2ptn4'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Св. зол.</label>
+				<input type='radio' id='2ptn5' name='ptn' value='5' required>
+					<label for='2ptn5'><i class='fa fa-paint-brush fa-lg' style="color: #eae2cf;"></i>Шампань</label>
 			</div>
 			<br>
 		</div>
@@ -450,6 +454,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 						<label for='0ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
 					<input type='radio' id='0ptn4' name='ptn' value='4' required>
 						<label for='0ptn4'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Св. зол.</label>
+					<input type='radio' id='0ptn5' name='ptn' value='5' required>
+						<label for='0ptn5'><i class='fa fa-paint-brush fa-lg' style="color: #eae2cf;"></i>Шампань</label>
 				</div>
 			</div>
 			<div>
@@ -803,7 +809,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		function format (state) {
 			var originalOption = state.element;
 			if (!state.id || !$(originalOption).data('foo')) return state.text; // optgroup
-			return "<div style='display: flex;'><img style='width: 50px; height: 50px; margin-right: 5px;' src='https://фабрикастульев.рф/images/prodlist/" + $(originalOption).data('foo') + ".jpg'/><span><b>" + state.text + "</b><br><i>" + $(originalOption).data('comment') + "</i></span><div>";
+			return "<div style='display: flex;'><img style='width: 50px; height: 50px; margin-right: 5px;' src='https://fabrikaprestol.ru/images/prodlist/" + $(originalOption).data('foo') + ".jpg'/><span><b>" + state.text + "</b><br><i>" + $(originalOption).data('comment') + "</i></span><div>";
 		};
 		$('select[name="Model"]').select2({
 			placeholder: "Выберите модель",
