@@ -980,7 +980,7 @@ if( $id != "NULL" ) {
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				if( $row["is_read"] ) {
-					if( ((in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and $row["destination"] == 1) or ((!in_array('order_add_confirm', $Rights) or !in_array('order_add_free', $Rights)) and $row["destination"] == 0) ) {
+					if( ((in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and $row["destination"] == 1) or (!(in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and $row["destination"] == 0) ) {
 						$letter_btn = "<a href='#' class='read_message_btn' id='msg{$row["OM_ID"]}' val='1'><i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: green;' title='Прочитано: {$row["read_user"]} {$row["read_date"]} {$row["read_time"]}'></a>";
 					}
 					else {
@@ -988,7 +988,7 @@ if( $id != "NULL" ) {
 					}
 				}
 				else {
-					if( ((in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and $row["destination"] == 1) or ((!in_array('order_add_confirm', $Rights) or !in_array('order_add_free', $Rights)) and $row["destination"] == 0) ) {
+					if( ((in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and $row["destination"] == 1) or (!(in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights)) and $row["destination"] == 0) ) {
 						$letter_btn = "<a href='#' class='read_message_btn' id='msg{$row["OM_ID"]}' val='0'><i class='fa fa-envelope fa-2x' aria-hidden='true' style='color: red;'></a>";
 					}
 					else {
