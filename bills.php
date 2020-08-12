@@ -261,30 +261,27 @@ if( isset($_GET["add_bill"]) ) {
 	$_POST["destination_BIK"] = mysqli_result($res,0,'BIK');
 	$_POST["destination_KS"] = mysqli_result($res,0,'KS');
 
-	if( $curl = curl_init() ) {
-		curl_setopt($curl, CURLOPT_URL, 'https://service-online.su/forms/buh/schet/blanc.php');
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
-		curl_setopt($curl, CURLOPT_REFERER, 'https://service-online.su/forms/buh/schet/');
-		curl_setopt($curl, CURLOPT_POST, 1);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($_POST));
-		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-		$out = curl_exec($curl);
+//	$_POST["seller"] = 2;
+//	$_POST["schet_add_stamp_and_signatures"] = 1;
 
-		$url = $out;
-		$url = str_replace("<html><head><meta http-equiv='refresh' content='0; url=", "https://service-online.su", $url);
-		$url = str_replace("'></head></html>", "", $url);
-		$url = preg_replace("/\xEF\xBB\xBF/", "", $url);
-		$url = trim($url);
-		$out = file_get_contents($url);
+	$data = http_build_query($_POST);
+	$referer = "https://service-online.su/forms/auto/ttn/";
+	$headers = stream_context_create(array(
+		'http' => array(
+			'method' => 'POST',
+			'header' => array(
+//				'Cookie: login=sheff4uk%40gmail.com; password=68d9d2e6dd2d5655b85684d989c884eb',
+				'Referer: https://service-online.su/forms/buh/schet/'
+			),
+			'content' => $data
+		)
+	));
+	$out = file_get_contents('https://service-online.su/forms/buh/schet/blanc.php', false, $headers);
+	$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
+	file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
 
-		$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
-		file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
-
-		curl_close($curl);
-
-		exit ('<meta http-equiv="refresh" content="0; url=bills.php?year='.($year).'&payer='.($payer).'">');
-		die;
-	}
+	exit ('<meta http-equiv="refresh" content="0; url=bills.php?year='.($year).'&payer='.($payer).'">');
+	die;
 }
 ?>
 
@@ -298,9 +295,12 @@ if( isset($_GET["add_bill"]) ) {
 	<label for="year">Год:</label>
 	<select name="year" id="year" onchange="this.form.submit()">
 <?
-	$query = "SELECT YEAR(date) year FROM PrintFormsBill GROUP BY YEAR(date)
-				UNION
-				SELECT YEAR(NOW())";
+	$query = "
+		SELECT YEAR(date) year FROM PrintFormsBill GROUP BY YEAR(date)
+		UNION
+		SELECT YEAR(NOW())
+		ORDER BY year
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
 		echo "<option value='{$row["year"]}'>{$row["year"]}</option>";

@@ -239,33 +239,20 @@ if (is_dir($dir)) {
 	}
 }
 
-if( $curl = curl_init() ) {
-	curl_setopt($curl, CURLOPT_URL, 'https://service-online.su/forms/buh/tovarnaya-nakladnaya/blanc.php');
-	curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
-	curl_setopt($curl, CURLOPT_REFERER, 'https://service-online.su/forms/buh/tovarnaya-nakladnaya/');
-	curl_setopt($curl, CURLOPT_POST, 1);
-	curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($_POST));
-	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-	$out = curl_exec($curl);
+$data = http_build_query($_POST);
+$referer = "https://service-online.su/forms/auto/ttn/";
+$headers = stream_context_create(array(
+	'http' => array(
+		'method' => 'POST',
+		'header' => array('Referer: https://service-online.su/forms/buh/tovarnaya-nakladnaya/'),
+		'content' => $data
+	)
+));
+$out = file_get_contents('https://service-online.su/forms/buh/tovarnaya-nakladnaya/blanc.php', false, $headers);
+$filename = 'invoice_'.$id.'_'.$_POST["nomer"].'.pdf';
+file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
 
-	$url = $out;
-	$url = str_replace("<html><head><meta http-equiv='refresh' content='0; url=", "https://service-online.su", $url);
-	$url = str_replace("'></head></html>", "", $url);
-	$url = preg_replace("/\xEF\xBB\xBF/", "", $url);
-	$url = trim($url);
-	$out = file_get_contents($url);
+exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
+die;
 
-	$filename = 'invoice_'.$id.'_'.$_POST["nomer"].'.pdf';
-	file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
-//	header('Content-Type: application/pdf');
-//	header('Content-Length: '.strlen( $out ));
-//	header('Content-disposition: inline; filename="' . $filename . '"');
-//	header('Cache-Control: public, must-revalidate, max-age=0');
-//	print $out;
-
-	curl_close($curl);
-
-	exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
-	die;
-}
 ?>
