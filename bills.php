@@ -261,8 +261,8 @@ if( isset($_GET["add_bill"]) ) {
 	$_POST["destination_BIK"] = mysqli_result($res,0,'BIK');
 	$_POST["destination_KS"] = mysqli_result($res,0,'KS');
 
-//	$_POST["seller"] = 2;
-//	$_POST["schet_add_stamp_and_signatures"] = 1;
+	$_POST["seller"] = 1;
+	$_POST["schet_add_stamp_and_signatures"] = 1;
 
 	$data = http_build_query($_POST);
 	$referer = "https://service-online.su/forms/auto/ttn/";
@@ -270,7 +270,7 @@ if( isset($_GET["add_bill"]) ) {
 		'http' => array(
 			'method' => 'POST',
 			'header' => array(
-//				'Cookie: login=sheff4uk%40gmail.com; password=68d9d2e6dd2d5655b85684d989c884eb',
+				'Cookie: '.$service_online,
 				'Referer: https://service-online.su/forms/buh/schet/'
 			),
 			'content' => $data
