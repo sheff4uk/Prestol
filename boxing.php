@@ -73,6 +73,44 @@
 		echo "<a href='?ct_id={$row["CT_ID"]}' class='button' style='font-size: 1.3em; ".($_GET["ct_id"] == $row["CT_ID"] ? 'border: 1px solid #fbd850; color: #eb8f00;' : '')."'>{$row["City"]}".($row["shipment"] ? " <i class='fas fa-truck'>" : "")."</i></a>";
 	}
 	echo "</div>";
+	/////////////////////////////////////////////////////////////////////////
+	// Поиск по коду
+	echo "
+		<form method='get'>
+			<fieldset>
+				<legend>Поиск по коду:</legend>
+				<input type='hidden' name='ct_id' value='{$_GET["ct_id"]}'>
+				<input type='text' name='code' value='{$_GET["code"]}' placeholder='Код полностью'>
+				<input type='submit' value='Найти'>
+	";
+
+	if( $_GET["code"] ) {
+		echo "<h3>Результаты поиска:</h3>";
+		echo "<ul>";
+		$query = "
+			SELECT ODD.ODD_ID
+				,Zakaz(ODD.ODD_ID) Zakaz
+				,SH.CT_ID
+			FROM OrdersData OD
+			JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID
+			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+			WHERE OD.DelDate IS NULL
+				AND OD.ReadyDate IS NULL
+				AND OD.Code LIKE '{$_GET["code"]}'
+			ORDER BY ODD.ODD_ID
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		while( $row = mysqli_fetch_array($res) ) {
+			echo "<li><a href='boxing.php?ct_id={$row["CT_ID"]}&code={$_GET["code"]}#{$row["ODD_ID"]}'>{$row["Zakaz"]}</a></li>";
+		}
+		echo "</ul>";
+	}
+
+	echo "
+			</fieldset>
+		</form>
+	";
+	/////////////////////////////////////////////////////////////////////////
 	// Списки отгрузки
 	$query = "
 		SELECT SHP.SHP_ID, CONCAT('Запланированная отгрузка (', SHP.title, '):') title
