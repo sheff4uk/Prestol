@@ -497,7 +497,13 @@
 				,OD.OD_ID
 			FROM OrdersData OD
 			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1
-			WHERE OD.DelDate IS NULL AND OD.StartDate = '{$StD}' AND OD.ClientName LIKE '{$ClientName}' AND OD.SH_ID = {$SH_ID} AND IFNULL(OD.PFI_ID, 0) = ".($PFI_ID ? $PFI_ID : 0)." AND OD.OD_ID != {$id}
+			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
+			WHERE OD.DelDate IS NULL
+				AND OD.StartDate = '{$StD}'
+				AND OD.ClientName LIKE '{$ClientName}'
+				AND OD.SH_ID = {$SH_ID}
+				AND IFNULL(IF(PFI.rtrn = 1, NULL, OD.PFI_ID), 0) = ".($PFI_ID ? $PFI_ID : 0)."
+				AND OD.OD_ID != {$id}
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {

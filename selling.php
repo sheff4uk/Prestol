@@ -952,9 +952,10 @@
 				,SUM(Payment_sum(OD.OD_ID)) payment_sum
 			FROM OrdersData OD
 			JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.retail = 1 AND ".( $SH_ID ? "SH.SH_ID = {$SH_ID}" : "SH.SH_ID IN ({$SH_IDs})")."
+			LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID
 			WHERE OD.DelDate IS NULL
 			".(($year == 0 and $month == 0) ? ' AND OD.StartDate IS NULL' : ' AND MONTH(OD.StartDate) = '.$month.' AND YEAR(OD.StartDate) = '.$year)."
-			GROUP BY OD.StartDate, IF(TRIM(IFNULL(OD.ClientName, '')) LIKE '', MD5(OD.OD_ID), OD.ClientName), OD.PFI_ID, OD.SH_ID
+			GROUP BY OD.StartDate, IF(TRIM(IFNULL(OD.ClientName, '')) LIKE '', MD5(OD.OD_ID), OD.ClientName), IFNULL(IF(PFI.rtrn = 1, NULL, OD.PFI_ID), 0), OD.SH_ID
 			ORDER BY IFNULL(OD.StartDate, '9999-01-01'), OD.AddDate, OD.OD_ID
 		";
 		$rowspan = 0;
