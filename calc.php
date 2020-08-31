@@ -32,7 +32,7 @@
 		<h2 style="display: inline-block;">Действующий прайс: </h2>
 <?
 		if ($price_type == 0 or $price_type == 1) {
-			echo "<a href='/files/K7whCHprpYvZ.pdf' target='_blank' title='Розничный прайс'><i class='fas fa-file-pdf fa-3x'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;";
+			echo "<a href='/files/b4ztDLFKRsMF.pdf' target='_blank' title='Розничный прайс'><i class='fas fa-file-pdf fa-3x'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;";
 		}
 		if ($price_type == 0 or $price_type == 2 or $price_type == 3) {
 			echo "<a href='/files/tzVCDx7xPvJJ.pdf' target='_blank' title='Оптовый прайс'><i class='fas fa-file-pdf fa-3x' style='color: green;'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;";
