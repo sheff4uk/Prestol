@@ -454,7 +454,7 @@
 			$menu["Заготовки"] = "blankstock.php";
 		}
 		if( in_array('screen_paylog', $Rights) or in_array('screen_timesheet', $Rights) ) {
-			if( in_array('screen_paylog', $Rights) ) {
+			if( in_array('screen_paylog', $Rights) or in_array('screen_paylog_read', $Rights) ) {
 				$menu["Сотрудники"]["Зарплата"] = "paylog.php";
 			}
 			if( in_array('screen_timesheet', $Rights) ) {

@@ -1,10 +1,10 @@
 <?
 	include "config.php";
-	$title = 'Платежи';
+	$title = 'Зарплата';
 	include "header.php";
 
 	// Проверка прав на доступ к экрану
-	if( !in_array('screen_paylog', $Rights) ) {
+	if( !in_array('screen_paylog', $Rights) and !in_array('screen_paylog_read', $Rights) ) {
 		header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 		die('Недостаточно прав для совершения операции');
 	}
@@ -81,10 +81,16 @@
 	ul a {font-size: 1.2em;}
 </style>
 
-	<div id='add_payin_btn' class='edit_pay' worker_name='<?=$USR_ShortName?>' worker='<?=$worker?>' location='<?=$location?>' title='НАЧИСЛИТЬ заработную плату'><i class="fas fa-2x fa-user-cog"></i></div>
-	<div id='add_payout_btn' class='edit_pay' account='<?=$account?>' worker_name='<?=$USR_ShortName?>' worker='<?=$worker?>' location='<?=$location?>' title='ВЫДАТЬ заработную плату'><i class="fas fa-2x fa-user-check"></i></div>
+	<?
+	if( in_array('screen_paylog', $Rights) ) {
+	?>
+		<div id='add_payin_btn' class='edit_pay' worker_name='<?=$USR_ShortName?>' worker='<?=$worker?>' location='<?=$location?>' title='НАЧИСЛИТЬ заработную плату'><i class="fas fa-2x fa-user-cog"></i></div>
+		<div id='add_payout_btn' class='edit_pay' account='<?=$account?>' worker_name='<?=$USR_ShortName?>' worker='<?=$worker?>' location='<?=$location?>' title='ВЫДАТЬ заработную плату'><i class="fas fa-2x fa-user-check"></i></div>
 
-	<? include "form_addpay.php"; ?>
+	<?
+		include "form_addpay.php";
+	}
+	?>
 
 	<div class="halfblock">
 		<?
