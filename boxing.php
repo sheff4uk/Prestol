@@ -54,7 +54,7 @@
 
 	<title>УПАКОВКА</title>
 </head>
-<body style="padding-top: 0px;">
+<body style="padding-top: 0px; padding-bottom: 150px;">
 	<?
 	// Кнопки регионов
 	$query = "
