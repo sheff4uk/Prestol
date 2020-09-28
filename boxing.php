@@ -54,7 +54,7 @@
 
 	<title>УПАКОВКА</title>
 </head>
-<body>
+<body style="padding-top: 0px;">
 	<?
 	// Кнопки регионов
 	$query = "
@@ -68,7 +68,7 @@
 		GROUP BY SH.CT_ID
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	echo "<div style='position: fixed; top: 0px; left: 0px; background: rgba(0,0,0,0.2); box-shadow: 0 5px 5px rgba(0,0,0,0.2); width: 100%;'>";
+	echo "<div id='nav' style='background: rgba(0,0,0,0.2); box-shadow: 0 5px 5px rgba(0,0,0,0.2);'>";
 	while( $row = mysqli_fetch_array($res) ) {
 		echo "<a href='?ct_id={$row["CT_ID"]}' class='button' style='font-size: 1.3em; ".($_GET["ct_id"] == $row["CT_ID"] ? 'border: 1px solid #fbd850; color: #eb8f00;' : '')."'>{$row["City"]}".($row["shipment"] ? " <i class='fas fa-truck'>" : "")."</i></a>";
 	}
@@ -301,6 +301,17 @@
 					modal: true,
 					closeText: 'Закрыть'
 				});
+			});
+
+			// Меню фиксируется на месте
+			$(window).scroll(function(){
+				var scrollTop = $(window).scrollTop();
+				if(scrollTop != 0) {
+					$("#nav").css({'position':'fixed', 'display':'inherit', 'z-index':'3'});
+				}
+				else {
+					$("#nav").css({'display':'contents'});
+				}
 			});
 		});
 	</script>
