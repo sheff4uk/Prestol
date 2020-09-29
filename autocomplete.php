@@ -69,6 +69,8 @@ case "textiletags":
 			MT.Material LIKE '%{$term}%'
 			OR
 			MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$term}%' AND PMT_ID IS NOT NULL)
+			OR
+			MATCH (MT.Material) AGAINST ('{$term}')
 		)
 		".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
 		GROUP BY MT.MT_ID
@@ -100,6 +102,8 @@ case "plastictags":
 			MT.Material LIKE '%{$term}%'
 			OR
 			MT.MT_ID IN (SELECT PMT_ID FROM Materials WHERE Material LIKE '%{$term}%' AND PMT_ID IS NOT NULL)
+			OR
+			MATCH (MT.Material) AGAINST ('{$term}')
 		)
 		".(($_GET["etalon"] == "1") ? "AND MT.PMT_ID IS NULL" : "" )."
 		GROUP BY MT.MT_ID
