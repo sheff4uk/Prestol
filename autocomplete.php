@@ -60,7 +60,7 @@ case "textiletags":
 	$query = "
 		SELECT MT.Material
 			,MT.SH_ID
-			,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
+			,CONCAT(MT.Material, ' <b>', SH.Shipper, '</b>') Label
 			,MT.removed
 		FROM Materials MT
 		JOIN Shippers SH ON SH.SH_ID = MT.SH_ID AND SH.mtype = 1
@@ -92,7 +92,7 @@ case "plastictags":
 	$query = "
 		SELECT MT.Material
 			,MT.SH_ID
-			,CONCAT(MT.Material, ' (', SH.Shipper, ')') Label
+			,CONCAT(MT.Material, ' <b>', SH.Shipper, '</b>') Label
 			,MT.removed
 			#,CONCAT('<b> +', IFNULL(MT.markup, SH.markup), 'р.</b>') markup
 		FROM Materials MT
