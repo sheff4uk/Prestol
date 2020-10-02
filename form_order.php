@@ -69,7 +69,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<fieldset id="EndDate">
 				<legend>Дата сдачи:</legend>
 				<input type='text' name='EndDate' size='12' <?=(in_array('order_add_confirm', $Rights) ? "class='date'" : "readonly")?> autocomplete='off'>
-				<span style='color: #911;'>автоматически +30 рабочих дней</span>
+				<span style='color: #911;'>автоматически +40 рабочих дней</span>
 			</fieldset>
 			<fieldset id="Client">
 				<legend>Информация о клиенте:</legend>

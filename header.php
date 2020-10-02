@@ -374,7 +374,7 @@
 	}
 	else {
 		// Записываем в сессию дату сдачи
-		if( empty($_SESSION["end_date"]) ) {
+		//if( empty($_SESSION["end_date"]) ) {
 			// Читаем из базы текущую дату
 			$query = "SELECT value FROM vars WHERE var LIKE 'today'";
 			$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -390,7 +390,7 @@
 				$end_date = date_create(date('Y-m-d'));
 				$working_days = 0;
 				$year = 0;
-				while ($working_days < 30) {
+				while ($working_days < 40) {
 					date_modify($end_date, '+1 day');
 					// Если при подсчете рабочих дней изменился год, то получаем новый календарь
 					if( $year != date('Y', strtotime(date_format($end_date, 'd.m.Y'))) ) {
@@ -426,7 +426,7 @@
 			$result = mysqli_query( $mysqli, $query );
 			$myrow = mysqli_fetch_array($result);
 			$_SESSION["end_date"] = $myrow['value'];
-		}
+		//}
 
 		if( in_array('chart', $Rights) ) {
 			$menu["График"] = "chart.php";
