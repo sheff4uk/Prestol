@@ -44,7 +44,7 @@ switch( $_GET["do"] ) {
 		if( count($_SESSION["error"] ) == 0) {
 			$_SESSION['mtel'] = $mtel;
 			echo "var check_id = '{$check_id}';";
-			echo "noty({text: 'Позвоните по этому номеру для авторизации: {$call_phone_html}', type: 'alert'});";
+			echo "noty({text: '<h1>Позвоните по этому номеру для авторизации: {$call_phone_html}</h1>', type: 'alert'});";
 		}
 		// Иначе перезагружаем страницу
 		else echo "location.reload();";
@@ -190,13 +190,17 @@ switch( $_GET["do"] ) {
 					if ( val < 100 && stop_status != 1 && check_status != 401 ) {
 						setTimeout( function() { status(check_id); }, 3000 );
 					}
+					// Кнопка СМС появляется через 12 секунд
+					if( val == 3) {
+						$('#smscode').show('fast');
+					}
 				}
 
 				$('#login form').on("submit", function(){
 					var mtel = $('#mtel').val();
 					$('#progressbar').show();
 					$('#subbut').hide();
-					$('#smscode').show();
+					//$('#smscode').show();
 					$('#mtel').attr('readonly', true);
 
 					// Отправляем телефон, с которого должен поступить звонок
