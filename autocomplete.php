@@ -41,9 +41,13 @@ case "colortags":
 					,NCS_ID
 					,Color_print(CL_ID) label
 				FROM Colors
-				WHERE Color_print(CL_ID) LIKE '%{$term}%'
+				WHERE (
+					Color_print(CL_ID) LIKE '%{$term}%'
+					OR
+					MATCH (color) AGAINST ('{$term}')
+				)
 					AND clear IS NOT NULL
-				ORDER BY count DESC";
+				ORDER BY base DESC, count DESC";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{

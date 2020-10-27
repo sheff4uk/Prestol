@@ -137,18 +137,18 @@
 	if( isset($_GET["paint_color"]) )
 	{
 		// Если набор уже покрашен - предупреждение, что нельзя изменить цвет
-		if ($IsPainting == 3) {
+		if ($IsPainting == 3 and !in_array('paint_color_admin', $Rights)) {
 			$_SESSION["error"][] = "Набор покрашен! Изменить цвет не возможно.";
 			exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		}
 
 		$color = convert_str($_POST["color"]);
 		$color = mysqli_real_escape_string($mysqli, $color);
-		$NCS = $_POST["NCS"];
+		$NCS = $_POST["NCS"] ? $_POST["NCS"] : "NULL";
 		$clear = $_POST["clear"];
 
 		// Если цвет не указан - выводим предупреждение
-		if( $color == '' and $NCS == 0) {
+		if( $color == '' ) {
 			$_SESSION["error"][] = "Пожалуйста укажите цвет краски.";
 		}
 		else {
@@ -156,20 +156,61 @@
 				INSERT INTO Colors
 				SET
 					color = '{$color}',
-					NCS_ID = {$NCS},
 					clear = {$clear},
-					count = 0
+					".(in_array('paint_color_admin', $Rights) ? "NCS_ID = {$NCS}, base = 1," : "")."
+					count = 1
 				ON DUPLICATE KEY UPDATE
+					".(in_array('paint_color_admin', $Rights) ? "NCS_ID = {$NCS}, base = 1," : "")."
 					count = count + 1
 			";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$cl_id = mysqli_insert_id( $mysqli );
 
+			// Перезаписываем цвет у набора
 			$query = "
 				UPDATE OrdersData
 				SET author = {$_SESSION['id']}
 					,CL_ID = $cl_id
 				WHERE OD_ID = {$id}
+			";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			// Если цвет изменился
+			if( $_POST["CL_ID"] and $cl_id != $_POST["CL_ID"] ) {
+				// Если редактирование цвета администратором
+				if( strpos($_POST["subbut"], "Редактировать") === 0 ) {
+					// Меняем на новый цвет у наборов со старым цветом
+					$query = "
+						UPDATE OrdersData
+						SET author = {$_SESSION['id']}
+							,CL_ID = $cl_id
+						WHERE CL_ID = {$_POST["CL_ID"]}
+					";
+					mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				}
+
+				// Пересчитываем счетчик у старого цвета
+				$query = "
+					UPDATE Colors
+					SET count = (SELECT IFNULL(SUM(1), 0) cnt FROM OrdersData WHERE CL_ID = {$_POST["CL_ID"]})
+					WHERE CL_ID = {$_POST["CL_ID"]}
+				";
+				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+				// Пробуем удалить старый цвет (удалится если нет связей)
+				$query = "
+					DELETE
+					FROM Colors
+					WHERE CL_ID = {$_POST["CL_ID"]}
+				";
+				mysqli_query( $mysqli, $query );
+			}
+
+			// Пересчитываем счетчик у нового цвета
+			$query = "
+				UPDATE Colors
+				SET count = (SELECT IFNULL(SUM(1), 0) cnt FROM OrdersData WHERE CL_ID = {$cl_id})
+				WHERE CL_ID = {$cl_id}
 			";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
@@ -424,6 +465,7 @@
 			,IF((SH.retail AND OD.StartDate IS NULL), '<br><b style=\'background-color: silver;\'>Выставка</b>', '') showing
 			,IFNULL(OD.SH_ID, 0) SH_ID
 			,OD.OrderNumber
+			,OD.CL_ID
 			,Color(OD.CL_ID) Color
 			,CL.color
 			,CL.clear
@@ -471,6 +513,7 @@
 	$showing = $row['showing'];
 	$SH_ID = $row['SH_ID'];
 	$OrderNumber = $row['OrderNumber'];
+	$CL_ID = $row['CL_ID'];
 	$Color = $row['Color'];
 	$color = $row['color'];
 	$clear = $row['clear'];
@@ -626,7 +669,7 @@
 				<div class='painting_workers'>{$Name}</div>
 				<p>{$Color}</p>
 				<div style='background: lightgrey; cursor: auto; ".((!$disabled and !$Del and $editable) ? "" : "display: none;")."'>
-					<a class='button' id='paint_color_btn' color='{$color}' clear='{$clear}' NCS_ID='{$NCS_ID}' title='Редактировать цвет покраски'><i class='fa fa-pencil-alt fa-lg'></i></a>
+					<a class='button' id='paint_color_btn' title='Редактировать цвет покраски'><i class='fa fa-pencil-alt fa-lg'></i></a>
 					".($Color ? "<button class='button' title='Отменить покраску' onclick='if(confirm(\"{$delmessage}\", \"?id={$id}&paint_reject\")) return false;'><i class='fa fa-times fa-lg'></i></button>" : "")."
 				</div>
 			</td>
@@ -810,18 +853,18 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		if ($row["IsExist"] == "0") {
-			$color = "bg-red";
+			$bgcolor = "bg-red";
 		}
 		elseif ($row["IsExist"] == "1") {
-			$color = "bg-yellow' html='Заказано:&nbsp;&nbsp;&nbsp;&nbsp;<b>{$row["order_date"]}</b><br>Ожидается:&nbsp;<b>{$row["arrival_date"]}</b>";
+			$bgcolor = "bg-yellow' html='Заказано:&nbsp;&nbsp;&nbsp;&nbsp;<b>{$row["order_date"]}</b><br>Ожидается:&nbsp;<b>{$row["arrival_date"]}</b>";
 		}
 		elseif ($row["IsExist"] == "2") {
-			$color = "bg-green";
+			$bgcolor = "bg-green";
 		}
 		else {
-			$color = "bg-gray";
+			$bgcolor = "bg-gray";
 		}
-		$material = "<span class='wr_mt'>".(($row["outdate"] <= 0 and $row["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$row["outdate"]} дн.'></i>" : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' id='m{$row["ODD_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$row["Material"]}{$row["Shipper"]}</span><input type='text' value='{$row["Material"]}' class='materialtags_{$row["mtype"]}' style='display: none;'><input type='checkbox' ".($row["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span>";
+		$material = "<span class='wr_mt'>".(($row["outdate"] <= 0 and $row["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$row["outdate"]} дн.'></i>" : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' id='m{$row["ODD_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$bgcolor}'>{$row["Material"]}{$row["Shipper"]}</span><input type='text' value='{$row["Material"]}' class='materialtags_{$row["mtype"]}' style='display: none;'><input type='checkbox' ".($row["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span>";
 
 		$steps = "<a id='{$row["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$row["Steps"]}</a>";
 
@@ -1088,43 +1131,56 @@ this.subbut.value='Подождите, пожалуйста!';">
 	<form method='post' action='<?=$location?>&paint_color' onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
-			<p style="color: #911;">ВНИМАНИЕ! Обязательно указывайте конкретный цвет. Абстрактные обозначения вроде "в тон пластика" или "по образцу" не допускаются.</p>
+			<input type="hidden" name="CL_ID" value="<?=$CL_ID?>">
 			<div>
 				<label>Описание:</label>
-				<input type="text" name="color" class="colortags" style="width: 300px;" value="" autocomplete="off">
+				<input type="text" name="color" value="<?=$color?>" class="colortags" style="width: 300px;" value="" autocomplete="off" required>
 				<i class='fa fa-question-circle' style='margin: 5px;' title='Поле для описания цвета в свободной форме.'></i>
 			</div>
 			<div>
+				<label>Тип покрытия:</label>
+				<div class='btnset'>
+					<input type='radio' id='clear1' name='clear' value='1' required <?=($clear == "1" ? "checked" : "")?>>
+						<label for='clear1'>Прозрачное</label>
+					<input type='radio' id='clear0' name='clear' value='0' required <?=($clear == "0" ? "checked" : "")?>>
+						<label for='clear0'>Эмаль</label>
+				</div>
+				<i class='fa fa-question-circle' style='margin: 5px;' title='Прозрачное покрытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'></i>
+			</div>
+			<div>
 				<label>Цвет NCS:</label>
-				<select name="NCS" style="width: 200px;">
+				<select name="NCS" style="width: 200px;" <?=(!in_array('paint_color_admin', $Rights) ? "disabled" : "")?>>
+					<option value="">-=NCS цвет не указан=-</option>
 					<?
 					$query = "
-						SELECT NCS_ID, IFNULL(NCScolor, '-=NCS цвет не указан=-') NCScolor, HTML, IF(R+G+B < 200, 'white', 'black') txt_color
+						SELECT NCS_ID, NCScolor, HTML, IF(R+G+B < 200, 'white', 'black') txt_color
 						FROM NCScolors
 					";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
-						echo "<option value={$row["NCS_ID"]} data-html='{$row["HTML"]}' style='color: {$row["txt_color"]}; background: {$row["HTML"]};'>{$row["NCScolor"]}</option>";
+						$selected = ($NCS_ID == $row["NCS_ID"] ? "selected" : "");
+						echo "<option value={$row["NCS_ID"]} {$selected} data-html='{$row["HTML"]}' style='color: {$row["txt_color"]}; background: {$row["HTML"]};'>{$row["NCScolor"]}</option>";
 					}
 					?>
 				</select>
 				<div id="NCScolor" style="width: 28px; height: 28px; display: inline-block; border-radius: 50%; margin-left: 5px;"></div>
 				<i class='fa fa-question-circle' style='margin: 5px;' title='Натуральная система цвета NCS (Natural Color System) — проприетарная цветовая модель, предложенная шведским Институтом Цвета. Она основана на системе противоположных цветов и нашла широкое применение в промышленности для описания цвета продукции. Сегодня NCS является одной из наиболее широко используемых систем описания цветов в мире, получила международное научное признание, а кроме того, NCS является национальным стандартом в Швеции, Норвегии, Испании, и Южной Африке.'></i>
 			</div>
-			<div>
-				<label>Тип покрытия:</label>
-				<div class='btnset'>
-					<input type='radio' id='clear1' name='clear' value='1' required>
-						<label for='clear1'>Прозрачное</label>
-					<input type='radio' id='clear0' name='clear' value='0' required>
-						<label for='clear0'>Эмаль</label>
-				</div>
-				<i class='fa fa-question-circle' style='margin: 5px;' title='Прозрачное покрытие - это покрытие, при котором просматривается структура дерева (в том числе лак, тонированный эмалью). Эмаль - это непрозрачное покрытие.'></i>
-			</div>
 		</fieldset>
 		<div>
 			<hr>
 			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
+			<?
+			if( in_array('paint_color_admin', $Rights) and $CL_ID ) {
+				$query = "SELECT SUM(1) cnt FROM OrdersData WHERE CL_ID = {$CL_ID}";
+				$res = mysqli_query( $mysqli, $query );
+				$row = mysqli_fetch_array($res);
+				$cnt = $row["cnt"];
+			?>
+				<input type='submit' name="subbut" value='Редактировать (<?=$cnt?>)' style='float: right; background: #f55; color: #fff;'>
+			<?
+			}
+			?>
 		</div>
 	</form>
 </div>
@@ -1181,19 +1237,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		// Кнопка изменения цвета краски
 		$('#paint_color_btn').click( function() {
-			// Очистка радио кнопок
-			$('#paint_color input[type="radio"]').prop('checked', false);
-			$('#paint_color input[type="radio"]').button('refresh');
-
-			var color = $(this).attr('color');
-			var clear = $(this).attr('clear');
-			var NCS_ID = $(this).attr('NCS_ID');
-
-			// Заполнение формы
-			$('#paint_color input[name="color"]').val(color);
-			$('#paint_color select[name="NCS"]').val(NCS_ID).trigger('change');
-			$('#paint_color #clear'+clear).prop('checked', true);
-			$('#paint_color input[type="radio"]').button('refresh');
+			$('#paint_color select[name="NCS"]').trigger('change');
 
 			$('#paint_color').dialog({
 				resizable: false,
