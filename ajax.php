@@ -257,7 +257,7 @@ case "ispainting":
 	elseif ($val == 3) {
 		// Узнаём есть ли патина в наборе
 		$query = "
-			SELECT SUM(1) cnt FROM `OrdersDataDetail` WHERE OD_ID = {$id} AND ptn > 0
+			SELECT SUM(1) cnt FROM `OrdersDataDetail` WHERE OD_ID = {$id} AND P_ID IS NOT NULL
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$row = mysqli_fetch_array($res);
@@ -2499,7 +2499,7 @@ case "odd_data":
 			,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
 			,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
 			,IF(SUM(ODS.USR_ID) IS NULL, 0, 1) inprogress
-			,ODD.ptn
+			,ODD.P_ID
 			,SH.mtype
 		FROM OrdersDataDetail ODD
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -2511,7 +2511,7 @@ case "odd_data":
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
 	{
-		$odd_data = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "PVC_ID"=>$row["PVC_ID"], "sidebar"=>$row["sidebar"], "model_name"=>$row["Model"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "box"=>$row["box"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "piece_stored"=>$row["piece_stored"], "color"=>$row["Color"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["Shipper"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "ptn"=>$row["ptn"], "mtype"=>$row["mtype"] );
+		$odd_data = array( "amount"=>$row["Amount"], "price"=>$row["Price"], "model"=>$row["PM_ID"], "blank"=>$row["BL_ID"], "other"=>$row["Other"], "PVC_ID"=>$row["PVC_ID"], "sidebar"=>$row["sidebar"], "model_name"=>$row["Model"], "form"=>$row["PF_ID"], "mechanism"=>$row["PME_ID"], "box"=>$row["box"], "length"=>$row["Length"], "width"=>$row["Width"], "PieceAmount"=>$row["PieceAmount"], "PieceSize"=>$row["PieceSize"], "piece_stored"=>$row["piece_stored"], "color"=>$row["Color"], "comment"=>$row["Comment"], "material"=>$row["Material"], "shipper"=>$row["Shipper"], "isexist"=>$row["IsExist"], "inprogress"=>$row["inprogress"], "order_date"=>$row["order_date"], "arrival_date"=>$row["arrival_date"], "P_ID"=>$row["P_ID"], "mtype"=>$row["mtype"] );
 	}
 
 	echo json_encode($odd_data);

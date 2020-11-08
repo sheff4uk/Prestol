@@ -43,7 +43,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$piece_stored = $_POST["piece_stored"] ? "{$_POST["piece_stored"]}" : "NULL";
 	$IsExist = $_POST["IsExist"];
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
-	$ptn = $_POST["ptn"];
+	$P_ID = $_POST["P_ID"];
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 	$sidebar = isset($_POST["sidebar"]) ? $_POST["sidebar"] : "NULL";
@@ -72,22 +72,17 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 
 	// Сохраняем в таблицу материалов полученный материал и узнаем его ID
 	if ($Material != '') {
-		$Material = mysqli_real_escape_string($mysqli, $Material);
 		$query = "
-			SELECT MT_ID FROM Materials WHERE Material LIKE '{$Material}' AND SH_ID = {$Shipper}
+			INSERT INTO Materials
+			SET
+				SH_ID = {$Shipper},
+				Material = '{$Material}',
+				count = 1
+			ON DUPLICATE KEY UPDATE
+				count = count + 1
 		";
-		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$row = mysqli_fetch_array($res);
-		if ($row["MT_ID"]) {
-			$mt_id = $row["MT_ID"];
-		}
-		else {
-			$query = "
-				INSERT INTO Materials SET Material = '{$Material}', SH_ID = {$Shipper}
-			";
-			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$mt_id = mysqli_insert_id( $mysqli );
-		}
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$mt_id = mysqli_insert_id( $mysqli );
 	}
 	else {
 		$mt_id = "NULL";
@@ -149,7 +144,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 			,PF_ID = {$Form}
 			,PME_ID = {$Mechanism}
 			,box = {$box}
-			,ptn = $ptn
+			,P_ID = {$P_ID}
 		WHERE ODD_ID = {$_GET["oddid"]}
 	";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

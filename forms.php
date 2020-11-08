@@ -122,20 +122,16 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</div>
 		<div>
 			<label>Патина:</label>
-			<div class='btnset'>
-				<input type='radio' id='1ptn0' name='ptn' value='0' required>
-					<label for='1ptn0'>Нет</label>
-				<input type='radio' id='1ptn1' name='ptn' value='1' required>
-					<label for='1ptn1'><i class='fa fa-paint-brush fa-lg' style="color: goldenrod;"></i>Золото</label>
-				<input type='radio' id='1ptn2' name='ptn' value='2' required>
-					<label for='1ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
-				<input type='radio' id='1ptn3' name='ptn' value='3' required>
-					<label for='1ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
-				<input type='radio' id='1ptn4' name='ptn' value='4' required>
-					<label for='1ptn4'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Св. зол.</label>
-				<input type='radio' id='1ptn5' name='ptn' value='5' required>
-					<label for='1ptn5'><i class='fa fa-paint-brush fa-lg' style="color: #eae2cf;"></i>Шампань</label>
-			</div>
+			<select name="P_ID" style="width: 160px;">
+				<option value="0">-=Нет=-</option>
+				<?
+				$query = "SELECT P_ID, patina, ptn_color FROM Patina ORDER BY P_ID";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($res) ) {
+					echo "<option value='{$row["P_ID"]}' style='color: white; background: #{$row["ptn_color"]}'>{$row["patina"]}</option>";
+				}
+				?>
+			</select>
 		</div>
 		<div>
 			<label>Ткань:</label>
@@ -286,20 +282,16 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</div>
 		<div>
 			<label>Патина:</label>
-			<div class='btnset'>
-				<input type='radio' id='2ptn0' name='ptn' value='0' required>
-					<label for='2ptn0'>Нет</label>
-				<input type='radio' id='2ptn1' name='ptn' value='1' required>
-					<label for='2ptn1'><i class='fa fa-paint-brush fa-lg' style="color: goldenrod;"></i>Золото</label>
-				<input type='radio' id='2ptn2' name='ptn' value='2' required>
-					<label for='2ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
-				<input type='radio' id='2ptn3' name='ptn' value='3' required>
-					<label for='2ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
-				<input type='radio' id='2ptn4' name='ptn' value='4' required>
-					<label for='2ptn4'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Св. зол.</label>
-				<input type='radio' id='2ptn5' name='ptn' value='5' required>
-					<label for='2ptn5'><i class='fa fa-paint-brush fa-lg' style="color: #eae2cf;"></i>Шампань</label>
-			</div>
+			<select name="P_ID" style="width: 160px;">
+				<option value="0">-=Нет=-</option>
+				<?
+				$query = "SELECT P_ID, patina, ptn_color FROM Patina ORDER BY P_ID";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($res) ) {
+					echo "<option value='{$row["P_ID"]}' style='color: white; background: #{$row["ptn_color"]}'>{$row["patina"]}</option>";
+				}
+				?>
+			</select>
 			<br>
 		</div>
 		<div>
@@ -443,20 +435,16 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</div>
 			<div>
 				<label>Патина:</label>
-				<div class='btnset'>
-					<input type='radio' id='0ptn0' name='ptn' value='0' required>
-						<label for='0ptn0'>Нет</label>
-					<input type='radio' id='0ptn1' name='ptn' value='1' required>
-						<label for='0ptn1'><i class='fa fa-paint-brush fa-lg' style="color: goldenrod;"></i>Золото</label>
-					<input type='radio' id='0ptn2' name='ptn' value='2' required>
-						<label for='0ptn2'><i class='fa fa-paint-brush fa-lg' style="color: silver;"></i>Серебро</label>
-					<input type='radio' id='0ptn3' name='ptn' value='3' required>
-						<label for='0ptn3'><i class='fa fa-paint-brush fa-lg' style="color: chocolate;"></i>Кофе</label>
-					<input type='radio' id='0ptn4' name='ptn' value='4' required>
-						<label for='0ptn4'><i class='fa fa-paint-brush fa-lg' style="color: gold;"></i>Св. зол.</label>
-					<input type='radio' id='0ptn5' name='ptn' value='5' required>
-						<label for='0ptn5'><i class='fa fa-paint-brush fa-lg' style="color: #eae2cf;"></i>Шампань</label>
-				</div>
+				<select name="P_ID" style="width: 160px;">
+					<option value="0">-=Нет=-</option>
+					<?
+					$query = "SELECT P_ID, patina, ptn_color FROM Patina ORDER BY P_ID";
+					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+					while( $row = mysqli_fetch_array($res) ) {
+						echo "<option value='{$row["P_ID"]}' style='color: white; background: #{$row["ptn_color"]}'>{$row["patina"]}</option>";
+					}
+					?>
+				</select>
 			</div>
 			<div>
 				<label>Ткань:</label>
@@ -772,12 +760,13 @@ this.subbut.value='Подождите, пожалуйста!';">
 	// Функция включения золотой патины для моделей с патиной
 	function patina_model_list(model, type) {
 		if (ModelPatina[model] == 1) {
-			$('input[name="ptn"]').prop('checked', false);
+			$('select[name="P_ID"]').val(-1);
+			$('select[name="P_ID"]').prop('required', true);
 		}
 		else {
-			$('#'+type+'ptn0').prop('checked', true);
+			$('select[name="P_ID"]').val(0);
+			$('select[name="P_ID"]').prop('required', false);
 		}
-		$('input[name="ptn"]').button('refresh');
 	}
 
 	// Функция пересчитывает итог в форме редактирования стоимости набора
@@ -854,7 +843,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#addchair input[name="Amount"]').val('');
 			$('#addchair input[name="Amount"]').prop('readonly', false);
 			$('#1radio').prop('checked', true);
-			$('#1ptn0').prop('checked', true);
+			$('#addchair select[name="P_ID"]').val(0);
 			$('#addchair .radiostatus input[type="radio"]').prop('disabled', true);
 			$('#addchair input[type="radio"]').button('refresh');
 			$('#addchair input[name="Amount"]').removeAttr('max');
@@ -893,7 +882,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#addchair input[name="patina"]').val(odd_data['patina']);
 				$('#addchair input[name="Material"]').val(odd_data['material']);
 				$('#addchair select[name="Shipper"]').val(odd_data['shipper']);
-				$('#1ptn'+odd_data['ptn']).prop('checked', true);
+				$('#addchair select[name="P_ID"]').val(odd_data['P_ID']);
 				$('#1radio'+odd_data['isexist']).prop('checked', true);
 				$('#addchair input[type="radio"]').button('refresh');
 				if( odd_data['isexist'] == 1 ) {
@@ -976,7 +965,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#addtable input[name="piece_stored"]').prop('checked', false);
 			$('#addtable input[name="sidebar"]').prop('checked', false);
 			$('#2radio').prop('checked', true);
-			$('#2ptn0').prop('checked', true);
+			$('#addtable select[name="P_ID"]').val(0);
 			$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
 
 			// Выключается ящик
@@ -1035,7 +1024,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				}
 				model_sidebar(model);
 
-				$('#2ptn'+odd_data['ptn']).prop('checked', true);
+				$('#addtable select[name="P_ID"]').val(odd_data['P_ID']);
 				$('#form'+form).prop('checked', true);
 				$('#mechanism'+mechanism).prop('checked', true);
 					piece_from_mechanism(mechanism);
@@ -1192,7 +1181,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#addblank input[name="Amount"]').prop('readonly', false);
 			$('#addblank input[name="Price"]').val('');
 			$('#0radio').prop('checked', true);
-			$('#0ptn0').prop('checked', true);
+			$('#addblank select[name="P_ID"]').val(0);
 			$('#addblank .radiostatus input[type="radio"]').prop('disabled', true);
 			$('#addblank input[type="radio"]').button('refresh');
 			$('#addblank input[name="Other"]').prop('disabled', false);
@@ -1247,7 +1236,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 					$('#addblank input[name="mtype"]').val('2');
 				}
 
-				$('#0ptn'+odd_data['ptn']).prop('checked', true);
+				$('#addblank select[name="P_ID"]').val(odd_data['P_ID']);
 				$('#0radio'+odd_data['isexist']).prop('checked', true);
 				$('#addblank input[type="radio"]').button('refresh');
 				if( odd_data['isexist'] == 1 ) {

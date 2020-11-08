@@ -94,7 +94,7 @@
 			,ODD.Comment
 			,CONCAT('<b>', ODD.Amount, '</b>') Amount
 			,ODD.boxes
-			,LEFT(Patina(ODD.ptn), 3) Patina
+			,LEFT(P.patina, 3) Patina
 			,IFNULL(CONCAT(MT.Material, IFNULL(CONCAT(' (', SHP.Shipper, ')'), ''),
 				IF(IFNULL(MT.Material, '') != '',
 					CASE IFNULL(ODD.IsExist, -1)
@@ -114,6 +114,7 @@
 		LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 		LEFT JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 		LEFT JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
+		LEFT JOIN Patina P ON P.P_ID = ODD.P_ID
 		WHERE OD.OD_ID IN ({$id_list})
 		GROUP BY ODD.ODD_ID
 		HAVING PTID IN ({$product_types})

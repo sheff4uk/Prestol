@@ -281,7 +281,7 @@
 		$piece_stored = $_POST["piece_stored"] ? "{$_POST["piece_stored"]}" : "NULL";
 		$IsExist = isset($_POST["IsExist"]) ? "{$_POST["IsExist"]}" : "NULL";
 		$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
-		$ptn = $_POST["ptn"];
+		$P_ID = $_POST["P_ID"] ? $_POST["P_ID"] : "NULL";
 		$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 		$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 		$sidebar = isset($_POST["sidebar"]) ? $_POST["sidebar"] : "NULL";
@@ -295,29 +295,24 @@
 
 		// Сохраняем в таблицу материалов полученный материал и узнаем его ID
 		if( $Material != '' ) {
-			$Material = mysqli_real_escape_string($mysqli, $Material);
 			$query = "
-				SELECT MT_ID FROM Materials WHERE Material LIKE '{$Material}' AND SH_ID = {$Shipper}
+				INSERT INTO Materials
+				SET
+					SH_ID = {$Shipper},
+					Material = '{$Material}',
+					count = 1
+				ON DUPLICATE KEY UPDATE
+					count = count + 1
 			";
-			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-			$row = mysqli_fetch_array($res);
-			if ($row["MT_ID"]) {
-				$mt_id = $row["MT_ID"];
-			}
-			else {
-				$query = "
-					INSERT INTO Materials SET Material = '{$Material}', SH_ID = {$Shipper}
-				";
-				mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-				$mt_id = mysqli_insert_id( $mysqli );
-			}
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$mt_id = mysqli_insert_id( $mysqli );
 		}
 		else {
 			$mt_id = "NULL";
 		}
 
-		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PVC_ID, sidebar, Length, Width, PieceAmount, PieceSize, piece_stored, PF_ID, PME_ID, box, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, author, ptn)
-				  VALUES (IF({$id} > 0, {$id}, NULL), {$Model}, {$Blank}, {$Other}, {$PVC_ID}, {$sidebar}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$piece_stored}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, $ptn)";
+		$query = "INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PVC_ID, sidebar, Length, Width, PieceAmount, PieceSize, piece_stored, PF_ID, PME_ID, box, MT_ID, IsExist, Amount, Comment, order_date, arrival_date, author, P_ID)
+				  VALUES (IF({$id} > 0, {$id}, NULL), {$Model}, {$Blank}, {$Other}, {$PVC_ID}, {$sidebar}, {$Length}, {$Width}, {$PieceAmount}, {$PieceSize}, {$piece_stored}, {$Form}, {$Mechanism}, {$box}, {$mt_id}, {$IsExist}, {$_POST["Amount"]}, {$Comment}, {$OrderDate}, {$ArrivalDate}, {$_SESSION['id']}, {$P_ID})";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		if ($id > 0) {
