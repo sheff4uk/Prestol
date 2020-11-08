@@ -2499,7 +2499,7 @@ case "odd_data":
 			,DATE_FORMAT(ODD.order_date, '%d.%m.%Y') order_date
 			,DATE_FORMAT(ODD.arrival_date, '%d.%m.%Y') arrival_date
 			,IF(SUM(ODS.USR_ID) IS NULL, 0, 1) inprogress
-			,ODD.P_ID
+			,IFNULL(ODD.P_ID, 0) P_ID
 			,SH.mtype
 		FROM OrdersDataDetail ODD
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID

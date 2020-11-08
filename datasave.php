@@ -43,7 +43,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$piece_stored = $_POST["piece_stored"] ? "{$_POST["piece_stored"]}" : "NULL";
 	$IsExist = $_POST["IsExist"];
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
-	$P_ID = $_POST["P_ID"];
+	$P_ID = $_POST["P_ID"] ? $_POST["P_ID"] : "NULL";
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 	$sidebar = isset($_POST["sidebar"]) ? $_POST["sidebar"] : "NULL";
