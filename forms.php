@@ -792,6 +792,26 @@ this.subbut.value='Подождите, пожалуйста!';">
 		$('#discount span').html(total_percent);
 	}
 
+	// Функция генерирует форму с этапами производства
+	function makeform(odd_id, location) {
+		$.ajax({ url: "ajax.php?do=steps&odd_id="+odd_id, dataType: "script", async: false });
+
+		$('#formsteps input[type=number]').change();
+
+		$( '.isready' ).button();
+		$("#steps form").attr("action", "datasave.php?location="+location);
+
+		// Диалог добавления этапов
+		$('#steps').dialog({
+			resizable: false,
+			width: 550,
+			modal: true,
+			closeText: 'Закрыть'
+		});
+
+		return false;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	$(function() {
 		// Select2
@@ -824,6 +844,52 @@ this.subbut.value='Подождите, пожалуйста!';">
 		var model;
 		var form;
 		var mechanism;
+
+		// При выключении этапа пересчитываем сумму
+		$('#formsteps').on('change', 'input[type=checkbox]:not(.isready)', function() {
+			$('#formsteps input[type=number]').change();
+		});
+		// При изменении тарифа в этапах, пересчитываем сумму
+		$('#formsteps').on('change', 'input[type=number]', function() {
+			var sum = 0;
+			$('#formsteps input[type=number]:enabled').each(function() {
+				var val = parseInt($(this).val()),
+					visible = $(this).parents('tr').find('input[type=checkbox]:not(.isready)').prop('checked');
+				console.log(visible);
+				if( !isNaN(val) && visible ) {
+					sum += val;
+				}
+			});
+			$('#formsteps #steps_sum').text(sum);
+		});
+		// Активация чекбокса готовности если выбран работник
+		$('#formsteps').on('change', '.selectwr', function(){
+			var val = $(this).val();
+			var id = $(this).attr('id');
+			var tbody = $(this).parents('tbody');
+
+			if( val == '' )
+			{
+				$('#IsReady'+id).prop('disabled', true);
+				$('#IsReady'+id).prop('checked', false);
+				$('#IsReady'+id).button('refresh');
+			}
+			else
+			{
+				$('#IsReady'+id).prop('disabled', false);
+				$('#IsReady'+id).button('refresh');
+			}
+			return false;
+		});
+		// Работник каркаса дублируется на сборку
+		$('#formsteps').on('change', '.selectwr', function(){
+			var val = $(this).val();
+			var stage = $(this).parents('tr').find('.stage').text();
+			if( stage == 'Каркас' ) {
+				var tr_sborka = $(this).parents('tbody').find('tr:contains("Сборка")');
+				$(tr_sborka).find('select:enabled').val(val).change();
+			}
+		});
 
 		// Форма добавления стульев
 		$('.edit_product1').click(function() {
