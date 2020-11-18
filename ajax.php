@@ -1335,7 +1335,8 @@ case "add_payment":
 		$query = "
 			SELECT `storeUuid`, `X-Authorization`
 			FROM Rekvizity
-			WHERE R_ID = (SELECT R_ID FROM Cities WHERE CT_ID = {$CT_ID})
+			#WHERE R_ID = (SELECT R_ID FROM Cities WHERE CT_ID = {$CT_ID})
+			WHERE R_ID = (SELECT R_ID FROM CashBox WHERE CB_ID = {$CB_ID})
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 		$storeUuid = mysqli_result($res,0,'storeUuid');
