@@ -72,12 +72,11 @@
 	while( $row = mysqli_fetch_array($res) ) {
 		echo "<a href='?ct_id={$row["CT_ID"]}' class='button' style='font-size: 1.3em; ".($_GET["ct_id"] == $row["CT_ID"] ? 'border: 1px solid #fbd850; color: #eb8f00;' : '')."'>{$row["City"]}".($row["shipment"] ? " <i class='fas fa-truck'>" : "")."</i></a>";
 	}
-	echo "</div>";
 	/////////////////////////////////////////////////////////////////////////
 	// Поиск по коду
 	echo "
-		<form method='get'>
-			<fieldset>
+		<form method='get' style='position: absolute; right: 20px;'>
+			<fieldset style='background: #ffffff9c; width: 400px; margin-left: calc(100% - 400px);'>
 				<legend>Поиск по коду:</legend>
 				<input type='hidden' name='ct_id' value='{$_GET["ct_id"]}'>
 				<input type='text' name='code' value='{$_GET["code"]}' placeholder='Код полностью'>
@@ -111,6 +110,7 @@
 		</form>
 	";
 	/////////////////////////////////////////////////////////////////////////
+	echo "</div>";
 	// Списки отгрузки
 	$query = "
 		SELECT SHP.SHP_ID, CONCAT('Запланированная отгрузка (', SHP.title, '):') title
@@ -311,6 +311,30 @@
 				}
 				else {
 					$("#nav").css({'display':'contents'});
+				}
+			});
+
+			// Плавная прокрутка к якорю при загрузке страницы
+			var loc = window.location.hash.replace("#","");
+			if (loc == "") {loc = "main"}
+
+			var nav = $("#"+loc);
+			if (nav.length) {
+				var destination = nav.offset().top - 300;
+				$("body:not(:animated)").animate({ scrollTop: destination }, 200);
+				$("html").animate({ scrollTop: destination }, 200);
+			}
+
+			// Плавная прокрутка к якорю при клике на ссылку якоря
+			$('a[href*=#]').click(function() {
+				if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
+					var $target = $(this.hash);
+					//$target = $target.length && $target || $('[name=' + this.hash.slice(1) +']');
+					if ($target.length) {
+						var targetOffset = $target.offset().top - ($(".navbar").outerHeight(true)+ 250);
+						$('html,body').animate({scrollTop: targetOffset}, 500);
+						//return false;
+					}
 				}
 			});
 		});
