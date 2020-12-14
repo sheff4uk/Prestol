@@ -35,7 +35,7 @@
 			echo "<a href='/files/KWG6PPq0gX.pdf' target='_blank' title='Розничный прайс'><i class='fas fa-file-pdf fa-3x'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;";
 		}
 		if ($price_type == 0 or $price_type == 2 or $price_type == 3) {
-			echo "<a href='/files/tzVCDx7xPvJJ.pdf' target='_blank' title='Оптовый прайс'><i class='fas fa-file-pdf fa-3x' style='color: green;'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;";
+			echo "<a href='/files/EzD2rpjIuLtb.pdf' target='_blank' title='Оптовый прайс'><i class='fas fa-file-pdf fa-3x' style='color: green;'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;";
 		}
 ?>
 	</div>
