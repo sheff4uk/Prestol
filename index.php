@@ -247,19 +247,17 @@
 	}
 	else {
 	?>
-		<div style="margin: 1em 0;">
-			<form method="get">
-				<div class='btnset'>
-					<input type='radio' id='archive0' name='archive' value='0' <?= ($archive == "0" ? "checked" : "") ?> onchange="this.form.submit()">
-						<label for='archive0'>В работе</label>
-					<input type='radio' id='archive1' name='archive' value='1' <?= ($archive == "1" ? "checked" : "") ?> onchange="this.form.submit()">
-						<label for='archive1'>Свободные</label>
-					<input type='radio' id='archive2' name='archive' value='2' <?= ($archive == "2" ? "checked" : "") ?> onchange="this.form.submit()">
-						<label for='archive2'>Отгруженные</label>
-					<input type='radio' id='archive3' name='archive' value='3' <?= ($archive == "3" ? "checked" : "") ?> onchange="this.form.submit()">
-						<label for='archive3'>Удаленные</label>
-				</div>
-			</form>
+		<div style="">
+			<fieldset style="display: inline-block;">
+				<legend>В работе:</legend>
+				<a href="?archive=0" class="button" style="<?=($archive == "0" ? "border: 1px solid #fbd850; color: #eb8f00;" : "")?>">Заказы</a>
+				<a href="?archive=4" class="button" style="<?=($archive == "4" ? "border: 1px solid #fbd850; color: #eb8f00;" : "")?>">Выставка</a>
+			</fieldset>
+			<fieldset style="border: none; display: inline-block;">
+				<a href="?archive=1" class="button" style="<?=($archive == "1" ? "border: 1px solid #fbd850; color: #eb8f00;" : "")?>">Свободные</a>
+				<a href="?archive=2" class="button" style="<?=($archive == "2" ? "border: 1px solid #fbd850; color: #eb8f00;" : "")?>">Отгруженные</a>
+				<a href="?archive=3" class="button" style="<?=($archive == "3" ? "border: 1px solid #fbd850; color: #eb8f00;" : "")?>">Удаленные</a>
+			</fieldset>
 		</div>
 	<?
 	}
@@ -660,7 +658,7 @@
 			,OD.address
 			,IF((SH.retail AND OD.StartDate IS NULL), 'Выставка', DATE_FORMAT(OD.StartDate, '%d.%m.%y')) StartDate
 		";
-		if ($archive == "0" or isset($_GET["shpid"])) {
+		if ($archive == "0" or $archive == "4" or isset($_GET["shpid"])) {
 			$query .= "
 				,DATE_FORMAT(IF((SH.retail AND OD.StartDate IS NULL), '', OD.EndDate), '%d.%m.%y') EndDate
 			";
@@ -828,7 +826,10 @@
 	if (!isset($_GET["shpid"])) { // Если не в отгрузке
 		switch ($archive) {
 			case 0:
-				$query .= "AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL";
+				$query .= "AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL AND (OD.StartDate IS NOT NULL OR SH.retail = 0)";
+				break;
+			case 4:
+				$query .= "AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL AND OD.StartDate IS NULL AND SH.retail = 1";
 				break;
 			case 1:
 				$query .= "AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";
@@ -1302,6 +1303,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 		switch ($archive) {
 			case 0:
 				echo "$('body').attr('style', 'background: #fff;');";
+				break;
+			case 4:
+				echo "$('body').attr('style', 'background: #fcf;');";
 				break;
 			case 1:
 				echo "$('body').attr('style', 'background: #ffb;');";
