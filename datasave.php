@@ -40,7 +40,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$Width = $_POST["Width"] ? "{$_POST["Width"]}" : "NULL";
 	$PieceAmount = $_POST["PieceAmount"] ? "{$_POST["PieceAmount"]}" : "NULL";
 	$PieceSize = $_POST["PieceSize"] ? "{$_POST["PieceSize"]}" : "NULL";
-	$piece_stored = $_POST["piece_stored"] ? "{$_POST["piece_stored"]}" : "NULL";
+	$piece_stored = ($_POST["piece_stored"] and $_POST["Mechanism"] == 2) ? "{$_POST["piece_stored"]}" : "NULL";
 	$IsExist = $_POST["IsExist"];
 	$Shipper = $_POST["Shipper"] ? $_POST["Shipper"] : "NULL";
 	$P_ID = $_POST["P_ID"] ? $_POST["P_ID"] : "NULL";
