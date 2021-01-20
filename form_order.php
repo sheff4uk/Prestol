@@ -69,7 +69,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<fieldset id="EndDate">
 				<legend>Дата сдачи:</legend>
 				<input type='text' name='EndDate' style="width: 90px;" readonly autocomplete='off'>
-				<span style='color: #911;' id="day_limit"></span>
+				<span style='color: #911; display: inline-table;' id="day_limit"></span>
 			</fieldset>
 			<fieldset id="Client">
 				<legend>Информация о клиенте:</legend>
