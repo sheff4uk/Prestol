@@ -68,8 +68,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</fieldset>
 			<fieldset id="EndDate">
 				<legend>Дата сдачи:</legend>
-				<input type='text' name='EndDate' size='12' <?=(in_array('order_add_confirm', $Rights) ? "class='date'" : "readonly")?> autocomplete='off'>
-				<span style='color: #911;'>автоматически +40 рабочих дней</span>
+				<input type='text' name='EndDate' style="width: 90px;" readonly autocomplete='off'>
+				<span style='color: #911;' id="day_limit"></span>
 			</fieldset>
 			<fieldset id="Client">
 				<legend>Информация о клиенте:</legend>
@@ -107,15 +107,21 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <script>
 	$(function() {
+		// Ограничение даты сдачи
+		$( '#order_form fieldset input[name="EndDate"]' ).datepicker( "option", "minDate", "<?=( date('d.m.Y') )?>" );
+
 		// Кнопка добавления набора
 		$('.add_order').click( function() {
+			// Проверяем сессию
+			$.ajax({ url: "check_session.php?script=1", dataType: "script", async: false });
+
 			odd = $(this).attr('odd');
 
 			// Очистка формы
 			$('#order_form fieldset select').val('').trigger('change');
 			$('#order_form fieldset input[type="text"]').val('');
 			$('#order_form fieldset textarea').val('');
-			$('#order_form fieldset input[name="EndDate"]').val('<?=$_SESSION["end_date"]?>');
+			$('#order_form fieldset input[name="EndDate"]').val('');
 			$('#order_form .btnset input').prop( "checked", false ).button('refresh');
 
 			// Скрытие полей
@@ -138,9 +144,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 				modal: true,
 				closeText: 'Закрыть'
 			});
-
-			// Автокомплит поверх диалога
-			$( ".colortags" ).autocomplete( "option", "appendTo", "#order_form" );
 
 			return false;
 		});
@@ -171,12 +174,18 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#order_form #StartDate input:checked').attr('checked', false).change();
 
 			if (retail == 1) {
+				// Запрашиваем дату сдачи
+				$.ajax({ url: "get_end_date.php?retail=1&script=1", dataType: "script", async: false });
+
 				$('#order_form #StartDate').show('fast');
 				$('#order_form #StartDate input').attr('disabled', false);
 				$('#order_form #EndDate').hide('fast');
 				$('#order_form #EndDate input').attr('disabled', true);
 			}
 			else {
+				// Запрашиваем дату сдачи
+				$.ajax({ url: "get_end_date.php?retail=0&script=1", dataType: "script", async: false });
+
 				$('#order_form #StartDate').hide('fast');
 				$('#order_form #StartDate input').attr('disabled', true);
 				if (value > 0) {

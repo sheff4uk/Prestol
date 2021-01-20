@@ -1384,10 +1384,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 		$("#toprint").printPage();
 		$("#print_shp").printPage();
 
-		// Ограничение дат продажи и сдачи
-		$( '#order_form fieldset input[name="StartDate"]' ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
-		$( '#order_form fieldset input[name="EndDate"]' ).datepicker( "option", "minDate", "<?=( date('d.m.Y') )?>" );
-
 		// Обработчики чекбоксов в форме отгрузки
 		$('#orders_to_shipment').on('change', '#selectalltop', function(){
 			ch = $('#selectalltop').prop('checked');

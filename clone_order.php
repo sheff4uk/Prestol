@@ -40,11 +40,16 @@ if( !in_array('order_add', $Rights) and !in_array('order_add_free', $Rights) ) {
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$id = mysqli_insert_id( $mysqli );
 
-		// Если присвоилось оптовое подразделение, то ставим дату сдачи +30 рабочих дней
+		// Узнаем дату сдачи для опта
+		$_GET["retail"] = 0;
+		include "get_end_date.php";
+		$EndDate = date_format($end_date, 'Y-m-d');
+
+		// Если присвоилось оптовое подразделение, то ставим дату сдачи
 		$query = "
 			UPDATE OrdersData OD
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-			SET OD.EndDate = IF(SH.retail = 0, '".date( "Y-m-d", strtotime($_SESSION["end_date"]) )."', OD.EndDate)
+			SET OD.EndDate = IF(SH.retail = 0, '{$EndDate}', OD.EndDate)
 			WHERE OD.OD_ID = {$id}
 		";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

@@ -16,6 +16,7 @@
 				,IF(OD.DelDate IS NULL, 0, 1) Del
 				,IF(OD.ReadyDate IS NULL, 0, 1) Archive
 				,IF(OD.SH_ID IS NULL, 1, 0) Free
+				,IF(OD.StartDate IS NULL AND SH.retail = 1, 1, 0) Exhibition
 				,OD.IsPainting
 			FROM OrdersData OD
 			LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -29,12 +30,13 @@
 		$Del = mysqli_result($res,0,'Del');
 		$Archive = mysqli_result($res,0,'Archive');
 		$Free = mysqli_result($res,0,'Free');
+		$Exhibition = mysqli_result($res,0,'Exhibition');
 		$is_lock = mysqli_result($res,0,'is_lock');
 		$start_year = mysqli_result($res,0,'start_year');
 		$start_month = mysqli_result($res,0,'start_month');
 		$confirmed = mysqli_result($res,0,'confirmed');
 		$IsPainting = mysqli_result($res,0,'IsPainting');
-		// Категория набора (в работе/свободные/отгруженные/удаленные)
+		// Категория набора (в работе/выставка/свободные/отгруженные/удаленные)
 		if ($Del) {
 			$arch = 3;
 		}
@@ -43,6 +45,9 @@
 		}
 		elseif ($Free) {
 			$arch = 1;
+		}
+		elseif ($Exhibition) {
+			$arch = 4;
 		}
 		else {
 			$arch = 0;
@@ -71,20 +76,24 @@
 	// Обновление основной информации о наборе
 	if( isset($_GET["order_update"]) )
 	{
-		// Узнаем, была ли дата заключения договора
+		// Узнаем, была ли дата заключения договора и дата отгрузки
 		$query = "
 			SELECT OD.StartDate
+				,OD.ReadyDate
 			FROM OrdersData OD
 			WHERE OD.OD_ID = {$id}
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$row = mysqli_fetch_array($res);
-		$old_StartDate = $row["StartDate"];
+		$cur_StartDate = $row["StartDate"];
+		$cur_ReadyDate = $row["ReadyDate"];
 
 		$StartDate = $_POST["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_POST["StartDate"]) ).'\'' : "NULL";
-		// Если продали с выставки, то присваиваем дату сдачи
-		if (!$old_StartDate and $_POST["StartDate"]) {
-			$_POST["EndDate"] = $_SESSION["end_date"];
+		// Если продали с выставки неотгруженный товар, то присваиваем дату сдачи
+		if( !$cur_StartDate and $_POST["StartDate"] and !$cur_ReadyDate ) {
+			$_GET["retail"] = 1;
+			include "get_end_date.php";
+			$_POST["EndDate"] = date_format($end_date, 'd.m.Y');
 		}
 		$EndDate = $_POST["EndDate"] ? '\''.date( "Y-m-d", strtotime($_POST["EndDate"]) ).'\'' : "NULL";
 
@@ -112,7 +121,6 @@
 				".(isset($_POST["EndDate"]) ? ",EndDate = $EndDate" : "")."
 				".(isset($_POST["Shop"]) ? ",SH_ID = $Shop" : "")."
 				".(isset($_POST["OrderNumber"]) ? ",OrderNumber = '$OrderNumber'" : "")."
-				#".((isset($_POST["Color"]) and isset($_POST["clear"])) ? ",CL_ID = $cl_id" : "")."
 				".(isset($_POST["Comment"]) ? ",Comment = '$Comment'" : "")."
 			WHERE OD_ID = {$id}
 		";
@@ -449,7 +457,7 @@
 			,IFNULL(SH.KA_ID, OD.KA_ID) KA_ID
 			,OD.mtel
 			,OD.address
-			,DATE_FORMAT(OD.AddDate, '%d.%m.%y') AddDate
+			,DATE_FORMAT(OD.AddDate, '%d.%m.%Y') AddDate
 			,DATE_FORMAT(OD.StartDate, '%d.%m.%Y') StartDate
 			,DATE_FORMAT(OD.EndDate, '%d.%m.%Y') EndDate
 			,DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
@@ -763,11 +771,12 @@
 			// Выводится выпадающий список салонов аяксом
 			$.ajax({ url: "ajax.php?do=create_shop_select&OD_ID=<?=$id?>&SH_ID=<?=$SH_ID?>", dataType: "script", async: false });
 
-			$( 'input[name="StartDate"]' ).datepicker( "option", "maxDate", "<?=( date('d.m.Y') )?>" );
+			$( 'input[name="StartDate"]' ).datepicker( "option", "maxDate", "<?=date('d.m.Y')?>" );
+			$( 'input[name="EndDate"]' ).datepicker( "option", "minDate", "<?=$AddDate?>" );
 
 			if("<?=$StartDate?>") {
 				$("input[name='StartDate']").hover(function() {
-					$("i.fa-money").effect( 'shake', 1000 );
+					$("i.fa-money-bill-alt").effect( 'pulsate', 1000 );
 				});
 			}
 		});

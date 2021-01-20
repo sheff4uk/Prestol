@@ -1758,15 +1758,36 @@ case "update_sell_date":
 	$OD_IDs = $_GET["OD_IDs"];
 	$StartDate = $_GET["StartDate"] ? '\''.date( 'Y-m-d', strtotime($_GET["StartDate"]) ).'\'' : "NULL";
 
-	// Узнаем старую дату продажи
-	$query = "SELECT DATE_FORMAT(StartDate, '%d.%m.%Y') StartDate FROM OrdersData WHERE OD_ID = {$OD_ID}";
+	// Узнаем текущую дату продажи и дату отгрузки
+	$query = "
+		SELECT DATE_FORMAT(StartDate, '%d.%m.%Y') StartDate
+			,ReadyDate
+		FROM OrdersData
+		WHERE OD_ID = {$OD_ID}
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-	$old_StartDate = mysqli_result($res,0,'StartDate');
+	$row = mysqli_fetch_array($res);
+	$cur_StartDate = $row["StartDate"];
+	$cur_ReadyDate = $row["ReadyDate"];
+
+	// Если продали с выставки неотгруженный товар, то присваиваем дату сдачи
+	if( !$cur_StartDate and $_GET["StartDate"] and !$cur_ReadyDate ) {
+		$_GET["retail"] = 1;
+		include "get_end_date.php";
+		$_GET["EndDate"] = date_format($end_date, 'd.m.Y');
+	}
+	$EndDate = $_GET["EndDate"] ? '\''.date( "Y-m-d", strtotime($_GET["EndDate"]) ).'\'' : "NULL";
 
 	// Меняем дату продажи у группы
-	$query = "UPDATE OrdersData SET StartDate = {$StartDate}, author = {$_SESSION['id']} WHERE OD_ID IN ({$OD_IDs})";
+	$query = "
+		UPDATE OrdersData
+		SET StartDate = {$StartDate}
+			".(isset($_GET["EndDate"]) ? ",EndDate = $EndDate" : "")."
+			,author = {$_SESSION['id']}
+		WHERE OD_ID IN ({$OD_IDs})
+	";
 	if( !mysqli_query( $mysqli, $query ) ) {
-		echo "$('tr#ord{$OD_ID} .sell_date').val('{$old_StartDate}');";
+		echo "$('tr#ord{$OD_ID} .sell_date').val('{$cur_StartDate}');";
 		die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	}
 
@@ -1776,8 +1797,8 @@ case "update_sell_date":
 		echo "$('tr#ord{$value} .sell_date').val('{$_GET["StartDate"]}');";
 	}
 
-	if ($old_StartDate) {
-		echo "noty({timeout: 3000, text: 'Дата заключения договора изменена с <b>{$old_StartDate}</b> на <b>{$_GET["StartDate"]}</b>', type: 'success'});";
+	if ($cur_StartDate) {
+		echo "noty({timeout: 3000, text: 'Дата заключения договора изменена с <b>{$cur_StartDate}</b> на <b>{$_GET["StartDate"]}</b>', type: 'success'});";
 	}
 	else {
 		echo "noty({timeout: 3000, text: 'Установлена дата заключения договора <b>{$_GET["StartDate"]}</b>', type: 'success'});";
