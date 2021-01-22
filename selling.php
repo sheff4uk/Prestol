@@ -107,7 +107,7 @@
 				else { $_SESSION["alert"][] = mysqli_error( $mysqli ); }
 			}
 			// Очищаем дату продажи, остальное сделает триггер Clear_client_if_reject
-			$query = "UPDATE OrdersData SET StartDate = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена ({$ClientName})', ' Отказ ({$ClientName})')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
+			$query = "UPDATE OrdersData SET StartDate = NULL, EndDate = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена ({$ClientName})', ' Отказ ({$ClientName})')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
 			if( mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"][] = "Набор перемещен в \"Свободные\"";
 			}
@@ -158,19 +158,6 @@
 		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'#ord'.$OD_ID.'">');
-		die;
-	}
-
-	// Отмена отказа/замены
-	if( isset($_GET["del_otkaz"]) ) {
-		$OD_ID = $_GET["del_otkaz"];
-		$SH_ID = $_GET["SH_ID"];
-		$StartDate = $_GET["StartDate"];
-
-		$query = "DELETE FROM Otkazi WHERE OD_ID = {$OD_ID} AND SH_ID = {$SH_ID} AND StartDate = '{$StartDate}'";
-		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-
-		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
 	}
 
@@ -837,7 +824,6 @@
 						echo "<td width='60'><span>{$row["Shop"]}</span></td>";
 						echo "<td width='60'>{$cache_name}</td>";
 						echo "<td width='120'><span>{$row["comment"]}</span></td>";
-						//echo "<td width='25'><a href='#' onclick='if(confirm(\"Убрать набор <b class=code>{$row["Code"]}</b> из списка отмененных/замененных?\", \"?del_otkaz={$row["OD_ID"]}&StartDate={$row["StartDate"]}&SH_ID={$row["SH_ID"]}&CT_ID={$CT_ID}&year={$year}&month={$month}\")) return false;' title='Удалить'><i class='fa fa-times fa-lg'></i></a></td>";
 						echo "</tr>";
 					}
 					?>
