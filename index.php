@@ -829,7 +829,7 @@
 				$query .= "AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL AND (OD.StartDate IS NOT NULL OR SH.retail = 0)";
 				break;
 			case 4:
-				$query .= "AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NOT NULL AND OD.StartDate IS NULL AND SH.retail = 1";
+				$query .= "AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.StartDate IS NULL AND SH.retail";
 				break;
 			case 1:
 				$query .= "AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL AND OD.SH_ID IS NULL";

@@ -18,6 +18,12 @@
 		$isexist = "NULL";
 	}
 
+	if( !isset($_GET["ord"]) and !isset($_GET["exh"]) and !isset($_GET["free"]) ) {
+		$_GET["ord"] = "1";
+		$_GET["exh"] = "1";
+		$_GET["free"] = "1";
+	}
+
 	$product = 2;
 
 	$MT_ID = isset($_GET["MT_ID"]) ? $_GET["MT_ID"] : array();
@@ -98,6 +104,18 @@
 		</div>
 
 		<div>
+			<label for='isexist'>Категория:&nbsp;</label>
+			<div class='btnset' id='category'>
+				<input type='checkbox' id='ord' name='ord' value='1' <?= ($_GET["ord"] == "1" ? "checked" : "") ?>>
+					<label for='ord'>Заказы</label>
+				<input type='checkbox' id='exh' name='exh' value='1' <?= ($_GET["exh"] == "1" ? "checked" : "") ?>>
+					<label for='exh'>Выставка</label>
+				<input type='checkbox' id='free' name='free' value='1' <?= ($_GET["free"] == "1" ? "checked" : "") ?>>
+					<label for='free'>Свободные</label>
+			</div>
+		</div>
+
+		<div>
 			<select name="MT_ID[]" multiple style="width: 800px;">
 				<?
 				$query = "
@@ -115,7 +133,14 @@
 						FROM Materials MT
 						JOIN OrdersDataDetail ODD ON ODD.MT_ID = MT.MT_ID AND ODD.IsExist ".( $isexist == "NULL" ? "IS NULL" : "= ".$isexist )."
 						JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID AND OD.DelDate IS NULL AND OD.ReadyDate IS NULL
+						LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
 						WHERE MT.SH_ID = {$row["SH_ID"]}
+							AND (
+								0
+								".($_GET["ord"] ? "OR (OD.SH_ID IS NOT NULL AND (OD.StartDate IS NOT NULL OR SH.retail = 0))" : "")."
+								".($_GET["exh"] ? "OR (OD.StartDate IS NULL AND SH.retail)" : "")."
+								".($_GET["free"] ? "OR (OD.SH_ID IS NULL)" : "")."
+							)
 						GROUP BY MT.MT_ID
 						ORDER BY MT.Material
 					";
@@ -192,6 +217,12 @@ this.subbut.value='Подождите, пожалуйста!';">
 		JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 		JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID AND SHP.mtype = {$product}
 		WHERE OD.DelDate IS NULL AND OD.ReadyDate IS NULL
+			AND (
+				0
+				".($_GET["ord"] ? "OR (OD.SH_ID IS NOT NULL AND (OD.StartDate IS NOT NULL OR SH.retail = 0))" : "")."
+				".($_GET["exh"] ? "OR (OD.StartDate IS NULL AND SH.retail)" : "")."
+				".($_GET["free"] ? "OR (OD.SH_ID IS NULL)" : "")."
+			)
 		GROUP BY OD.OD_ID
 		ORDER BY OD.OD_ID
 	";
