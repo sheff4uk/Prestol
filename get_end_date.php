@@ -50,7 +50,9 @@ if( $_GET["retail"] == "1" ) {
 			$cnt = $row["cnt"];
 		}
 	}
-	echo "$('#day_limit').html('Автоматически <b>+{$working_days}</b> рабочих дней.<br>На эту дату <b>{$cnt}</b> заказов из <b>{$day_limit}</b>.');";
+	if( $_GET["script"] ) {
+		echo "$('#day_limit').html('Автоматически <b>+{$working_days}</b> рабочих дней.<br>На эту дату <b>{$cnt}</b> заказов из <b>{$day_limit}</b>.');";
+	}
 }
 // Для оптовиков 40 рабочих дней
 else {
@@ -79,7 +81,9 @@ else {
 			++$working_days;
 		}
 	}
-	echo "$('#day_limit').html('Автоматически <b>+{$wd}</b> рабочих дней.');";
+	if( $_GET["script"] ) {
+		echo "$('#day_limit').html('Автоматически <b>+{$wd}</b> рабочих дней.');";
+	}
 }
 
 if( $_GET["script"] ) {
