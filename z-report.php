@@ -106,7 +106,7 @@ foreach($terminals as $value) {
 
 $subject = "[КИС Престол] {$title}";//тема сообщения
 $headers  = "Content-type: text/html; charset=utf-8 \r\n";
-$headers .= "From: admin@fabrikaprestol.ru\r\n";
+$headers .= "From: planner@fabrikaprestol.ru\r\n";
 
 mail($to, $subject, $message, $headers);
 ?>
