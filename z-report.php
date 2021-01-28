@@ -1,9 +1,14 @@
 <?
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 include "config.php";
 
-$query = "SELECT `X-Authorization` FROM Rekvizity WHERE R_ID = 1";
+$key = $argv[1];
+$R_ID = $argv[2];
+$to = $argv[3];
+
+// Проверка доступа
+if( $key != $script_key ) die('Access denied!');
+
+$query = "SELECT `X-Authorization` FROM Rekvizity WHERE R_ID = {$R_ID}";
 $result = mysqli_query( $mysqli, $query );
 $row = mysqli_fetch_array($result);
 $Authorization = $row["X-Authorization"];
@@ -99,28 +104,9 @@ foreach($terminals as $value) {
 	";
 }
 
-		$email = "fabrikaprestol@gmail.com";
-		$from = "admin@fabrikaprestol.ru";
-		$subject = "[КИС Престол] {$title}";//тема сообщения
+$subject = "[КИС Престол] {$title}";//тема сообщения
+$headers  = "Content-type: text/html; charset=utf-8 \r\n";
+$headers .= "From: admin@fabrikaprestol.ru\r\n";
 
-		// Отправляем письмо на указанный ящик пользователя через PHPMailer
-		require "PHPMailer/PHPMailerAutoload.php";
-		$mail = new PHPMailer(true);
-		$mail->isSMTP();
-		$mail->SMTPAuth = true;
-		$mail->SMTPSecure = "ssl";
-		$mail->Host = $mail_Host;
-		$mail->Port = $mail_Port;
-		$mail->Username = $mail_Username;
-		$mail->Password = $mail_Password;
-		$mail->CharSet = "UTF-8";
-		$mail->ContentType = 'text/plain';
-		$mail->addAddress($email);
-		$mail->addReplyTo($from);
-		$mail->setFrom($from);
-		$mail->Subject = $subject;
-		$mail->Body = $message;
-		$mail->IsHTML(true);
-
-		$mail->send();
+mail($to, $subject, $message, $headers);
 ?>
