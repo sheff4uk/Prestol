@@ -3,7 +3,8 @@ include "config.php";
 
 $key = $argv[1];
 $R_ID = $argv[2];
-$to = $argv[3];
+$days = $argv[3];
+$to = $argv[4;
 
 // Проверка доступа
 if( $key != $script_key ) die('Access denied!');
@@ -14,7 +15,6 @@ $row = mysqli_fetch_array($result);
 $Authorization = $row["X-Authorization"];
 
 // Даты периода выборки в нужном формате
-$days = 1;
 $yesterday = date("Y-m-d", strtotime("-$days DAY"));
 $gtCloseDate = $yesterday."T00:00:00.000+03:00";
 $ltCloseDate = $yesterday."T23:59:59.999+03:00";
