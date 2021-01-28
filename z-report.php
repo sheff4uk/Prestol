@@ -4,7 +4,7 @@ include "config.php";
 $key = $argv[1];
 $R_ID = $argv[2];
 $days = $argv[3];
-$to = $argv[4;
+$to = $argv[4];
 
 // Проверка доступа
 if( $key != $script_key ) die('Access denied!');
