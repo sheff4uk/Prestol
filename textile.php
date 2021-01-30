@@ -90,7 +90,7 @@
 
 	<form method='get' id='MTfilter'>
 		<div>
-			<label for='isexist'>Наличие:&nbsp;</label>
+			<label>Наличие:&nbsp;</label>
 			<div class='btnset' id='isexist'>
 				<input type='radio' id='isex' name='isex' value='NULL' <?= ($isexist =="NULL" ? "checked" : "") ?>>
 					<label for='isex'>Неизвестно</label>
@@ -104,7 +104,7 @@
 		</div>
 
 		<div>
-			<label for='isexist'>Категория:&nbsp;</label>
+			<label>Категория:&nbsp;</label>
 			<div class='btnset' id='category'>
 				<input type='checkbox' id='ord' name='ord' value='1' <?= ($_GET["ord"] == "1" ? "checked" : "") ?>>
 					<label for='ord'>Заказы</label>
