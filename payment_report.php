@@ -35,18 +35,19 @@ while( $row = mysqli_fetch_array($res) ) {
 	<table cellspacing='0' cellpadding='2' border='1'>
 		<thead>
 			<tr>
-				<td>Время</td>
-				<td>Наличными</td>
-				<td>Картой</td>
+				<th>Время</th>
+				<th>Наличными</th>
+				<th>Картой</th>
 				<th>Код набора</th>
 			</tr>
 		</thead>
 		<tbody>
 			<?
 			$query = "
-				SELECT OP.payment_sum
-					,OP.terminal
-					,IFNULL(OD.Code, 'Не связан!') `Code`
+				SELECT DATE_FORMAT(OP.payment_date, '%H:%i') time_format
+					,IF(OP.terminal = 0, OP.payment_sum, '') cash
+					,IF(OP.terminal = 1, OP.payment_sum, '') terminal
+					,IFNULL(OD.Code, 'Не связан!') code
 				FROM OrdersPayment OP
 				LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 				JOIN CashBox CB ON CB.CB_ID = OP.CB_ID AND CB.R_ID = 1
@@ -57,7 +58,12 @@ while( $row = mysqli_fetch_array($res) ) {
 			$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $subrow = mysqli_fetch_array($subres) ) {
 				?>
-
+				<tr>
+					<td><?=$subrow["time_format"]?></td>
+					<td><?=$subrow["cash"]?></td>
+					<td><?=$subrow["terminal"]?></td>
+					<td><?=$subrow["code"]?></td>
+				</tr>
 				<?
 			}
 			?>
