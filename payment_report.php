@@ -43,7 +43,7 @@ $query = "
 	SELECT OP.CB_ID
 		,CB.name
 	FROM OrdersPayment OP
-	JOIN CashBox CB ON CB.CB_ID = OP.CB_ID AND CB.R_ID = 1
+	JOIN CashBox CB ON CB.CB_ID = OP.CB_ID AND CB.R_ID = {$_GET["R_ID"]}
 	WHERE OP.uuid IS NOT NULL
 		AND DATE(OP.payment_date) = '{$_GET["payment_date"]}'
 	GROUP BY OP.CB_ID
@@ -51,7 +51,7 @@ $query = "
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
 	?>
-	<span style="margin-top: 20px;">Касса: <b><?=$row["name"]?></b></span>
+	<span style="margin-top: 20px; display: inline-block; font-size: 1.5em;">Касса: <b><?=$row["name"]?></b></span>
 	<table cellspacing='0' cellpadding='2' border='1'>
 		<thead>
 			<tr>
@@ -70,7 +70,7 @@ while( $row = mysqli_fetch_array($res) ) {
 					,IFNULL(OD.Code, 'Не связан!') code
 				FROM OrdersPayment OP
 				LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
-				JOIN CashBox CB ON CB.CB_ID = OP.CB_ID AND CB.R_ID = 1
+				JOIN CashBox CB ON CB.CB_ID = OP.CB_ID AND CB.R_ID = {$_GET["R_ID"]}
 				WHERE OP.uuid IS NOT NULL
 					AND DATE(OP.payment_date) = '{$_GET["payment_date"]}'
 					AND OP.CB_ID = {$row["CB_ID"]}
@@ -95,7 +95,7 @@ while( $row = mysqli_fetch_array($res) ) {
 				<td style='text-align: right;'><b>Сумма:</b></td>
 				<td style='text-align: right;'><b><?=$sumcash?></b></td>
 				<td style='text-align: right;'><b><?=$sumcard?></b></td>
-				<td><b><?=$sumcard?></b></td>
+				<td></td>
 			</tr>
 		</tbody>
 	</table>
