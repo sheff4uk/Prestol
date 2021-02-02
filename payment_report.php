@@ -4,7 +4,7 @@ $title = 'Плетежи';
 include "header.php";
 
 // Проверка прав на доступ к экрану
-if( !in_array('selling_all', $Rights) and !in_array('selling_city', $Rights) ) {
+if( !in_array('selling_all', $Rights) ) {
 	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
 	die('Недостаточно прав для совершения операции');
 }
@@ -19,7 +19,7 @@ if( !$_GET["R_ID"] ) {
 ?>
 <form method="get" style="display: inline-block; margin-top: 10px;">
 	<div class="nowrap" style="display: inline-block; margin-bottom: 10px; margin-right: 30px;">
-		<span>Дата платежа:</span>
+		<span>Дата:</span>
 		<input type="date" name="payment_date" value="<?=$_GET["payment_date"]?>" onchange="this.form.submit()">
 	</div>
 
