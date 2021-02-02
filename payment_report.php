@@ -13,9 +13,29 @@ if( !$_GET["payment_date"] ) {
 	$date = date_create('-1 days');
 	$_GET["payment_date"] = date_format($date, 'Y-m-d');
 }
+if( !$_GET["R_ID"] ) {
+	$_GET["R_ID"] = "1";
+}
 ?>
 <form method="get">
-	<input type="date" name="payment_date" value="<?=$_GET["payment_date"]?>" onchange="this.form.submit()">
+	<div class="nowrap" style="display: inline-block; margin-bottom: 10px; margin-right: 30px;">
+		<span>Дата платежа:</span>
+		<input type="date" name="payment_date" value="<?=$_GET["payment_date"]?>" onchange="this.form.submit()">
+	</div>
+
+	<div class="nowrap" style="display: inline-block; margin-bottom: 10px; margin-right: 30px;">
+		<span>Организация:</span>
+		<select name="R_ID" onchange="this.form.submit()">
+			<?
+			$query = "SELECT R_ID, Name FROM Rekvizity WHERE R_ID IN (1,2)";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			while( $row = mysqli_fetch_array($res) ) {
+				$selected = ($row["R_ID"] == $_GET["R_ID"]) ? "selected" : "";
+				echo "<option value='{$row["R_ID"]}' {$selected}>{$row["Name"]}</option>";
+			}
+			?>
+		</select>
+	</div>
 </form>
 
 <?
@@ -31,7 +51,7 @@ $query = "
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
 	?>
-	<b>Касса: <?=$row["name"]?></b>
+	<span style="margin-top: 20px;">Касса: <b><?=$row["name"]?></b></span>
 	<table cellspacing='0' cellpadding='2' border='1'>
 		<thead>
 			<tr>
@@ -46,7 +66,7 @@ while( $row = mysqli_fetch_array($res) ) {
 			$query = "
 				SELECT DATE_FORMAT(OP.payment_date, '%H:%i') time_format
 					,IF(OP.terminal = 0, OP.payment_sum, '') cash
-					,IF(OP.terminal = 1, OP.payment_sum, '') terminal
+					,IF(OP.terminal = 1, OP.payment_sum, '') card
 					,IFNULL(OD.Code, 'Не связан!') code
 				FROM OrdersPayment OP
 				LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
@@ -56,17 +76,27 @@ while( $row = mysqli_fetch_array($res) ) {
 					AND OP.CB_ID = {$row["CB_ID"]}
 			";
 			$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$sumcash = 0;
+			$sumcard = 0;
 			while( $subrow = mysqli_fetch_array($subres) ) {
+				$sumcash += $subrow["cash"];
+				$sumcard += $subrow["card"];
 				?>
 				<tr>
-					<td><?=$subrow["time_format"]?></td>
-					<td><?=$subrow["cash"]?></td>
-					<td><?=$subrow["terminal"]?></td>
-					<td><?=$subrow["code"]?></td>
+					<td style='text-align: right;'><?=$subrow["time_format"]?></td>
+					<td style='text-align: right;'><?=$subrow["cash"]?></td>
+					<td style='text-align: right;'><?=$subrow["card"]?></td>
+					<td style='text-align: right;'><?=$subrow["code"]?></td>
 				</tr>
 				<?
 			}
 			?>
+			<tr>
+				<td style='text-align: right;'><b>Сумма:</b></td>
+				<td style='text-align: right;'><b><?=$sumcash?></b></td>
+				<td style='text-align: right;'><b><?=$sumcard?></b></td>
+				<td><b><?=$sumcard?></b></td>
+			</tr>
 		</tbody>
 	</table>
 	<?
