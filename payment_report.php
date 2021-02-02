@@ -17,7 +17,7 @@ if( !$_GET["R_ID"] ) {
 	$_GET["R_ID"] = "1";
 }
 ?>
-<form method="get">
+<form method="get" style="display: inline-block; margin-top: 10px;">
 	<div class="nowrap" style="display: inline-block; margin-bottom: 10px; margin-right: 30px;">
 		<span>Дата платежа:</span>
 		<input type="date" name="payment_date" value="<?=$_GET["payment_date"]?>" onchange="this.form.submit()">
@@ -37,6 +37,7 @@ if( !$_GET["R_ID"] ) {
 		</select>
 	</div>
 </form>
+<br>
 
 <?
 $query = "
@@ -86,7 +87,7 @@ while( $row = mysqli_fetch_array($res) ) {
 					<td style='text-align: right;'><?=$subrow["time_format"]?></td>
 					<td style='text-align: right;'><?=$subrow["cash"]?></td>
 					<td style='text-align: right;'><?=$subrow["card"]?></td>
-					<td style='text-align: right;'><?=$subrow["code"]?></td>
+					<td style='text-align: right;'><span class="code"><?=$subrow["code"]?></span></td>
 				</tr>
 				<?
 			}
