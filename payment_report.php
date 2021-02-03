@@ -69,9 +69,10 @@ while( $row = mysqli_fetch_array($res) ) {
 					,IF(OP.terminal = 0, OP.payment_sum, '') cash
 					,IF(OP.terminal = 1, OP.payment_sum, '') card
 					,IFNULL(OD.Code, 'Не связан!') code
+					,OD.OD_ID
 				FROM OrdersPayment OP
-				LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 				JOIN CashBox CB ON CB.CB_ID = OP.CB_ID AND CB.R_ID = {$_GET["R_ID"]}
+				LEFT JOIN OrdersData OD ON OD.OD_ID = OP.OD_ID
 				WHERE OP.uuid IS NOT NULL
 					AND DATE(OP.payment_date) = '{$_GET["payment_date"]}'
 					AND OP.CB_ID = {$row["CB_ID"]}
@@ -87,7 +88,7 @@ while( $row = mysqli_fetch_array($res) ) {
 					<td style='text-align: right;'><?=$subrow["time_format"]?></td>
 					<td style='text-align: right;'><?=$subrow["cash"]?></td>
 					<td style='text-align: right;'><?=$subrow["card"]?></td>
-					<td style='text-align: right;'><span class="code"><?=$subrow["code"]?></span></td>
+					<td style='text-align: right;'><?=($subrow["OD_ID"] ? "<a href='orderdetail.php?id={$subrow["OD_ID"]}' target='_blank'><b class='code'>{$subrow["code"]}</b>" : $subrow["code"])?></td>
 				</tr>
 				<?
 			}
