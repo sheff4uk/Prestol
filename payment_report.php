@@ -1,6 +1,6 @@
 <?
 include "config.php";
-$title = 'Плетежи';
+$title = 'Чеки';
 include "header.php";
 
 // Проверка прав на доступ к экрану

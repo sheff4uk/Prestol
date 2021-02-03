@@ -379,7 +379,10 @@
 		if( in_array('selling_all', $Rights) or in_array('selling_city', $Rights) ) {
 			$year = date("Y");
 			$month = date("n");
-			$menu["Реализация"] = "selling.php?CT_ID={$USR_City}&year={$year}&month={$month}";
+			$menu["Реализация"]["Продажи"] = "selling.php?CT_ID={$USR_City}&year={$year}&month={$month}";
+		}
+		if( in_array('selling_all', $Rights) ) {
+			$menu["Реализация"]["Чеки"] = "payment_report.php";
 		}
 		if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) or in_array('doverennost', $Rights) ) {
 			if( in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
