@@ -63,8 +63,8 @@ if( !in_array('order_add', $Rights) and !in_array('order_add_free', $Rights) ) {
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while ($row = mysqli_fetch_array($res)) {
 			$query = "
-				INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, edge, MT_ID, Amount, author, P_ID)
-				SELECT {$id}, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, edge, MT_ID, Amount, {$_SESSION['id']}, P_ID
+				INSERT INTO OrdersDataDetail(OD_ID, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, PVC_ID, MT_ID, Amount, author, P_ID)
+				SELECT {$id}, PM_ID, BL_ID, Other, PF_ID, PME_ID, box, Length, Width, PieceAmount, PieceSize, piece_stored, PVC_ID, MT_ID, Amount, {$_SESSION['id']}, P_ID
 				FROM OrdersDataDetail
 				WHERE ODD_ID = {$row["ODD_ID"]}
 			";
