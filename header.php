@@ -412,6 +412,9 @@
 		if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
 			$menu["Касса"] = "cash.php";
 		}
+		if( in_array('stepstariffs', $Rights) ) {
+			$menu["<i class='fas fa-cog fa-lg'></i>"]["Тарифы на столы"] = "stepstariffs.php";
+		}
 		$menu["Выход {$USR_Icon}"] = "exit.php";
 	}
 
@@ -431,9 +434,9 @@
 				else {
 					$sub_class = "";
 				}
-				$sub_buttons .= "<li class='{$sub_class}'><a href='{$sub_url}'>{$sub_title}</a></li>";
+				$sub_buttons .= "<li class='{$sub_class} nowrap'><a href='{$sub_url}'>{$sub_title}</a></li>";
 			}
-			$nav_buttons .= "<li class='parent {$class}'><a href='#'>{$title} <i class='fas fa-angle-down'></i></a><ul>{$sub_buttons}</ul></li>";
+			$nav_buttons .= "<li class='parent {$class} nowrap'><a href='#'>{$title} <i class='fas fa-angle-down'></i></a><ul>{$sub_buttons}</ul></li>";
 		}
 		else {
 			$pieces = explode("?", $url);
