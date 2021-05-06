@@ -70,7 +70,6 @@ $_POST["gruzopoluchatel_ks"] = $row["KS"];
 $_POST["gruzopoluchatel"] = 1;
 
 $data = http_build_query($_POST);
-$referer = "https://service-online.su/forms/auto/ttn/";
 $headers = stream_context_create(array(
 	'http' => array(
 		'method' => 'POST',
@@ -78,6 +77,7 @@ $headers = stream_context_create(array(
 		'content' => $data
 	)
 ));
+$path = file_get_contents('https://service-online.su/forms/auto/ttn/blanc.php', false, $headers, 100, 34);
 header('Content-Type: application/pdf');
-echo file_get_contents('https://service-online.su/forms/auto/ttn/blanc.php', false, $headers);
+echo file_get_contents('https://service-online.su'.$path, false, null);
 ?>

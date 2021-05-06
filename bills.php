@@ -265,7 +265,7 @@ if( isset($_GET["add_bill"]) ) {
 	$_POST["schet_add_stamp_and_signatures"] = 1;
 
 	$data = http_build_query($_POST);
-	$referer = "https://service-online.su/forms/auto/ttn/";
+	//$referer = "https://service-online.su/forms/auto/ttn/";
 	$headers = stream_context_create(array(
 		'http' => array(
 			'method' => 'POST',
@@ -276,7 +276,8 @@ if( isset($_GET["add_bill"]) ) {
 			'content' => $data
 		)
 	));
-	$out = file_get_contents('https://service-online.su/forms/buh/schet/blanc.php', false, $headers);
+	$path = file_get_contents('https://service-online.su/forms/buh/schet/blanc.php', false, $headers, 100, 36);
+	$out = file_get_contents('https://service-online.su'.$path, false, null);
 	$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
 	file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
 

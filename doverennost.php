@@ -74,7 +74,6 @@
 		$_POST["korr_sch"] = mysqli_result($res,0,'KS');
 
 		$data = http_build_query($_POST);
-		$referer = "https://service-online.su/forms/auto/ttn/";
 		$headers = stream_context_create(array(
 			'http' => array(
 				'method' => 'POST',
@@ -82,7 +81,8 @@
 				'content' => $data
 			)
 		));
-		$out = file_get_contents('https://service-online.su/forms/doverennost_TMC/doverennost_TMC.php', false, $headers);
+		$path = file_get_contents('https://service-online.su/forms/doverennost_TMC/doverennost_TMC.php', false, $headers, 100, 46);
+		$out = file_get_contents('https://service-online.su'.$path, false, null);
 		$filename = 'doverennost_'.$id.'_'.$_POST["nomer"].'.pdf';
 		file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
 

@@ -240,7 +240,6 @@ if (is_dir($dir)) {
 }
 
 $data = http_build_query($_POST);
-$referer = "https://service-online.su/forms/auto/ttn/";
 $headers = stream_context_create(array(
 	'http' => array(
 		'method' => 'POST',
@@ -248,7 +247,8 @@ $headers = stream_context_create(array(
 		'content' => $data
 	)
 ));
-$out = file_get_contents('https://service-online.su/forms/buh/tovarnaya-nakladnaya/blanc.php', false, $headers);
+$path = file_get_contents('https://service-online.su/forms/buh/tovarnaya-nakladnaya/blanc.php', false, $headers, 100, 51);
+$out = file_get_contents('https://service-online.su'.$path, false, null);
 $filename = 'invoice_'.$id.'_'.$_POST["nomer"].'.pdf';
 file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
 
