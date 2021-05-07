@@ -247,8 +247,10 @@ $headers = stream_context_create(array(
 		'content' => $data
 	)
 ));
-$path = file_get_contents('https://service-online.su/forms/buh/tovarnaya-nakladnaya/blanc.php', false, $headers, 100, 51);
-$out = file_get_contents('https://service-online.su'.$path, false, null);
+$path = file_get_contents('https://service-online.su/forms/buh/tovarnaya-nakladnaya/blanc.php', false, $headers);
+$path = strstr($path, '/blank/');
+$path = strstr($path, '.pdf', true);
+$out = file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
 $filename = 'invoice_'.$id.'_'.$_POST["nomer"].'.pdf';
 file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
 

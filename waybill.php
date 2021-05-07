@@ -77,7 +77,9 @@ $headers = stream_context_create(array(
 		'content' => $data
 	)
 ));
-$path = file_get_contents('https://service-online.su/forms/auto/ttn/blanc.php', false, $headers, 100, 34);
+$path = file_get_contents('https://service-online.su/forms/auto/ttn/blanc.php', false, $headers);
+$path = strstr($path, '/blank/');
+$path = strstr($path, '.pdf', true);
 header('Content-Type: application/pdf');
-echo file_get_contents('https://service-online.su'.$path, false, null);
+echo file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
 ?>

@@ -81,8 +81,10 @@
 				'content' => $data
 			)
 		));
-		$path = file_get_contents('https://service-online.su/forms/doverennost_TMC/doverennost_TMC.php', false, $headers, 100, 46);
-		$out = file_get_contents('https://service-online.su'.$path, false, null);
+		$path = file_get_contents('https://service-online.su/forms/doverennost_TMC/doverennost_TMC.php', false, $headers);
+		$path = strstr($path, '/blank/');
+		$path = strstr($path, '.pdf', true);
+		$out = file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
 		$filename = 'doverennost_'.$id.'_'.$_POST["nomer"].'.pdf';
 		file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
 
