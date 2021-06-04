@@ -157,7 +157,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 					<tr>
 						<td id="model"></td>
 						<td id="step"></td>
-						<td><input type="number" name="tariff" min="0" max="2000" style="width: 70px;" required></td>
+						<td><input type="number" name="tariff" min="0" max="5000" style="width: 70px;" required></td>
 					</tr>
 				</tbody>
 			</table>
