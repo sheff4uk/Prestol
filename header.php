@@ -413,7 +413,8 @@
 			$menu["Касса"] = "cash.php";
 		}
 		if( in_array('stepstariffs', $Rights) ) {
-			$menu["<i class='fas fa-cog fa-lg'></i>"]["Тарифы на столы"] = "stepstariffs.php";
+			$menu["<i class='fas fa-cog fa-lg'></i>"]["Тарифы на столы"] = "stepstariffstable.php";
+			$menu["<i class='fas fa-cog fa-lg'></i>"]["Тарифы на стулья"] = "stepstariffschair.php";
 		}
 		$menu["Выход {$USR_Icon}"] = "exit.php";
 	}

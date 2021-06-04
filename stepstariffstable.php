@@ -20,7 +20,7 @@ session_start();
 	exit ('<meta http-equiv="refresh" content="0; url=?PM_ID='.$_POST["gPM_ID"].'&PME_ID='.$_POST["gPME_ID"].'&ST_ID='.$_POST["gST_ID"].'#'.$_POST["PMM_ID"].'_'.$_POST["ST_ID"].'">');
 }
 
-$title = 'Производственные тарифы';
+$title = 'Тарифы для столов';
 include "header.php";
 
 // Проверка прав на доступ к экрану
@@ -34,7 +34,7 @@ if( !in_array('stepstariffs', $Rights) ) {
 <div id="filter">
 	<h3>Фильтр</h3>
 	<form method="get" style="position: relative;">
-		<a href="/stepstariffs.php" style="position: absolute; top: 10px; right: 10px;" class="button">Сброс</a>
+		<a href="/stepstariffstable.php" style="position: absolute; top: 10px; right: 10px;" class="button">Сброс</a>
 
 		<div class="nowrap" style="margin-bottom: 10px;">
 			<span>Модель:</span>
