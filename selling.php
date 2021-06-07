@@ -296,7 +296,7 @@
 	<!-- КНОПКИ ОТЧЕТОВ -->
 		<br>Отчеты:
 		<?
-		if( !$USR_Shop ) {
+//		if( !$USR_Shop ) {
 			echo "<div id='sell_archive'><a href='#' class='button'>Архив</a><div>";
 			// Формируем список архивных отчетов
 			$query = "
@@ -312,7 +312,7 @@
 				echo "<a href='?CT_ID={$CT_ID}&year={$row["year"]}&month={$row["month"]}' class='button' style='{$highlight}'>{$MONTHS[$row["month"]]} - {$row["year"]} <i class='fas fa-lock'></i></a><br>";
 			}
 			echo "</div></div>";
-		}
+//		}
 
 		$query = "
 			SELECT IFNULL(YEAR(OD.StartDate), 0) year
