@@ -127,7 +127,7 @@ foreach ($_GET as &$value) {
 </script>
 
 <!--Таблица с тарифами-->
-<table style="table-layout: fixed; width: 100%;">
+<table class="MN_table">
 	<thead>
 		<tr>
 			<th rowspan="2">Модель</th>

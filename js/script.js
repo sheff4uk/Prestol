@@ -377,4 +377,16 @@ $(function(){
 			$(this).parent('.comment_cell').find('span').show();
 		});
 
+	// Шапка таблицы фиксируется на месте
+	$(window).scroll(function(){
+		var scrollTop = $(window).scrollTop(),
+			width = $('.MN_table').width();
+		//alert(width);
+		if(scrollTop != 0) {
+			$(".MN_table thead").css({'position':'fixed', 'width':width, 'display':'inherit', 'table-layout':'fixed', 'top':'50px', 'z-index':'3'});
+		}
+		else {
+			$(".MN_table thead").css({'display':'contents'});
+		}
+	});
 });

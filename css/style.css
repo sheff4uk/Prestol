@@ -558,6 +558,19 @@ input.amount {
 	width: 20px;
 	height: 20px;
 }
+
+.MN_table {
+	table-layout: fixed;
+	width: 100%;
+	margin-bottom: 70px;
+}
+.MN_table td, .MN_table th {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	z-index: 1;
+	transition: .3s;
+}
+
 .log-blank, .log-pay {
 	position: relative;
 }
