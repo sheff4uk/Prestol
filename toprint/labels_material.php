@@ -58,10 +58,14 @@
 			,ODD.Amount
 			,Zakaz(ODD.ODD_ID) Zakaz
 			,OD.Code
+			,SH.Shop
+			,IFNULL(CT.City, 'Свободные') City
 		FROM OrdersData OD
 		JOIN OrdersDataDetail ODD ON ODD.OD_ID = OD.OD_ID AND ODD.ODD_ID IN ($ODD_IDs)
 		JOIN Materials MT ON MT.MT_ID = ODD.MT_ID
 		JOIN Shippers SHP ON SHP.SH_ID = MT.SH_ID
+		LEFT JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		LEFT JOIN Cities CT ON CT.CT_ID = SH.CT_ID
 		LEFT JOIN OrdersDataSteps ODS ON ODS.ODD_ID = ODD.ODD_ID
 			AND ODS.Visible = 1
 			AND ODS.Old != 1
@@ -76,7 +80,8 @@
 		echo "
 			<tr>
 				<td>
-					<div class='code nowrap'>{$row["Code"]}</div>
+					<div class='code nowrap'>{$row["Code"]}</div><br>
+					<span><b style='font-size: 1.0em;'>{$row["City"]}</b> {$row["Shop"]}</span>
 				</td>
 				<td>
 					<div style='font-size: 1.5em;'>{$row["Material"]}</div><br>
