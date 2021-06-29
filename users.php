@@ -133,7 +133,7 @@ if( !in_array('users', $Rights) ) {
 			JOIN Roles RL ON RL.RL_ID = USR.RL_ID
 			JOIN Cities CT ON CT.CT_ID = USR.CT_ID
 			LEFT JOIN Kontragenty KA ON KA.KA_ID = USR.KA_ID
-			ORDER BY USR.RL_ID
+			ORDER BY USR.RL_ID, USR.CT_ID
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_array($res) ) {
