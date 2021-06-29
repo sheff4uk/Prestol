@@ -2,12 +2,6 @@
 include "config.php";
 include "checkrights.php";
 
-// Проверка прав на доступ к экрану
-if( !in_array('users', $Rights) ) {
-	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-	die('Недостаточно прав для совершения операции');
-}
-
 //Добавление/редактирование пользователя
 if( isset($_POST["USR_ID"]) ) {
 	session_start();
@@ -85,6 +79,12 @@ if( isset($_POST["USR_ID"]) ) {
 
 $title = 'Пользователи';
 include "header.php";
+
+// Проверка прав на доступ к экрану
+if( !in_array('users', $Rights) ) {
+	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+	die('Недостаточно прав для совершения операции');
+}
 ?>
 
 <style>
