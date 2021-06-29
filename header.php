@@ -412,6 +412,9 @@
 		if( in_array('finance_all', $Rights) or in_array('finance_account', $Rights) ) {
 			$menu["Касса"] = "cash.php";
 		}
+		if( in_array('users', $Rights) ) {
+			$menu["<i class='fas fa-cog fa-lg'></i>"]["Пользователи"] = "users.php";
+		}
 		if( in_array('stepstariffs', $Rights) ) {
 			$menu["<i class='fas fa-cog fa-lg'></i>"]["Тарифы на столы"] = "stepstariffstable.php";
 			$menu["<i class='fas fa-cog fa-lg'></i>"]["Тарифы на стулья"] = "stepstariffschair.php";

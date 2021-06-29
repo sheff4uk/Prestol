@@ -1,5 +1,12 @@
 <?
 include "config.php";
+include "checkrights.php";
+
+// Проверка прав на доступ к экрану
+if( !in_array('stepstariffs', $Rights) ) {
+	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+	die('Недостаточно прав для совершения операции');
+}
 
 //Редактирование тарифа
 if( isset($_POST["tariff"]) ) {
@@ -22,12 +29,6 @@ session_start();
 
 $title = 'Тарифы для столов';
 include "header.php";
-
-// Проверка прав на доступ к экрану
-if( !in_array('stepstariffs', $Rights) ) {
-	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-	die('Недостаточно прав для совершения операции');
-}
 ?>
 
 <!--Фильтр-->
