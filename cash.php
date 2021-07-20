@@ -441,7 +441,6 @@
 
 	<?
 		// Инкассация
-		in_array('finance_all', $Rights)
 		$query = "
 			SELECT OP.OP_ID
 					,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
