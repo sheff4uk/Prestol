@@ -440,15 +440,21 @@
 	</div>
 
 	<?
-		$query = "SELECT OP.OP_ID
-						,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
-						,ABS(OP.payment_sum) payment_sum
-						,OP.cost_name
-						,CB.name
-				FROM OrdersPayment OP
-				JOIN CashBox CB ON CB.CB_ID = OP.CB_ID AND CB.CB_ID IN (SELECT CB_ID FROM Shops WHERE CT_ID = {$USR_City} UNION SELECT CB_ID FROM Cities WHERE CT_ID = {$USR_City})
-				WHERE send = 1 AND payment_sum < 0
-				ORDER BY OP.payment_date DESC";
+		// Инкассация
+		in_array('finance_all', $Rights)
+		$query = "
+			SELECT OP.OP_ID
+					,DATE_FORMAT(OP.payment_date, '%d.%m.%y') payment_date
+					,ABS(OP.payment_sum) payment_sum
+					,OP.cost_name
+					,CB.name
+					,IF(CB.CB_ID IN (SELECT CB_ID FROM Shops WHERE CT_ID = {$USR_City} UNION SELECT CB_ID FROM Cities WHERE CT_ID = {$USR_City}), 1, 0) home
+			FROM OrdersPayment OP
+			JOIN CashBox CB ON CB.CB_ID = OP.CB_ID
+				".( !in_array('finance_all', $Rights) ? "AND CB.CB_ID IN (SELECT CB_ID FROM Shops WHERE CT_ID = {$USR_City} UNION SELECT CB_ID FROM Cities WHERE CT_ID = {$USR_City})" : "" )."
+			WHERE send = 1 AND payment_sum < 0
+			ORDER BY OP.payment_date DESC
+		";
 
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		if( mysqli_num_rows($res) ) {
@@ -464,12 +470,14 @@
 			";
 			while( $row = mysqli_fetch_array($res) ) {
 				$payment_sum = number_format($row["payment_sum"], 0, '', ' ');
-				echo "<tr>";
-				echo "<td>{$row["name"]} ({$row["cost_name"]})</td>";
-				echo "<td>{$row["payment_date"]}</td>";
-				echo "<td class='txtright'><b>{$payment_sum}</b></td>";
-				echo "<td><a class='button add_send_btn' OP_ID='{$row["OP_ID"]}' payment_sum='{$payment_sum}' cashbox='{$row["name"]}' title='Принять'><i class='fa fa-download fa-lg'></i></a></td>";
-				echo "</tr>";
+				echo "
+					<tr>
+						<td>{$row["name"]} ({$row["cost_name"]})</td>
+						<td>{$row["payment_date"]}</td>
+						<td class='txtright'><b>{$payment_sum}</b></td>
+						<td>".($row["home"] ? "<a class='button add_send_btn' OP_ID='{$row["OP_ID"]}' payment_sum='{$payment_sum}' cashbox='{$row["name"]}' title='Принять'><i class='fa fa-download fa-lg'></i></a>" : "")."</td>
+					</tr>
+				";
 			}
 			echo "
 						</tbody>
