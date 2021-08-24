@@ -23,7 +23,6 @@ switch( $_GET["do"] ) {
 					// Отправляем телефон на ожидиние звонка
 					$body = file_get_contents("https://sms.ru/callcheck/add?api_id=".($api_id)."&phone=".($mtel)."&json=1");
 					$json = json_decode($body);
-					$_SESSION["error"][] = $json;
 					if( $json ) { // Получен ответ от сервера
 						if( $json->status == "OK" ) { // Запрос выполнился
 							// Сохраняем check_id и call_phone_html
