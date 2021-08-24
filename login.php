@@ -22,6 +22,7 @@ switch( $_GET["do"] ) {
 
 					// Отправляем телефон на ожидиние звонка
 					$body = file_get_contents("https://sms.ru/callcheck/add?api_id=".($api_id)."&phone=".($mtel)."&json=1");
+					$_SESSION["error"][] = "https://sms.ru/callcheck/add?api_id=".($api_id)."&phone=".($mtel)."&json=1";
 					$json = json_decode($body);
 					if( $json ) { // Получен ответ от сервера
 						if( $json->status == "OK" ) { // Запрос выполнился
@@ -32,7 +33,7 @@ switch( $_GET["do"] ) {
 							$call_phone_html = str_replace("callto:", "tel:", $call_phone_html);
 						}
 						else $_SESSION["error"][] = "Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...) Код ошибки: $json->status_code Текст ошибки: $json->status_text";
-					} else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером. (1)";
+					} else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
 				}
 				else $_SESSION["error"][] = "Ваша учетная запись не активна! Свяжитесь с администрацией.";
 			}
@@ -62,7 +63,7 @@ switch( $_GET["do"] ) {
 			}
 			else $_SESSION["error"][] = "Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...) Код ошибки: $json->status_code Текст ошибки: $json->status_text";
 		}
-		else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером. (2)";
+		else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
 
 		// Если не было ошибок - проверяем check_id
 		if( count($_SESSION["error"] ) == 0) {
@@ -92,7 +93,7 @@ switch( $_GET["do"] ) {
 			}
 			else $_SESSION["error"][] = "Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...) Код ошибки: $json->status_code Текст ошибки: $json->status_text";
 		}
-		else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером. (3)";
+		else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
 
 		// Если не было ошибок - показываем форму ввода пароля
 		if( count($_SESSION["error"] ) == 0) {
