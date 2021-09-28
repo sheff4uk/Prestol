@@ -249,15 +249,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	<table>
 		<thead>
 		<tr class="nowrap">
-			<th>Дата</th>
-			<th>Время</th>
-			<th>Кромка</th>
-			<th>Размер</th>
-			<th>Кол-во</th>
-			<th>Примечание</th>
-			<th>Автор</th>
-			<th>Действие</th>
-<!--
 			<th width="60">Дата</th>
 			<th width="60">Время</th>
 			<th width="40%">Кромка</th>
@@ -266,7 +257,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<th width="60%">Примечание</th>
 			<th width="50">Автор</th>
 			<th width="75">Действие</th>
--->
 		</tr>
 		</thead>
 		<tbody>
@@ -292,7 +282,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		echo "<tr>";
 		echo "<td><span class='nowrap'><b>{$row["date"]}</b></span></td>";
 		echo "<td><span class='nowrap'>{$row["time"]}</span></td>";
-		echo "<td><span class='nowrap'><a href='#pvc{$row["PVC_ID"]}'>{$row["edge"]}</a></span></td>";
+		echo "<td><a href='#pvc{$row["PVC_ID"]}'>{$row["edge"]}</a></td>";
 		echo "<td><i>{$row["size"]}</i></td>";
 		echo "<td class='txtright'>{$row["amount"]}</td>";
 		echo "<td>{$row["comment"]}</td>";
