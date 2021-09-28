@@ -249,6 +249,15 @@ this.subbut.value='Подождите, пожалуйста!';">
 	<table>
 		<thead>
 		<tr class="nowrap">
+			<th>Дата</th>
+			<th>Время</th>
+			<th>Кромка</th>
+			<th>Размер</th>
+			<th>Кол-во</th>
+			<th>Примечание</th>
+			<th>Автор</th>
+			<th>Действие</th>
+<!--
 			<th width="60">Дата</th>
 			<th width="60">Время</th>
 			<th width="40%">Кромка</th>
@@ -257,6 +266,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<th width="60%">Примечание</th>
 			<th width="50">Автор</th>
 			<th width="75">Действие</th>
+-->
 		</tr>
 		</thead>
 		<tbody>
