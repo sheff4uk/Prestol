@@ -269,7 +269,7 @@ if( isset($_GET["add_bill"]) ) {
 		'http' => array(
 			'method' => 'POST',
 			'header' => array(
-				'Cookie: '.$service_online,
+//				'Cookie: '.$service_online,
 				'Referer: https://service-online.su/forms/buh/schet/'
 			),
 			'content' => $data
