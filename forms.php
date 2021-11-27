@@ -111,11 +111,20 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<select name='Model' required style="width: 300px;">
 			<?
 				echo "<option value=''>-=Выберите модель=-</option>";
-				$query = "SELECT * FROM ProductModels WHERE PT_ID = 1 AND archive = 0 ORDER BY Model";
+				$query = "
+					SELECT PM_ID
+						,code
+						,IF(archive, '<font color=\"red\">Снято с производства</font>', comment) comment
+						,Model
+						,IF(archive, 'disabled', '') disabled
+					FROM ProductModels
+					WHERE PT_ID = 1
+					ORDER BY Model
+				";
 				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($result) )
 				{
-					echo "<option value='{$row["PM_ID"]}' data-foo='{$row["code"]}' data-comment='{$row["comment"]}'>{$row["Model"]}</option>";
+					echo "<option {$row["disabled"]} value='{$row["PM_ID"]}' data-foo='{$row["code"]}' data-comment='{$row["comment"]}'>{$row["Model"]}</option>";
 				}
 			?>
 			</select>
@@ -210,11 +219,20 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<select name="Model" style="width: 300px;" required>
 			<?
 				echo "<option value='0'>-=Столешница=-</option>";
-				$query = "SELECT * FROM ProductModels WHERE PT_ID = 2 AND archive = 0 ORDER BY Model";
+				$query = "
+					SELECT PM_ID
+						,code
+						,IF(archive, '<font color=\"red\">Снято с производства</font>', comment) comment
+						,Model
+						,IF(archive, 'disabled', '') disabled
+					FROM ProductModels
+					WHERE PT_ID = 2
+					ORDER BY Model
+				";
 				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($result) )
 				{
-					echo "<option value='{$row["PM_ID"]}' data-foo='{$row["code"]}'  data-comment='{$row["comment"]}'>{$row["Model"]}</option>";
+					echo "<option {$row["disabled"]} value='{$row["PM_ID"]}' data-foo='{$row["code"]}' data-comment='{$row["comment"]}'>{$row["Model"]}</option>";
 				}
 			?>
 			</select>
