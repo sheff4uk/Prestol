@@ -18,7 +18,7 @@
 		$Worker = $_POST["Worker"] > 0 ? $_POST["Worker"] : "NULL";
 		$Blank = $_POST["Blank"] <> "" ? $_POST["Blank"] : "NULL";
 		$Amount = $_POST["Amount"] <> "" ? $_POST["Amount"] : "NULL";
-		$Tariff = $_POST["Tariff"] <> "" ? $_POST["Tariff"] : "NULL";
+		$Tariff = $_POST["Tariff"] <> "" ? $_POST["Tariff"] : 0;
 		$Comment = mysqli_real_escape_string( $mysqli,$_POST["Comment"] );
 
 		// Добавление заготовок
@@ -35,6 +35,14 @@
 					  VALUES ({$value}, {$_POST["bll_id"][$key]}, {$sub_amount}, {$bs_id}, {$_SESSION["id"]})";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}
+
+		// Обновление тарифа заготовки
+		$query = "
+			UPDATE BlankList
+			SET Tariff = {$Tariff}
+			WHERE BL_ID = {$Blank}
+		";
+		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
