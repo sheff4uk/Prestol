@@ -265,16 +265,31 @@ if( isset($_GET["add_bill"]) ) {
 	$_POST["schet_add_stamp_and_signatures"] = 1;
 
 	$data = http_build_query($_POST);
-	$headers = stream_context_create(array(
-		'http' => array(
-			'method' => 'POST',
-			'header' => array(
-				'Cookie: '.$service_online,
-				'Referer: https://service-online.su/forms/buh/schet/'
-			),
-			'content' => $data
-		)
-	));
+
+	// Счет с печатью или без
+	if( $_POST["stamped"] == 1 ) {
+		$headers = stream_context_create(array(
+			'http' => array(
+				'method' => 'POST',
+				'header' => array(
+					'Cookie: '.$service_online,
+					'Referer: https://service-online.su/forms/buh/schet/'
+				),
+				'content' => $data
+			)
+		));
+	}
+	else {
+		$headers = stream_context_create(array(
+			'http' => array(
+				'method' => 'POST',
+				'header' => array(
+				),
+				'content' => $data
+			)
+		));
+	}
+
 	$path = file_get_contents('https://service-online.su/forms/buh/schet/blanc.php', false, $headers);
 	$path = strstr($path, '/blank/');
 	$path = strstr($path, '.pdf', true);
@@ -515,7 +530,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		<fieldset style="text-align: left;">
 			<legend>Сообщение для клиента:</legend>
-			<textarea name="text" class="comment">Внимание! Уведомляем Вас об изменении с 24.08.2020 номера счета: Старый счет - 40702810110180000226 Новый счет - 40702810810180000226 Оплата данного счета означает согласие с условиями поставки товара. Товар отпускается по факту прихода денег на р/с Поставщика, самовывозом, при наличии доверенности и паспорта.</textarea>
+			<textarea name="text" class="comment">Внимание! Оплата данного счета означает согласие с условиями поставки товара. Товар отпускается по факту прихода денег на р/с Поставщика, самовывозом, при наличии доверенности и паспорта.</textarea>
 		</fieldset>
 
 		<input name="n" type="hidden" value="1">
@@ -528,6 +543,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<input type="hidden" name="summa" value="0">
 			<input type="hidden" name="total_discount" value="0">
 			<input type='submit' name="subbut" value='Создать счет' style='float: right;'>
+			<label style="float: right; margin: 4px 10px; width: 90px;"><input type="checkbox" name="stamped" value="1" checked>С печатью</label>
 			<input type="text" name="date" id="date" value="<?=date('d.m.Y')?>" class="date" style="float: right; margin: 4px 10px; width: 90px;" readonly>
 		</div>
 	</form>
