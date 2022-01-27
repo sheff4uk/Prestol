@@ -3,9 +3,9 @@ include_once "config.php";
 include_once "checkrights.php";
 
 switch( $_GET["do"] ) {
-	// Отправка номера телефона и получение идентификатора
+	// Отправка номера телефона и получение кода
 	case "add":
-		unset($_SESSION['sms_code']);
+		unset($_SESSION['code']);
 		unset($_SESSION['mtel']);
 
 		if( $_GET['mtel'] ) {
@@ -20,18 +20,27 @@ switch( $_GET["do"] ) {
 				// Пользователь актевен?
 				if( $myrow["act"] ) {
 
-					// Отправляем телефон на ожидиние звонка
-					$body = file_get_contents("https://sms.ru/callcheck/add?api_id=".($api_id)."&phone=".($mtel)."&json=1");
+					// Отправляем телефон на который поступит звонок
+					//$body = file_get_contents("https://sms.ru/code/call?api_id=".($api_id)."&phone=".($mtel)."&ip=".$_SERVER["REMOTE_ADDR"]);
+
+					$ch = curl_init("https://sms.ru/code/call");
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+					curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
+						"phone" => $mtel, // номер телефона пользователя
+						"ip" => $_SERVER["REMOTE_ADDR"], // ip адрес пользователя
+						"api_id" => $api_id
+					)));
+					$body = curl_exec($ch);
+					curl_close($ch);
+
 					$json = json_decode($body);
 					if( $json ) { // Получен ответ от сервера
 						if( $json->status == "OK" ) { // Запрос выполнился
-							// Сохраняем check_id и call_phone_html
-							$check_id = $json->check_id;
-							//$call_phone_html = "&lt;a href=\"tel:{$json->call_phone}\"&gt;{$json->call_phone_pretty}&lt;\/a&gt;";
-							$call_phone_html = $json->call_phone_html;
-							$call_phone_html = str_replace("callto:", "tel:", $call_phone_html);
+							// Сохраняем код в сессию для дальнейшей проверки
+							$_SESSION["code"] = $json->code;
 						}
-						else $_SESSION["error"][] = "Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...) Код ошибки: $json->status_code Текст ошибки: $json->status_text";
+						else $_SESSION["error"][] = "Звонок не может быть выполнен. Текст ошибки: $json->status_text";
 					} else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
 				}
 				else $_SESSION["error"][] = "Ваша учетная запись не активна! Свяжитесь с администрацией.";
@@ -40,62 +49,9 @@ switch( $_GET["do"] ) {
 		}
 		else $_SESSION["error"][] = "Вы не ввели номер телефона!";
 
-		// Если не было ошибок - сохраняем check_id в JS переменную
+		// Если не было ошибок, показываем форму для ввода кода
 		if( count($_SESSION["error"] ) == 0) {
 			$_SESSION['mtel'] = $mtel;
-			echo "var check_id = '{$check_id}';";
-			echo "noty({text: '<h1>Позвоните по этому номеру для авторизации: {$call_phone_html}</h1>', type: 'alert'});";
-		}
-		// Иначе перезагружаем страницу
-		else echo "location.reload();";
-	break;
-	//////////////////////////////////////////////
-	// Проверка статуса звонка
-	case "status":
-		$body = file_get_contents("https://sms.ru/callcheck/status?api_id=".($api_id)."&check_id=".($_GET['check_id'])."&json=1");
-		$json = json_decode($body);
-		if( $json ) { // Получен ответ от сервера
-			if( $json->status == "OK" ) { // Запрос выполнился
-				// Сохраняем check_status
-				$check_status = $json->check_status;
-				echo "check_status = {$check_status};";
-			}
-			else $_SESSION["error"][] = "Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...) Код ошибки: $json->status_code Текст ошибки: $json->status_text";
-		}
-		else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
-
-		// Если не было ошибок - проверяем check_id
-		if( count($_SESSION["error"] ) == 0) {
-			// Если звонок поступил - активируем сессию и заходим в систему
-			if( $check_status == 401 ) {
-				$query = "SELECT USR_ID, last_url FROM Users WHERE phone='{$_SESSION['mtel']}'";
-				$result = mysqli_query( $mysqli, $query );
-				$myrow = mysqli_fetch_array($result);
-				$_SESSION["id"] = $myrow["USR_ID"];
-				unset($_SESSION['mtel']);
-				echo "location.href = '{$myrow["last_url"]}';";
-			}
-		}
-		// Иначе перезагружаем страницу
-		else echo "location.reload();";
-	break;
-	//////////////////////////////////////////////
-	// Отправляем SMS код
-	case "smscode":
-		if( isset($_SESSION["sms_code"]) ) die();
-		$sms_code = rand(1000, 9999);
-		$body = file_get_contents("https://sms.ru/sms/send?api_id=".($api_id)."&to=".($_SESSION['mtel'])."&msg=Пароль:+".($sms_code)."&json=1");
-		$json = json_decode($body);
-		if( $json ) { // Получен ответ от сервера
-			if( $json->status == "OK" ) { // Запрос выполнился
-				$_SESSION["sms_code"] = $sms_code;
-			}
-			else $_SESSION["error"][] = "Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...) Код ошибки: $json->status_code Текст ошибки: $json->status_text";
-		}
-		else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
-
-		// Если не было ошибок - показываем форму ввода пароля
-		if( count($_SESSION["error"] ) == 0) {
 			echo "
 				$('#send_code_form').dialog({
 					dialogClass: 'no-close',
@@ -106,6 +62,7 @@ switch( $_GET["do"] ) {
 					closeOnEscape: false
 				});
 			";
+			echo "noty({text: '<h1>Поступит звонок со случайного номера.<br><br>Введите последние 4 цифры определившегося номера.</h1>', type: 'alert'});";
 		}
 		// Иначе перезагружаем страницу
 		else echo "location.reload();";
@@ -122,15 +79,15 @@ switch( $_GET["do"] ) {
 			die;
 		}
 
-		// Если введен СМС-код
-		if( isset($_GET["sms"]) ) {
+		// Если введен код
+		if( isset($_POST["code"]) ) {
 			// Если код верный - сохраняем в сессию пользователя и покидаем экран
-			if( $_POST["sms_code"] == $_SESSION["sms_code"] ) {
+			if( $_POST["code"] == $_SESSION["code"] ) {
 				$query = "SELECT USR_ID, last_url FROM Users WHERE phone='{$_SESSION['mtel']}'";
 				$result = mysqli_query( $mysqli, $query );
 				$myrow = mysqli_fetch_array($result);
 				$_SESSION['id'] = $myrow['USR_ID'];
-				unset($_SESSION['sms_code']);
+				unset($_SESSION['code']);
 				unset($_SESSION['mtel']);
 
 				exit ('<meta http-equiv="refresh" content="0; url='.$myrow["last_url"].'">');
@@ -152,72 +109,18 @@ switch( $_GET["do"] ) {
 				background-size: cover!important;
 				height: 100vh;
 			}
-
-			.ui-progressbar {
-				position: relative;
-			}
-			.progress-label {
-				position: absolute;
-				left: 25%;
-				top: 4px;
-				font-weight: bold;
-				text-shadow: 1px 1px 0 #fff;
-			}
 		</style>
 
 		<script>
 			$(document).ready(function() {
 
-				var stop_status,
-					progressbar = $( "#progressbar" ),
-					progressLabel = $( ".progress-label" );
-				progressbar.progressbar({
-					value: false,
-					complete: function() {
-						progressLabel.text( "Звонок не поступил" );
-						setTimeout( function() { location.reload(); }, 3000 );
-						//setTimeout( function() { $('#smscode button').click(); }, 1000 );
-					}
-				});
-
-				function status(check_id) {
-					$.ajax({ url: "login.php?do=status&check_id="+check_id, dataType: "script", async: false });
-
-					var val = progressbar.progressbar( "value" ) || 0;
-
-					progressbar.progressbar( "value", val + 1 );
-
-					if ( val < 100 && stop_status != 1 && check_status != 401 ) {
-						setTimeout( function() { status(check_id); }, 3000 );
-					}
-					// Кнопка СМС появляется через 12 секунд
-					if( val == 3) {
-						$('#smscode').show('fast');
-					}
-				}
-
 				$('#login form').on("submit", function(){
 					var mtel = $('#mtel').val();
-					$('#progressbar').show();
 					$('#subbut').hide();
-					//$('#smscode').show();
 					$('#mtel').attr('readonly', true);
 
-					// Отправляем телефон, с которого должен поступить звонок
+					// Отправляем телефон, на который должен поступить звонок
 					$.ajax({ url: "login.php?do=add&mtel="+mtel, dataType: "script", async: false });
-
-					// Узнаем статус звонка
-					setTimeout( function() { status(check_id); }, 2000 );
-
-					// Отправка SMS-кода
-					$('#smscode button').click(function() {
-						$(this).prop('disabled', true);
-						stop_status = 1;
-
-						// Отправляем SMS-код и отображаем форму ввода
-						$.ajax({ url: "login.php?do=smscode", dataType: "script", async: true });
-						return false;
-					});
 
 					return false;
 				})
@@ -234,18 +137,16 @@ switch( $_GET["do"] ) {
 					<div>
 						<label>Телефон</label>
 						<input type="text" id="mtel" style="font-size: 1.5em;" value="" autocomplete="on" placeholder="Моб. телефон">
-						<div id="progressbar" style="display: none;"><div class="progress-label">Ожидание звонка...</div></div>
 					</div>
 					<div id="subbut" style="text-align: right;"><input type="submit" value="Войти »"></div>
 				</form>
-				<div id="smscode" style="text-align: center; display: none;">Не удаётся дозвониться?<br><button>Выслать SMS-код »</button></div>
 			</div>
 			<p><sup>*</sup>КИС - корпоративная информационная система</p>
 		</div>
 
 		<div id="send_code_form" style="display: none;">
-			<form method='post' action='?sms'>
-				<input type='text' name='sms_code' placeholder='SMS-код' autocomplete='off'>
+			<form method='post'>
+				<input type='text' name='code' placeholder='последние 4 цифры' autocomplete='off'>
 				<button>ОК</button>
 			</form>
 		</div>
