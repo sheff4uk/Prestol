@@ -1279,6 +1279,112 @@ case "bill":
 	break;
 ///////////////////////////////////////////////////////////////////
 
+// Инкассация из облака ЭВОТОР
+case "cashe_outcome":
+	$CT_ID = $_GET["CT_ID"];
+
+	// Узнаем кассы, доступные пользователю в выбранном регионе
+	$query = "
+		SELECT CB.CB_ID
+			,CB.name
+			,deviceUuid
+			,gtCloseDate_out
+		FROM CashBox CB
+		WHERE CB.CB_ID IN (".($USR_Shop ? "SELECT CB_ID FROM Shops WHERE SH_ID IN ({$USR_Shop})" : "SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID} AND CT_ID = {$USR_City}").")
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+	while( $row = mysqli_fetch_array($res) ) {
+		$CB_ID = $row["CB_ID"];
+		$CashBox = $row["name"];
+		$deviceUuid = $row["deviceUuid"];
+		$gtCloseDate_out = $row["gtCloseDate_out"];
+
+		// Если у кассы есть deviceUuid и gtCloseDate_out - пробуем получить документы из облака ЭВОТОР
+		if( $deviceUuid and $gtCloseDate_out ) {
+			// Узнаём storeUuid и X-Authorization магазина
+			$query = "
+				SELECT `storeUuid`, `X-Authorization`
+				FROM Rekvizity
+				WHERE R_ID = (SELECT R_ID FROM CashBox WHERE CB_ID = {$CB_ID})
+			";
+			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+			$storeUuid = mysqli_result($res,0,'storeUuid');
+			$Authorization = mysqli_result($res,0,'X-Authorization');
+
+			$curl = curl_init();
+			curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
+			curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate_out.'&types=CASH_OUTCOME');
+			curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+				'X-Authorization: '.$Authorization
+			));
+			$out = curl_exec($curl);
+			$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE); // Получаем HTTP-код
+			curl_close($curl);
+
+			// Если вернулся код 200 - записываем в базу документы
+			if( $http_code == "200" ) {
+				$rows = 0; // Счётчик полученных документов
+				$documents = json_decode($out, true);
+				foreach($documents as $value) {
+					foreach($value["transactions"] as $transactions) {
+						if( $transactions["type"] == "CASH_OUTCOME" ) {
+							$query = "
+								INSERT INTO OrdersPayment
+								SET payment_date = CONVERT_TZ(STR_TO_DATE(SUBSTRING_INDEX('{$transactions["creationDate"]}', '.', 1), '%Y-%m-%dT%T'), '+00:00', CONCAT(IF({$transactions["timezone"]} > 0, '+', ''), TIME_FORMAT(SEC_TO_TIME({$transactions["timezone"]} DIV 1000), '%H:%i')))
+									,payment_sum = 0 - {$transactions["sum"]}
+									,uuid = '{$transactions["uuid"]}'
+									,CB_ID = {$CB_ID}
+									,send = 1
+								ON DUPLICATE KEY UPDATE
+									payment_sum = payment_sum - ({$transactions["sum"]})
+							";
+							mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+							$rows += mysqli_affected_rows( $mysqli );
+						}
+						$gtCloseDate_out = str_replace(".000+0000", ".001+0000", $transactions["creationDate"]);
+					}
+				}
+				if( $rows ) {
+					echo "noty({timeout: 10000, text: 'Из облака ЭВОТОР получены новые документы.', type: 'success'});";
+					// Обновляем дату последнего документа у кассы
+					$query = "
+						UPDATE CashBox
+						SET gtCloseDate_out = '{$gtCloseDate_out}'
+						WHERE CB_ID = {$CB_ID}
+					";
+					mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+				}
+			}
+			else { // Иначе выводим алерт с кодом ошибки
+				echo "noty({text: 'Не удалось получить документы из облака ЭВОТОР. Свяжитесь с администратором. Код ошибки: ".$http_code."', type: 'error'});";
+			}
+
+		}
+	}
+
+	// Заполняем форму полученным документом
+	$query = "
+		SELECT OP.OP_ID
+			,(OP.payment_sum * -1) payment_sum
+			,OP.CB_ID
+		FROM OrdersPayment OP
+		WHERE OP.send = 1
+			AND OP.uuid IS NOT NULL
+			AND OP.cost_name IS NULL
+			AND OP.CB_ID IN (".($USR_Shop ? "SELECT CB_ID FROM Shops WHERE SH_ID IN ({$USR_Shop})" : "SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID} AND CT_ID = {$USR_City}").")
+		ORDER BY OP.payment_date
+		LIMIT 1
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+	$row = mysqli_fetch_array($res);
+
+	echo "$('#add_cost input[name=OP_ID]').val({$row["OP_ID"]});";
+	echo "$('#add_cost input[name=cost]').val({$row["payment_sum"]}).prop('readonly', true);";
+	echo "$('#add_cost select[name=CB_ID]').val({$row["CB_ID"]}).prop('readonly', true);";
+
+	break;
+///////////////////////////////////////////////////////////////////
+
 // Форма добавления платежа к набору
 case "add_payment":
 	$OD_ID = $_GET["OD_ID"];
@@ -1364,16 +1470,16 @@ case "add_payment":
 								INSERT INTO OrdersPayment
 								SET payment_date = CONVERT_TZ(STR_TO_DATE(SUBSTRING_INDEX('{$transactions["creationDate"]}', '.', 1), '%Y-%m-%dT%T'), '+00:00', CONCAT(IF({$transactions["timezone"]} > 0, '+', ''), TIME_FORMAT(SEC_TO_TIME({$transactions["timezone"]} DIV 1000), '%H:%i')))
 									,payment_sum = {$transactions["sum"]}
-									".($transactions["paymentType"] == "CARD" ? ",terminal = 1" : "")."
+									,terminal = ".($transactions["paymentType"] == "CARD" ? "1" : "0")."
 									,uuid = '{$transactions["uuid"]}'
 									,CB_ID = {$CB_ID}
 								ON DUPLICATE KEY UPDATE
-									payment_sum = {$transactions["sum"]}
+									payment_sum = payment_sum + ({$transactions["sum"]})
 							";
 							mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 							$rows += mysqli_affected_rows( $mysqli );
 						}
-						$gtCloseDate = $transactions["creationDate"];
+						$gtCloseDate = str_replace(".000+0000", ".001+0000", $transactions["creationDate"]);
 					}
 				}
 			}

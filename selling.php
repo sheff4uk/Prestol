@@ -261,8 +261,8 @@
 	if (!$CT_ID) die;
 
 	// Кнопки движения денег
-	echo "<a href='#' class='add_cost_btn' cost_name='' cost='' sign='+' CT_ID='{$CT_ID}' title='Внести приход'><i class='fa fa-plus fa-lg' style='color: white; background: green; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
-	echo "<a href='#' class='add_cost_btn' cost_name='' cost='' sign='-' CT_ID='{$CT_ID}' title='Внести расход'><i class='fa fa-minus fa-lg' style='color: white; background: red; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
+//	echo "<a href='#' class='add_cost_btn' cost_name='' cost='' sign='+' CT_ID='{$CT_ID}' title='Внести приход'><i class='fa fa-plus fa-lg' style='color: white; background: green; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
+//	echo "<a href='#' class='add_cost_btn' cost_name='' cost='' sign='-' CT_ID='{$CT_ID}' title='Внести расход'><i class='fa fa-minus fa-lg' style='color: white; background: red; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>&nbsp;";
 	echo "<a href='#' class='add_cost_btn' cost_name='' cost='' sign='' CT_ID='{$CT_ID}' title='Сдать выручку'><i class='fa fa-exchange-alt fa-lg' style='color: white; background: #428bca; border-radius: 5px; line-height: 24px; width: 24px; text-align: center; vertical-align: text-bottom;'></i></a>";
 
 	// Выводим остатки по кассам
@@ -705,7 +705,7 @@
 							,OP.CB_ID
 							,CB.name
 							,OP.send
-							,IF(CB.CB_ID IN (".($USR_Shop ? "SELECT CB_ID FROM Shops WHERE SH_ID IN ({$SH_IDs})" : "SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID} AND CT_ID = {$USR_City}")."), 1, 0) edit
+							,IF(CB.CB_ID IN (".($USR_Shop ? "SELECT CB_ID FROM Shops WHERE SH_ID IN ({$SH_IDs})" : "SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID} AND CT_ID = {$USR_City}").") AND OP.uuid IS NULL, 1, 0) edit
 						FROM OrdersPayment OP
 						JOIN CashBox CB ON CB.CB_ID = OP.CB_ID
 							AND CB.CB_ID IN (SELECT CB_ID FROM Shops WHERE SH_ID IN ({$SH_IDs})".($USR_Shop ? "" : " UNION SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID}").")
@@ -1291,10 +1291,16 @@ this.subbut.value='Подождите, пожалуйста!';">
 		// Кнопка добавления/редактирования расхода
 		$('.add_cost_btn').click( function() {
 			var sign = $(this).attr('sign');
+			var CT_ID = $(this).attr('ct_id');
 			var CB_ID = $(this).attr('cb_id');
 			var OP_ID = $(this).attr('id');
 			var cost_name = $(this).attr('cost_name');
 			var cost = $(this).attr('cost');
+
+			// Инкассация из облака ЭВОТОР
+			if( CT_ID ) {
+				$.ajax({ url: "ajax.php?do=cashe_outcome&CT_ID="+CT_ID, dataType: "script", async: false });
+			}
 
 			$('#add_cost #cost').val('');
 			if (CB_ID) {
