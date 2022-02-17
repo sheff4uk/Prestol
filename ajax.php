@@ -1538,7 +1538,10 @@ case "add_payment":
 			,'Прикрепить' label
 		FROM OrdersPayment OP
 		JOIN CashBox CB ON CB.CB_ID = OP.CB_ID AND CB.CB_ID IN (".($USR_Shop ? "SELECT CB_ID FROM Shops WHERE SH_ID IN ({$USR_Shop})" : "SELECT CB_ID FROM Shops WHERE CT_ID = {$CT_ID} UNION SELECT CB_ID FROM Cities WHERE CT_ID = {$CT_ID}").")
-		WHERE OP.OD_ID IS NULL AND OP.cost_name IS NULL AND IFNULL(OP.payment_sum, 0) != 0
+		WHERE OP.OD_ID IS NULL
+			AND OP.cost_name IS NULL
+			AND IFNULL(OP.payment_sum, 0) != 0
+			AND OP.send IS NULL
 
 		UNION ALL
 
