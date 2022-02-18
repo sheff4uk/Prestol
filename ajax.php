@@ -1326,23 +1326,21 @@ case "cashe_outcome":
 				$rows = 0; // Счётчик полученных документов
 				$documents = json_decode($out, true);
 				foreach($documents as $value) {
-					foreach($value["transactions"] as $transactions) {
-						if( $transactions["type"] == "CASH_OUTCOME" ) {
-							$query = "
-								INSERT INTO OrdersPayment
-								SET payment_date = CONVERT_TZ(STR_TO_DATE(SUBSTRING_INDEX('{$transactions["creationDate"]}', '.', 1), '%Y-%m-%dT%T'), '+00:00', CONCAT(IF({$transactions["timezone"]} > 0, '+', ''), TIME_FORMAT(SEC_TO_TIME({$transactions["timezone"]} DIV 1000), '%H:%i')))
-									,payment_sum = 0 - {$transactions["sum"]}
-									,uuid = '{$transactions["uuid"]}'
-									,CB_ID = {$CB_ID}
-									,send = 1
-								ON DUPLICATE KEY UPDATE
-									payment_sum = payment_sum - ({$transactions["sum"]})
-							";
-							mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-							$rows += mysqli_affected_rows( $mysqli );
-						}
-						$gtCloseDate_out = str_replace(".000+0000", ".001+0000", $transactions["creationDate"]);
+					if( $value["type"] == "CASH_OUTCOME" ) {
+						$query = "
+							INSERT INTO OrdersPayment
+							SET payment_date = CONVERT_TZ(STR_TO_DATE(SUBSTRING_INDEX('{$value["closeDate"]}', '.', 1), '%Y-%m-%dT%T'), '+00:00', CONCAT(IF({$value["transactions"][0]["timezone"]} > 0, '+', ''), TIME_FORMAT(SEC_TO_TIME({$value["transactions"][0]["timezone"]} DIV 1000), '%H:%i')))
+								,payment_sum = 0 - {$value["closeSum"]}
+								,uuid = '{$value["uuid"]}'
+								,CB_ID = {$CB_ID}
+								,send = 1
+							ON DUPLICATE KEY UPDATE
+								payment_sum = 0 - {$value["closeSum"]}
+						";
+						mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+						$rows += mysqli_affected_rows( $mysqli );
 					}
+					$gtCloseDate_out = str_replace(".000+0000", ".001+0000", $transactions["creationDate"]);
 				}
 				if( $rows ) {
 					echo "noty({timeout: 10000, text: 'Из облака ЭВОТОР получены новые документы.', type: 'success'});";
@@ -1376,11 +1374,13 @@ case "cashe_outcome":
 		LIMIT 1
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-	$row = mysqli_fetch_array($res);
+	while ($row = mysqli_fetch_array($res)) {
+		echo "$('#add_cost input[name=OP_ID]').val({$row["OP_ID"]});";
+		echo "$('#add_cost input[name=cost]').val({$row["payment_sum"]}).prop('readonly', true);";
+		echo "$('#add_cost select[name=CB_ID]').val({$row["CB_ID"]});";
+		echo "$('#add_cost select[name=CB_ID] option:not(:selected)').attr('disabled', 'disabled')";
+	}
 
-	echo "$('#add_cost input[name=OP_ID]').val({$row["OP_ID"]});";
-	echo "$('#add_cost input[name=cost]').val({$row["payment_sum"]}).prop('readonly', true);";
-	echo "$('#add_cost select[name=CB_ID]').val({$row["CB_ID"]}).prop('readonly', true);";
 
 	break;
 ///////////////////////////////////////////////////////////////////

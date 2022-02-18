@@ -1297,12 +1297,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 			var cost_name = $(this).attr('cost_name');
 			var cost = $(this).attr('cost');
 
-			// Инкассация из облака ЭВОТОР
-			if( CT_ID ) {
-				$.ajax({ url: "ajax.php?do=cashe_outcome&CT_ID="+CT_ID, dataType: "script", async: false });
-			}
-
 			$('#add_cost #cost').val('');
+			$('#add_cost select[name=CB_ID] option').attr('disabled', false);
 			if (CB_ID) {
 				$('#add_cost #CB_ID').val(CB_ID);
 				$('#add_cost #cost').val(Math.abs(cost));
@@ -1313,6 +1309,11 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#add_cost #OP_ID').val(OP_ID);
 			$('#add_cost #cost_name').val(cost_name);
 			$('#send').prop('checked', false);
+
+			// Инкассация из облака ЭВОТОР
+			if( CT_ID ) {
+				$.ajax({ url: "ajax.php?do=cashe_outcome&CT_ID="+CT_ID, dataType: "script", async: false });
+			}
 
 			$('#add_cost').dialog({
 				resizable: false,
