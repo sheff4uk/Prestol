@@ -451,7 +451,9 @@
 			FROM OrdersPayment OP
 			JOIN CashBox CB ON CB.CB_ID = OP.CB_ID
 				".( !in_array('finance_all', $Rights) ? "AND CB.CB_ID IN (SELECT CB_ID FROM Shops WHERE CT_ID = {$USR_City} UNION SELECT CB_ID FROM Cities WHERE CT_ID = {$USR_City})" : "" )."
-			WHERE send = 1 AND payment_sum < 0
+			WHERE OP.send = 1
+				AND OP.payment_sum < 0
+				AND OP.cost_name IS NOT NULL
 			ORDER BY OP.payment_date DESC
 		";
 
