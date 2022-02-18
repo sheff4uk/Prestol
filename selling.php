@@ -1204,7 +1204,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<br><br>
 			<div style="width: 210px; display: inline-block; vertical-align: top;">
 				<label for="cost_name">Комментарий:</label><br>
-				<input type="text" name="cost_name" id="cost_name" style="width: 100%;">
+				<input type="text" name="cost_name" id="cost_name" style="width: 100%;" required>
 				<div id="wr_send" style="display: none">
 					<input type="checkbox" name="send" id="send" value="1">
 					<label for="send">Инкассация</label>
