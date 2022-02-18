@@ -1340,7 +1340,7 @@ case "cashe_outcome":
 						mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 						$rows += mysqli_affected_rows( $mysqli );
 					}
-					$gtCloseDate_out = str_replace(".000+0000", ".001+0000", $transactions["creationDate"]);
+					$gtCloseDate_out = str_replace(".000+0000", ".001+0000", $value["closeDate"]);
 				}
 				if( $rows ) {
 					echo "noty({timeout: 10000, text: 'Из облака ЭВОТОР получены новые документы.', type: 'success'});";
