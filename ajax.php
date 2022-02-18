@@ -1320,7 +1320,7 @@ case "cashe_outcome":
 			$out = curl_exec($curl);
 			$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE); // Получаем HTTP-код
 			curl_close($curl);
-
+echo "noty({timeout: 10000, text: 'http_code: ".$http_code."', type: 'success'});";
 			// Если вернулся код 200 - записываем в базу документы
 			if( $http_code == "200" ) {
 				$rows = 0; // Счётчик полученных документов
