@@ -1375,9 +1375,8 @@ case "cashe_outcome":
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	while ($row = mysqli_fetch_array($res)) {
 		echo "$('#add_cost input[name=OP_ID]').val({$row["OP_ID"]});";
-		echo "$('#add_cost input[name=cost]').val({$row["payment_sum"]}).prop('readonly', true);";
+		echo "$('#add_cost input[name=cost]').val({$row["payment_sum"]});";
 		echo "$('#add_cost select[name=CB_ID]').val({$row["CB_ID"]});";
-		echo "$('#add_cost select[name=CB_ID] option:not(:selected)').attr('disabled', 'disabled')";
 	}
 
 

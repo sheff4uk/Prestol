@@ -51,16 +51,24 @@
 		$cost = ($_POST["sign"] == '-') ? $cost * -1 : $cost;
 		$send = $_POST["send"] ? $_POST["send"] : "NULL";
 
-		if( $OP_ID != '' ) { // Редактируем расход
-			$query = "UPDATE OrdersPayment SET CB_ID = {$CB_ID}, cost_name = '{$cost_name}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']} WHERE OP_ID = {$OP_ID}";
-			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
-		}
-		else { // Добавляем расход
-			if( $cost ) {
-				$query = "INSERT INTO OrdersPayment SET CB_ID = {$CB_ID}, cost_name = '{$cost_name}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']}";
-				if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
-			}
-		}
+		$query = "
+			UPDATE OrdersPayment
+			SET cost_name = '{$cost_name}'
+				,author = {$_SESSION['id']}
+			WHERE OP_ID = {$OP_ID}
+		";
+		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
+
+//		if( $OP_ID != '' ) { // Редактируем расход
+//			$query = "UPDATE OrdersPayment SET CB_ID = {$CB_ID}, cost_name = '{$cost_name}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']} WHERE OP_ID = {$OP_ID}";
+//			if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
+//		}
+//		else { // Добавляем расход
+//			if( $cost ) {
+//				$query = "INSERT INTO OrdersPayment SET CB_ID = {$CB_ID}, cost_name = '{$cost_name}', payment_sum = {$cost}, send = {$send}, author = {$_SESSION['id']}";
+//				if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
+//			}
+//		}
 
 		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
 		die;
@@ -1180,7 +1188,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<input type="hidden" name="sign" id="sign">
 			<div style="width: 100px; display: inline-block; margin-right: 15px; vertical-align: top;">
 				<label for="cost">Сумма:</label><br>
-				<input type="number" name="cost" min="0" id="cost" style="width: 100%; text-align: right;" required>
+				<input type="number" name="cost" min="0" id="cost" style="width: 100%; text-align: right;" required readonly>
 			</div>
 			<br><br>
 			<div style="width: 210px; display: inline-block; vertical-align: top;">
@@ -1196,7 +1204,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					$cashbox_cnt = mysqli_num_rows($res);
 					while( $row = mysqli_fetch_array($res) ) {
-						echo "<option ".(($cashbox_cnt == 1) ? "selected" : "")." value='{$row["CB_ID"]}'>{$row["name"]}</option>";
+						echo "<option ".(($cashbox_cnt == 1) ? "selected" : "")." value='{$row["CB_ID"]}' disabled>{$row["name"]}</option>";
 					}
 					?>
 				</select>
@@ -1298,7 +1306,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 			var cost = $(this).attr('cost');
 
 			$('#add_cost #cost').val('');
-			$('#add_cost select[name=CB_ID] option').attr('disabled', false);
 			if (CB_ID) {
 				$('#add_cost #CB_ID').val(CB_ID);
 				$('#add_cost #cost').val(Math.abs(cost));
