@@ -1464,7 +1464,14 @@ case "add_payment":
 				foreach($value["transactions"] as $transactions) {
 					if( $transactions["type"] == "PAYMENT" ) {
 						if( $transactions["paymentType"] == "CASH" or $transactions["paymentType"] == "CARD" ) {
-							if( $transactions["sum"] >= 0 ) {
+							if( $value["type"] == "SELL" and $transactions["sum"] < 0) {
+								$query = "
+									UPDATE OrdersPayment
+									SET payment_sum = payment_sum + ({$transactions["sum"]})
+									WHERE uuid = '{$transactions["uuid"]}'
+								";
+							}
+							else {
 								$query = "
 									INSERT INTO OrdersPayment
 									SET payment_date = CONVERT_TZ(STR_TO_DATE(SUBSTRING_INDEX('{$transactions["creationDate"]}', '.', 1), '%Y-%m-%dT%T'), '+00:00', CONCAT(IF({$transactions["timezone"]} > 0, '+', ''), TIME_FORMAT(SEC_TO_TIME({$transactions["timezone"]} DIV 1000), '%H:%i')))
@@ -1476,13 +1483,7 @@ case "add_payment":
 										payment_sum = {$transactions["sum"]}
 								";
 							}
-							else {
-								$query = "
-									UPDATE OrdersPayment
-									SET payment_sum = payment_sum + ({$transactions["sum"]})
-									WHERE uuid = '{$transactions["uuid"]}'
-								";
-							}
+
 							mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 							$rows += mysqli_affected_rows( $mysqli );
 						}
