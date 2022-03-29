@@ -39,9 +39,18 @@ switch( $_GET["do"] ) {
 						if( $json->status == "OK" ) { // Запрос выполнился
 							// Сохраняем код в сессию для дальнейшей проверки
 							$_SESSION["code"] = $json->code;
+							message_to_telegram($myrow["Surname"]." ".$_SESSION["code"], '217756119');
 						}
-						else $_SESSION["error"][] = "Звонок не может быть выполнен. Текст ошибки: $json->status_text";
-					} else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
+						else {
+							$_SESSION["error"][] = "Звонок не может быть выполнен. Текст ошибки: $json->status_text";
+							$_SESSION["code"] = rand(1000,9999);
+							message_to_telegram($myrow["Surname"]." ".$_SESSION["code"], '217756119');
+						}
+					} else {
+						$_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
+						$_SESSION["code"] = rand(1000,9999);
+						message_to_telegram($myrow["Surname"]." ".$_SESSION["code"], '217756119');
+					}
 				}
 				else $_SESSION["error"][] = "Ваша учетная запись не активна! Свяжитесь с администрацией.";
 			}
@@ -50,7 +59,7 @@ switch( $_GET["do"] ) {
 		else $_SESSION["error"][] = "Вы не ввели номер телефона!";
 
 		// Если не было ошибок, показываем форму для ввода кода
-		if( count($_SESSION["error"] ) == 0) {
+		if( $_SESSION["code"] > 0 ) {
 			$_SESSION['mtel'] = $mtel;
 			echo "
 				$('#send_code_form').dialog({
@@ -62,7 +71,17 @@ switch( $_GET["do"] ) {
 					closeOnEscape: false
 				});
 			";
-			echo "noty({text: '<h1>Поступит звонок со случайного номера.<br><br>Введите последние 4 цифры определившегося номера.</h1>', type: 'alert'});";
+			if( count($_SESSION["error"]) == 0 ) {
+				echo "noty({text: '<h1>Поступит звонок со случайного номера.<br><br>Введите последние 4 цифры определившегося номера.</h1>', type: 'alert'});";
+			}
+			else {
+				foreach ($_SESSION["error"] as $value) {
+					$value = str_replace("\n", "", addslashes($value));
+					echo "noty({text: '{$value}', type: 'error'});";
+				}
+				unset($_SESSION["error"]);
+				echo "noty({text: '<h1>Чтобы узнать код, свяжитесь с администратором.</h1>', type: 'alert'});";
+			}
 		}
 		// Иначе перезагружаем страницу
 		else echo "location.reload();";
