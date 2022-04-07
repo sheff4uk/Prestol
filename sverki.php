@@ -148,14 +148,14 @@ if ( $USR_KA ) { // Если пользователь - оптовик
 	$payer = $USR_KA;
 }
 elseif ( $_GET["payer"] and (int)$_GET["payer"] > 0 ) {
-	$query = "SELECT 1 FROM Kontragenty WHERE KA_ID IN ({$KA_IDs}) AND KA_ID = {$_GET["payer"]}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	if( mysqli_num_rows($res) ) {
+//	$query = "SELECT 1 FROM Kontragenty WHERE KA_ID IN ({$KA_IDs}) AND KA_ID = {$_GET["payer"]}";
+//	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//	if( mysqli_num_rows($res) ) {
 		$payer = $_GET["payer"];
-	}
-	else {
-		die('Недостаточно прав для совершения операции');
-	}
+//	}
+//	else {
+//		die('Недостаточно прав для совершения операции');
+//	}
 }
 else {
 	$payer = "";
