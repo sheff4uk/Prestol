@@ -9,6 +9,8 @@
 		return $src;
 	}
 
+	$Rights = array();
+
 	// Проверяем, активирована ли сессия
 	if( empty($_SESSION['id']) ) {
 		if( !strpos($_SERVER["REQUEST_URI"], 'login.php') ) {
