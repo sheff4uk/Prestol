@@ -1,5 +1,12 @@
 <?
+//ini_set('display_errors', 1);
+//error_reporting(E_ALL);
 	include "../config.php";
+
+	use chillerlan\QRCode\{QRCode, QROptions};
+	require_once "../vendor/autoload.php";
+	$data = 'Лёва, я тебя люблю!';
+	//echo '<img src="'.(new QRCode)->render($data).'" alt="QR Code" />';
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -101,6 +108,8 @@
 				,OD.Code
 				,CL.color
 				,IF(ODD.BL_ID IS NULL AND ODD.Other IS NULL, IFNULL(PM.Model, 'Столешница'), IFNULL(BL.Name, ODD.Other)) product
+				,R.site
+				,PM.code
 				,CONCAT(IF(SH.Shipper LIKE '%=%', '', CONCAT(SH.Shipper, ' ')), MT.Material) material
 				,SH.mtype
 				,IFNULL(CONCAT(' ', PME.full_mech, IF(ODD.box = 1, '+ящик', '')), '') mechanism
@@ -113,7 +122,10 @@
 				,IFNULL(ODD.discount, 0) discount
 				,ROUND((ODD.discount * 100) / ODD.Price) percent
 		FROM OrdersDataDetail ODD
-		JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+		JOIN OrdersData OD  ON OD.OD_ID = ODD.OD_ID
+		JOIN Shops S ON S.SH_ID = OD.SH_ID
+		JOIN CashBox CB ON CB.CB_ID = S.CB_ID
+		JOIN Rekvizity R ON R.R_ID = CB.R_ID
 		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
 		LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID
 		LEFT JOIN ProductModels PM ON PM.PM_ID = ODD.PM_ID
@@ -121,7 +133,7 @@
 		LEFT JOIN Shippers SH ON SH.SH_ID = MT.SH_ID
 		LEFT JOIN BlankList BL ON BL.BL_ID = ODD.BL_ID
 		WHERE ODD.ODD_ID IN ($ODD_IDs)
-		ORDER BY OD.AddDate ASC, OD.OD_ID ASC
+		ORDER BY OD.AddDate ASC, ODD.ODD_ID ASC
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) )
@@ -151,18 +163,21 @@
 				<div class="price_wr">
 					<span class="price"><?=$old_price?><?=$price?></span>
 				</div>
-				<div style="display: flex; height: 120px; font-size:22px; white-space: nowrap;">
-					<div style="width: 30%; text-align: right; padding: 5px;">
+				<div style="display: flex; height: 120px; font-size:20px; white-space: nowrap;">
+					<div style="width: 160px; text-align: right; padding: 5px;">
 						<?=($row["size"] ? "Столешница<br>" : "")?>
 						<?=($row["mechanism"] ? "Механизм<br>" : "")?>
 						<?=($row["materials"] ? "Материалы<br>" : "")?>
 						<?=($row["mtype"] == 1 ? "Ткань" : ($row["mtype"] == 2 ? "Поверхность" : ""))?>
 					</div>
-					<div style="width: 70%; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
+					<div style="width: 320px; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
 						<?=($row["size"] ? "{$row["size"]}<br>" : "")?>
 						<?=($row["mechanism"] ? "{$row["mechanism"]}<br>" : "")?>
 						<?=($row["materials"] ? "{$row["materials"]}<br>" : "")?>
 						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "пластик {$row["material"]}" : ""))?>
+					</div>
+					<div style="width: 120px;">
+						<img src="<?=(new QRCode)->render($row["site"]."/product.php?name=".$row["code"])?>" style="width: 120px;" alt="QR Code" />
 					</div>
 				</div>
 			</div>
@@ -179,18 +194,21 @@
 				<div class="price_wr">
 					<span class="price"><?=$old_price?><?=$price?></span>
 				</div>
-				<div style="display: flex; height: 120px; font-size:22px; white-space: nowrap;">
-					<div style="width: 30%; text-align: right; padding: 5px;">
+				<div style="display: flex; height: 120px; font-size:20px; white-space: nowrap;">
+					<div style="width: 160px; text-align: right; padding: 5px;">
 						<?=($row["size"] ? "Столешница<br>" : "")?>
 						<?=($row["mechanism"] ? "Механизм<br>" : "")?>
 						<?=($row["materials"] ? "Материалы<br>" : "")?>
 						<?=($row["mtype"] == 1 ? "Ткань" : ($row["mtype"] == 2 ? "Поверхность" : ""))?>
 					</div>
-					<div style="width: 70%; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
+					<div style="width: 320px; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
 						<?=($row["size"] ? "{$row["size"]}<br>" : "")?>
 						<?=($row["mechanism"] ? "{$row["mechanism"]}<br>" : "")?>
 						<?=($row["materials"] ? "{$row["materials"]}<br>" : "")?>
 						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "пластик {$row["material"]}" : ""))?>
+					</div>
+					<div style="width: 120px;">
+						<img src="<?=(new QRCode)->render($row["site"]."/product.php?name=".$row["code"])?>" style="width: 120px;" alt="QR Code" />
 					</div>
 				</div>
 			</div>

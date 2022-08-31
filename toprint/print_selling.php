@@ -5,7 +5,6 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<link rel='stylesheet' type='text/css' href='../css/font-awesome.min.css'>
 	<?
 	if( $_GET["print_title"] == '' ) {
 		echo "<title>Версия для печати</title>";

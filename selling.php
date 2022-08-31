@@ -1002,7 +1002,7 @@
 				$format_discount = number_format($row['discount'], 0, '', ' ');
 //				$format_diff = number_format($row["Price"] - $row['discount'] - $row["payment_sum"], 0, '', ' ');
 //				$diff_color = (($row["Price"] - $row['discount']) == $row["payment_sum"]) ? "#6f6" : ((($row["Price"] - $row['discount']) < $row["payment_sum"]) ? "#ff6" : "#fff");
-				$percent = round($row["discount"] / $row["Price"] * 100, 1);
+				$percent = ($row["Price"] > 0) ? round($row["discount"] / $row["Price"] * 100, 1) : null;
 				// Подсвечиваем скидку в случае превышения порога
 				if( $percent >= 5 ) {$discount_bg = "bg-red";}
 				elseif( $percent >= 3 ) {$discount_bg = "bg-yellow";}
