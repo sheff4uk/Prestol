@@ -5,8 +5,6 @@
 
 	use chillerlan\QRCode\{QRCode, QROptions};
 	require_once "../vendor/autoload.php";
-	$data = 'Лёва, я тебя люблю!';
-	//echo '<img src="'.(new QRCode)->render($data).'" alt="QR Code" />';
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -124,7 +122,7 @@
 		FROM OrdersDataDetail ODD
 		JOIN OrdersData OD  ON OD.OD_ID = ODD.OD_ID
 		JOIN Shops S ON S.SH_ID = OD.SH_ID
-		JOIN CashBox CB ON CB.CB_ID = S.CB_ID
+		JOIN CashBox CB ON CB.CB_ID = IFNULL(S.CB_ID, (SELECT CB_ID FROM Cities WHERE CT_ID = S.CT_ID))
 		JOIN Rekvizity R ON R.R_ID = CB.R_ID
 		LEFT JOIN Colors CL ON CL.CL_ID = OD.CL_ID
 		LEFT JOIN ProductMechanism PME ON PME.PME_ID = ODD.PME_ID

@@ -787,22 +787,6 @@ td.tscell > i {
 	background-color: #db4437;
 	box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
 }
-#print_price_new_btn {
-	background: url(../img/price.png) no-repeat scroll center center transparent;
-	bottom: 100px;
-	cursor: pointer;
-	width: 56px;
-	height: 56px;
-	opacity: .4;
-	position: fixed;
-	right: 160px;
-	z-index: 13;
-	border-radius: 50%;
-	background-color: #db4437;
-	box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
-	-webkit-filter: grayscale(100%);
-	filter: grayscale(100%);
-}
 
 #MTfilter > div {
 	display: inline-block;
