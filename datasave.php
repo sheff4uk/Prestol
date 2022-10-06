@@ -47,6 +47,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 	$OrderDate = $_POST["order_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["order_date"]) ).'\'' : "NULL";
 	$ArrivalDate = $_POST["arrival_date"] ? '\''.date( 'Y-m-d', strtotime($_POST["arrival_date"]) ).'\'' : "NULL";
 	$sidebar = isset($_POST["sidebar"]) ? $_POST["sidebar"] : "NULL";
+	$edge_shape = $_POST["edge_shape"] ? $_POST["edge_shape"] : "NULL";
 	$PVC_ID = $_POST["PVC_ID"] ? $_POST["PVC_ID"] : "NULL";
 	// Обработка строк
 	$Material = convert_str($_POST["Material"]);
@@ -93,6 +94,7 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 		UPDATE OrdersDataDetail
 		SET BL_ID = {$Blank}
 			,Other = {$Other}
+			,edge_shape = {$edge_shape}
 			,PVC_ID = {$PVC_ID}
 			,sidebar = {$sidebar}
 			,piece_stored = {$piece_stored}

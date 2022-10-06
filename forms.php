@@ -354,10 +354,19 @@ this.subbut.value='Подождите, пожалуйста!';">
 			}
 		?>
 		<div>
-			<label>Кромка ПВХ:</label>
+			<label>Кромка:</label>
+			<div>
+			<div class='btnset radioedge'>
+				<input type='radio' id='3radio1' name='edge_shape' value='1' required>
+					<label for='3radio1'><img src='/img/PVC.png' style="height: 24px;"><br>ПВХ</label>
+				<input type='radio' id='3radio2' name='edge_shape' value='2' required>
+					<label for='3radio2'><img src='/img/curly.png' style="height: 24px;"><br>Фигурная</label>
+				<input type='radio' id='3radio3' name='edge_shape' value='3' required>
+					<label for='3radio3'><img src='/img/wedge.png' style="height: 24px;"><br>Клин</label>
+			</div>
 			<select name="PVC_ID" style="width: 300px;">
 			<?
-				echo "<option value='' selected style='background-color: #999;'>-=НЕТ (фрезеровка)=-</option>";
+				echo "<option value='' selected>-=Выберите кромку=-</option>";
 				$query = "SELECT PVC_ID, edge FROM PVCedge ORDER BY edge";
 				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($result) )
@@ -366,6 +375,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				}
 			?>
 			</select>
+			</div>
 		</div>
 		<div id="wr_sidebar">
 			<label title="Пластик - оклейка пластиком цвета столешницы. Шпон - покраска царги в цвет ног.">
@@ -1051,6 +1061,9 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#2radio').prop('checked', true);
 			$('#addtable select[name="P_ID"]').val(0);
 			$('#addtable .radiostatus').buttonset( 'option', 'disabled', true );
+			$('#addtable .radioedge input').prop('checked', false);
+			$('#addtable select[name="PVC_ID"]').hide('fast');
+			$('#addtable select[name="PVC_ID"]').attr('required', false);
 
 			// Выключается ящик
 			$('#addtable #box').prop('checked', false);
@@ -1081,6 +1094,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				model = odd_data['model'];
 				form = odd_data['form'];
 				mechanism = odd_data['mechanism'];
+				edge_shape = odd_data['edge_shape'];
 
 //				if( model > 0 ) { // Если не столешница
 //					// Деактивируем список моделей в дропдауне
@@ -1130,6 +1144,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#addtable textarea[name="Comment"]').val(odd_data['comment']);
 				$('#addtable input[name="Material"]').val(odd_data['material']);
 				$('#addtable select[name="Shipper"]').val(odd_data['shipper']);
+				$('#addtable #3radio'+edge_shape).prop('checked', true);
+				$('#addtable #3radio'+edge_shape).change();
 				$('#addtable select[name="PVC_ID"]').val(odd_data['PVC_ID']);
 				$('#2radio'+odd_data['isexist']).prop('checked', true);
 				$('#addtable #sidebar'+odd_data['sidebar']).prop('checked', true);
@@ -1179,6 +1195,19 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$( ".materialtags_2" ).autocomplete( "option", "appendTo", "#addtable" );
 
 			return false;
+		});
+
+		// При выборе кромки ПВХ показывается меню с кромками
+		$('#addtable').on('change', 'input[name="edge_shape"]', function() {
+			edge_shape = $(this).val();
+			if( edge_shape == '1' ) {
+				$('#addtable select[name="PVC_ID"]').show('fast');
+				$('#addtable select[name="PVC_ID"]').attr('required', true);
+			}
+			else {
+				$('#addtable select[name="PVC_ID"]').hide('fast');
+				$('#addtable select[name="PVC_ID"]').attr('required', false);
+			}
 		});
 
 		// При выборе модели стола предлагаются формы столешниц, выводятся стандартные размеры и включается патина
