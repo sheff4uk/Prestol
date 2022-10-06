@@ -360,7 +360,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<input type='radio' id='3radio1' name='edge_shape' value='1' required>
 					<label for='3radio1'><img src='/img/PVC.png' style="height: 24px;"><br>ПВХ</label>
 				<input type='radio' id='3radio2' name='edge_shape' value='2' required>
-					<label for='3radio2'><img src='/img/curly.png' style="height: 24px;"><br>Фигурная</label>
+					<label for='3radio2'><img src='/img/curly.png' style="height: 24px;"><br>Радиусная</label>
 				<input type='radio' id='3radio3' name='edge_shape' value='3' required>
 					<label for='3radio3'><img src='/img/wedge.png' style="height: 24px;"><br>Клин</label>
 			</div>
