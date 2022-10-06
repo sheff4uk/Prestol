@@ -1205,6 +1205,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#addtable select[name="PVC_ID"]').attr('required', true);
 			}
 			else {
+				$('#addtable select[name="PVC_ID"]').val('');
 				$('#addtable select[name="PVC_ID"]').hide('fast');
 				$('#addtable select[name="PVC_ID"]').attr('required', false);
 			}
