@@ -252,7 +252,6 @@ switch( $_GET["do"] ) {
 
 				$("#code").mask('9 9 9 9', {
 					onComplete: function(cep) {
-						//console.log('Mask is done!:', cep);
 						$('#send_code_form form').submit();
 					}
 				});
