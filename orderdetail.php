@@ -669,7 +669,7 @@
 		}
 		$delmessage = addslashes("Покраска не требуется?");
 		echo "
-			<td val='{$IsPainting}' class='painting_cell ".(( in_array('order_add_confirm', $Rights) and !$Archive and $Del == 0 and $IsPainting != 0 ) ? "painting " : "")." {$class}'>
+			<td val='{$IsPainting}' class='painting_cell ".(( in_array('order_add_confirm', $Rights) and !$Archive and $Del == 0 and $IsPainting != 0 ) ? "painting " : "")." {$class}' isready='' shpid='' filter=''>
 				<div class='painting_workers'>{$Name}</div>
 				<p>{$Color}</p>
 				<div style='background: lightgrey; cursor: auto; ".((!$disabled and !$Del and $editable) ? "" : "display: none;")."'>

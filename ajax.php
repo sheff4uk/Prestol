@@ -135,9 +135,16 @@ case "ispainting":
 	$shpid = $_GET["shpid"];
 	$filter = $_GET["filter"];
 
-	// Обновляем статус лакировки
-	$query = "UPDATE OrdersData SET IsPainting = {$val}, paint_date = IF({$val} = 3, NOW(), NULL), author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+	// Получаем текущий статус лакировки
+	$query = "SELECT IsPainting FROM OrdersData WHERE OD_ID = {$id}";
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+	$curval = mysqli_result($res,0,'IsPainting');
+
+	// Обновляем статус лакировки если статусы совпадают
+	if( $curval == $_GET["val"] ) {
+		$query = "UPDATE OrdersData SET IsPainting = {$val}, paint_date = IF({$val} = 3, NOW(), NULL), author = {$_SESSION['id']} WHERE OD_ID = {$id}";
+		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+	}
 
 	// Получаем статус лакировки, отгрузку, лакировщиков и тарифы
 	$query = "SELECT IsPainting, IFNULL(SHP_ID, 0) SHP_ID, USR_ID, patina_USR_ID, tariff, patina_tariff FROM OrdersData WHERE OD_ID = {$id}";
@@ -196,193 +203,210 @@ case "ispainting":
 			echo "$('.main_table tr[id=\"ord{$id}\"] .shipping').hide('fast');";
 		}
 	}
-	if ($val == 1) {
-		if ($tariff == "0" or $patina_tariff == "0") {
-			if ($tariff == "0") {
-				// Узнаём имя лакировщика
-				$query = "SELECT USR_ShortName({$USR_ID}) Name";
-				$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-				$painting_name = mysqli_result($res,0,'Name');
-				// Форма лакировщика
-				$painting_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkred;\"><legend>Лакировал:</legend><b>{$painting_name}</b><div><label>Сумма вычета: </label><input type=\"number\" value=\"\" min=\"0\" id=\"tariff\" style=\"width: 70px;\"></div></fieldset>";
+
+	// Производим начисления, если статусы совпадают
+	if( $curval == $_GET["val"] ) {
+		if ($val == 1) {
+			if ($tariff == "0" or $patina_tariff == "0") {
+				if ($tariff == "0") {
+					// Узнаём имя лакировщика
+					$query = "SELECT USR_ShortName({$USR_ID}) Name";
+					$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+					$painting_name = mysqli_result($res,0,'Name');
+					// Форма лакировщика
+					$painting_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkred;\"><legend>Лакировал:</legend><b>{$painting_name}</b><div><label>Сумма вычета: </label><input type=\"number\" value=\"\" min=\"0\" id=\"tariff\" style=\"width: 70px;\"></div></fieldset>";
+				}
+				else {
+					$painting_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkred;\"></fieldset>";
+				}
+				if ($patina_tariff == "0") {
+					// Узнаём имя патинировщика
+					$query = "SELECT USR_ShortName({$patina_USR_ID}) Name";
+					$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+					$patina_name = mysqli_result($res,0,'Name');
+					// Форма патинировщика
+					$patina_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkred;\"><legend>Наносил патину:</legend><b>{$patina_name}</b><div><label>Сумма вычета: </label><input type=\"number\" value=\"\" min=\"0\" id=\"patina_tariff\" style=\"width: 70px;\"></div></fieldset>";
+				}
+				else {
+					$patina_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkred;\"></fieldset>";
+				}
+
+				echo "
+					noty({
+						modal: true,
+						timeout: false,
+						text: 'Статус лакировки изменен на <b>{$status}</b>.<br>Внимание! Набор был разделен. Пожалуйста укажите сумму вычета из баланса работника после отмены лакировки.<div style=\"display: flex;\">{$painting_form}{$patina_form}</div>',
+						buttons: [
+							{addClass: 'btn btn-primary', text: 'Ok', onClick: function (\$noty) {
+								\$noty.close();
+								var tariff = \$('#tariff').val();
+								var patina_tariff = \$('#patina_tariff').val();
+								\$.ajax({ url: 'ajax.php?do=painting_workers_reject&usr_id={$USR_ID}&tariff='+tariff+'&patina_usr_id={$patina_USR_ID}&patina_tariff='+patina_tariff+'&od_id={$id}', dataType: 'script', async: false });
+							}
+							}
+						],
+						type: 'error'
+					});
+				";
 			}
 			else {
-				$painting_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkred;\"></fieldset>";
+				// Если отмена лакировки - убираем из начислений
+				if ($USR_ID > 0 and $tariff > 0) {
+					$query = "
+						INSERT INTO PayLog(OD_ID, USR_ID, Pay, Comment, author)
+						VALUES ({$id}, {$USR_ID}, -1 * {$tariff}, 'Лакировка', {$_SESSION['id']})
+					";
+					mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+				}
+				if ($patina_USR_ID > 0 and $patina_tariff > 0) {
+					$query = "
+						INSERT INTO PayLog(OD_ID, USR_ID, Pay, Comment, author)
+						VALUES ({$id}, {$patina_USR_ID}, -1 * {$patina_tariff}, 'Патинирование', {$_SESSION['id']})
+					";
+					mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+				}
+
+				echo "noty({timeout: 3000, text: 'Статус лакировки изменен на <b>{$status}</b>', type: 'success'});";
+				echo "$('.main_table tr[id=\"ord{$id}\"] td.painting #paint_color').prop('disabled', false);";
 			}
-			if ($patina_tariff == "0") {
-				// Узнаём имя патинировщика
-				$query = "SELECT USR_ShortName({$patina_USR_ID}) Name";
-				$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-				$patina_name = mysqli_result($res,0,'Name');
-				// Форма патинировщика
-				$patina_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkred;\"><legend>Наносил патину:</legend><b>{$patina_name}</b><div><label>Сумма вычета: </label><input type=\"number\" value=\"\" min=\"0\" id=\"patina_tariff\" style=\"width: 70px;\"></div></fieldset>";
+		}
+		elseif ($val == 3) {
+			// Узнаём есть ли патина в наборе
+			$query = "
+				SELECT SUM(1) cnt FROM `OrdersDataDetail` WHERE OD_ID = {$id} AND P_ID IS NOT NULL
+			";
+			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+			$row = mysqli_fetch_array($res);
+			$patina_cnt = $row["cnt"];
+
+			// Формирование дропдауна со списком лакировщиков. Сортировка по релевантности.
+			$painting_workers = "<select id='painting_usr_id' size='10'>";
+			$painting_workers .= "<option selected value='0'>-=Выберите работника=-</option>";
+			$painting_workers .= "<optgroup label='Работающие'>";
+			$query = "
+				SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name, SUM(1) CNT
+				FROM Users USR
+				LEFT JOIN (
+					SELECT OD.USR_ID
+					FROM OrdersData OD
+					WHERE OD.USR_ID IS NOT NULL
+					ORDER BY OD.OD_ID DESC
+					LIMIT 100
+				) SOD ON SOD.USR_ID = USR.USR_ID
+				WHERE USR.RL_ID = 12 AND USR.act = 1
+				GROUP BY USR.USR_ID
+				ORDER BY CNT DESC
+			";
+			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+			while( $row = mysqli_fetch_array($res) )
+			{
+				$painting_workers .= "<option ".($row["USR_ID"] == $USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
+			}
+			$painting_workers .= "</optgroup>";
+			$painting_workers .= "<optgroup label='Уволенные'>";
+			$query = "
+				SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name
+				FROM Users USR
+				WHERE USR.RL_ID = 12 AND USR.act = 0
+				ORDER BY Name
+			";
+			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+			while( $row = mysqli_fetch_array($res) )
+			{
+				$painting_workers .= "<option ".($row["USR_ID"] == $USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
+			}
+			$painting_workers .= "</optgroup>";
+			$painting_workers .= "</select>";
+			$painting_workers = addslashes($painting_workers);
+			// Конец дропдауна со списком лакировщиков
+
+			// Формирование дропдауна со списком патинировщиков. Сортировка по релевантности.
+			$patina_workers = "<select id='patina_usr_id' size='10'>";
+			$patina_workers .= "<option selected value='0'>-=Выберите работника=-</option>";
+			$patina_workers .= "<optgroup label='Работающие'>";
+			$query = "
+				SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name, SUM(1) CNT
+				FROM Users USR
+				LEFT JOIN (
+					SELECT OD.patina_USR_ID
+					FROM OrdersData OD
+					WHERE OD.patina_USR_ID IS NOT NULL
+					ORDER BY OD.OD_ID DESC
+					LIMIT 100
+				) SOD ON SOD.patina_USR_ID = USR.USR_ID
+				WHERE USR.RL_ID = 12 AND USR.act = 1
+				GROUP BY USR.USR_ID
+				ORDER BY CNT DESC
+			";
+			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+			while( $row = mysqli_fetch_array($res) )
+			{
+				$patina_workers .= "<option ".($row["USR_ID"] == $patina_USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
+			}
+			$patina_workers .= "</optgroup>";
+			$patina_workers .= "<optgroup label='Уволенные'>";
+			$query = "
+				SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name
+				FROM Users USR
+				WHERE USR.RL_ID = 12 AND USR.act = 0
+				ORDER BY Name
+			";
+			$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
+			while( $row = mysqli_fetch_array($res) )
+			{
+				$patina_workers .= "<option ".($row["USR_ID"] == $patina_USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
+			}
+			$patina_workers .= "</optgroup>";
+			$patina_workers .= "</select>";
+			$patina_workers = addslashes($patina_workers);
+			// Конец дропдауна со списком патинировщиков
+
+			$painting_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkgreen;\"><legend>Лакировал:</legend>{$painting_workers}<div><label>Тариф: </label><input type=\"number\" value=\"{$tariff}\" min=\"0\" id=\"tariff\" style=\"width: 70px;\"></div></fieldset>";
+			if ($patina_cnt) {
+				$patina_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkgreen;\"><legend>Наносил патину:</legend>{$patina_workers}<div><label>Тариф: </label><input type=\"number\" value=\"{$patina_tariff}\" min=\"0\" id=\"patina_tariff\" style=\"width: 70px;\"></div></fieldset>";
 			}
 			else {
-				$patina_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkred;\"></fieldset>";
+				$patina_form = "<input type=\"hidden\" id=\"patina_usr_id\" value=\"0\"><input type=\"hidden\" id=\"patina_tariff\" value=\"0\">";
 			}
 
 			echo "
 				noty({
 					modal: true,
 					timeout: false,
-					text: 'Статус лакировки изменен на <b>{$status}</b>.<br>Внимание! Набор был разделен. Пожалуйста укажите сумму вычета из баланса работника после отмены лакировки.<div style=\"display: flex;\">{$painting_form}{$patina_form}</div>',
+					text: 'Статус лакировки изменен на <b>{$status}</b>.<div style=\"display: flex;\">{$painting_form}{$patina_form}</div>',
 					buttons: [
 						{addClass: 'btn btn-primary', text: 'Ok', onClick: function (\$noty) {
 							\$noty.close();
+							var usr_id = \$('#painting_usr_id').val();
 							var tariff = \$('#tariff').val();
+							var patina_usr_id = \$('#patina_usr_id').val();
 							var patina_tariff = \$('#patina_tariff').val();
-							\$.ajax({ url: 'ajax.php?do=painting_workers_reject&usr_id={$USR_ID}&tariff='+tariff+'&patina_usr_id={$patina_USR_ID}&patina_tariff='+patina_tariff+'&od_id={$id}', dataType: 'script', async: false });
+							\$.ajax({ url: 'ajax.php?do=painting_workers&usr_id='+usr_id+'&tariff='+tariff+'&patina_usr_id='+patina_usr_id+'&patina_tariff='+patina_tariff+'&od_id={$id}', dataType: 'script', async: false });
 						}
 						}
 					],
-					type: 'error'
+					type: 'success'
 				});
 			";
+
+			echo "$('.main_table tr[id=\"ord{$id}\"] td.painting #paint_color').prop('disabled', true);";
 		}
 		else {
-			// Если отмена лакировки - убираем из начислений
-			if ($USR_ID > 0 and $tariff > 0) {
-				$query = "
-					INSERT INTO PayLog(OD_ID, USR_ID, Pay, Comment, author)
-					VALUES ({$id}, {$USR_ID}, -1 * {$tariff}, 'Лакировка', {$_SESSION['id']})
-				";
-				mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-			}
-			if ($patina_USR_ID > 0 and $patina_tariff > 0) {
-				$query = "
-					INSERT INTO PayLog(OD_ID, USR_ID, Pay, Comment, author)
-					VALUES ({$id}, {$patina_USR_ID}, -1 * {$patina_tariff}, 'Патинирование', {$_SESSION['id']})
-				";
-				mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-			}
-
 			echo "noty({timeout: 3000, text: 'Статус лакировки изменен на <b>{$status}</b>', type: 'success'});";
-			echo "$('.main_table tr[id=\"ord{$id}\"] td.painting #paint_color').prop('disabled', false);";
 		}
-	}
-	elseif ($val == 3) {
-		// Узнаём есть ли патина в наборе
-		$query = "
-			SELECT SUM(1) cnt FROM `OrdersDataDetail` WHERE OD_ID = {$id} AND P_ID IS NOT NULL
-		";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-		$row = mysqli_fetch_array($res);
-		$patina_cnt = $row["cnt"];
-
-		// Формирование дропдауна со списком лакировщиков. Сортировка по релевантности.
-		$painting_workers = "<select id='painting_usr_id' size='10'>";
-		$painting_workers .= "<option selected value='0'>-=Выберите работника=-</option>";
-		$painting_workers .= "<optgroup label='Работающие'>";
-		$query = "
-			SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name, SUM(1) CNT
-			FROM Users USR
-			LEFT JOIN (
-				SELECT OD.USR_ID
-				FROM OrdersData OD
-				WHERE OD.USR_ID IS NOT NULL
-				ORDER BY OD.OD_ID DESC
-				LIMIT 100
-			) SOD ON SOD.USR_ID = USR.USR_ID
-			WHERE USR.RL_ID = 12 AND USR.act = 1
-			GROUP BY USR.USR_ID
-			ORDER BY CNT DESC
-		";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-		while( $row = mysqli_fetch_array($res) )
-		{
-			$painting_workers .= "<option ".($row["USR_ID"] == $USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
-		}
-		$painting_workers .= "</optgroup>";
-		$painting_workers .= "<optgroup label='Уволенные'>";
-		$query = "
-			SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name
-			FROM Users USR
-			WHERE USR.RL_ID = 12 AND USR.act = 0
-			ORDER BY Name
-		";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-		while( $row = mysqli_fetch_array($res) )
-		{
-			$painting_workers .= "<option ".($row["USR_ID"] == $USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
-		}
-		$painting_workers .= "</optgroup>";
-		$painting_workers .= "</select>";
-		$painting_workers = addslashes($painting_workers);
-		// Конец дропдауна со списком лакировщиков
-
-		// Формирование дропдауна со списком патинировщиков. Сортировка по релевантности.
-		$patina_workers = "<select id='patina_usr_id' size='10'>";
-		$patina_workers .= "<option selected value='0'>-=Выберите работника=-</option>";
-		$patina_workers .= "<optgroup label='Работающие'>";
-		$query = "
-			SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name, SUM(1) CNT
-			FROM Users USR
-			LEFT JOIN (
-				SELECT OD.patina_USR_ID
-				FROM OrdersData OD
-				WHERE OD.patina_USR_ID IS NOT NULL
-				ORDER BY OD.OD_ID DESC
-				LIMIT 100
-			) SOD ON SOD.patina_USR_ID = USR.USR_ID
-			WHERE USR.RL_ID = 12 AND USR.act = 1
-			GROUP BY USR.USR_ID
-			ORDER BY CNT DESC
-		";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-		while( $row = mysqli_fetch_array($res) )
-		{
-			$patina_workers .= "<option ".($row["USR_ID"] == $patina_USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
-		}
-		$patina_workers .= "</optgroup>";
-		$patina_workers .= "<optgroup label='Уволенные'>";
-		$query = "
-			SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name
-			FROM Users USR
-			WHERE USR.RL_ID = 12 AND USR.act = 0
-			ORDER BY Name
-		";
-		$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-		while( $row = mysqli_fetch_array($res) )
-		{
-			$patina_workers .= "<option ".($row["USR_ID"] == $patina_USR_ID ? "selected" : "")." value='{$row["USR_ID"]}'>{$row["Name"]}</option>";
-		}
-		$patina_workers .= "</optgroup>";
-		$patina_workers .= "</select>";
-		$patina_workers = addslashes($patina_workers);
-		// Конец дропдауна со списком патинировщиков
-
-		$painting_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkgreen;\"><legend>Лакировал:</legend>{$painting_workers}<div><label>Тариф: </label><input type=\"number\" value=\"{$tariff}\" min=\"0\" id=\"tariff\" style=\"width: 70px;\"></div></fieldset>";
-		if ($patina_cnt) {
-			$patina_form = "<fieldset style=\"width: 50%; text-align: left; border: 1px solid darkgreen;\"><legend>Наносил патину:</legend>{$patina_workers}<div><label>Тариф: </label><input type=\"number\" value=\"{$patina_tariff}\" min=\"0\" id=\"patina_tariff\" style=\"width: 70px;\"></div></fieldset>";
-		}
-		else {
-			$patina_form = "";
-		}
-
-		echo "
-			noty({
-				modal: true,
-				timeout: false,
-				text: 'Статус лакировки изменен на <b>{$status}</b>.<div style=\"display: flex;\">{$painting_form}{$patina_form}</div>',
-				buttons: [
-					{addClass: 'btn btn-primary', text: 'Ok', onClick: function (\$noty) {
-						\$noty.close();
-						var usr_id = \$('#painting_usr_id').val();
-						var tariff = \$('#tariff').val();
-						var patina_usr_id = \$('#patina_usr_id').val();
-						var patina_tariff = \$('#patina_tariff').val();
-						\$.ajax({ url: 'ajax.php?do=painting_workers&usr_id='+usr_id+'&tariff='+tariff+'&patina_usr_id='+patina_usr_id+'&patina_tariff='+patina_tariff+'&od_id={$id}', dataType: 'script', async: false });
-					}
-					}
-				],
-				type: 'success'
-			});
-		";
-
-		echo "$('.main_table tr[id=\"ord{$id}\"] td.painting #paint_color').prop('disabled', true);";
 	}
 	else {
-		echo "noty({timeout: 3000, text: 'Статус лакировки изменен на <b>{$status}</b>', type: 'success'});";
+		$query = "
+			SELECT IF(OD.IsPainting = 3, CONCAT(USR_ShortName(OD.USR_ID), IF(OD.patina_USR_ID IS NOT NULL, CONCAT(' + ', USR_ShortName(OD.patina_USR_ID)), '')), '') Name
+			FROM OrdersData OD
+			WHERE OD.OD_ID = {$id}
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$row = mysqli_fetch_array($res);
+
+		$painting_workers = $row['Name'];
+
+		echo "$('.main_table tr[id=\"ord{$id}\"] .painting_workers').text('{$painting_workers}');";
 	}
 	break;
 ///////////////////////////////////////////////////////////////////
