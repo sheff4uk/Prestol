@@ -238,10 +238,18 @@ case "ispainting":
 						text: 'Статус лакировки изменен на <b>{$status}</b>.<br>Внимание! Набор был разделен. Пожалуйста укажите сумму вычета из баланса работника после отмены лакировки.<div style=\"display: flex;\">{$painting_form}{$patina_form}</div>',
 						buttons: [
 							{addClass: 'btn btn-primary', text: 'Ok', onClick: function (\$noty) {
-								\$noty.close();
+								\$(this).attr('disabled', true);
+								\$(this).html('<i class=\"fa-solid fa-gear fa-spin\"></i>');
 								var tariff = \$('#tariff').val();
 								var patina_tariff = \$('#patina_tariff').val();
-								\$.ajax({ url: 'ajax.php?do=painting_workers_reject&usr_id={$USR_ID}&tariff='+tariff+'&patina_usr_id={$patina_USR_ID}&patina_tariff='+patina_tariff+'&od_id={$id}', dataType: 'script', async: false });
+								\$.ajax({
+									url: 'ajax.php?do=painting_workers_reject&usr_id={$USR_ID}&tariff='+tariff+'&patina_usr_id={$patina_USR_ID}&patina_tariff='+patina_tariff+'&od_id={$id}',
+									dataType: 'script',
+									async: true,
+									complete: function(data) {
+										\$noty.close();
+									}
+								});
 							}
 							}
 						],
@@ -376,12 +384,20 @@ case "ispainting":
 					text: 'Статус лакировки изменен на <b>{$status}</b>.<div style=\"display: flex;\">{$painting_form}{$patina_form}</div>',
 					buttons: [
 						{addClass: 'btn btn-primary', text: 'Ok', onClick: function (\$noty) {
-							\$noty.close();
+							\$(this).attr('disabled', true);
+							\$(this).html('<i class=\"fa-solid fa-gear fa-spin\"></i>');
 							var usr_id = \$('#painting_usr_id').val();
 							var tariff = \$('#tariff').val();
 							var patina_usr_id = \$('#patina_usr_id').val();
 							var patina_tariff = \$('#patina_tariff').val();
-							\$.ajax({ url: 'ajax.php?do=painting_workers&usr_id='+usr_id+'&tariff='+tariff+'&patina_usr_id='+patina_usr_id+'&patina_tariff='+patina_tariff+'&od_id={$id}', dataType: 'script', async: false });
+							\$.ajax({
+								url: 'ajax.php?do=painting_workers&usr_id='+usr_id+'&tariff='+tariff+'&patina_usr_id='+patina_usr_id+'&patina_tariff='+patina_tariff+'&od_id={$id}',
+								dataType: 'script',
+								async: true,
+								complete: function(data) {
+									\$noty.close();
+								}
+							});
 						}
 						}
 					],
