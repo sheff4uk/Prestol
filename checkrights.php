@@ -41,8 +41,8 @@
 		$timezone = mysqli_result($res,0,'timezone');
 
 		// Устанавливаем часовой пояс
-		date_default_timezone_set($timezone);
-		mysqli_query($mysqli, "SET `time_zone`='".date('P')."'");
+//		date_default_timezone_set($timezone);
+//		mysqli_query($mysqli, "SET `time_zone`='".date('P')."'");
 
 		// Получаем права пользователя
 		$query = "SELECT RT_ID FROM Role_Rights WHERE RL_ID = {$USR_Role}";
