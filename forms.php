@@ -824,7 +824,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 	function makeform(odd_id, location) {
 		$.ajax({ url: "ajax.php?do=steps&odd_id="+odd_id, dataType: "script", async: false });
 
-		$('#formsteps input[type=number]').change();
+		$('#formsteps input[type=checkbox]').change();
 
 		$( '.isready' ).button();
 		$("#steps form").attr("action", "datasave.php?location="+location);
@@ -873,9 +873,19 @@ this.subbut.value='Подождите, пожалуйста!';">
 		var form;
 		var mechanism;
 
-		// При выключении этапа пересчитываем сумму
+		// При выключении этапа пересчитываем сумму и утвержденную сумму
 		$('#formsteps').on('change', 'input[type=checkbox]:not(.isready)', function() {
 			$('#formsteps input[type=number]').change();
+			var sum = 0;
+			$('#formsteps tr:not(.empty) .approved_tariff').each(function() {
+				var val = parseInt($(this).text()),
+					visible = $(this).parents('tr').find('input[type=checkbox]:not(.isready)').prop('checked');
+				//console.log(visible);
+				if( !isNaN(val) && visible ) {
+					sum += val;
+				}
+			});
+			$('#formsteps #approved_steps_sum').text(sum);
 		});
 		// При изменении тарифа в этапах, пересчитываем сумму
 		$('#formsteps').on('change', 'input[type=number]', function() {
@@ -883,7 +893,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#formsteps input[type=number]:enabled').each(function() {
 				var val = parseInt($(this).val()),
 					visible = $(this).parents('tr').find('input[type=checkbox]:not(.isready)').prop('checked');
-				console.log(visible);
+				//console.log(visible);
 				if( !isNaN(val) && visible ) {
 					sum += val;
 				}
