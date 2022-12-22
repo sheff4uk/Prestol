@@ -887,6 +887,17 @@ this.subbut.value='Подождите, пожалуйста!';">
 			});
 			$('#formsteps #approved_steps_sum').text(sum);
 		});
+		// При включении готовности, показываем поле тарифа
+		$('#formsteps').on('change', 'input[type=checkbox].isready', function() {
+			var isready = $(this).prop('checked');
+			if( isready ) {
+				$(this).parents('tr').find('input[type=number].tariff').show('fast');
+			}
+			else {
+				$(this).parents('tr').find('input[type=number].tariff').hide('fast');
+				$(this).parents('tr').find('input[type=number].tariff').val($(this).parents('tr').find('.approved_tariff').text()).change();
+			}
+		});
 		// При изменении тарифа в этапах, пересчитываем сумму
 		$('#formsteps').on('change', 'input[type=number]', function() {
 			var sum = 0;
@@ -908,14 +919,14 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 			if( val == '' )
 			{
-				$('#IsReady'+id).prop('disabled', true);
-				$('#IsReady'+id).prop('checked', false);
-				$('#IsReady'+id).button('refresh');
+				$(this).parents('tr').find('input[type=checkbox].isready').prop('checked', false).change();
+				$(this).parents('tr').find('input[type=checkbox].isready').prop('disabled', true);
+				$(this).parents('tr').find('input[type=checkbox].isready').button('refresh');
 			}
 			else
 			{
-				$('#IsReady'+id).prop('disabled', false);
-				$('#IsReady'+id).button('refresh');
+				$(this).parents('tr').find('input[type=checkbox].isready').prop('disabled', false);
+				$(this).parents('tr').find('input[type=checkbox].isready').button('refresh');
 			}
 			return false;
 		});

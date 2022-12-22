@@ -230,14 +230,23 @@ elseif (isset($_POST["ODD_ID"])) {
 	{
 		if (strpos($k,"Tariff") === 0) {
 			$sid = (int)str_replace( "Tariff", "", $k ); // ID этапа
-			$tariff = $v ? "$v" : "NULL";
-			$worker = $_POST["USR_ID".$sid] ? $_POST["USR_ID".$sid] : "NULL";
 			$isready = $_POST["IsReady".$sid] ? $_POST["IsReady".$sid] : 0;
+			$approved_tariff = ( $_POST["approved_tariff".$sid] and $isready ) ? $_POST["approved_tariff".$sid] : "NULL";
+			$tariff = ($v and $isready) ? "$v" : "NULL";
+			$worker = $_POST["USR_ID".$sid] ? $_POST["USR_ID".$sid] : "NULL";
 			$visible = $_POST["Visible".$sid] ? $_POST["Visible".$sid] : 0;
+			$approved = $isready ? ( ( in_array('step_approve', $Rights) or ( $tariff == $approved_tariff ) ) ? "1" : "0" ) : "NULL";
 			$query = "
 				UPDATE OrdersDataSteps
-				SET USR_ID = {$worker}, Tariff = {$tariff}, IsReady = {$isready}, Visible = {$visible}, author = {$_SESSION['id']}
-				WHERE ODD_ID = {$_POST["ODD_ID"]} AND IFNULL(ST_ID, 0) = {$sid}
+				SET USR_ID = {$worker}
+					,approved_tariff = {$approved_tariff}
+					,Tariff = {$tariff}
+					,IsReady = {$isready}
+					,Visible = {$visible}
+					,author = {$_SESSION['id']}
+					,approved = {$approved}
+				WHERE ODD_ID = {$_POST["ODD_ID"]}
+					AND IFNULL(ST_ID, 0) = {$sid}
 			";
 			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		}

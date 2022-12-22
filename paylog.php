@@ -2,6 +2,7 @@
 	include "config.php";
 	$title = 'Зарплата';
 	include "header.php";
+	include "forms.php";
 
 	// Проверка прав на доступ к экрану
 	if( !in_array('screen_paylog', $Rights) and !in_array('screen_paylog_read', $Rights) ) {
@@ -10,6 +11,7 @@
 	}
 
 	$worker = (isset($_GET["worker"]) and (int)$_GET["worker"] > 0) ? $_GET["worker"] : $_SESSION['id'];
+	$location = "paylog.php?worker=".$worker;
 
 	// Проверка является ли выбранный работник потомком пользователя
 	$query = "SELECT {$worker} IN ({$USR_tree}) in_tree";
@@ -151,12 +153,72 @@
 		echo "<ul>";
 		user_tree( $_SESSION['id'] );
 		echo "</ul>";
-?>
+		?>
 	</div>
 
 	<div class="log-pay halfblock">
 		<h1><?=$USR_Name?></h1>
+
 		<?
+			$query = "
+				SELECT ODS.ODS_ID
+					,ODS.ODD_ID
+					,Zakaz(ODS.ODD_ID) Zakaz
+					,IFNULL(ST.Step, 'Этап') Step
+					,IFNULL(ODS.approved_tariff, 0) approved_tariff
+					,ODS.Tariff
+					,USR_Icon(ODS.author) author_icon
+					,OD.confirmed
+					,OD.OD_ID
+					,OD.Code
+				FROM OrdersDataSteps ODS
+				JOIN OrdersDataDetail ODD ON ODD.ODD_ID = ODS.ODD_ID
+				JOIN OrdersData OD ON OD.OD_ID = ODD.OD_ID
+				LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
+				WHERE ODS.USR_ID = {$worker}
+					AND ODS.IsReady
+					AND ODS.Tariff
+					AND ODS.approved = 0
+					AND ODS.Visible
+					AND ODS.Old = 0
+			";
+			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			if( mysqli_num_rows($res) ) {
+				echo "
+					<table class='main_table' style='border: 2px solid #911; margin-bottom: 10px;'>
+						<thead>
+							<tr>
+								<th colspan='7'><h3>Готовые этапы, требующие подтверждения от администрации</h3></th>
+							</tr>
+							<tr>
+								<th>Код набора</th>
+								<th colspan='3'>Изделие</th>
+								<th>Этап</th>
+								<th>Тариф</th>
+								<th>Автор</th>
+							</tr>
+						</thead>
+						<tbody  style='text-align: center;'>
+				";
+				while( $row = mysqli_fetch_array($res) ) {
+					echo "
+						<tr>
+							<td><a href='orderdetail.php?id={$row["OD_ID"]}' target='_blank' title='Посмотреть набор.'><b class='code'>{$row["Code"]}</b></a></td>
+							<td style='text-align: left;' colspan='3'>{$row["Zakaz"]}</td>
+							<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'>
+								<a id='{$row["ODD_ID"]}' class='button ".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$row["Step"]}</a>
+							</td>
+							<td style='text-align: right; font-size: 1.2em;'><span style='text-decoration: line-through;'>{$row["approved_tariff"]}</span><br><b>{$row["Tariff"]}</b></td>
+							<td>{$row["author_icon"]}</td>
+						</tr>
+					";
+				}
+				echo "
+						</tbody>
+					</table>
+				";
+			}
+
 			echo "<div id='accordion'>";
 			echo "<h3>Аналитика</h3>";
 			echo "<div style='display: flex; justify-content: space-around;'>";

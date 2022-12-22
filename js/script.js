@@ -59,7 +59,7 @@ $(function(){
 				makeform(id, location);
 			}
 			else {
-				noty({timeout: 10000, text: 'Набор не принят в работу. Вы не можете назначать этапы.', type: 'alert'});
+				noty({timeout: 10000, text: 'Набор не принят в работу. Вы не можете редактировать этапы.', type: 'alert'});
 			}
 		}
 		return false;

@@ -31,11 +31,14 @@ case "steps":
 			,IFNULL(ST.Step, '-') Step
 			,ODS.USR_ID
 			,IF(ODS.USR_ID IS NULL, 'disabled', '') disabled
-			,CONCAT('<span class=\"approved_tariff\">', ODS.approved_tariff, '</span><i class=\"fa fa-question-circle\" title=\"Утвержденный тариф\"></i><br>') approved_tariff
-			,ODS.Tariff
-			,IF (ODS.IsReady, 'checked', '') IsReady
+			,CONCAT('<span class=\"approved_tariff\">', IF(ODS.IsReady, ODS.approved_tariff, ODD_ST_Tariff(ODS.ODD_ID, ODS.ST_ID)), '</span><i class=\"fa fa-question-circle\" title=\"Утвержденный тариф\"></i><br>') approved_tariff_html
+			,IF(ODS.IsReady, ODS.approved_tariff, ODD_ST_Tariff(ODS.ODD_ID, ODS.ST_ID)) approved_tariff
+			,IF(ODS.IsReady, ODS.Tariff, ODD_ST_Tariff(ODS.ODD_ID, ODS.ST_ID)) Tariff
+			,IF(ODS.IsReady, 'checked', '') IsReady
 			,IF(ODS.Visible = 1, 'checked', '') Visible
 			,ODS.Old
+			,ODS.approved
+			,USR_Icon(ODS.author) author_icon
 		FROM OrdersDataSteps ODS
 		LEFT JOIN StepsTariffs ST ON ST.ST_ID = ODS.ST_ID
 		WHERE ODS.ODD_ID = $odd_id
@@ -49,9 +52,10 @@ case "steps":
 	$text .= "<table><thead>";
 	$text .= "<tr><th>Этап</th>";
 	$text .= "<th>Работник</th>";
-	$text .= "<th>Тариф</th>";
+	$text .= "<th width=\'80\'>Тариф</th>";
 	$text .= "<th>Готовность</th>";
-	$text .= "<th title=\'Видимые\'><i class=\'fa fa-eye\' aria-hidden=\'true\'></i></th></tr>";
+	$text .= "<th title=\'Задействованные этапы\'><i class=\'fa fa-eye\' aria-hidden=\'true\'></i></th>";
+	$text .= "<th><i class=\'fa-solid fa-user fa-lg\' title=\'Автор последнего сохранения\'></i></tr>";
 	$text .= "</thead><tbody>";
 
 	while( $row = mysqli_fetch_array($result) )
@@ -103,21 +107,39 @@ case "steps":
 		if( $row["Old"] == 1 ) {
 			$text .= "<tr class=\'empty\'><td><b>{$row["Step"]}</b></td>";
 			$text .= "<td><select disabled class=\'selectwr\'>{$selectworker}</select></td>";
-			$text .= "<td style=\'text-align: right;\'>{$row["approved_tariff"]}<input disabled type=\'number\' class=\'tariff txtright\' value=\'{$row["Tariff"]}\'></td>";
+			$text .= "<td style=\'text-align: right;\'>{$row["approved_tariff_html"]}<input disabled type=\'number\' class=\'tariff txtright\' value=\'{$row["Tariff"]}\'></td>";
 			$text .= "<td><input disabled type=\'checkbox\' id=\'OldIsReady{$row["ST_ID"]}\' class=\'isready\' {$row["IsReady"]}><label for=\'OldIsReady{$row["ST_ID"]}\'></label></td>";
-			$text .= "<td><input disabled type=\'checkbox\' {$row["Visible"]}></td></tr>";
+			$text .= "<td><input disabled type=\'checkbox\' {$row["Visible"]}></td>";
+			$text .= "<td>{$row["author_icon"]}</td></tr>";
 		}
 		else {
-			$text .= "<tr><td class=\'stage\'><b>{$row["Step"]}</b></td>";
-			$text .= "<td><select name=\'USR_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\' size=\'5\'>{$selectworker}</select></td>";
-			$text .= "<td style=\'text-align: right;\'>{$row["approved_tariff"]}<input type=\'number\' min=\'0\' name=\'Tariff{$row["ST_ID"]}\' class=\'tariff txtright\' value=\'{$row["Tariff"]}\'></td>";
-			$text .= "<td><input ".($ready_date ? "onclick=\'return false;\'" : "")." type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}><label for=\'IsReady{$row["ST_ID"]}\'></label></td>";
-			$text .= "<td><input ".($ready_date ? "onclick=\'return false;\'" : "")." type=\'checkbox\' name=\'Visible{$row["ST_ID"]}\' value=\'1\' {$row["Visible"]}></td></tr>";
+			$text .= "\
+				<tr>\
+					<td class=\'stage\'><b>{$row["Step"]}</b></td>\
+					<td>\
+						<select ".( ( $row["approved"] and !in_array('step_approve', $Rights) ) ? "onmousedown=\'return false;\' onkeydown=\'return false;\'" : "" )." name=\'USR_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\' size=\'4\'>{$selectworker}</select>\
+					</td>\
+					<td style=\'text-align: right;\'>\
+						<input type=\'hidden\' name=\'approved_tariff{$row["ST_ID"]}\' value=\'{$row["approved_tariff"]}\'>\
+						{$row["approved_tariff_html"]}\
+						<input type=\'number\' min=\'0\' name=\'Tariff{$row["ST_ID"]}\' class=\'tariff txtright\' value=\'{$row["Tariff"]}\' ".($row["IsReady"] == "" ? "style=\'display: none;\'" : "")." ".( ( $row["approved"] and !in_array('step_approve', $Rights) ) ? "onmousedown=\'return false;\' onkeydown=\'return false;\'" : "" ).">\
+					</td>\
+					<td>\
+						<input ".(($ready_date or ($row["approved"] and !in_array('step_approve', $Rights))) ? "onclick=\'return false;\'" : "")." type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}>\
+						<label for=\'IsReady{$row["ST_ID"]}\'></label>\
+					</td>\
+					<td>\
+						<input ".(($ready_date or ($row["approved"] and !in_array('step_approve', $Rights))) ? "onclick=\'return false;\'" : "")." type=\'checkbox\' name=\'Visible{$row["ST_ID"]}\' value=\'1\' {$row["Visible"]}>\
+					</td>\
+					<td>{$row["author_icon"]}</td>\
+				</tr>\
+			";
 		}
 	}
 	$text .= "<tr><td></td>";
 	$text .= "<td><h3 class=\'txtright\'>Общая сумма:</h3></td>";
 	$text .= "<td><p class=\'txtright\'><span id=\'approved_steps_sum\'></span><i class=\"fa fa-question-circle\" title=\"Утвержденный тариф\"></i></p><h3 id=\'steps_sum\' class=\'txtright\'></h3></td>";
+	$text .= "<td></td>";
 	$text .= "<td></td>";
 	$text .= "<td></td></tr>";
 
