@@ -235,7 +235,7 @@ elseif (isset($_POST["ODD_ID"])) {
 			$tariff = ($v and $isready) ? "$v" : "NULL";
 			$worker = $_POST["USR_ID".$sid] ? $_POST["USR_ID".$sid] : "NULL";
 			$visible = $_POST["Visible".$sid] ? $_POST["Visible".$sid] : 0;
-			$approved = $isready ? ( ( in_array('step_approve', $Rights) or ( $tariff == $approved_tariff ) ) ? "1" : "approved" ) : "NULL";
+			$approved = $isready ? ( ( in_array('step_approve', $Rights) or ( $tariff == $approved_tariff ) ) ? "1" : "IFNULL(approved, 0)" ) : "NULL";
 			$query = "
 				UPDATE OrdersDataSteps
 				SET USR_ID = {$worker}
