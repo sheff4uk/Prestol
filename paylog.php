@@ -208,7 +208,7 @@
 							<td class='td_step ".($row["confirmed"] == 1 ? "step_confirmed" : "")." ".(!in_array('step_update', $Rights) ? "step_disabled" : "")."'>
 								<a id='{$row["ODD_ID"]}' class='button ".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$row["Step"]}</a>
 							</td>
-							<td style='text-align: right; font-size: 1.2em;'><span style='text-decoration: line-through;'>{$row["approved_tariff"]}</span><br><b>{$row["Tariff"]}</b></td>
+							<td style='text-align: right; font-size: 1.2em;'><n style='text-decoration: line-through;'>{$row["approved_tariff"]}</n><br><b>{$row["Tariff"]}</b></td>
 							<td>{$row["author_icon"]}</td>
 						</tr>
 					";
