@@ -62,16 +62,16 @@
 		// Получаем информацио об организации, выдавшей доверенность
 		$query = "SELECT * FROM Rekvizity WHERE R_ID = {$_POST["R_ID"]}";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$_POST["firma_polechatel"] = mysqli_result($res,0,'Name');
-		$_POST["inn"] = mysqli_result($res,0,'INN');
-		$_POST["kpp"] = mysqli_result($res,0,'KPP');
-		$_POST["adres"] = mysqli_result($res,0,'Addres');
-		$_POST["director"] = mysqli_result($res,0,'Dir');
-		$_POST["buhgalter"] = mysqli_result($res,0,'Dir');
-		$_POST["r_sch"] = mysqli_result($res,0,'RS');
-		$_POST["bank"] = mysqli_result($res,0,'Bank');
-		$_POST["bik"] = mysqli_result($res,0,'BIK');
-		$_POST["korr_sch"] = mysqli_result($res,0,'KS');
+		$_POST["seller_name"] = mysqli_result($res,0,'Name');
+		$_POST["seller_inn"] = mysqli_result($res,0,'INN');
+		$_POST["seller_kpp"] = mysqli_result($res,0,'KPP');
+		$_POST["seller_address"] = mysqli_result($res,0,'Addres');
+		$_POST["seller_director_name"] = mysqli_result($res,0,'Dir');
+		$_POST["seller_glavbuh_name"] = mysqli_result($res,0,'Dir');
+		$_POST["seller_rs"] = mysqli_result($res,0,'RS');
+		$_POST["seller_bank_name"] = mysqli_result($res,0,'Bank');
+		$_POST["seller_bik"] = mysqli_result($res,0,'BIK');
+		$_POST["seller_ks"] = mysqli_result($res,0,'KS');
 
 		$data = http_build_query($_POST);
 		$headers = stream_context_create(array(
