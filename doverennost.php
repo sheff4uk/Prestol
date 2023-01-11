@@ -72,6 +72,8 @@
 		$_POST["seller_bank_name"] = mysqli_result($res,0,'Bank');
 		$_POST["seller_bik"] = mysqli_result($res,0,'BIK');
 		$_POST["seller_ks"] = mysqli_result($res,0,'KS');
+		$_POST["potrebitel_selector"] = 1;
+		$_POST["platelshik_selector"] = 1;
 
 		$data = http_build_query($_POST);
 		$headers = stream_context_create(array(
