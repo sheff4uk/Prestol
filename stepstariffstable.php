@@ -12,7 +12,7 @@ session_start();
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["error"][] = "Invalid query: ".mysqli_error( $mysqli );
 	}
-	if( count($_SESSION["error"]) == 0) {
+	if( !isset($_SESSION["error"]) ) {
 		$_SESSION["success"][] = "Запись успешно отредактирована.";
 	}
 

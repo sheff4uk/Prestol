@@ -69,7 +69,7 @@ if( isset($_POST["USR_ID"]) ) {
 		$USR_ID = $_POST["USR_ID"];
 	}
 
-	if( count($_SESSION["error"]) == 0) {
+	if( !isset($_SESSION["error"]) == 0) {
 		$_SESSION["success"][] = $add ? "Новая запись успешно добавлена." : "Запись успешно отредактирована.";
 	}
 

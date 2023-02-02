@@ -12,12 +12,12 @@ session_start();
 	if( !mysqli_query( $mysqli, $query ) ) {
 		$_SESSION["error"][] = "Invalid query: ".mysqli_error( $mysqli );
 	}
-	if( count($_SESSION["error"]) == 0) {
+	if( !isset($_SESSION["error"]) ) {
 		$_SESSION["success"][] = "Запись успешно отредактирована.";
 	}
 
 	// Перенаправление в журнал
-	exit ('<meta http-equiv="refresh" content="0; url=?PM_ID='.$_POST["gPM_ID"].'&PME_ID='.$_POST["gPME_ID"].'&ST_ID='.$_POST["gST_ID"].'#'.$_POST["PMM_ID"].'_'.$_POST["ST_ID"].'">');
+	exit ('<meta http-equiv="refresh" content="0; url=?PM_ID='.$_POST["gPM_ID"].'#'.$_POST["PMM_ID"].'_'.$_POST["ST_ID"].'">');
 }
 
 $title = 'Тарифы для стульев';
@@ -93,7 +93,7 @@ foreach ($_GET as &$value) {
 			<th>Модель</th>
 			<th>Этап</th>
 			<th>Тариф</th>
-			<th rowspan="2"></th>
+			<th></th>
 		</tr>
 	</thead>
 	<tbody style="text-align: center;">
