@@ -421,6 +421,7 @@
 			$menu["<i class='fas fa-cog fa-lg'></i>"]["Тарифы на столы"] = "stepstariffstable.php";
 			$menu["<i class='fas fa-cog fa-lg'></i>"]["Тарифы на стулья"] = "stepstariffschair.php";
 		}
+		$menu["<i class='fas fa-cog fa-lg'></i>"]["Компоненты краски"] = "paint_component.php";
 		$menu["Выход {$USR_Icon}"] = "exit.php";
 	}
 
