@@ -49,7 +49,8 @@ switch( $_GET["do"] ) {
 						}
 						else {
 							$_SESSION["error"][] = "Звонок не может быть выполнен. Текст ошибки: $json->status_text";
-							$_SESSION["code"] = $json->code;
+							//$_SESSION["code"] = $json->code;
+							$_SESSION["code"] = rand(1000, 9999);
 							message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
 						}
 					} else {
@@ -84,7 +85,8 @@ switch( $_GET["do"] ) {
 					echo "noty({text: '{$value}', type: 'error'});";
 				}
 				unset($_SESSION["error"]);
-				echo "noty({text: '<h1>Чтобы узнать код, свяжитесь с администратором.</h1>', type: 'alert'});";
+				//echo "noty({text: '<h1>Чтобы узнать код, свяжитесь с администратором.</h1>', type: 'alert'});";
+				echo "noty({text: '<h1>Воспользуйтесь кнопкой альтернативного входа.</h1>', type: 'alert'});";
 			}
 		}
 		// Иначе перезагружаем страницу
