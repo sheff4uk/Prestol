@@ -149,7 +149,31 @@ switch( $_GET["do"] ) {
 		// Иначе перезагружаем страницу
 		else echo "location.reload();";
 	break;
-	//////////////////////////////////////////////	// Экран входа
+	//////////////////////////////////////////////
+	// Отправка кода в СМС
+	case "sms_code":
+
+		$mtel = $_SESSION['mtel'];
+		$code = $_SESSION['code'];
+		// Отправляем телефон на ожидиние звонка
+		$body = file_get_contents("https://sms.ru/sms/send?api_id=".($api_id)."&to=".($mtel)."&msg=".($code)."&ip=".$_SERVER["REMOTE_ADDR"]."&json=1");
+		$json = json_decode($body);
+		if( $json ) { // Получен ответ от сервера
+			if( $json->status == "OK" ) { // Запрос выполнился
+				// Сохраняем sms_id
+				$sms_id = $json->check_id;
+			}
+			else $_SESSION["error"][] = "Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...) Код ошибки: $json->status_code Текст ошибки: $json->status_text";
+		} else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
+
+		if( !isset($_SESSION["error"])  ) {
+			echo "noty({text: '<h1>На указанный телефон отправлен СМС с кодом авторизации.</h1>', type: 'alert'});";
+		}
+		// Иначе перезагружаем страницу
+		else echo "location.reload();";
+	break;
+	//////////////////////////////////////////////
+	// Экран входа
 	default:
 
 		$title = 'Вход в личный кабинет';
@@ -249,6 +273,13 @@ switch( $_GET["do"] ) {
 						setTimeout( function() { status(check_id); }, 2000 );
 					});
 
+					$('#sms_code').on("click", function(){
+						$("#sms_code").css("pointer-events", "none");
+
+						// Отправляем телефон, с которого должен поступить звонок
+						$.ajax({ url: "login.php?do=sms_code&mtel="+mtel, dataType: "script", async: false });
+					});
+
 					return false;
 				})
 
@@ -257,6 +288,16 @@ switch( $_GET["do"] ) {
 						$('#send_code_form form').submit();
 					}
 				});
+//
+//				$('#send_code_form').dialog({
+//					dialogClass: 'no-close',
+//					resizable: false,
+//					draggable: false,
+//					width: 300,
+//					modal: true,
+//					closeOnEscape: false
+//				});
+
 			});
 		</script>
 
@@ -282,9 +323,12 @@ switch( $_GET["do"] ) {
 				<input type='text' id='code' name='code' autocomplete='off' style="font-size: 3em; width: 100%; text-align: center;" required>
 				<br>
 				<br>
-<!--				<button style="width: 100%;">Продолжить</button>-->
-				<a href="#" id="alternative_login" class="button" style="display: block; text-align: center;">Альтернативный вход</a>
-				<div id="progressbar" style="display: none;"><div class="progress-label">Ожидание звонка...</div></div>
+				<fieldset>
+					<legend>Альтернативный вход</legend>
+					<a href="#" id="alternative_login" class="button" style="display: block; text-align: center;">По исходящему звонку</a>
+					<div id="progressbar" style="display: none;"><div class="progress-label">Ожидание звонка...</div></div>
+					<a href="#" id="sms_code" class="button" style="display: block; text-align: center;">СМС-код (кроме Мегафон, МТС)</a>
+				</fieldset>
 			</form>
 		</div>
 
