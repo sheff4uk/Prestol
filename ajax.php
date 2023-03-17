@@ -117,7 +117,7 @@ case "steps":
 				<tr>\
 					<td class=\'stage\'><b>{$row["Step"]}</b></td>\
 					<td>\
-						<select ".( ( $row["approved"] and !in_array('step_approve', $Rights) ) ? "onmousedown=\'return false;\' onkeydown=\'return false;\'" : "" )." name=\'USR_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\' size=\'4\'>{$selectworker}</select>\
+						<select ".( ( $row["approved"] and !in_array('step_approve', $Rights) and $_SESSION['id'] != $row["USR_ID"] ) ? "onmousedown=\'return false;\' onkeydown=\'return false;\'" : "" )." name=\'USR_ID{$row["ST_ID"]}\' id=\'{$row["ST_ID"]}\' class=\'selectwr\' size=\'4\'>{$selectworker}</select>\
 					</td>\
 					<td style=\'text-align: right;\'>\
 						<input type=\'hidden\' name=\'approved_tariff{$row["ST_ID"]}\' value=\'{$row["approved_tariff"]}\'>\
@@ -125,11 +125,12 @@ case "steps":
 						<input type=\'number\' min=\'0\' name=\'Tariff{$row["ST_ID"]}\' class=\'tariff txtright\' value=\'{$row["Tariff"]}\' ".($row["IsReady"] == "" ? "style=\'display: none;\'" : "")." ".( ( $row["approved"] and !in_array('step_approve', $Rights) ) ? "onmousedown=\'return false;\' onkeydown=\'return false;\'" : "" ).">\
 					</td>\
 					<td>\
-						<input ".(($ready_date or ($row["approved"] and !in_array('step_approve', $Rights))) ? "onclick=\'return false;\'" : "")." type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}>\
+						<input ".(($ready_date or ($row["approved"] and !in_array('step_approve', $Rights) and $_SESSION['id'] != $row["USR_ID"])) ? "onclick=\'return false;\'" : "")." type=\'checkbox\' id=\'IsReady{$row["ST_ID"]}\' name=\'IsReady{$row["ST_ID"]}\' class=\'isready\' value=\'1\' {$row["IsReady"]} {$row["disabled"]}>\
 						<label for=\'IsReady{$row["ST_ID"]}\'></label>\
+						".( $row["IsReady"] ? ( $row["approved"] ? "<b class=\'nowrap\' style=\'color: green;\'>Начислено</b>" : "<b class=\'nowrap\' style=\'color: red;\'>На проверке</b>" ) : "" )."\
 					</td>\
 					<td>\
-						<input ".(($ready_date or ($row["approved"] and !in_array('step_approve', $Rights))) ? "onclick=\'return false;\'" : "")." type=\'checkbox\' name=\'Visible{$row["ST_ID"]}\' value=\'1\' {$row["Visible"]}>\
+						<input ".(($ready_date or ($row["approved"] and !in_array('step_approve', $Rights) and $_SESSION['id'] != $row["USR_ID"])) ? "onclick=\'return false;\'" : "")." type=\'checkbox\' name=\'Visible{$row["ST_ID"]}\' value=\'1\' {$row["Visible"]}>\
 					</td>\
 					<td>{$row["author_icon"]}</td>\
 				</tr>\
