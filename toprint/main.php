@@ -90,6 +90,7 @@
 	$query = "
 		SELECT OD.OD_ID
 			,Zakaz(ODD.ODD_ID) Zakaz
+			,CONCAT(' <i>(', PM.comment, ')</i>') model_comment
 			,ODD.Comment
 			,CONCAT('<b>', ODD.Amount, '</b>') Amount
 			,ODD.boxes
@@ -219,7 +220,7 @@
 			echo "<td width='20' style='font-size: 20px; text-align: center;'>{$row["Amount"]}</td>";
 //			echo "<td width='7%' style='font-size: 16px;'>{$zakaz}</td>";
 //			echo "<td width='13%'>{$options}</td>";
-			echo "<td width='30%' style='font-size: 16px;'>{$row["Zakaz"]} <b>{$row["Comment"]}</b></td>";
+			echo "<td width='30%' style='font-size: 16px;'>{$row["Zakaz"]}{$row["model_comment"]} <b>{$row["Comment"]}</b></td>";
 		}
 		if(isset($_GET["M"])) echo "<td width='15%'>{$row["Material"]}</td>";
 		if(isset($_GET["CR"]) and $span) echo "<td width='10%' rowspan='{$cnt}'>{$subrow["Colors"]}</td>";
