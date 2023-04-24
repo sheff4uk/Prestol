@@ -742,7 +742,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<h3 style="display: inline-block; margin: 10px;">Процент скидки: <span id="invoice_percent" style="color: #16A085;"></span></h3>
 				<input type="hidden" name="summa" value="0">
 				<input type="hidden" name="total_discount" value="0">
-				<input type='submit' name="subbut" value='Создать накладную' style='float: right;'>
+				<input type='submit' name="subbut" id="invoice_subbut" value='Создать накладную' style='float: right;'>
 				<input type="text" name="date" id="date" class="date" style="float: right; margin: 4px 10px; width: 90px;" readonly>
 			</div>
 			<h3 id="return_message" style="color: #911; display: none;">ВНИМАНИЕ! Накладную на возврат товара отменить не возможно.</h3>
@@ -963,7 +963,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#gruzopoluchatel_0').prop('checked', true).button('refresh').change();
 			$('#date').val('<?=( date('d.m.Y') )?>');
 			$('#shipping_year select').val(<?=date('Y')?>);
-			$('input[name="subbut"]').prop('disabled', true).button('refresh');
+			$('#invoice_subbut').prop('disabled', true).button('refresh');
 			// Деактивируем форму с информацией по контрагенту
 			$('#wr_platelshik input').attr('disabled', true);
 			<?=($payer ? "$('select[name=\"KA_ID\"]').val('{$payer}').trigger('change');" : "")?>
@@ -1097,7 +1097,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			});
 			$('#selectalltop').prop('checked', checked_status);
 			$('#selectallbottom').prop('checked', checked_status);
-			$('input[name="subbut"]').prop('disabled', checked_status_submit).button('refresh');
+			$('#invoice_subbut').prop('disabled', checked_status_submit).button('refresh');
 			return false;
 		});
 		// Конец обработчиков чекбоксов
