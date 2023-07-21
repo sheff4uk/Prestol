@@ -55,40 +55,40 @@ $_POST["gruzootpravitel_bank"] = $row["Bank"];
 $_POST["gruzootpravitel_bik"] = $row["BIK"];
 $_POST["gruzootpravitel_ks"] = $row["KS"];
 
-//$_POST["gruzopoluchatel_name"] = $row["Name"];
-//$_POST["gruzopoluchatel_inn"] = $row["INN"];
-//$_POST["gruzopoluchatel_kpp"] = $row["KPP"];
-//$_POST["gruzopoluchatel_okpo"] = '';
-//$_POST["gruzopoluchatel_adres"] = $row["Addres"];
-//$_POST["gruzopoluchatel_buhgalter"] = $row["Dir"];
-//$_POST["gruzopoluchatel_tel"] = $row["Phone"];
-//$_POST["gruzopoluchatel_schet"] = $row["RS"];
-//$_POST["gruzopoluchatel_bank"] = $row["Bank"];
-//$_POST["gruzopoluchatel_bik"] = $row["BIK"];
-//$_POST["gruzopoluchatel_ks"] = $row["KS"];
+$_POST["gruzopoluchatel_name"] = $row["Name"];
+$_POST["gruzopoluchatel_inn"] = $row["INN"];
+$_POST["gruzopoluchatel_kpp"] = $row["KPP"];
+$_POST["gruzopoluchatel_okpo"] = '';
+$_POST["gruzopoluchatel_adres"] = $row["Addres"];
+$_POST["gruzopoluchatel_buhgalter"] = $row["Dir"];
+$_POST["gruzopoluchatel_tel"] = $row["Phone"];
+$_POST["gruzopoluchatel_schet"] = $row["RS"];
+$_POST["gruzopoluchatel_bank"] = $row["Bank"];
+$_POST["gruzopoluchatel_bik"] = $row["BIK"];
+$_POST["gruzopoluchatel_ks"] = $row["KS"];
+
+$_POST["gruzopoluchatel"] = 1;
+
+//$_POST["gruzopoluchatel"] = 0;
 //
-//$_POST["gruzopoluchatel"] = 1;
-
-$_POST["gruzopoluchatel"] = 0;
-
-$query = "
-	SELECT K.*
-	FROM Kontragenty K
-	WHERE K.KA_ID = 800
-";
-$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-$row = mysqli_fetch_array($res);
-$_POST["platelshik_name"] = $row["Naimenovanie"];
-$_POST["platelshik_inn"] = $row["INN"];
-$_POST["platelshik_kpp"] = $row["KPP"];
-$_POST["platelshik_okpo"] = $row["OKPO"];
-$_POST["platelshik_adres"] = $row["Jur_adres"];
-$_POST["platelshik_tel"] = $row["Telefony"];
-$_POST["platelshik_schet"] = $row["Schet"];
-$_POST["platelshik_bank"] = $row["Bank"];
-$_POST["platelshik_bik"] = $row["BIK"];
-$_POST["platelshik_ks"] = $row["KS"];
-$_POST["platelshik_bank_adres"] = $row["Bank_adres"];
+//$query = "
+//	SELECT K.*
+//	FROM Kontragenty K
+//	WHERE K.KA_ID = 800
+//";
+//$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+//$row = mysqli_fetch_array($res);
+//$_POST["platelshik_name"] = $row["Naimenovanie"];
+//$_POST["platelshik_inn"] = $row["INN"];
+//$_POST["platelshik_kpp"] = $row["KPP"];
+//$_POST["platelshik_okpo"] = $row["OKPO"];
+//$_POST["platelshik_adres"] = $row["Jur_adres"];
+//$_POST["platelshik_tel"] = $row["Telefony"];
+//$_POST["platelshik_schet"] = $row["Schet"];
+//$_POST["platelshik_bank"] = $row["Bank"];
+//$_POST["platelshik_bik"] = $row["BIK"];
+//$_POST["platelshik_ks"] = $row["KS"];
+//$_POST["platelshik_bank_adres"] = $row["Bank_adres"];
 
 $data = http_build_query($_POST);
 $headers = stream_context_create(array(
