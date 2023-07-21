@@ -830,7 +830,7 @@ case "shipment":
 			$html .= "<th width='30%'>Набор</th>";
 			$html .= "<th width='20%'>Материал</th>";
 			$html .= "<th width='20%'>Цвет</th>";
-			$html .= "<th width='100'>Этапы</th>";
+			$html .= "<th width='130'>Этапы</th>";
 			$html .= "<th width='40'>Принят</th>";
 			$html .= "<th width='20%'>Примечание</th>";
 			$html .= "</tr></thead><tbody>";
