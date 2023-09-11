@@ -17,6 +17,7 @@ if (!$USR_Shop) { // Если не продавец - показываем оп�
 	$KA_options .= "<optgroup label='Оптовые покупатели:'>";
 	$query = "
 		SELECT KA.KA_ID
+			,KA.R_ID
 			,CT.CT_ID
 			,CT.City
 			,KA.Naimenovanie
@@ -46,7 +47,7 @@ if (!$USR_Shop) { // Если не продавец - показываем оп�
 		$saldo_format = number_format($row["saldo"], 0, '', ' ');
 		$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} (Сальдо: {$saldo_format})</option>";
 		$KA_IDs .= ",{$row["KA_ID"]}";
-		$Kontragenty[$row["KA_ID"]] = array( "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+		$Kontragenty[$row["KA_ID"]] = array( "R_ID"=>$row["R_ID"], "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
 	}
 	$KA_options .= "</optgroup>";
 }
@@ -55,6 +56,7 @@ if (!$USR_Shop) { // Если не продавец - показываем оп�
 $KA_options .=  "<optgroup label='Розничные покупатели:'>";
 $query = "
 	SELECT KA.KA_ID
+		,KA.R_ID
 		,CT.CT_ID
 		,CT.City
 		,KA.Naimenovanie
@@ -85,7 +87,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$saldo_format = number_format($row["saldo"], 0, '', ' ');
 	$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} ({$saldo_format})</option>";
 	$KA_IDs .= ",{$row["KA_ID"]}";
-	$Kontragenty[$row["KA_ID"]] = array( "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+	$Kontragenty[$row["KA_ID"]] = array( "R_ID"=>$row["R_ID"], "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
 }
 $KA_options .= "</optgroup>";
 
@@ -156,7 +158,8 @@ if( isset($_GET["add_bill"]) ) {
 
 	if( $_POST["KA_ID"] ) {
 		$query = "UPDATE Kontragenty SET
-					 Naimenovanie = '{$platelshik_name}'
+					R_ID = {$_POST["R_ID"]}
+					,Naimenovanie = '{$platelshik_name}'
 					,Jur_adres = IF('{$platelshik_adres}' = '', NULL, '{$platelshik_adres}')
 					,Telefony = IF('{$platelshik_tel}' = '', NULL, '{$platelshik_tel}')
 					,INN = IF('{$platelshik_inn}' = '', NULL, '{$platelshik_inn}')
@@ -173,7 +176,8 @@ if( isset($_GET["add_bill"]) ) {
 	}
 	else {
 		$query = "INSERT INTO Kontragenty SET
-					 Naimenovanie = '{$platelshik_name}'
+					R_ID = {$_POST["R_ID"]}
+					,Naimenovanie = '{$platelshik_name}'
 					,Jur_adres = IF('{$platelshik_adres}' = '', NULL, '{$platelshik_adres}')
 					,Telefony = IF('{$platelshik_tel}' = '', NULL, '{$platelshik_tel}')
 					,INN = IF('{$platelshik_inn}' = '', NULL, '{$platelshik_inn}')
@@ -202,7 +206,7 @@ if( isset($_GET["add_bill"]) ) {
 
 	// Сохраняем в таблицу информацию по счёту, узнаем его ID.
 	$date = date( 'Y-m-d', strtotime($_POST["date"]) );
-	$query = "INSERT INTO PrintFormsBill SET summa = {$_POST["summa"]}, discount = {$_POST["total_discount"]}, pokupatel_id = {$platelshik_id}, count = {$count}, date = '{$date}', USR_ID = {$_SESSION["id"]}";
+	$query = "INSERT INTO PrintFormsBill SET R_ID = {$_POST["R_ID"]}, summa = {$_POST["summa"]}, discount = {$_POST["total_discount"]}, pokupatel_id = {$platelshik_id}, count = {$count}, date = '{$date}', USR_ID = {$_SESSION["id"]}";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$id = mysqli_insert_id($mysqli);
 
@@ -249,7 +253,7 @@ if( isset($_GET["add_bill"]) ) {
 	$_POST["nomer"] = $count;
 
 	// Информация о продавце
-	$query = "SELECT * FROM Rekvizity WHERE R_ID = 1";
+	$query = "SELECT * FROM Rekvizity WHERE R_ID = {$_POST["R_ID"]}";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$_POST["destination_name"] = mysqli_result($res,0,'Name');
 	$_POST["destination_adres"] = mysqli_result($res,0,'Addres');
@@ -405,6 +409,7 @@ if( !in_array('sverki_opt', $Rights) ) {
 			<th>Скидка</th>
 			<th>Дата</th>
 			<th>Покупатель</th>
+			<th>Продавец</th>
 			<th>Номер</th>
 			<th>Файл</th>
 			<th>Автор</th>
@@ -420,8 +425,10 @@ $query = "SELECT PFB.PFB_ID
 				,Friendly_date(PFB.date) date_format
 				,USR_Icon(PFB.USR_ID) Name
 				,ROUND((PFB.discount / (PFB.summa + PFB.discount)) * 100, 1) discount
+				,R.Name seller
 			FROM PrintFormsBill PFB
 			LEFT JOIN Kontragenty KA ON KA.KA_ID = PFB.pokupatel_id
+			LEFT JOIN Rekvizity R ON R.R_ID = PFB.R_ID
 			WHERE YEAR(PFB.date) = {$year}
 				AND KA.KA_ID IN ({$KA_IDs})
 				".($payer ? "AND KA.KA_ID = {$payer}" : "")."
@@ -435,6 +442,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	echo "<td class='txtright'>{$discount}</td>";
 	echo "<td><b>{$row["date_format"]}</b></td>";
 	echo "<td><a href='bills.php?year={$year}&payer={$row["KA_ID"]}'>{$row["pokupatel"]}</a></td>";
+	echo "<td>{$row["seller"]}</td>";
 	echo "<td><b>{$row["count"]}</b></td>";
 	echo "<td><b><a href='open_print_form.php?type=schet&PFB_ID={$row["PFB_ID"]}&number={$row["count"]}' target='_blank'><i class='fa fa-file-pdf fa-2x'></a></b></td>";
 	echo "<td>{$row["Name"]}</td>";
@@ -516,6 +524,29 @@ this.subbut.value='Подождите, пожалуйста!';">
 					<tr>
 						<td align="left" valign="top">Местонахождение банка:</td>
 						<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank_adres" id="platelshik_bank_adres" class="forminput" placeholder=""></td>
+					</tr>
+				</tbody>
+			</table>
+		</fieldset>
+
+		<fieldset>
+			<table style="width: 100%" border="0" cellspacing="4" class="forms">
+				<tbody>
+					<tr>
+						<td class="left">Продавец:</td>
+						<td valign="top">
+							<select name="R_ID" id="R_ID" required>
+								<option value=""></option>
+								<?
+								$query = "SELECT R_ID, Name FROM Rekvizity";
+
+								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+								while( $row = mysqli_fetch_array($res) ) {
+									echo "<option value='{$row["R_ID"]}'>{$row["Name"]}</option>";
+								}
+								?>
+							</select>
+						</td>
 					</tr>
 				</tbody>
 			</table>
@@ -643,6 +674,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('input[name="CT_ID"]').val(CT_ID);
 			if (KA_ID > 0) {
 				var KA_data = Kontragenty[KA_ID];
+				$('#R_ID').val(KA_data["R_ID"]);
 				$('#platelshik_name').val(KA_data["Naimenovanie"]);
 				$('#platelshik_inn').val(KA_data["INN"]);
 				$('#platelshik_kpp').val(KA_data["KPP"]);
@@ -657,6 +689,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				noty({timeout: 5000, text: 'ВНИМАНИЕ<br>Чтобы очистить форму - выберите в выпадающем меню "-- Новый покупатель из ..."', type: 'alert'});
 			}
 			else {
+				$('#R_ID').val('');
 				$('#platelshik_name').val('');
 				$('#platelshik_inn').val('');
 				$('#platelshik_kpp').val('');
