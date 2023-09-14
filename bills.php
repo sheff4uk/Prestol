@@ -260,13 +260,15 @@ if( isset($_GET["add_bill"]) ) {
 	$_POST["destination_INN"] = mysqli_result($res,0,'INN');
 	$_POST["destination_KPP"] = mysqli_result($res,0,'KPP');
 	$_POST["dorector"] = mysqli_result($res,0,'Dir');
+	$_POST["bux"] = mysqli_result($res,0,'Dir');
 	$_POST["destination_szhet"] = mysqli_result($res,0,'RS');
 	$_POST["destination_bank"] = mysqli_result($res,0,'Bank');
 	$_POST["destination_BIK"] = mysqli_result($res,0,'BIK');
 	$_POST["destination_KS"] = mysqli_result($res,0,'KS');
+	$_POST["seller"] = mysqli_result($res,0,'service-online_id');
 
-	$_POST["seller"] = 1;
 	$_POST["schet_add_stamp_and_signatures"] = 1;
+	$_POST["print_qr_code"] = "true";
 
 	$data = http_build_query($_POST);
 
