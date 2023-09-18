@@ -1,5 +1,4 @@
 <?
-
 include "config.php";
 include "checkrights.php";
 session_start();
