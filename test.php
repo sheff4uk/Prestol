@@ -1,5 +1,4 @@
 <?
-
 $token = random_bytes(15);
 //$token = 'vcxjesgfruweb3geu36tc4yu';
 echo bin2hex($token); // ffa7a910ca2dfce501b0d548605aaf
