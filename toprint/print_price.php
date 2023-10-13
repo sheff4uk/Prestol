@@ -36,6 +36,8 @@
 			position: absolute;
 			top: 10px;
 			left: 10px;
+			-webkit-print-color-adjust: exact;
+    		print-color-adjust: exact;
 		}
 		.prod {
 			display: inline-block;

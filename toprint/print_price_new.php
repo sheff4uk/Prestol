@@ -38,6 +38,8 @@
 			left: 5px;
 			padding: 2px;
 			opacity: .5;
+			-webkit-print-color-adjust: exact;
+    		print-color-adjust: exact;
 		}
 		.prod {
 			display: inline-block;

@@ -37,6 +37,8 @@
 			border: 4px solid #333;
 			font-size: 2em;
 			font-weight: bold;
+			-webkit-print-color-adjust: exact;
+    		print-color-adjust: exact;
 		}
 		td > div {
 			display: inline-block;

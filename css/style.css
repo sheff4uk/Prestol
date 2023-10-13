@@ -118,6 +118,8 @@ tbody tr:nth-child(even){ /* Задаем стили для четных ряд�
 	color: #fff;
 	border-radius: 5px;
 	border: 2px solid #333;
+	-webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
 }
 .ul {
 	background: #333;
