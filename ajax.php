@@ -1351,6 +1351,8 @@ case "cashe_outcome":
 	$query = "
 		SELECT CB.CB_ID
 			,CB.name
+			,storeUuid
+			,X-Authorization
 			,deviceUuid
 			,gtCloseDate_out
 		FROM CashBox CB
@@ -1360,21 +1362,13 @@ case "cashe_outcome":
 	while( $row = mysqli_fetch_array($res) ) {
 		$CB_ID = $row["CB_ID"];
 		$CashBox = $row["name"];
+		$storeUuid = $row["storeUuid"];
+		$Authorization = $row["X-Authorization"];
 		$deviceUuid = $row["deviceUuid"];
 		$gtCloseDate_out = $row["gtCloseDate_out"];
 
 		// Если у кассы есть deviceUuid и gtCloseDate_out - пробуем получить документы из облака ЭВОТОР
 		if( $deviceUuid and $gtCloseDate_out ) {
-			// Узнаём storeUuid и X-Authorization магазина
-			$query = "
-				SELECT `storeUuid`, `X-Authorization`
-				FROM Rekvizity
-				WHERE R_ID = (SELECT R_ID FROM CashBox WHERE CB_ID = {$CB_ID})
-			";
-			$subres = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-			$storeUuid = mysqli_result($subres,0,'storeUuid');
-			$Authorization = mysqli_result($subres,0,'X-Authorization');
-
 			$curl = curl_init();
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
 			curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate_out.'&types=CASH_OUTCOME');
@@ -1486,6 +1480,8 @@ case "add_payment":
 	$query = "
 		SELECT CB.CB_ID
 			,CB.name
+			,storeUuid
+			,X-Authorization
 			,deviceUuid
 			,gtCloseDate
 		FROM CashBox CB
@@ -1494,22 +1490,13 @@ case "add_payment":
 	$res = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
 	$CB_ID = mysqli_result($res,0,'CB_ID');
 	$CashBox = mysqli_result($res,0,'name');
+	$storeUuid = mysqli_result($res,0,'storeUuid');
+	$Authorization = mysqli_result($res,0,'X-Authorization');
 	$deviceUuid = mysqli_result($res,0,'deviceUuid');
 	$gtCloseDate = mysqli_result($res,0,'gtCloseDate');
 
 	// Если у кассы есть deviceUuid и gtCloseDate - пробуем получить документы из облака ЭВОТОР
 	if( $deviceUuid and $gtCloseDate ) {
-		// Узнаём storeUuid и X-Authorization магазина
-		$query = "
-			SELECT `storeUuid`, `X-Authorization`
-			FROM Rekvizity
-			#WHERE R_ID = (SELECT R_ID FROM Cities WHERE CT_ID = {$CT_ID})
-			WHERE R_ID = (SELECT R_ID FROM CashBox WHERE CB_ID = {$CB_ID})
-		";
-		$subres = mysqli_query( $mysqli, $query ) or die("noty({text: 'Invalid query: ".str_replace("\n", "", addslashes(htmlspecialchars(mysqli_error( $mysqli ))))."', type: 'error'});");
-		$storeUuid = mysqli_result($subres,0,'storeUuid');
-		$Authorization = mysqli_result($subres,0,'X-Authorization');
-
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
 		curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate.'&types=PAYBACK,SELL');
