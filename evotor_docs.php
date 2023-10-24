@@ -1,26 +1,30 @@
-<?
+<?php
 include "config.php";
 
-$Authorization = '8865b81a-9279-46ab-b2d9-878a1fa1a615'; // ИП
+//$Authorization = '8865b81a-9279-46ab-b2d9-878a1fa1a615'; // ИП
 //$Authorization = '397a775b-c2e5-44ab-adf1-fd45b6f71caf'; // ООО
+$Authorization = 'c7a9f2fa-424c-4333-b9f0-3559ffd8f5c0'; // АВ
 
 // Даты периода выборки в нужном формате
-$gtCloseDate_out = "2022-05-05T06:24:54.000+0000";
-$gtCloseDate = "2023-06-18T13:03:00.000+0000";
-$ltCloseDate = "2023-06-18T13:18:00.000+0000";
+$gtCloseDate_out = "2023-09-31T00:00:00.000+0000";
+$gtCloseDate = "2023-10-01T12:58:18.000+0000";
+$ltCloseDate = "2023-10-22T15:15:00.000+0000";
 
 //$deviceUuid = '20190528-8698-409A-8002-A0C67CCF7B3F';
-$deviceUuid = '20190528-D09D-405F-8011-874610944D19'; // Гулливер Б
+//$deviceUuid = '20190528-D09D-405F-8011-874610944D19'; // Гулливер Б
 //$deviceUuid = '20201117-E2FD-402E-80E1-2AEC80643D5B'; // Престол Мегадом
+//$deviceUuid = '20230829-2518-403C-8079-E2FAA2D88EAC'; // АВ МегаДом
+$deviceUuid = '20230829-E51E-4004-80F8-CC7E1352B209'; // АВ ГигаМарт
 
-$storeUuid = '20190528-BFDD-4056-802A-2BFD4C905D57'; // ИП
+//$storeUuid = '20190528-BFDD-4056-802A-2BFD4C905D57'; // ИП
 //$storeUuid = '20190528-92E7-4012-80D2-C5CDAF90F275'; // ООО
+$storeUuid = '20230829-FA47-4000-80F0-E62DD7156DB6'; // ИП
 
 if( $curl = curl_init() ) {
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
 	//curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate_out);
-	curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate.'&ltCloseDate='.$ltCloseDate);
-	//curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate.'&ltCloseDate='.$ltCloseDate.'&types=CASH_OUTCOME');
+	//curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate.'&ltCloseDate='.$ltCloseDate);
+	curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate.'&ltCloseDate='.$ltCloseDate.'&types=CASH_OUTCOME');
 	curl_setopt($curl, CURLOPT_HTTPHEADER, array(
 		'X-Authorization: '.$Authorization
 	));

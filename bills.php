@@ -535,7 +535,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<table style="width: 100%" border="0" cellspacing="4" class="forms">
 				<tbody>
 					<tr>
-						<td class="left">Продавец:</td>
+						<td>Продавец:</td>
 						<td valign="top">
 							<select name="R_ID" id="R_ID" required>
 								<option value=""></option>

@@ -567,186 +567,207 @@ while( $row = mysqli_fetch_array($res) ) {
 <div id='add_invoice_form' style='display:none'>
 	<form method='post' action="invoice.php?year=<?=$year?>&payer=<?=$payer?>" onsubmit="JavaScript:this.subbut.disabled=true;
 this.subbut.value='Подождите, пожалуйста!';">
-		<fieldset style="text-align: center;">
-			<div>
-				<fieldset id="wr_platelshik" style="text-align: left;">
-					<legend id="KA_info"></legend>
-					<select name="KA_ID" id="kontragenty" style="width: 100%;">
-						<?
-						echo "<option value=''></option>";
-						// Выводим дропдаун
-						echo $KA_options;
-						?>
-					</select>
-					<input type="hidden" name="CT_ID">
-					<table width="100%" class="forms">
-						<tbody>
-							<tr>
-								<td width="200" align="left" valign="top">Название ООО или ИП:</td>
-								<td align="left" valign="top">
-									<input required type="text" autocomplete="off" name="platelshik_name" id="platelshik_name" class="forminput" placeholder="">
-								</td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">ИНН:</td>
-								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_inn" id="platelshik_inn" class="forminput" placeholder=""></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">КПП:</td>
-								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_kpp" id="platelshik_kpp" class="forminput" placeholder=""></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">ОКПО:</td>
-								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_okpo" id="platelshik_okpo" class="forminput" placeholder=""></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">Адрес:</td>
-								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_adres" id="platelshik_adres" class="forminput" placeholder=""></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">Телефоны:</td>
-								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_tel" id="platelshik_tel" class="forminput" placeholder=""></td>
-							</tr>
-							<tr>
-								<td width="200" align="left" valign="top">Расчетный счет:</td>
-								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_schet" id="platelshik_schet" class="forminput" placeholder=""></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">Наименование банка:</td>
-								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank" id="platelshik_bank" class="forminput" placeholder=""></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">БИК:</td>
-								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bik" id="platelshik_bik" class="forminput" placeholder=""></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">Корреспондентский счет:</td>
-								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_ks" id="platelshik_ks" class="forminput" placeholder=""></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">Местонахождение банка:</td>
-								<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank_adres" id="platelshik_bank_adres" class="forminput" placeholder=""></td>
-							</tr>
-						</tbody>
-					</table>
-				</fieldset>
-				<br>
-				<fieldset id="wr_gruzopoluchatel" style="text-align: left;">
-					<legend>Информация о грузополучателе:</legend>
-					<table width="100%" class="forms">
-						<tbody>
-							<tr class="forms">
-								<td width="200" align="left" valign="top">Грузополучатель:</td>
-								<td valign="top" class="btnset">
-									<input type="radio" name="gruzopoluchatel" value="0" id="gruzopoluchatel_0">
-									<label for="gruzopoluchatel_0">Такой же, как плательщик</label>
-									<input type="radio" name="gruzopoluchatel" value="1" id="gruzopoluchatel_1">
-									<label for="gruzopoluchatel_1">Сторонняя организация</label>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-					<table width="100%" class="forms" id="gruzopoluchatel1">
-						<tbody>
-							<tr>
-								<td width="200" align="left" valign="top">Название ООО или ИП:</td>
-								<td align="left" valign="top">
-									<input type="text" name="gruzopoluchatel_name" id="gruzopoluchatel_name" class="forminput" placeholder="" autocomplete="off">
-								</td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">ИНН:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_inn" id="gruzopoluchatel_inn" class="forminput" placeholder="" autocomplete="off"></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">КПП:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_kpp" id="gruzopoluchatel_kpp" class="forminput" placeholder="" autocomplete="off"></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">ОКПО:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_okpo" id="gruzopoluchatel_okpo" class="forminput" placeholder="" autocomplete="off"></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">Адрес:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_adres" id="gruzopoluchatel_adres" class="forminput" placeholder="" autocomplete="off"></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">Телефоны:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_tel" id="gruzopoluchatel_tel" class="forminput" placeholder="" autocomplete="off"></td>
-							</tr>
-							<tr>
-								<td width="200" align="left" valign="top">Расчетный счет:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_schet" id="gruzopoluchatel_schet" class="forminput" placeholder="" autocomplete="off"></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">Наименование банка:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank" id="gruzopoluchatel_bank" class="forminput" placeholder="" autocomplete="off"></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">БИК:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bik" id="gruzopoluchatel_bik" class="forminput" placeholder="" autocomplete="off"></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">Корреспондентский счет:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_ks" id="gruzopoluchatel_ks" class="forminput" placeholder="" autocomplete="off"></td>
-							</tr>
-							<tr>
-								<td align="left" valign="top">Местонахождение банка:</td>
-								<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank_adres" id="gruzopoluchatel_bank_adres" class="forminput" placeholder="" autocomplete="off"></td>
-							</tr>
-						</tbody>
-					</table>
-				</fieldset>
-				<br>
-				<fieldset>
-					<table width="100%" class="forms">
-						<tbody>
-							<tr>
-								<td width="200" align="left">Основание:</td>
-								<td align="left">
-									<input type="text" name="osnovanie" id="osnovanie" style="width: 490px;" placeholder="" value="" autocomplete="off">&nbsp;
-									<input type="text" name="osnovanie_nomer" id="osnovanie_nomer" style="width: 100px;" placeholder="номер" value="" autocomplete="off">&nbsp;
-									<input type="text" name="osnovanie_data" id="osnovanie_data" class="date" style="width: 90px;" placeholder="дата" value="" autocomplete="off">
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</fieldset>
-			</div>
-			<div id="shipping_year" style="display: none;">
-				Год отгрузки
-				<select name="shipping_year">
-				<?
-					$query = "
-						SELECT YEAR(date) year FROM PrintFormsInvoice GROUP BY YEAR(date)
-						UNION
-						SELECT YEAR(NOW())
-						ORDER BY year
-					";
-					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-					while( $row = mysqli_fetch_array($res) ) {
-						echo "<option value='{$row["year"]}'>{$row["year"]}</option>";
-					}
-				?>
+		<div>
+			<fieldset id="wr_platelshik" style="text-align: left;">
+				<legend id="KA_info"></legend>
+				<select name="KA_ID" id="kontragenty" style="width: 100%;">
+					<?
+					echo "<option value=''></option>";
+					// Выводим дропдаун
+					echo $KA_options;
+					?>
 				</select>
-			</div>
-			<fieldset style="text-align: left;">
-				<legend>Список наборов:</legend>
-				<div id="orders_to_invoice" style='text-align: left;'></div>
+				<input type="hidden" name="CT_ID">
+				<table width="100%" class="forms">
+					<tbody>
+						<tr>
+							<td width="200" align="left" valign="top">Название ООО или ИП:</td>
+							<td align="left" valign="top">
+								<input required type="text" autocomplete="off" name="platelshik_name" id="platelshik_name" class="forminput" placeholder="">
+							</td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">ИНН:</td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_inn" id="platelshik_inn" class="forminput" placeholder=""></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">КПП:</td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_kpp" id="platelshik_kpp" class="forminput" placeholder=""></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">ОКПО:</td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_okpo" id="platelshik_okpo" class="forminput" placeholder=""></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">Адрес:</td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_adres" id="platelshik_adres" class="forminput" placeholder=""></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">Телефоны:</td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_tel" id="platelshik_tel" class="forminput" placeholder=""></td>
+						</tr>
+						<tr>
+							<td width="200" align="left" valign="top">Расчетный счет:</td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_schet" id="platelshik_schet" class="forminput" placeholder=""></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">Наименование банка:</td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank" id="platelshik_bank" class="forminput" placeholder=""></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">БИК:</td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bik" id="platelshik_bik" class="forminput" placeholder=""></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">Корреспондентский счет:</td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_ks" id="platelshik_ks" class="forminput" placeholder=""></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">Местонахождение банка:</td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank_adres" id="platelshik_bank_adres" class="forminput" placeholder=""></td>
+						</tr>
+					</tbody>
+				</table>
 			</fieldset>
 			<br>
-			<div>
-				<hr>
-				<h3 style="display: inline-block; margin: 10px;">Сумма накладной: <span id="invoice_total" style="color: #16A085;"></span></h3>
-				<h3 style="display: inline-block; margin: 10px;">Сумма скидки: <span id="invoice_discount" style="color: #16A085;"></span></h3>
-				<h3 style="display: inline-block; margin: 10px;">Процент скидки: <span id="invoice_percent" style="color: #16A085;"></span></h3>
-				<input type="hidden" name="summa" value="0">
-				<input type="hidden" name="total_discount" value="0">
-				<input type='submit' name="subbut" id="invoice_subbut" value='Создать накладную' style='float: right;'>
-				<input type="text" name="date" id="date" class="date" style="float: right; margin: 4px 10px; width: 90px;" readonly>
-			</div>
-			<h3 id="return_message" style="color: #911; display: none;">ВНИМАНИЕ! Накладную на возврат товара отменить не возможно.</h3>
+			<fieldset>
+				<table style="width: 100%" border="0" cellspacing="4" class="forms">
+					<tbody>
+						<tr>
+							<td>Продавец:</td>
+							<td valign="top">
+								<select name="R_ID" id="R_ID" required>
+									<option value=""></option>
+									<?
+									$query = "SELECT R_ID, Name FROM Rekvizity";
+
+									$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+									while( $row = mysqli_fetch_array($res) ) {
+										echo "<option value='{$row["R_ID"]}'>{$row["Name"]}</option>";
+									}
+									?>
+								</select>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</fieldset>
+			<br>
+			<fieldset id="wr_gruzopoluchatel" style="text-align: left;">
+				<legend>Информация о грузополучателе:</legend>
+				<table width="100%" class="forms">
+					<tbody>
+						<tr class="forms">
+							<td width="200" align="left" valign="top">Грузополучатель:</td>
+							<td valign="top" class="btnset">
+								<input type="radio" name="gruzopoluchatel" value="0" id="gruzopoluchatel_0">
+								<label for="gruzopoluchatel_0">Такой же, как плательщик</label>
+								<input type="radio" name="gruzopoluchatel" value="1" id="gruzopoluchatel_1">
+								<label for="gruzopoluchatel_1">Сторонняя организация</label>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<table width="100%" class="forms" id="gruzopoluchatel1">
+					<tbody>
+						<tr>
+							<td width="200" align="left" valign="top">Название ООО или ИП:</td>
+							<td align="left" valign="top">
+								<input type="text" name="gruzopoluchatel_name" id="gruzopoluchatel_name" class="forminput" placeholder="" autocomplete="off">
+							</td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">ИНН:</td>
+							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_inn" id="gruzopoluchatel_inn" class="forminput" placeholder="" autocomplete="off"></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">КПП:</td>
+							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_kpp" id="gruzopoluchatel_kpp" class="forminput" placeholder="" autocomplete="off"></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">ОКПО:</td>
+							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_okpo" id="gruzopoluchatel_okpo" class="forminput" placeholder="" autocomplete="off"></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">Адрес:</td>
+							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_adres" id="gruzopoluchatel_adres" class="forminput" placeholder="" autocomplete="off"></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">Телефоны:</td>
+							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_tel" id="gruzopoluchatel_tel" class="forminput" placeholder="" autocomplete="off"></td>
+						</tr>
+						<tr>
+							<td width="200" align="left" valign="top">Расчетный счет:</td>
+							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_schet" id="gruzopoluchatel_schet" class="forminput" placeholder="" autocomplete="off"></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">Наименование банка:</td>
+							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank" id="gruzopoluchatel_bank" class="forminput" placeholder="" autocomplete="off"></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">БИК:</td>
+							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bik" id="gruzopoluchatel_bik" class="forminput" placeholder="" autocomplete="off"></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">Корреспондентский счет:</td>
+							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_ks" id="gruzopoluchatel_ks" class="forminput" placeholder="" autocomplete="off"></td>
+						</tr>
+						<tr>
+							<td align="left" valign="top">Местонахождение банка:</td>
+							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank_adres" id="gruzopoluchatel_bank_adres" class="forminput" placeholder="" autocomplete="off"></td>
+						</tr>
+					</tbody>
+				</table>
+			</fieldset>
+			<br>
+			<fieldset>
+				<table width="100%" class="forms">
+					<tbody>
+						<tr>
+							<td width="200" align="left">Основание:</td>
+							<td align="left">
+								<input type="text" name="osnovanie" id="osnovanie" style="width: 490px;" placeholder="" value="" autocomplete="off">&nbsp;
+								<input type="text" name="osnovanie_nomer" id="osnovanie_nomer" style="width: 100px;" placeholder="номер" value="" autocomplete="off">&nbsp;
+								<input type="text" name="osnovanie_data" id="osnovanie_data" class="date" style="width: 90px;" placeholder="дата" value="" autocomplete="off">
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</fieldset>
+		</div>
+		<div id="shipping_year" style="display: none;">
+			Год отгрузки
+			<select name="shipping_year">
+			<?
+				$query = "
+					SELECT YEAR(date) year FROM PrintFormsInvoice GROUP BY YEAR(date)
+					UNION
+					SELECT YEAR(NOW())
+					ORDER BY year
+				";
+				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+				while( $row = mysqli_fetch_array($res) ) {
+					echo "<option value='{$row["year"]}'>{$row["year"]}</option>";
+				}
+			?>
+			</select>
+		</div>
+		<fieldset style="text-align: left;">
+			<legend>Список наборов:</legend>
+			<div id="orders_to_invoice" style='text-align: left;'></div>
 		</fieldset>
+		<br>
+		<div>
+			<hr>
+			<h3 style="display: inline-block; margin: 10px;">Сумма накладной: <span id="invoice_total" style="color: #16A085;"></span></h3>
+			<h3 style="display: inline-block; margin: 10px;">Сумма скидки: <span id="invoice_discount" style="color: #16A085;"></span></h3>
+			<h3 style="display: inline-block; margin: 10px;">Процент скидки: <span id="invoice_percent" style="color: #16A085;"></span></h3>
+			<input type="hidden" name="summa" value="0">
+			<input type="hidden" name="total_discount" value="0">
+			<input type='submit' name="subbut" id="invoice_subbut" value='Создать накладную' style='float: right;'>
+			<input type="text" name="date" id="date" class="date" style="float: right; margin: 4px 10px; width: 90px;" readonly>
+		</div>
+		<h3 id="return_message" style="color: #911; display: none;">ВНИМАНИЕ! Накладную на возврат товара отменить не возможно.</h3>
 	</form>
 </div>
 
