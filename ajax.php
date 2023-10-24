@@ -1352,7 +1352,7 @@ case "cashe_outcome":
 		SELECT CB.CB_ID
 			,CB.name
 			,storeUuid
-			,X-Authorization
+			,`X-Authorization`
 			,deviceUuid
 			,gtCloseDate_out
 		FROM CashBox CB
@@ -1481,7 +1481,7 @@ case "add_payment":
 		SELECT CB.CB_ID
 			,CB.name
 			,storeUuid
-			,X-Authorization
+			,`X-Authorization`
 			,deviceUuid
 			,gtCloseDate
 		FROM CashBox CB
