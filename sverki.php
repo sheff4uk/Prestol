@@ -4,9 +4,6 @@ include "config.php";
 $title = 'Сверки';
 include "header.php";
 
-echo "<h1>Ведутся работы</h1>";
-die();
-
 // Проверка прав на доступ к экрану
 if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !in_array('sverki_opt', $Rights) ) {
 	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
@@ -30,6 +27,7 @@ if( isset($_POST["Pay"]) ) {
 				,FA_ID = {$_POST["account"]}
 				,FC_ID = {$category}
 				,KA_ID = {$_POST["payer"]}
+				,R_ID = {$_POST["R_ID"]}
 				,comment = '{$Comment}'
 				,author = {$_SESSION['id']}
 			WHERE F_ID = {$_POST["F_ID"]}
@@ -43,6 +41,7 @@ if( isset($_POST["Pay"]) ) {
 				,FA_ID = {$_POST["account"]}
 				,FC_ID = {$category}
 				,KA_ID = {$_POST["payer"]}
+				,R_ID = {$_POST["R_ID"]}
 				,comment = '{$Comment}'
 				,author = {$_SESSION['id']}
 		";
@@ -176,11 +175,14 @@ if( isset($_GET["add_act"]) ) {
 	$act_date_from = date( 'Y-m-d', strtotime($_POST["act_date_from"]) );
 	$act_date_to = date( 'Y-m-d', strtotime($_POST["act_date_to"]) );
 
-	$query = "INSERT INTO ActSverki
-				SET token = '{$hash}'
-					,KA_ID = {$_POST["payer"]}
-					,date_from = '{$act_date_from}'
-					,date_to = '{$act_date_to}'";
+	$query = "
+		INSERT INTO ActSverki
+		SET token = '{$hash}'
+			,KA_ID = {$_POST["payer"]}
+			,R_ID = {$_POST["R_ID"]}
+			,date_from = '{$act_date_from}'
+			,date_to = '{$act_date_to}'
+	";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	exit ('<meta http-equiv="refresh" content="0; url=?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
@@ -337,74 +339,92 @@ if( !in_array('sverki_opt', $Rights) ) {
 }
 
 if( $payer ) {
-	// Узнаем сальдо выбранного контрагента
-	$query = "
-		SELECT IFNULL(saldo, 0) saldo
-		FROM Kontragenty
-		WHERE KA_ID = {$payer}
-	";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	$row = mysqli_fetch_array($res);
-	$saldo = $row["saldo"];
-
 	echo "<h1>Акты сверок:</h1>";
-	echo "
-		<table>
-			<thead>
-				<tr>
-					<th>Дата</th>
-					<th>Период</th>
-					<th>Сальдо</th>
-				</tr>
-			</thead>
-			<tbody>
-	";
+
+	// Получаем список организаций, с которыми взаимодействовал контрагент
 	$query = "
-		SELECT token
-			,Friendly_date(date_from) date_from_format
-			,Friendly_date(date_to) date_to_format
-			,date_to
-		FROM ActSverki
-		WHERE KA_ID = {$payer} AND YEAR(date_to) = {$year}
-		ORDER BY date_to DESC
-	";
+		SELECT R.R_ID
+			,R.Name
+			,IFNULL(KS.saldo, 0) saldo
+		FROM KontragentySaldo KS
+		JOIN Rekvizity R ON R.R_ID = KS.R_ID
+		WHERE KS.KA_ID = {$payer}
+	"; 
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
-		// Вычисление оборота за период
+		$saldo = $row["saldo"];
+		$saldo_format = number_format($row["saldo"], 0, '', ' ');
+
+		echo "
+			<table style='display: inline-block; margin-right: 30px;'>\n
+				<thead>\n
+					<tr>\n
+						<th colspan='3'>{$row["Name"]}<br>Сальдо: <b style='color: ".(($saldo < 0) ? "#E74C3C;" : "#16A085;")."'>{$saldo_format}</b></th>\n
+					</tr>\n
+					<tr>\n
+						<th>Дата</th>\n
+						<th>Период</th>\n
+						<th>Сальдо</th>\n
+					</tr>\n
+				</thead>\n
+				<tbody>\n
+		";
 		$query = "
-			SELECT SUM(SUB.debet) debet, SUM(SUB.kredit) kredit
-			FROM (
-				SELECT IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
-					,NULL kredit
-				FROM PrintFormsInvoice PFI
-				WHERE PFI.date > '{$row["date_to"]}' AND PFI.platelshik_id = {$payer} AND PFI.del = 0
-
-				UNION ALL
-
-				SELECT NULL debet
-					,F.money * FC.type kredit
-				FROM Finance F
-				JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-				WHERE F.date > '{$row["date_to"]} 23:59:59' AND F.KA_ID = {$payer}
-			) SUB
+			SELECT token
+				,Friendly_date(date_from) date_from_format
+				,Friendly_date(date_to) date_to_format
+				,date_to
+			FROM ActSverki
+			WHERE KA_ID = {$payer}
+				AND R_ID = {$row["R_ID"]}
+				AND YEAR(date_to) = {$year}
+			ORDER BY date_to DESC
 		";
 		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-		$debet_profit_now = mysqli_result($subres,0,'debet'); // Дебетовый оборот с конечной даты по сегодня
-		$kredit_profit_now = mysqli_result($subres,0,'kredit'); // Кредитовый оборот с конечной даты по сегодня
-
-		$end_saldo = $saldo + $debet_profit_now - $kredit_profit_now;
-		$end_saldo_format = number_format($end_saldo, 0, '', ' ');
-
-		echo "<tr>";
-		echo "<td><b><a href='/toprint/act_sverki.php?t={$row["token"]}' target='_blank'>{$row["date_to_format"]}</a></b></td>";
-		echo "<td>[{$row["date_from_format"]} - {$row["date_to_format"]}]</td>";
-		echo "<td><b style='color: ".(($end_saldo < 0) ? "#E74C3C;" : "#16A085;")."'>{$end_saldo_format}</b></td>";
-		echo "</tr>";
+		while( $subrow = mysqli_fetch_array($subres) ) {
+			// Вычисление оборота за период
+			$query = "
+				SELECT SUM(SUB.debet) debet
+					,SUM(SUB.kredit) kredit
+				FROM (
+					SELECT IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+						,NULL kredit
+					FROM PrintFormsInvoice PFI
+					WHERE PFI.date > '{$subrow["date_to"]}'
+						AND PFI.platelshik_id = {$payer}
+						AND PFI.R_ID = {$row["R_ID"]}
+						AND PFI.del = 0
+	
+					UNION ALL
+	
+					SELECT NULL debet
+						,F.money * FC.type kredit
+					FROM Finance F
+					JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+					WHERE F.date > '{$subrow["date_to"]} 23:59:59'
+						AND F.KA_ID = {$payer}
+						AND F.R_ID = {$row["R_ID"]}
+				) SUB
+			";
+			$subsubres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+			$debet_profit_now = mysqli_result($subsubres,0,'debet'); // Дебетовый оборот с конечной даты по сегодня
+			$kredit_profit_now = mysqli_result($subsubres,0,'kredit'); // Кредитовый оборот с конечной даты по сегодня
+	
+			$end_saldo = $saldo + $debet_profit_now - $kredit_profit_now;
+			$end_saldo_format = number_format($end_saldo, 0, '', ' ');
+	
+			echo "<tr>";
+			echo "<td><b><a href='/toprint/act_sverki.php?t={$subrow["token"]}' target='_blank'>{$subrow["date_to_format"]}</a></b></td>";
+			echo "<td>[{$subrow["date_from_format"]} - {$subrow["date_to_format"]}]</td>";
+			echo "<td><b style='color: ".(($end_saldo < 0) ? "#E74C3C;" : "#16A085;")."'>{$end_saldo_format}</b></td>";
+			echo "</tr>";
+		}
+		echo "
+				</tbody>\n
+			</table>\n
+		";
 	}
-	echo "
-			</tbody>
-		</table>
-	";
+
 	echo "<h1>Журнал операций:</h1>";
 }
 ?>
@@ -416,7 +436,8 @@ if( $payer ) {
 			<th>Кредит</th>
 			<th>Скидка</th>
 			<th>Дата</th>
-			<th>Контрагент</th>
+			<th>Покупатель</th>
+			<th>Продавец</th>
 			<th>Операция/Документ</th>
 <!--			<th>Примечание</th>-->
 			<th>Файл</th>
@@ -433,6 +454,8 @@ if( $payer ) {
 			,NULL kredit
 			,KA.KA_ID
 			,KA.Naimenovanie
+			,R.Name seller
+			,R.R_ID
 			,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
 			,PFI.count
 			,Friendly_date(PFI.date) date_format
@@ -448,8 +471,10 @@ if( $payer ) {
 			,NULL F_ID
 			,NULL comment
 		FROM PrintFormsInvoice PFI
-		LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
-		WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID = {$payer}
+		JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
+			AND KA.KA_ID = {$payer}
+		JOIN Rekvizity R ON R.R_ID = PFI.R_ID
+		WHERE YEAR(PFI.date) = {$year}
 
 		UNION ALL
 
@@ -458,6 +483,8 @@ if( $payer ) {
 			,F.money * FC.type kredit
 			,KA.KA_ID
 			,KA.Naimenovanie
+			,R.Name seller
+			,R.R_ID
 			,CONCAT('Оплата от покупателя <b>', IFNULL(F.comment, ''), '</b>') document
 			,NULL
 			,Friendly_date(F.date) date_format
@@ -475,8 +502,11 @@ if( $payer ) {
 		FROM Finance F
 		JOIN FinanceAccount FA ON FA.FA_ID = F.FA_ID
 		JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-		LEFT JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
-		WHERE YEAR(F.date) = {$year} AND KA.KA_ID = {$payer} AND F.money != 0
+		JOIN Kontragenty KA ON KA.KA_ID = F.KA_ID
+			AND KA.KA_ID = {$payer}
+		JOIN Rekvizity R ON R.R_ID = F.R_ID
+		WHERE YEAR(F.date) = {$year}
+		AND F.money != 0
 
 		ORDER BY date DESC, PFI_ID DESC
 	";
@@ -488,6 +518,7 @@ else {
 			,NULL kredit
 			,KA.KA_ID
 			,KA.Naimenovanie
+			,R.Name seller
 			,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
 			,PFI.count
 			,Friendly_date(PFI.date) date_format
@@ -500,8 +531,10 @@ else {
 			,NULL Account
 			,NULL color
 		FROM PrintFormsInvoice PFI
-		LEFT JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
-		WHERE YEAR(PFI.date) = {$year} AND KA.KA_ID IN ({$KA_IDs})
+		JOIN Kontragenty KA ON KA.KA_ID = PFI.platelshik_id
+			AND KA.KA_ID IN ({$KA_IDs})
+		JOIN Rekvizity R ON R.R_ID = PFI.R_ID
+		WHERE YEAR(PFI.date) = {$year}
 		ORDER BY PFI.date DESC, PFI.PFI_ID DESC
 	";
 }
@@ -516,6 +549,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	echo "<td class='txtright'>{$discount}</td>";
 	echo "<td><b>{$row["date_format"]}</b></td>";
 	echo "<td><a href='sverki.php?year={$year}&payer={$row["KA_ID"]}'>{$row["Naimenovanie"]}</a></td>";
+	echo "<td>{$row["seller"]}</td>";
 	echo "<td>{$row["document"]}</td>";
 
 //	if( $row["PFI_ID"] and !in_array('sverki_opt', $Rights) ) {
@@ -538,7 +572,7 @@ while( $row = mysqli_fetch_array($res) ) {
 		echo "<td><button class='del_invoice' pfi_id='{$row["PFI_ID"]}' count='{$row["count"]}' title='Удалить'><i class='fa fa-times fa-lg'></i></button></td>";
 	}
 	elseif( $row["FA_ID"] ) {
-		echo "<td><a href='#' class='add_pay_btn' location='{$location}' F_ID='{$row["F_ID"]}' FA_ID='{$row["FA_ID"]}' Pay='{$row["kredit"]}' Comment='{$row["comment"]}'><i class='fa fa-pencil-alt fa-lg'></i></a></td>";
+		echo "<td><a href='#' class='add_pay_btn' location='{$location}' F_ID='{$row["F_ID"]}' FA_ID='{$row["FA_ID"]}' R_ID='{$row["R_ID"]}' Pay='{$row["kredit"]}' Comment='{$row["comment"]}'><i class='fa fa-pencil-alt fa-lg'></i></a></td>";
 	}
 	else {
 		echo "<td></td>";
@@ -781,6 +815,28 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<input type="text" name="act_date_to" required class="date to" autocomplete="off">
 				&nbsp;]
 				<input type="hidden" name="payer">
+				<br>
+				<br>
+				Продавец:&nbsp;
+				<select name="R_ID" required>
+					<option value=""></option>
+					<?
+					if( $payer ) {
+						// Получаем список организаций, с которыми взаимодействовал контрагент
+						$query = "
+							SELECT R.R_ID
+								,R.Name
+							FROM KontragentySaldo KS
+							JOIN Rekvizity R ON R.R_ID = KS.R_ID
+							WHERE KS.KA_ID = {$payer}
+						"; 
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) ) {
+							echo "<option value='{$row["R_ID"]}'>{$row["Name"]}</option>\n";
+						}
+					}
+					?>
+				</select>
 			</div>
 			<div>
 				<hr>
@@ -792,9 +848,8 @@ this.subbut.value='Подождите, пожалуйста!';">
 <!-- Конец формы подготовки акта сверки -->
 
 <!-- Форма добавления платежа -->
-<div id='addpay' class="addproduct" style='display:none'>
-	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+<div id='addpay' class="addproduct" style='display:none' title='Внесение оплаты'>
+	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true; JavaScript:this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<input type='hidden' name='F_ID'>
 			<input type='hidden' name='location' value='<?=$location?>'>
@@ -836,6 +891,29 @@ this.subbut.value='Подождите, пожалуйста!';">
 							}
 						}
 						?>
+				</select>
+			</div>
+			<div>
+			<br>
+				<label>Продавец:</label>
+				<select name="R_ID" required>
+					<option value=""></option>
+					<?
+					if( $payer ) {
+						// Получаем список организаций, с которыми взаимодействовал контрагент
+						$query = "
+							SELECT R.R_ID
+								,R.Name
+							FROM KontragentySaldo KS
+							JOIN Rekvizity R ON R.R_ID = KS.R_ID
+							WHERE KS.KA_ID = {$payer}
+						"; 
+						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+						while( $row = mysqli_fetch_array($res) ) {
+							echo "<option value='{$row["R_ID"]}'>{$row["Name"]}</option>\n";
+						}
+					}
+					?>
 				</select>
 			</div>
 			<div>
@@ -932,15 +1010,18 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#addpay input[name="F_ID"]').val('');
 			$('#addpay input[name="Pay"]').val('');
 			$('#addpay select[name="account"]').val('');
+			$('#addpay select[name="R_ID"]').val('');
 			$('#addpay input[name="Comment"]').val('');
 
 			if( FA_ID > 0 ) {
 				var F_ID = $(this).attr('F_ID'),
+					R_ID = $(this).attr('R_ID'),
 					Pay = $(this).attr('Pay'),
 					Comment = $(this).attr('Comment');
 				$('#addpay input[name="F_ID"]').val(F_ID);
 				$('#addpay input[name="Pay"]').val(Pay);
 				$('#addpay select[name="account"]').val(FA_ID);
+				$('#addpay select[name="R_ID"]').val(R_ID);
 				$('#addpay input[name="Comment"]').val(Comment);
 			}
 
@@ -1009,6 +1090,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#add_act_sverki_form .to').datepicker( "setDate", now_date );
 			$('#add_act_sverki_form .from').datepicker( "option", "maxDate", now_date );
 			$('#add_act_sverki_form .to').datepicker( "option", "maxDate", now_date );
+			$('#add_act_sverki_form select[name="R_ID"]').val('');
 
 			$('#add_act_sverki_form').dialog({
 				resizable: false,

@@ -977,10 +977,12 @@ case "invoice":
 					,OD.SH_ID
 					,SH.Shop
 					,REPLACE(OD.Comment, '\r\n', '<br>') Comment
+					,R.Name
 				FROM OrdersData OD
 				LEFT JOIN Kontragenty KA ON KA.KA_ID = OD.KA_ID
 				JOIN Shops SH ON SH.SH_ID = OD.SH_ID AND SH.CT_ID = {$CT_ID}
 				LEFT JOIN PrintFormsInvoice PFI ON PFI.PFI_ID = OD.PFI_ID AND PFI.del = 0 AND PFI.rtrn != 1
+				LEFT JOIN Rekvizity R ON R.R_ID = PFI.R_ID
 				WHERE OD.DelDate IS NULL
 					AND OD.ReadyDate IS NOT NULL
 					AND Payment_sum(OD.OD_ID) = 0
@@ -1105,7 +1107,7 @@ case "invoice":
 
 					$html .= "<tr class='shop{$row["SH_ID"]}'>";
 					$html .= "<td><input type='checkbox' name='ord[]' id='ord_{$row["OD_ID"]}' class='chbox' value='{$row["OD_ID"]}'>";
-					$html .= "<label for='ord_{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></label><br><span>{$row["AddDate"]}</span></td>";
+					$html .= "<label for='ord_{$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></label><br><span>{$row["AddDate"]}</span><br><span class='nowrap'>{$row["Name"]}</span></td>";
 					$html .= "<td><span class='nowrap'>".($row["Naimenovanie"] ? "<n class='ul'>{$row["Naimenovanie"]}</n><br>" : "")."{$row["ClientName"]}<br>[{$row["StartDate"]}]-[{$row["EndDate"]}]</span></td>";
 					$html .= "<td><span class='nowrap'>{$row["Shop"]}</span></td>";
 					$html .= "<td>{$price}</td>";

@@ -769,16 +769,19 @@
 							<div class='btnset'>
 								<?
 								echo "<input id='account_select_all' class='select_all' type='checkbox' name='all_accounts' value='1' form='filter_form'><label for='account_select_all'>Все счета</label>";
-								$query = "SELECT FA_ID, name
-											FROM FinanceAccount
-											WHERE archive = 0
-											".(in_array('finance_account', $Rights) ? " AND USR_ID = {$_SESSION["id"]}" : "")."
-											ORDER BY IFNULL(bank, 0), FA_ID";
+								$query = "
+									SELECT FA_ID
+										,name
+									FROM FinanceAccount
+									WHERE archive = 0
+										".(in_array('finance_account', $Rights) ? " AND USR_ID = {$_SESSION["id"]}" : "")."
+									ORDER BY IFNULL(bank, 0), FA_ID
+								";
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-								while( $row = mysqli_fetch_array($res) )
-								{
-									$checked = in_array($row["FA_ID"], $_SESSION["cash_account"]) ? "checked" : "";
-									echo "<input id='account_{$row["FA_ID"]}' class='chbox' {$checked} type='checkbox' name='FA_ID[]' value='{$row["FA_ID"]}' form='filter_form'><label for='account_{$row["FA_ID"]}' style='font-weight: normal;'>{$row["name"]}</label>";
+								$arr = ($_SESSION["cash_account"] != "") ? $_SESSION["cash_account"] : array();
+								while( $row = mysqli_fetch_array($res) ) {
+								 	$checked = in_array($row["FA_ID"], $arr) ? "checked" : "";
+								 	echo "<input id='account_{$row["FA_ID"]}' class='chbox' {$checked} type='checkbox' name='FA_ID[]' value='{$row["FA_ID"]}' form='filter_form'><label for='account_{$row["FA_ID"]}' style='font-weight: normal;'>{$row["name"]}</label>";
 								}
 								?>
 							</div>
@@ -795,9 +798,10 @@
 								echo "<input id='category_select_all' class='select_all' type='checkbox' name='all_categories' value='1' form='filter_form'><label for='category_select_all'>Все категории</label>";
 								$query = "SELECT FC_ID, name FROM FinanceCategory ORDER BY FC_ID";
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+								$arr = ($_SESSION["cash_category"] != "") ? $_SESSION["cash_category"] : array();
 								while( $row = mysqli_fetch_array($res) )
 								{
-									$checked = in_array($row["FC_ID"], $_SESSION["cash_category"]) ? "checked" : "";
+									$checked = in_array($row["FC_ID"], $arr) ? "checked" : "";
 									echo "<input id='category_{$row["FC_ID"]}' class='chbox' {$checked} type='checkbox' name='FC_ID[]' value='{$row["FC_ID"]}' form='filter_form'><label class='chbox_label' for='category_{$row["FC_ID"]}' style='font-weight: normal;'>{$row["name"]}</label>";
 								}
 								?>
@@ -814,9 +818,10 @@
 								echo "<input id='author_select_all' class='select_all' type='checkbox' name='all_authors' value='1' form='filter_form'><label for='author_select_all'>Все авторы</label>";
 								$query = "SELECT USR_ID, USR_Name(USR_ID) Name FROM Users WHERE USR_ID IN (SELECT author FROM Finance) ORDER BY Name";
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+								$arr = ($_SESSION["cash_author"] != "") ? $_SESSION["cash_author"] : array();
 								while( $row = mysqli_fetch_array($res) )
 								{
-									$checked = in_array($row["USR_ID"], $_SESSION["cash_author"]) ? "checked" : "";
+									$checked = in_array($row["USR_ID"], $arr) ? "checked" : "";
 									echo "<input id='author_{$row["USR_ID"]}' class='chbox' {$checked} type='checkbox' name='USR_ID[]' value='{$row["USR_ID"]}' form='filter_form'><label class='chbox_label' for='author_{$row["USR_ID"]}' style='font-weight: normal;'>{$row["Name"]}</label>";
 								}
 								?>
@@ -935,7 +940,6 @@
 					".(in_array('finance_account', $Rights) ? "AND SF.account_filter IN(SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]})" : "")."
 					".($FC_IDs != "" ? "AND SF.FC_ID IN ({$FC_IDs})" : "")."
 					".($USR_IDs != "" ? "AND SF.author IN ({$USR_IDs})" : "")."
-					#".($KA_IDs_filter != "" ? "AND SF.KA_ID IN ({$KA_IDs_filter})" : "")."
 					".($_SESSION["cash_comment"] ? "AND (SF.comment LIKE '%{$_SESSION["cash_comment"]}%' OR SF.kontragent LIKE '%{$_SESSION["cash_comment"]}%' OR SF.Name LIKE '%{$_SESSION["cash_comment"]}%')" : "")."
 					ORDER BY SF.date DESC, SF.F_ID DESC
 				";

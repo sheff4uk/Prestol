@@ -2,14 +2,18 @@
 	include "../config.php";
 	// Узнаём токен и по нему доп информацию из БД
 	$token = $_GET["t"];
-	$query = "SELECT KA_ID
-					,DATE_FORMAT(DATE(date_from), '%d.%m.%Y') date_from
-					,DATE_FORMAT(DATE(date_to), '%d.%m.%Y') date_to
-				FROM ActSverki
-				WHERE token = '{$token}'";
+	$query = "
+		SELECT KA_ID
+			,R_ID
+			,DATE_FORMAT(DATE(date_from), '%d.%m.%Y') date_from
+			,DATE_FORMAT(DATE(date_to), '%d.%m.%Y') date_to
+		FROM ActSverki
+		WHERE token = '{$token}'
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	if( mysqli_num_rows($res) ) {
 		$payer = mysqli_result($res,0,'KA_ID');
+		$R_ID = mysqli_result($res,0,'R_ID');
 		$date_from = mysqli_result($res,0,'date_from');
 		$date_to = mysqli_result($res,0,'date_to');
 	}
@@ -18,53 +22,83 @@
 	}
 
 	// Информация о грузоотправителе
-	$query = "SELECT * FROM Rekvizity WHERE R_ID = 1";
+	$query = "
+		SELECT R.Name
+			,R.dolzhnost
+			,R.Dir
+		FROM Rekvizity R
+		WHERE R_ID = {$R_ID}
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$gruzootpravitel_name = mysqli_result($res,0,'Name');
+	$gruzootpravitel_dolzhnost = mysqli_result($res,0,'dolzhnost');
 	$gruzootpravitel_director = mysqli_result($res,0,'Dir');
 
 	// Информация о плательщике
-	$query = "SELECT * FROM Kontragenty WHERE KA_ID = {$payer}";
+	$query = "
+		SELECT KA.Naimenovanie
+			,IFNULL(KS.saldo, 0) saldo
+		FROM Kontragenty KA
+		LEFT JOIN KontragentySaldo KS ON KS.KA_ID = KA.KA_ID
+			AND KS.R_ID = {$R_ID}
+		WHERE KA.KA_ID = {$payer}
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$platelshik_name = mysqli_result($res,0,'Naimenovanie');
 	$saldo = mysqli_result($res,0,'saldo');
 
 	// Вычисление оборота за период
-	$query = "SELECT SUM(SUB.debet) debet, SUM(SUB.kredit) kredit
-				FROM (
-					SELECT IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
-						,NULL kredit
-					FROM PrintFormsInvoice PFI
-					WHERE PFI.date BETWEEN STR_TO_DATE('{$date_from}', '%d.%m.%Y') AND STR_TO_DATE('{$date_to}', '%d.%m.%Y') AND PFI.platelshik_id = {$payer} AND PFI.del = 0
+	$query = "
+		SELECT SUM(SUB.debet) debet
+			,SUM(SUB.kredit) kredit
+		FROM (
+			SELECT IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+				,NULL kredit
+			FROM PrintFormsInvoice PFI
+			WHERE PFI.date BETWEEN STR_TO_DATE('{$date_from}', '%d.%m.%Y') AND STR_TO_DATE('{$date_to}', '%d.%m.%Y')
+				AND PFI.platelshik_id = {$payer}
+				AND PFI.R_ID = {$R_ID}
+				AND PFI.del = 0
 
-					UNION ALL
+			UNION ALL
 
-					SELECT NULL debet
-						,F.money * FC.type kredit
-					FROM Finance F
-					JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-					WHERE F.date BETWEEN STR_TO_DATE('{$date_from} 00:00:00', '%d.%m.%Y %T') AND STR_TO_DATE('{$date_to} 23:59:59', '%d.%m.%Y %T') AND F.KA_ID = {$payer}
-				) SUB";
+			SELECT NULL debet
+				,F.money * FC.type kredit
+			FROM Finance F
+			JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+			WHERE F.date BETWEEN STR_TO_DATE('{$date_from} 00:00:00', '%d.%m.%Y %T') AND STR_TO_DATE('{$date_to} 23:59:59', '%d.%m.%Y %T')
+				AND F.KA_ID = {$payer}
+				AND F.R_ID = {$R_ID}
+		) SUB
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$debet_profit = mysqli_result($res,0,'debet'); // Дебетовый оборот
 	$kredit_profit = mysqli_result($res,0,'kredit'); // Кредитовый оборот
 
 	// Вычисление оборота за период
-	$query = "SELECT SUM(SUB.debet) debet, SUM(SUB.kredit) kredit
-				FROM (
-					SELECT IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
-						,NULL kredit
-					FROM PrintFormsInvoice PFI
-					WHERE PFI.date > STR_TO_DATE('{$date_to}', '%d.%m.%Y') AND PFI.platelshik_id = {$payer} AND PFI.del = 0
+	$query = "
+		SELECT SUM(SUB.debet) debet
+			,SUM(SUB.kredit) kredit
+		FROM (
+			SELECT IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+				,NULL kredit
+			FROM PrintFormsInvoice PFI
+			WHERE PFI.date > STR_TO_DATE('{$date_to}', '%d.%m.%Y')
+				AND PFI.platelshik_id = {$payer}
+				AND PFI.R_ID = {$R_ID}
+				AND PFI.del = 0
 
-					UNION ALL
+			UNION ALL
 
-					SELECT NULL debet
-						,F.money * FC.type kredit
-					FROM Finance F
-					JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-					WHERE F.date > STR_TO_DATE('{$date_to} 23:59:59', '%d.%m.%Y %T') AND F.KA_ID = {$payer}
-				) SUB";
+			SELECT NULL debet
+				,F.money * FC.type kredit
+			FROM Finance F
+			JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+			WHERE F.date > STR_TO_DATE('{$date_to} 23:59:59', '%d.%m.%Y %T')
+				AND F.KA_ID = {$payer}
+				AND F.R_ID = {$R_ID}
+		) SUB
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$debet_profit_now = mysqli_result($res,0,'debet'); // Дебетовый оборот с конечной даты по сегодня
 	$kredit_profit_now = mysqli_result($res,0,'kredit'); // Кредитовый оборот с конечной даты по сегодня
@@ -125,8 +159,7 @@
 				и <?=$platelshik_name?><br>
 			</h3>
 			<p style="text-align: left;"><?=$date_to?></p>
-			<p style="text-align: left;">Мы, нижеподписавшиеся, Директор <?=$gruzootpravitel_name?> <?=$gruzootpravitel_director?>, с одной стороны, и
-___________________________ <?=$platelshik_name?> _______________________________, с другой стороны,
+			<p style="text-align: left;">Мы, нижеподписавшиеся, <?=$gruzootpravitel_name?>, с одной стороны, и <?=$platelshik_name?>, с другой стороны,
 составили настоящий акт сверки в том, что состояние взаимных расчетов по данным учета следующее:</p>
 		</div>
 		<table>
@@ -153,28 +186,36 @@ ___________________________ <?=$platelshik_name?> ______________________________
 					<td style="text-align: right;"><?=($start_saldo > 0 ? $start_saldo_format : "")?></td>
 				</tr>
 <?
-	$query = "SELECT PFI.PFI_ID ID
-					,IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
-					,NULL kredit
-					,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
-					,DATE_FORMAT(PFI.date, '%d.%m.%Y') date_format
-					,PFI.date
-				FROM PrintFormsInvoice PFI
-				WHERE PFI.date BETWEEN STR_TO_DATE('{$date_from}', '%d.%m.%Y') AND STR_TO_DATE('{$date_to}', '%d.%m.%Y') AND PFI.platelshik_id = {$payer} AND PFI.del = 0
+	$query = "
+		SELECT PFI.PFI_ID ID
+			,IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
+			,NULL kredit
+			,IF(PFI.rtrn = 1, CONCAT('Возврат товара, накладная <b>№', PFI.count, '</b>'), CONCAT('Реализация, накладная <b>№', PFI.count, '</b>')) document
+			,DATE_FORMAT(PFI.date, '%d.%m.%Y') date_format
+			,PFI.date
+		FROM PrintFormsInvoice PFI
+		WHERE PFI.date BETWEEN STR_TO_DATE('{$date_from}', '%d.%m.%Y') AND STR_TO_DATE('{$date_to}', '%d.%m.%Y')
+			AND PFI.platelshik_id = {$payer}
+			AND PFI.R_ID = {$R_ID}
+			AND PFI.del = 0
 
-				UNION ALL
+		UNION ALL
 
-				SELECT F.F_ID ID
-					,NULL debet
-					,F.money * FC.type kredit
-					,CONCAT('Оплата от покупателя, <b>', F.comment, '</b>') document
-					,DATE_FORMAT(F.date, '%d.%m.%Y') date_format
-					,F.date
-				FROM Finance F
-				JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
-				WHERE F.date BETWEEN STR_TO_DATE('{$date_from} 00:00:00', '%d.%m.%Y %T') AND STR_TO_DATE('{$date_to} 23:59:59', '%d.%m.%Y %T') AND F.KA_ID = {$payer} AND F.money != 0
+		SELECT F.F_ID ID
+			,NULL debet
+			,F.money * FC.type kredit
+			,CONCAT('Оплата от покупателя, <b>', F.comment, '</b>') document
+			,DATE_FORMAT(F.date, '%d.%m.%Y') date_format
+			,F.date
+		FROM Finance F
+		JOIN FinanceCategory FC ON FC.FC_ID = F.FC_ID
+		WHERE F.date BETWEEN STR_TO_DATE('{$date_from} 00:00:00', '%d.%m.%Y %T') AND STR_TO_DATE('{$date_to} 23:59:59', '%d.%m.%Y %T')
+			AND F.KA_ID = {$payer}
+			AND F.R_ID = {$R_ID}
+			AND F.money != 0
 
-				ORDER BY date, ID";
+		ORDER BY date, ID
+	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$i = 0;
 	while( $row = mysqli_fetch_array($res) ) {
@@ -222,7 +263,7 @@ ___________________________ <?=$platelshik_name?> ______________________________
 		<div style="display: flex; margin-top: 40px;">
 			<div style="width: 50%;">
 				<p>От <?=$gruzootpravitel_name?></p>
-				<p>Директор</p>
+				<p><?=$gruzootpravitel_dolzhnost?></p>
 				<p>__________________ (<?=$gruzootpravitel_director?>)</p>
 				<p>М.П.</p>
 			</div>

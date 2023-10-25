@@ -27,11 +27,22 @@ foreach ($_POST["price"] as $key => $value) {
 		$shop = mysqli_result($res,0,'SH_ID') ? mysqli_result($res,0,'SH_ID') : 1;
 
 		// Если Клен - цену записываем в opt_price
-		if ($shop == 36) {
-			$query = "UPDATE OrdersDataDetail SET opt_price = ".($value - $discount).", author = {$_SESSION["id"]} WHERE ODD_ID = {$odd_id}";
+		if( $shop == 36 ) {
+			$query = "
+				UPDATE OrdersDataDetail
+				SET opt_price = ({$value} - IFNULL({$discount}, 0))
+					,author = {$_SESSION["id"]}
+				WHERE ODD_ID = {$odd_id}
+			";
 		}
 		else {
-			$query = "UPDATE OrdersDataDetail SET Price = {$value}, discount = {$discount}, author = {$_SESSION["id"]} WHERE ODD_ID = {$odd_id}";
+			$query = "
+				UPDATE OrdersDataDetail
+				SET Price = {$value}
+					,discount = {$discount}
+					,author = {$_SESSION["id"]}
+				WHERE ODD_ID = {$odd_id}
+			";
 		}
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
@@ -89,6 +100,28 @@ else {
 	$platelshik_id = mysqli_insert_id($mysqli);
 }
 
+// Если возвратная накладная, проверяем чтобы совпадала организация в накладных
+if( $return ) {
+	$alert_codes = "";
+	foreach ($_POST["ord"] as $key => $value) {
+		$query = "
+			SELECT CONCAT(OD.Code, ', ') Code
+			FROM PrintFormsInvoice PFI
+			JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID AND OD.OD_ID = {$value}
+			WHERE PFI.rtrn = 0
+				AND PFI.R_ID != {$_POST["R_ID"]}
+		";
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+		$row = mysqli_fetch_array( $res );
+		$alert_codes .= $row["Code"];
+	}
+	if( $alert_codes <> "" ) {
+		$_SESSION["error"][] = "При создании накладной возникла ошибка. У наборов {$alert_codes} отличается организация исходной накладной.";
+		exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
+		die;
+	}
+}
+
 // Получаем номер документа
 $year = date( 'Y', strtotime($_POST["date"]) );
 $query = "SELECT MAX(count) + 1 count FROM PrintFormsInvoice WHERE YEAR(date) = {$year}";
@@ -97,7 +130,17 @@ $count = mysqli_result($res,0,'count') ? mysqli_result($res,0,'count') : 1;
 
 // Сохраняем в таблицу PrintFormsInvoice данные по накладной
 $date = date( 'Y-m-d', strtotime($_POST["date"]) );
-$query = "INSERT INTO PrintFormsInvoice SET summa = {$_POST["summa"]}, discount = {$_POST["total_discount"]}, platelshik_id = {$platelshik_id}, count = {$count}, date = '{$date}', USR_ID = {$_SESSION["id"]}, rtrn = {$return}";
+$query = "
+	INSERT INTO PrintFormsInvoice
+	SET R_ID = {$_POST["R_ID"]}
+		,summa = {$_POST["summa"]}
+		,discount = {$_POST["total_discount"]}
+		,platelshik_id = {$platelshik_id}
+		,count = {$count}
+		,date = '{$date}'
+		,USR_ID = {$_SESSION["id"]}
+		,rtrn = {$return}
+";
 mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $id = mysqli_insert_id($mysqli);
 
@@ -106,16 +149,21 @@ $id_list = "0";
 foreach ($_POST["ord"] as $key => $value) {
 	// Если возвратная накладная - помечаем исходные отгрузочные накладные как измененные (чтобы их нельзя было удалить)
 	if( $return ) {
-		$query = "UPDATE PrintFormsInvoice PFI
-					JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID AND OD.OD_ID = {$value}
-					SET PFI.rtrn = 2
-					WHERE PFI.rtrn = 0";
+		$query = "
+			UPDATE PrintFormsInvoice PFI
+			JOIN OrdersData OD ON OD.PFI_ID = PFI.PFI_ID AND OD.OD_ID = {$value}
+			SET PFI.rtrn = 2
+			WHERE PFI.rtrn = 0
+		";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 
-	$query = "UPDATE OrdersData OD
-				JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-				SET OD.StartDate = IF((SH.KA_ID IS NULL AND OD.StartDate IS NOT NULL), OD.StartDate, ".($return ? "NULL" : "'{$date}'")."), OD.PFI_ID = {$id}, OD.author = {$_SESSION["id"]} WHERE OD.OD_ID = {$value}";
+	$query = "
+		UPDATE OrdersData OD
+		JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+		SET OD.StartDate = IF((SH.KA_ID IS NULL AND OD.StartDate IS NOT NULL), OD.StartDate, ".($return ? "NULL" : "'{$date}'")."), OD.PFI_ID = {$id}, OD.author = {$_SESSION["id"]}
+		WHERE OD.OD_ID = {$value}
+	";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
 	$id_list .= ",".$value;
@@ -154,7 +202,11 @@ while( $row = mysqli_fetch_array($res) ) {
 $_POST["nomer"] = $count;
 
 // Информация о грузоотправителе
-$query = "SELECT * FROM Rekvizity WHERE R_ID = ".($_GET["CT_ID"] == 24 ? "3" : "1");
+$query = "
+	SELECT *
+	FROM Rekvizity
+	WHERE R_ID = {$_POST["R_ID"]}
+";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 $_POST["gruzootpravitel_name"] = mysqli_result($res,0,'Name');
 $_POST["gruzootpravitel_inn"] = mysqli_result($res,0,'INN');
