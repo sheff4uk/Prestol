@@ -4,6 +4,9 @@ include "config.php";
 $title = 'Сверки';
 include "header.php";
 
+echo "<h1>Ведутся работы</h1>";
+die();
+
 // Проверка прав на доступ к экрану
 if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !in_array('sverki_opt', $Rights) ) {
 	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
@@ -80,7 +83,6 @@ if (!$USR_Shop) { // Если не продавец - показываем оп�
 			,IFNULL(BIK, '') BIK
 			,IFNULL(KS, '') KS
 			,IFNULL(Bank_adres, '') Bank_adres
-			,IFNULL(KA.saldo, 0) saldo
 		FROM Kontragenty KA
 		JOIN Shops SH ON SH.KA_ID = KA.KA_ID
 		JOIN Cities CT ON CT.CT_ID = SH.CT_ID
@@ -90,8 +92,7 @@ if (!$USR_Shop) { // Если не продавец - показываем оп�
 	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
-		$saldo_format = number_format($row["saldo"], 0, '', ' ');
-		$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} (Сальдо: {$saldo_format})</option>";
+		$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]}</option>";
 		$KA_IDs .= ",{$row["KA_ID"]}";
 		$Kontragenty[$row["KA_ID"]] = array( "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
 	}
@@ -118,7 +119,6 @@ $query = "
 		,IFNULL(BIK, '') BIK
 		,IFNULL(KS, '') KS
 		,IFNULL(Bank_adres, '') Bank_adres
-		,IFNULL(KA.saldo, 0) saldo
 	FROM Kontragenty KA
 	# Исключения для Клёна
 	JOIN (SELECT SH_ID, IF(SH_ID = 36, 155, KA_ID) KA_ID FROM OrdersData) OD ON OD.KA_ID = KA.KA_ID
@@ -131,8 +131,7 @@ $query = "
 ";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
-	$saldo_format = number_format($row["saldo"], 0, '', ' ');
-	$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]} ({$saldo_format})</option>";
+	$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]}</option>";
 	$KA_IDs .= ",{$row["KA_ID"]}";
 	$Kontragenty[$row["KA_ID"]] = array( "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
 }
@@ -233,14 +232,13 @@ if( isset($_GET["del"]) )
 	if( in_array('sverki_opt', $Rights) ) {
 		// Выводим контрагента оптовика
 		$query = "
-			SELECT KA_ID, Naimenovanie, IFNULL(saldo, 0) saldo
+			SELECT KA_ID, Naimenovanie
 			FROM Kontragenty
 			WHERE KA_ID = {$USR_KA}
 		";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$row = mysqli_fetch_array($res);
-		$saldo_format = number_format($row["saldo"], 0, '', ' ');
-		echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]} ({$saldo_format})</option>";
+		echo "<option value='{$row["KA_ID"]}'>{$row["Naimenovanie"]}</option>";
 	}
 	else {
 		// Выводим дропдаун
