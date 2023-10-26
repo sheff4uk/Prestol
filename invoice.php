@@ -67,35 +67,41 @@ $platelshik_ks = mysqli_real_escape_string($mysqli, convert_str($_POST["platelsh
 $platelshik_bank_adres = mysqli_real_escape_string($mysqli, convert_str($_POST["platelshik_bank_adres"]));
 
 if( $_POST["KA_ID"] ) {
-	$query = "UPDATE Kontragenty SET
-				 Naimenovanie = '{$platelshik_name}'
-				,Jur_adres = IF('{$platelshik_adres}' = '', NULL, '{$platelshik_adres}')
-				,Telefony = IF('{$platelshik_tel}' = '', NULL, '{$platelshik_tel}')
-				,INN = IF('{$platelshik_inn}' = '', NULL, '{$platelshik_inn}')
-				,OKPO = IF('{$platelshik_okpo}' = '', NULL, '{$platelshik_okpo}')
-				,KPP = IF('{$platelshik_kpp}' = '', NULL, '{$platelshik_kpp}')
-				,Schet = IF('{$platelshik_schet}' = '', NULL, '{$platelshik_schet}')
-				,Bank = IF('{$platelshik_bank}' = '', NULL, '{$platelshik_bank}')
-				,BIK = IF('{$platelshik_bik}' = '', NULL, '{$platelshik_bik}')
-				,KS = IF('{$platelshik_ks}' = '', NULL, '{$platelshik_ks}')
-				,Bank_adres = IF('{$platelshik_bank_adres}' = '', NULL, '{$platelshik_bank_adres}')
-				WHERE KA_ID = {$_POST["KA_ID"]}";
+	$query = "
+		UPDATE Kontragenty
+		SET R_ID = {$_POST["R_ID"]}
+			,Naimenovanie = '{$platelshik_name}'
+			,Jur_adres = IF('{$platelshik_adres}' = '', NULL, '{$platelshik_adres}')
+			,Telefony = IF('{$platelshik_tel}' = '', NULL, '{$platelshik_tel}')
+			,INN = IF('{$platelshik_inn}' = '', NULL, '{$platelshik_inn}')
+			,OKPO = IF('{$platelshik_okpo}' = '', NULL, '{$platelshik_okpo}')
+			,KPP = IF('{$platelshik_kpp}' = '', NULL, '{$platelshik_kpp}')
+			,Schet = IF('{$platelshik_schet}' = '', NULL, '{$platelshik_schet}')
+			,Bank = IF('{$platelshik_bank}' = '', NULL, '{$platelshik_bank}')
+			,BIK = IF('{$platelshik_bik}' = '', NULL, '{$platelshik_bik}')
+			,KS = IF('{$platelshik_ks}' = '', NULL, '{$platelshik_ks}')
+			,Bank_adres = IF('{$platelshik_bank_adres}' = '', NULL, '{$platelshik_bank_adres}')
+		WHERE KA_ID = {$_POST["KA_ID"]}
+	";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$platelshik_id = $_POST["KA_ID"];
 }
 else {
-	$query = "INSERT INTO Kontragenty SET
-				 Naimenovanie = '{$platelshik_name}'
-				,Jur_adres = IF('{$platelshik_adres}' = '', NULL, '{$platelshik_adres}')
-				,Telefony = IF('{$platelshik_tel}' = '', NULL, '{$platelshik_tel}')
-				,INN = IF('{$platelshik_inn}' = '', NULL, '{$platelshik_inn}')
-				,OKPO = IF('{$platelshik_okpo}' = '', NULL, '{$platelshik_okpo}')
-				,KPP = IF('{$platelshik_kpp}' = '', NULL, '{$platelshik_kpp}')
-				,Schet = IF('{$platelshik_schet}' = '', NULL, '{$platelshik_schet}')
-				,Bank = IF('{$platelshik_bank}' = '', NULL, '{$platelshik_bank}')
-				,BIK = IF('{$platelshik_bik}' = '', NULL, '{$platelshik_bik}')
-				,KS = IF('{$platelshik_ks}' = '', NULL, '{$platelshik_ks}')
-				,Bank_adres = IF('{$platelshik_bank_adres}' = '', NULL, '{$platelshik_bank_adres}')";
+	$query = "
+		INSERT INTO Kontragenty
+		SET R_ID = {$_POST["R_ID"]}
+			,Naimenovanie = '{$platelshik_name}'
+			,Jur_adres = IF('{$platelshik_adres}' = '', NULL, '{$platelshik_adres}')
+			,Telefony = IF('{$platelshik_tel}' = '', NULL, '{$platelshik_tel}')
+			,INN = IF('{$platelshik_inn}' = '', NULL, '{$platelshik_inn}')
+			,OKPO = IF('{$platelshik_okpo}' = '', NULL, '{$platelshik_okpo}')
+			,KPP = IF('{$platelshik_kpp}' = '', NULL, '{$platelshik_kpp}')
+			,Schet = IF('{$platelshik_schet}' = '', NULL, '{$platelshik_schet}')
+			,Bank = IF('{$platelshik_bank}' = '', NULL, '{$platelshik_bank}')
+			,BIK = IF('{$platelshik_bik}' = '', NULL, '{$platelshik_bik}')
+			,KS = IF('{$platelshik_ks}' = '', NULL, '{$platelshik_ks}')
+			,Bank_adres = IF('{$platelshik_bank_adres}' = '', NULL, '{$platelshik_bank_adres}')
+	";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$platelshik_id = mysqli_insert_id($mysqli);
 }

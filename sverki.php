@@ -66,6 +66,7 @@ if (!$USR_Shop) { // Если не продавец - показываем оп�
 	$KA_options .= "<optgroup label='Оптовые покупатели:'>";
 	$query = "
 		SELECT KA.KA_ID
+			,KA.R_ID
 			,CT.CT_ID
 			,CT.City
 			,KA.Naimenovanie
@@ -93,7 +94,7 @@ if (!$USR_Shop) { // Если не продавец - показываем оп�
 	while( $row = mysqli_fetch_array($res) ) {
 		$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]}</option>";
 		$KA_IDs .= ",{$row["KA_ID"]}";
-		$Kontragenty[$row["KA_ID"]] = array( "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+		$Kontragenty[$row["KA_ID"]] = array( "R_ID"=>$row["R_ID"], "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
 	}
 	$KA_options .= "</optgroup>";
 }
@@ -102,6 +103,7 @@ if (!$USR_Shop) { // Если не продавец - показываем оп�
 $KA_options .=  "<optgroup label='Розничные покупатели:'>";
 $query = "
 	SELECT KA.KA_ID
+		,KA.R_ID
 		,CT.CT_ID
 		,CT.City
 		,KA.Naimenovanie
@@ -132,7 +134,7 @@ $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $
 while( $row = mysqli_fetch_array($res) ) {
 	$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]}</option>";
 	$KA_IDs .= ",{$row["KA_ID"]}";
-	$Kontragenty[$row["KA_ID"]] = array( "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+	$Kontragenty[$row["KA_ID"]] = array( "R_ID"=>$row["R_ID"], "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
 }
 $KA_options .= "</optgroup>";
 
@@ -339,6 +341,16 @@ if( !in_array('sverki_opt', $Rights) ) {
 }
 
 if( $payer ) {
+	// Узнаем дефолтного продавца для покупателя
+	$query = "
+		SELECT KA.R_ID
+		FROM Kontragenty KA
+		WHERE KA.KA_ID = {$payer}
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	$row = mysqli_fetch_array($res);
+	$R_ID = $row["R_ID"];
+
 	echo "<h1>Акты сверок:</h1>";
 
 	// Получаем список организаций, с которыми взаимодействовал контрагент
@@ -1010,7 +1022,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#addpay input[name="F_ID"]').val('');
 			$('#addpay input[name="Pay"]').val('');
 			$('#addpay select[name="account"]').val('');
-			$('#addpay select[name="R_ID"]').val('');
+			$('#addpay select[name="R_ID"]').val(<?=$R_ID?>);
 			$('#addpay input[name="Comment"]').val('');
 
 			if( FA_ID > 0 ) {
@@ -1090,7 +1102,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#add_act_sverki_form .to').datepicker( "setDate", now_date );
 			$('#add_act_sverki_form .from').datepicker( "option", "maxDate", now_date );
 			$('#add_act_sverki_form .to').datepicker( "option", "maxDate", now_date );
-			$('#add_act_sverki_form select[name="R_ID"]').val('');
+			$('#add_act_sverki_form select[name="R_ID"]').val(<?=$R_ID?>);
 
 			$('#add_act_sverki_form').dialog({
 				resizable: false,
@@ -1125,6 +1137,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('input[name="CT_ID"]').val(CT_ID);
 			if (KA_ID > 0) {
 				var KA_data = Kontragenty[KA_ID];
+				$('#R_ID').val(KA_data["R_ID"]);
 				$('#platelshik_name').val(KA_data["Naimenovanie"]);
 				$('#platelshik_inn').val(KA_data["INN"]);
 				$('#platelshik_kpp').val(KA_data["KPP"]);
@@ -1138,6 +1151,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#platelshik_bank_adres').val(KA_data["Bank_adres"]);
 			}
 			else {
+				$('#R_ID').val('');
 				$('#platelshik_name').val('');
 				$('#platelshik_inn').val('');
 				$('#platelshik_kpp').val('');
