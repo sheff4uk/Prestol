@@ -2,17 +2,11 @@
 include "config.php";
 
 $key = $argv[1];
-$R_ID = $argv[2];
-$days = $argv[3];
-$to = $argv[4];
+$days = $argv[2];
+$to = $argv[3];
 
 // Проверка доступа
 if( $key != $script_key ) die('Access denied!');
-
-$query = "SELECT `X-Authorization` FROM Rekvizity WHERE R_ID = {$R_ID}";
-$result = mysqli_query( $mysqli, $query );
-$row = mysqli_fetch_array($result);
-$Authorization = $row["X-Authorization"];
 
 // Даты периода выборки в нужном формате
 $yesterday = date("Y-m-d", strtotime("-$days DAY"));
@@ -22,19 +16,18 @@ $ltCloseDate = $yesterday."T23:59:59.999+03:00";
 $title = "Отчёт за ".(date("d.m.Y", strtotime("-$days DAY")));
 $message = "<h2>{$title}</h2>";
 
-if( $curl = curl_init() ) {
-	curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
-	curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/devices/search');
-	curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-		'X-Authorization: '.$Authorization
-	));
-	$out = curl_exec($curl);
-	curl_close($curl);
-}
-$terminals = json_decode($out, true);
-foreach($terminals as $value) {
+$query = "
+	SELECT CB.name
+		,CB.storeUuid
+		,CB.X-Authorization
+		,CB.deviceUuid
+	FROM CashBox CB
+	WHERE CB.deviceUuid IS NOT NULL
+";
+$res = mysqli_query( $mysqli, $query );
+while( $row = mysqli_fetch_array($result) ) {
 	$message .= "
-		<b>{$value["name"]}:</b>
+		<b>{$row["name"]}:</b>
 		<table cellspacing='0' cellpadding='2' border='1'>
 			<tr>
 				<td><b>Время</b></td>
@@ -42,8 +35,9 @@ foreach($terminals as $value) {
 				<td><b>Картой</b></td>
 			</tr>
 	";
-	$deviceUuid = $value["uuid"];
-	$storeUuid = $value["storeUuid"];
+	$deviceUuid = $row["deviceUuid"];
+	$storeUuid = $row["storeUuid"];
+	$Authorization = $row["X-Authorization"];
 
 	if( $curl = curl_init() ) {
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
