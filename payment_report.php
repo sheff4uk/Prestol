@@ -27,7 +27,9 @@ if( !$_GET["R_ID"] ) {
 		<span>Организация:</span>
 		<select name="R_ID" onchange="this.form.submit()">
 			<?
-			$query = "SELECT R_ID, Name FROM Rekvizity WHERE R_ID IN (1,2)";
+			$query = "
+				SELECT R_ID, Name FROM Rekvizity WHERE R_ID != 3
+			";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			while( $row = mysqli_fetch_array($res) ) {
 				$selected = ($row["R_ID"] == $_GET["R_ID"]) ? "selected" : "";
