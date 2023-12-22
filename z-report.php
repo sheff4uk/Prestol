@@ -17,12 +17,12 @@ $title = "Отчёт за ".(date("d.m.Y", strtotime("-$days DAY")));
 $message = "<h2>{$title}</h2>";
 
 $query = "
-	SELECT CB.name
-		,CB.storeUuid
-		,CB.X-Authorization
-		,CB.deviceUuid
-	FROM CashBox CB
-	WHERE CB.deviceUuid IS NOT NULL
+	SELECT CB.`name`
+		,CB.`storeUuid`
+		,CB.`X-Authorization`
+		,CB.`deviceUuid`
+	FROM `CashBox` CB
+	WHERE CB.`deviceUuid` IS NOT NULL
 ";
 $res = mysqli_query( $mysqli, $query );
 while( $row = mysqli_fetch_array($res) ) {
