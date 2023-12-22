@@ -25,7 +25,7 @@ $query = "
 	WHERE CB.deviceUuid IS NOT NULL
 ";
 $res = mysqli_query( $mysqli, $query );
-while( $row = mysqli_fetch_array($result) ) {
+while( $row = mysqli_fetch_array($res) ) {
 	$message .= "
 		<b>{$row["name"]}:</b>
 		<table cellspacing='0' cellpadding='2' border='1'>
