@@ -439,7 +439,7 @@
 				</select>
 <!--				<input type='text' name='f_Z' value='<?= $_SESSION["f_Z"] ?>' class='<?=($_SESSION["f_Z"] != "") ? "filtered" : ""?>' autocomplete='off'>-->
 			</th>
-			<th width="15%" id="MT_filter" class="select2_filter"><input type="text" disabled style="width: 100%;" class="<?=( $_SESSION["f_M"] != "" ? "filtered" : "" )?>"><div id="material-select" style=""><select name="MT_ID[]" multiple style="width: 100%;"></select></div></th>
+			<th width="15%" id="MT_filter" class="select2_filter"><input type="text" readonly style="width: 100%;" class="<?=( $_SESSION["f_M"] != "" ? "filtered" : "" )?>"><div id="material-select" style=""><select name="MT_ID[]" multiple style="width: 100%;"></select></div></th>
 			<th width="10%" style="font-size: 0;">
 				<style>
 					#material-select {
@@ -1174,7 +1174,7 @@
 //	";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	while( $row = mysqli_fetch_array($res) ) {
-		$selected = in_array($row["MT_ID"], $_SESSION["f_M"]) ? "selected" : "";
+		$selected = (isset($_SESSION["f_M"]) and in_array($row["MT_ID"], $_SESSION["f_M"])) ? "selected" : "";
 		$MT_filter .= "<option {$selected} value='{$row["MT_ID"]}'>{$row["Material"]}</option>";
 		$MT_string .= ($selected) ? $row["Material"].", " : "";
 	}
