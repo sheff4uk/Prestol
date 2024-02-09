@@ -95,7 +95,7 @@
 
 	// Сохранение даты отгрузки
 	if( isset($_POST["shipping_date"]) ) {
-		$shipping_date = $_POST[shipping_date] ? '\''.date( "Y-m-d", strtotime($_POST["shipping_date"]) ).'\'' : "NULL";
+		$shipping_date = $_POST["shipping_date"] ? '\''.date( "Y-m-d", strtotime($_POST["shipping_date"]) ).'\'' : "NULL";
 		// Записываем дату отгрузки в Shipping
 		$query = "UPDATE Shipment SET shipping_date = {$shipping_date} WHERE SHP_ID = {$_GET["shpid"]}";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -644,6 +644,7 @@
 
 	$is_invoice = 0;	// Если встретится накладная - поменяется на 1
 	$is_orders_ready = 1;	// Собираем готовые наборы чтобы можно ставить дату отгрузки (когда все готовы должна получиться 1)
+	$is_orders_packed = 1;	// Собираем сведения об упаковке
 	$orders_count = 0;		// Счетчик видимых наборов
 	$orders_IDs = "0";		// Список ID наборов для Select2 материалов
 
@@ -694,6 +695,7 @@
 			,IF(OD.IsPainting = 3, CONCAT(USR_ShortName(OD.USR_ID), IF(OD.patina_USR_ID IS NOT NULL, CONCAT(' + ', USR_ShortName(OD.patina_USR_ID)), '')), '') Name
 			,IF(DATEDIFF(OD.EndDate, NOW()) <= 7 AND OD.ReadyDate IS NULL AND OD.DelDate IS NULL, IF(DATEDIFF(OD.EndDate, NOW()) <= 0, 'bg-red', 'bg-yellow'), '') Deadline
 			,OD_IsReady(OD.OD_ID) IsReady
+			,OD_IsPacked(OD.OD_ID) packed
 			,IFNULL(OD.SHP_ID, 0) SHP_ID
 			,OD.is_lock
 			,OD.confirmed
@@ -1086,7 +1088,7 @@
 			if( $row["SHP_ID"] == 0 ) {
 				if( $row["Archive"] == 0 ) {
 					if ($row["SH_ID"] and !$is_del and in_array('order_ready', $Rights)) {
-						echo "<a href='#' class='shipping' ".(($row["IsReady"] and ($row["IsPainting"] == "3" or $row["IsPainting"] == "0")) ? "" : "style='display: none;'")." od_id='{$row["OD_ID"]}' title='Отгрузить'><i style='color:red;' class='fas fa-flag-checkered fa-lg'></i></a> ";
+						echo "<a href='#' class='shipping' ".(($row["IsReady"] and ($row["IsPainting"] == "3" or $row["IsPainting"] == "0")) ? "" : "style='display: none;'")." od_id='{$row["OD_ID"]}' packed='{$row["packed"]}' title='Отгрузить'><i style='color:red;' class='fas fa-flag-checkered fa-lg'></i></a> ";
 					}
 					if( !$disabled and !$row["PFI_ID"] ) {
 						if ($is_del) {
@@ -1116,6 +1118,10 @@
 
 		if( !$row["IsReady"] || $row["IsPainting"] == "1" || $row["IsPainting"] == "2" ) {
 			$is_orders_ready = 0;
+		}
+
+		if( !$row["packed"] ) {
+			$is_orders_packed = 0;
 		}
 
 		if( $row["PFI_ID"] ) {
@@ -1233,15 +1239,17 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <script>
 	// Функция проверяет готов ли список наборов к отгрузке
-	function check_shipping(ready, count, filter) {
+	function check_shipping(ready, packed, count, filter) {
 		if( filter ) {
 			$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
+			$('#wr_shipping_date input[name="shipping_date"]').attr('placeholder', '🔒');
 			$('#wr_shipping_date font').hide('fast');
 			$('#wr_shipping_date font').html();
 		}
 		else {
 			if(!ready || !count) {
 				$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', true);
+				$('#wr_shipping_date input[name="shipping_date"]').attr('placeholder', '🔒');
 				$('#wr_shipping_date font').show('fast');
 				if( !count ) {
 					$('#wr_shipping_date font').html('&nbsp;&nbsp;Список пуст!');
@@ -1251,9 +1259,16 @@ this.subbut.value='Подождите, пожалуйста!';">
 				}
 			}
 			else {
+				if(!packed) {
+					$('#wr_shipping_date font').show('fast');
+					$('#wr_shipping_date font').html('&nbsp;&nbsp;Часть продукции без упаковки!');
+				}
+				else {
+					$('#wr_shipping_date font').hide('fast');
+					$('#wr_shipping_date font').html();
+				}
 				$('#wr_shipping_date input[name="shipping_date"]').prop('disabled', false);
-				$('#wr_shipping_date font').hide('fast');
-				$('#wr_shipping_date font').html();
+				$('#wr_shipping_date input[name="shipping_date"]').attr('placeholder', '');
 			}
 		}
 	}
@@ -1350,7 +1365,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				echo "check_undo_shipping({$is_invoice}, {$filter});";
 			}
 			else { // Если не отгружено - проверяем можно ли отгрузить
-				echo "check_shipping({$is_orders_ready}, {$orders_count}, {$filter});";
+				echo "check_shipping({$is_orders_ready}, {$is_orders_packed}, {$orders_count}, {$filter});";
 			}
 		}
 		?>

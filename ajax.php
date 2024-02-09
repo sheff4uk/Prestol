@@ -2183,7 +2183,7 @@ case "cash_category":
 // Формирование выпадающего списка заготовок при выборе работника в форме добавления заготовок
 case "blank_dropdown":
 	$usr_id = $_GET["usr_id"];
-	$min_size = 4;
+	$min_size = 10;
 	$html = "";
 
 	if( $usr_id != "null" ) {
@@ -2223,7 +2223,8 @@ case "blank_dropdown":
 		}
 		$html .= "</optgroup>";
 		$size = ($size < $min_size) ? $min_size : $size;
-		echo "$('#addblank #blank').attr('size', {$size});";
+		//echo "$('#addblank #blank').attr('size', {$size});";
+		echo "$('#addblank #blank').attr('size', {$min_size});";
 	}
 	else {
 		echo "$('#addblank #blank').attr('size', {$min_size});";

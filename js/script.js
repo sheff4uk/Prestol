@@ -315,8 +315,14 @@ $(function(){
 
 		// Отгрузка набора
 		$('.shipping').on('click', function() {
-			var od_id = $(this).attr('od_id');
-			confirm("Пожалуйста, подтвердите <b>отгрузку</b> набора.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_shp&od_id="+od_id, dataType: "script", async: false });});
+			var od_id = $(this).attr('od_id'),
+				packed = $(this).attr('packed');
+			if (packed == "1") {
+				confirm("Пожалуйста, подтвердите <b>отгрузку</b> набора.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_shp&od_id="+od_id, dataType: "script", async: false });});
+			}
+			else {
+				confirm("<h2 style='color: #C00000;'>Без упаковки!</h2><br>Пожалуйста, подтвердите <b>отгрузку</b> набора.").then(function(status){if(status) $.ajax({ url: "ajax.php?do=order_shp&od_id="+od_id, dataType: "script", async: false });});
+			}
 			return false;
 		});
 
