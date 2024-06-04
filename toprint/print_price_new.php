@@ -152,7 +152,7 @@
 		}
 	?>
 		<div id="<?=$row["id"]?>1" class="label-wr">
-			<div style="width: 70%; margin-left: 5%;">
+			<div style="width: 74%; margin-left: 3%;">
 				<div style="position: relative; text-align: center;">
 					<div class="code" style="z-index: -1;"><?=$row["Code"]?></div>
 					<?=$discount?>
@@ -164,13 +164,13 @@
 					<span class="price"><?=$old_price?><?=$price?></span>
 				</div>
 				<div style="display: flex; height: 120px; font-size:20px; white-space: nowrap;">
-					<div style="width: 160px; text-align: right; padding: 5px;">
+					<div style="width: 120px; text-align: right; padding: 5px;">
 						<?=($row["size"] ? "Столешница<br>" : "")?>
 						<?=($row["mechanism"] ? "Механизм<br>" : "")?>
 						<?=($row["materials"] ? "Материалы<br>" : "")?>
 						<?=($row["mtype"] == 1 ? "Ткань" : ($row["mtype"] == 2 ? "Поверхность" : ""))?>
 					</div>
-					<div style="width: 320px; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
+					<div style="width: 330px; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
 						<?=($row["size"] ? "{$row["size"]}<br>" : "")?>
 						<?=($row["mechanism"] ? "{$row["mechanism"]}<br>" : "")?>
 						<?=($row["materials"] ? "{$row["materials"]}<br>" : "")?>
@@ -183,7 +183,7 @@
 			</div>
 		</div>
 		<div id="<?=$row["id"]?>2" class="label-wr">
-			<div style="width: 70%; margin-left: 5%;">
+			<div style="width: 74%; margin-left: 3%;">
 				<div style="position: relative; text-align: center;">
 					<div class="code"><?=$row["Code"]?></div>
 					<?=$discount?>
@@ -195,13 +195,13 @@
 					<span class="price"><?=$old_price?><?=$price?></span>
 				</div>
 				<div style="display: flex; height: 120px; font-size:20px; white-space: nowrap;">
-					<div style="width: 160px; text-align: right; padding: 5px;">
+					<div style="width: 120px; text-align: right; padding: 5px;">
 						<?=($row["size"] ? "Столешница<br>" : "")?>
 						<?=($row["mechanism"] ? "Механизм<br>" : "")?>
 						<?=($row["materials"] ? "Материалы<br>" : "")?>
 						<?=($row["mtype"] == 1 ? "Ткань" : ($row["mtype"] == 2 ? "Поверхность" : ""))?>
 					</div>
-					<div style="width: 320px; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
+					<div style="width: 330px; text-align: left; border: 2px dotted; padding: 5px; overflow: hidden; text-overflow: ellipsis;">
 						<?=($row["size"] ? "{$row["size"]}<br>" : "")?>
 						<?=($row["mechanism"] ? "{$row["mechanism"]}<br>" : "")?>
 						<?=($row["materials"] ? "{$row["materials"]}<br>" : "")?>
