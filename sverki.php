@@ -1,4 +1,4 @@
-<?
+<?php
 include "config.php";
 
 $title = 'Сверки';
@@ -216,7 +216,7 @@ if( isset($_GET["del"]) )
 	</script>
 	<label for="year">Год:</label>
 	<select name="year" id="year" onchange="this.form.submit()">
-<?
+<?php
 	$query = "
 		SELECT YEAR(date) year FROM PrintFormsInvoice GROUP BY YEAR(date)
 		UNION
@@ -232,7 +232,7 @@ if( isset($_GET["del"]) )
 	&nbsp;&nbsp;
 	<label for="payer">Контрагент:</label>
 	<select name="payer" id="payer" onchange="this.form.submit()">
-<?
+<?php
 	if( in_array('sverki_opt', $Rights) ) {
 		// Выводим контрагента оптовика
 		$query = "
@@ -330,7 +330,7 @@ if( isset($_GET["del"]) )
 	}
 </style>
 
-<?
+<?php
 if( !in_array('sverki_opt', $Rights) ) {
 	echo "<div id='add_invoice_btn' title='Создать накладную на ОТГРУЗКУ'></div>";
 	echo "<div id='add_invoice_btn_return' title='Создать накладную на ВОЗВРАТ'></div>";
@@ -458,7 +458,7 @@ if( $payer ) {
 		</tr>
 	</thead>
 	<tbody>
-<?
+<?php
 if( $payer ) {
 	$query = "
 		SELECT PFI.PFI_ID
@@ -615,7 +615,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<fieldset id="wr_platelshik" style="text-align: left;">
 				<legend id="KA_info"></legend>
 				<select name="KA_ID" id="kontragenty" style="width: 100%;">
-					<?
+					<?php
 					echo "<option value=''></option>";
 					// Выводим дропдаун
 					echo $KA_options;
@@ -682,7 +682,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 							<td valign="top">
 								<select name="R_ID" id="R_ID" required>
 									<option value=""></option>
-									<?
+									<?php
 									$query = "SELECT R_ID, Name FROM Rekvizity";
 
 									$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -782,7 +782,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		<div id="shipping_year" style="display: none;">
 			Год отгрузки
 			<select name="shipping_year">
-			<?
+			<?php
 				$query = "
 					SELECT YEAR(date) year FROM PrintFormsInvoice GROUP BY YEAR(date)
 					UNION
@@ -832,7 +832,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				Продавец:&nbsp;
 				<select name="R_ID" required>
 					<option value=""></option>
-					<?
+					<?php
 					if( $payer ) {
 						// Получаем список организаций, с которыми взаимодействовал контрагент
 						$query = "
@@ -874,7 +874,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<label>Счёт:</label>
 				<select name="account" id="account" required>
 					<option value="">-=Выберите счёт=-</option>
-						<?
+						<?php
 						if( !in_array('finance_account', $Rights) ) {
 							echo "<optgroup label='Нал'>";
 							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0 AND archive = 0";
@@ -910,7 +910,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<label>Продавец:</label>
 				<select name="R_ID" required>
 					<option value=""></option>
-					<?
+					<?php
 					if( $payer ) {
 						// Получаем список организаций, с которыми взаимодействовал контрагент
 						$query = "
@@ -1285,6 +1285,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

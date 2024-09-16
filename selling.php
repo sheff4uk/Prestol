@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 	$title = 'Реализация';
 	include "header.php";
@@ -245,7 +245,7 @@
 <div id="rep_buttons">
 <form method="get" style="display: inline-block;">
 	<select name="CT_ID" onchange="this.form.submit()">
-		<?
+		<?php
 		$query = "
 			SELECT CT.CT_ID, CT.City, CT.Color
 			FROM Cities CT
@@ -265,7 +265,7 @@
 	<input type="hidden" name="month" value="<?=$month?>">
 </form>
 
-<?
+<?php
 	if (!$CT_ID) die;
 
 	// Кнопки движения денег
@@ -303,7 +303,7 @@
 
 	<!-- КНОПКИ ОТЧЕТОВ -->
 		<br>Отчеты:
-		<?
+		<?php
 //		if( !$USR_Shop ) {
 			echo "<div id='sell_archive'><a href='#' class='button'>Архив</a><div>";
 			// Формируем список архивных отчетов
@@ -351,7 +351,7 @@
 	</div>
 	<!-- //КНОПКИ ОТЧЕТОВ -->
 
-	<?
+	<?php
 	// ОТЧЕТ ЗА МЕСЯЦ
 	if( $year > 0 and $month > 0 ) {
 		// Узнаем дату закрытия месяца
@@ -367,7 +367,7 @@
 		<div>
 			<div style="display: inline-block; vertical-align:top;">
 
-			<?
+			<?php
 				$locking_form = "
 					<form method='post' action='{$location}&add_locking_date=1' id='locking_form'>
 						<input type='text' class='date' name='locking_date' value='{$locking_date}' placeholder='Дата закрытия' autocomplete='off'>
@@ -389,7 +389,7 @@
 				<thead>
 					<tr>
 						<th>Салон</th>
-						<?
+						<?php
 //						if( in_array('selling_all', $Rights) ) {
 //							echo "<th></th>";
 //						}
@@ -401,7 +401,7 @@
 					</tr>
 				</thead>
 				<tbody>
-				<?
+				<?php
 //					$city_report = 0;
 					$city_price = 0;
 					$city_discount = 0;
@@ -546,7 +546,7 @@
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
-				<?
+				<?php
 //				if( in_array('selling_all', $Rights) ) {
 //					$query = "
 //						SELECT OP.OP_ID
@@ -653,7 +653,7 @@
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
-				<?
+				<?php
 					$query = "
 						SELECT DATE_FORMAT(OP.payment_date, '%d.%m') payment_date
 							,OP.payment_sum
@@ -704,7 +704,7 @@
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
-				<?
+				<?php
 					$query = "
 						SELECT OP.OP_ID
 							,DATE_FORMAT(OP.payment_date, '%d.%m') payment_date_short
@@ -749,7 +749,7 @@
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
-					<?
+					<?php
 					$query = "
 						SELECT DATE_FORMAT(OD.ReadyDate, '%d.%m.%y') ReadyDate
 							,OD.OD_ID
@@ -802,7 +802,7 @@
 			<div>
 			<table class="main_table" style="margin: 0; display: table;">
 				<tbody>
-					<?
+					<?php
 					$query = "SELECT DATE_FORMAT(OT.StartDate, '%d.%m') reject_date
 									,OD.OD_ID
 									,OD.Code
@@ -842,7 +842,7 @@
 		</div>
 		</div>
 	</div>
-	<?
+	<?php
 		echo "<script>
 			$(document).ready(function() {
 				$('#section1').html('<i class=\'fas fa-money-bill-alt fa-lg\'></i> Наличные: {$format_cache_sum}');
@@ -878,7 +878,7 @@
 				<th width="25%">Набор</th>
 				<th width="15%">Материал <i class="fa fa-question-circle" html="<b>Цветовой статус наличия:</b><br><span class='bg-gray'>Неизвестно</span><br><span class='bg-red'>Нет</span><br><span class='bg-yellow'>Заказано</span><br><span class='bg-green'>В наличии</span><br><span class='bg-red removed'>Выведен</span> - нужно менять"></i></th>
 				<th width="15%">Цвет краски <i class="fa fa-question-circle" html="<b>Цветовой статус лакировки:</b><br><span class='empty'>Покраска не требуется</span><br><span class='notready'>Не дано в покраску</span><br><span class='inwork'>Дано в покраску</span><br><span class='ready'>Покрашено</span>"></i></th>
-				<?
+				<?php
 				if ($shop_num_rows > 1) {
 				?>
 				<th width="10%">Салон<br>
@@ -887,7 +887,7 @@
 					<input type="hidden" name="month" value="<?=$_GET['month']?>">
 					<select style="width: 100%;" name="SH_ID" id="filter_shop" onchange="this.form.submit()" <?=( $_GET["SH_ID"] ? "class='filtered'" : "" )?>>
 						<option></option>
-						<?
+						<?php
 							$query = "SELECT SH.SH_ID, SH.Shop FROM Shops SH WHERE SH.SH_ID IN ({$SH_IDs}) ORDER BY SH.Shop";
 							$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 							while( $row = mysqli_fetch_array($res) ) {
@@ -896,7 +896,7 @@
 						?>
 					</select>
 				</th>
-				<?
+				<?php
 				}
 				?>
 				<th width="100">Примечание</th>
@@ -932,7 +932,7 @@
 			</tr>
 		</thead>
 		<tbody>
-		<?
+		<?php
 		$query = "
 			SELECT SUM(1) cnt
 				,GROUP_CONCAT(OD.OD_ID) OD_IDs
@@ -1189,7 +1189,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<div style="width: 210px; display: inline-block; vertical-align: top;">
 				<label for="CB_ID">Касса:</label><br>
 				<select size="4" name="CB_ID" id="CB_ID" style="width: 100%;" required>
-					<?
+					<?php
 					$query = "
 						SELECT CB.CB_ID
 							,CB.name
@@ -1399,6 +1399,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 	$title = 'Ткани';
 	include "header.php";
@@ -117,7 +117,7 @@
 
 		<div>
 			<select name="MT_ID[]" multiple style="width: 800px;">
-				<?
+				<?php
 				$query = "
 					SELECT SHP.SH_ID, SHP.Shipper
 					FROM Shippers SHP
@@ -188,7 +188,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</tr>
 		</thead>
 		<tbody>
-<?
+<?php
 	$query = "
 		SELECT OD.OD_ID
 			,OD.Code
@@ -376,7 +376,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		<label for="Shipper">Поставщик:</label>
 		<select id="Shipper" name="Shipper" style="width: 110px;" title="Поставщик">
 			<option value=""></option>
-			<?
+			<?php
 				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = {$product} ORDER BY Shipper";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
@@ -471,6 +471,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

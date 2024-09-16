@@ -1,11 +1,11 @@
-<?
+<?php
 	include "../config.php";
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<?
+	<?php
 	if( $_GET["print_title"] == '' ) {
 		echo "<title>Версия для печати</title>";
 	}
@@ -48,7 +48,7 @@
 	</style>
 </head>
 <body>
-<?
+<?php
 
 	// Формируем список id выбранных наборов из $_GET
 	$id_list = implode(",", $_GET["order"]);
@@ -66,7 +66,7 @@
 	<table>
 		<tbody>
 			<tr class="thead">
-				<?
+				<?php
 					if(isset($_GET["CD"])) echo "<td width='50'>Код</td>";
 					if(isset($_GET["CN"])) echo "<td width='9%'>Клиент<br>Квитанция</td>";
 					if(isset($_GET["SD"])) echo "<td width='4%'>Договор от</td>";
@@ -82,7 +82,7 @@
 					if(isset($_GET["N"])) echo "<td width='15%'>Примечание</td>";
 				?>
 			</tr>
-	<?
+	<?php
 	// Снимаем ограничение в 1024 на GROUP_CONCAT
 	$query = "SET @@group_concat_max_len = 10000;";
 	mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));

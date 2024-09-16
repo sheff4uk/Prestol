@@ -1,4 +1,4 @@
-<?
+<?php
 	// Автокомплит изделий для экрана подготовки печатных форм
 	include "config.php";
 	include "checkrights.php";

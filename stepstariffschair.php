@@ -1,4 +1,4 @@
-<?
+<?php
 include "config.php";
 
 //Редактирование тарифа
@@ -40,7 +40,7 @@ if( !in_array('stepstariffs', $Rights) ) {
 			<span>Модель:</span>
 			<select name="PM_ID" class="<?=$_GET["PM_ID"] ? "filtered" : ""?>">
 				<option value=""></option>
-				<?
+				<?php
 				$query = "
 					SELECT PM.PM_ID
 						,PM.Model
@@ -61,7 +61,7 @@ if( !in_array('stepstariffs', $Rights) ) {
 </div>
 <!--Конец фильтра-->
 
-<?
+<?php
 // Узнаем есть ли фильтр
 $filter = 0;
 foreach ($_GET as &$value) {
@@ -98,7 +98,7 @@ foreach ($_GET as &$value) {
 	</thead>
 	<tbody style="text-align: center;">
 
-<?
+<?php
 $query = "
 	SELECT STM.PMM_ID
 		,STM.ST_ID
@@ -122,7 +122,7 @@ while( $row = mysqli_fetch_array($res) ) {
 		<td><b><?=$row["tariff"]?></b></td>
 		<td><a href="#" class="tariff_edit" PMM_ID="<?=$row["PMM_ID"]?>" ST_ID="<?=$row["ST_ID"]?>" tariff="<?=$row["tariff"]?>" model="<?=htmlspecialchars($row["Model"])?>" step="<?=$row["Step"]?>" title="Редактировать"><i class="fa fa-pencil-alt fa-lg"></i></a></td>
 	</tr>
-	<?
+	<?php
 }
 ?>
 	</tbody>
@@ -197,6 +197,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 include "footer.php";
 ?>

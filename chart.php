@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 
 	$title = 'Понедельный график сдачи наборов';
@@ -129,7 +129,7 @@ $format_diff_quarter = ($last_power_quarter == 0 or $diff_quarter == 0) ? "<br>"
 		</tr>
 	</tbody>
 </table>
-<?
+<?php
 // Меняем на русскую локаль
 $query = "SET @@lc_time_names='ru_RU';";
 mysqli_query( $mysqli, $query );
@@ -674,6 +674,6 @@ var myChart = new Chart(ctx, {
 });
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

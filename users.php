@@ -1,4 +1,4 @@
-<?
+<?php
 include "config.php";
 include "checkrights.php";
 
@@ -110,7 +110,7 @@ if( !in_array('users', $Rights) ) {
 		</tr>
 	</thead>
 	<tbody style="text-align: center;">
-		<?
+		<?php
 		$query = "
 			SELECT USR.USR_ID
 				,USR_Icon(USR.USR_ID) icon
@@ -212,7 +212,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<div>
 					<select name="CT_ID" required>
 						<option value=""></option>
-						<?
+						<?php
 						$query = "SELECT CT_ID, City FROM Cities";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) ) {
@@ -227,7 +227,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<div>
 					<select name="RL_ID" required>
 						<option value=""></option>
-						<?
+						<?php
 						$query = "SELECT RL_ID, Role FROM Roles";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) ) {
@@ -240,7 +240,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<div id="shops">
 				<label>Салоны:</label>
 				<div>
-					<?
+					<?php
 					// Список розничных салонов для продавцов
 					$query = "
 						SELECT CT_ID, SH_ID, Shop
@@ -263,7 +263,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<div>
 					<select name="KA_ID" style="width: 300px;">
 						<option value=""></option>
-						<?
+						<?php
 						$query = "SELECT KA_ID, Naimenovanie FROM Kontragenty ORDER BY Naimenovanie";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) ) {
@@ -284,7 +284,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<div>
 					<select name="head" style="width: 300px;">
 						<option value=""></option>
-						<?
+						<?php
 						$query = "SELECT USR_ID, USR_Name(USR_ID) USR_Name FROM Users WHERE RL_ID != 6 AND act = 1 ORDER BY USR_Name";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) ) {
@@ -442,6 +442,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 
 </script>
-<?
+<?php
 include "footer.php";
 ?>

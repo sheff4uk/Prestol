@@ -1,4 +1,4 @@
-<?
+<?php
 include "config.php";
 $title = 'Табель';
 include "header.php";
@@ -109,7 +109,7 @@ $days = date('t', $timestamp);
 			});
 		</script>
 		<select name="year" id="year" onchange="this.form.submit()">
-		<?
+		<?php
 			$query = "SELECT YEAR(Date) year FROM TimeSheet GROUP BY year ORDER BY year";
 			$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$lastyear = 0;
@@ -123,7 +123,7 @@ $days = date('t', $timestamp);
 			if( $lastyear < date('Y') ) {
 				?>
 				<option value='<?=date('Y')?>'><?=date('Y')?></option>
-				<?
+				<?php
 			}
 		?>
 		</select>
@@ -161,7 +161,7 @@ $days = date('t', $timestamp);
 	<thead>
 		<tr class="nowrap">
 			<th></th>
-			<?
+			<?php
 				// Получаем производственный календарь на выбранный год
 				$xml = simplexml_load_file("http://xmlcalendar.ru/data/ru/".$year."/calendar.xml");
 				$json = json_encode($xml);
@@ -211,7 +211,7 @@ $days = date('t', $timestamp);
 			<input type="hidden" name="TYear" value="<?=$year?>">
 			<input type="hidden" name="TMonth" value="<?=$month?>">
 			<button id="timesheetbutton">Сохранить</button>
-		<?
+		<?php
 			// Получаем список работников
 			$query = "
 				SELECT USR.USR_ID
@@ -311,7 +311,7 @@ $days = date('t', $timestamp);
 	<thead>
 		<tr class="nowrap">
 			<th></th>
-			<?
+			<?php
 				$i = 1;
 				while ($i <= $days) {
 					$date = $year.'-'.$month.'-'.$i;
@@ -603,6 +603,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

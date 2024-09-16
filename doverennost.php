@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 
 	$title = 'Доверенности';
@@ -110,7 +110,7 @@
 	</script>
 	<label for="year">Год:</label>
 	<select name="year" id="year" onchange="this.form.submit()">
-<?
+<?php
 	$query = "SELECT YEAR(date) year FROM PrintFormsDoverennost GROUP BY YEAR(date)
 				UNION
 				SELECT YEAR(NOW())";
@@ -169,7 +169,7 @@
 	</thead>
 	<tbody>
 
-<?
+<?php
 	$query = "SELECT PFD.PFD_ID
 					,PFD.count
 					,Friendly_date(PFD.date) date_format
@@ -275,7 +275,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 						<td class="left"><strong>Организация выдавшая доверенность:</strong></td>
 						<td valign="top">
 							<select name="R_ID">
-								<?
+								<?php
 								$query = "SELECT R_ID, Name, IF(R_ID = 1, 'selected', '') selected FROM Rekvizity";
 
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -407,6 +407,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 		});
 	});
 </script>
-<?
+<?php
 	include "footer.php";
 ?>

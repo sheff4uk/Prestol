@@ -1,4 +1,4 @@
-<?
+<?php
 	// Выводим собранные в сесии сообщения через noty
 	if( isset($_SESSION["error"]) ) {
 		foreach ($_SESSION["error"] as $value) {

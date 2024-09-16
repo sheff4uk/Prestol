@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 	if( isset($_GET["shpid"]) ) {
 		$title = 'Отгрузка';
@@ -163,7 +163,7 @@
 
 	<div id="overlay"></div>
 	<div id="filter_overlay" style="z-index: 10; position: fixed; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; display: none;"></div>
-	<?
+	<?php
 		include "forms.php";
 		include "form_order.php";
 	?>
@@ -172,7 +172,7 @@
 		Найдено <b id="counter"></b> результатов.
 	</div>
 
-	<?
+	<?php
 	if($archive == "2") {
 		echo "<div style='position: absolute; top: 57px; width: 1000px; left: calc(50% - 500px); text-align: center; color: red;'>Внимание! В списке отгруженных наборов отображаются первые 500 записей. Чтобы найти интересующие наборы воспользуйтесь фильтром.</div>";
 	}
@@ -181,7 +181,7 @@
 	}
 	?>
 
-	<?
+	<?php
 	if( isset($_GET["shpid"]) ) {
 		$query = "SELECT SHP.title, CT.CT_ID, CT.City, CT.Color, DATE_FORMAT(SHP.shipping_date, '%d.%m.%Y') shipping_date
 					FROM Shipment SHP
@@ -259,7 +259,7 @@
 				<a href="?archive=3" class="button" style="<?=($archive == "3" ? "border: 1px solid #fbd850; color: #eb8f00;" : "")?>">Удаленные</a>
 			</fieldset>
 		</div>
-	<?
+	<?php
 	}
 
 	if( in_array('shipment_view', $Rights) or in_array('shipment_view_city', $Rights) ) {
@@ -277,7 +277,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					<?
+					<?php
 					$query = "SELECT SHP.SHP_ID
 					,				CT.City
 									,CT.Color
@@ -301,7 +301,7 @@
 			</table>
 		</div>
 	</div>
-	<?
+	<?php
 	}
 	// Кнопка добавления набора
 	if( (in_array('order_add', $Rights) or in_array('order_add_free', $Rights)) and !isset($_GET["shpid"]) ) {
@@ -381,7 +381,7 @@
 ?>
 
 	<!-- ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
-	<?
+	<?php
 	// Если зашли в отгрузку - не показываем фильтр
 	if( !isset($_GET["shpid"]) ) {
 	?>
@@ -403,7 +403,7 @@
 
 					<optgroup label="Столы">
 					<option value="0" <?=(($_SESSION["f_Models"] == "0") ? "selected" : "")?>>-=Столешница=-</option>
-					<?
+					<?php
 						$query = "
 							SELECT PM.PM_ID, CONCAT(PM.Model, IF(PM.archive, ' (архив)', '')) Model
 							FROM ProductModels PM
@@ -420,7 +420,7 @@
 					?>
 					</optgroup>
 					<optgroup label="Стулья">
-					<?
+					<?php
 						$query = "
 							SELECT PM.PM_ID, CONCAT(PM.Model, IF(PM.archive, ' (архив)', '')) Model
 							FROM ProductModels PM
@@ -469,7 +469,7 @@
 					<option value="02" <?= ($_SESSION["f_PR"] === "02") ? 'selected' : '' ?>>Не назначен! - Столы</option>
 					<option value="01" <?= ($_SESSION["f_PR"] === "01") ? 'selected' : '' ?>>Не назначен! - Стулья</option>
 					<option value="00" <?= ($_SESSION["f_PR"] === "00") ? 'selected' : '' ?>>Не назначен! - Прочее</option>
-					<?
+					<?php
 						$query = "
 							SELECT USR.USR_ID
 								,USR_ShortName(USR.USR_ID) Name
@@ -530,7 +530,7 @@
 		</thead>
 		</form>
 	</table>
-	<?
+	<?php
 	}
 	else {
 	?>
@@ -538,7 +538,7 @@
 	<form id='shipping_filter' method='get' style="display: inline-block; position: absolute; top: 113px; left: calc(50% - 300px); width: 600px; text-align: center;">
 		<input type="hidden" name="shpid" value="<?=$_GET["shpid"]?>">
 		<div class="btnset">
-			<?
+			<?php
 			$query = "SELECT SH.SH_ID, SH.Shop
 						FROM OrdersData OD
 						JOIN Shops SH ON SH.SH_ID = OD.SH_ID
@@ -571,7 +571,7 @@
 		});
 	</script>
 	<!-- //Фильтр для отгрузки -->
-	<?
+	<?php
 	}
 	?>
 	<!-- //ФИЛЬТР ГЛАВНОЙ ТАБЛИЦЫ -->
@@ -604,7 +604,7 @@
 			<th width="130"><input type="checkbox" disabled value="10" name="PR" class="print_col" id="PR"><label for="PR">Этапы <i class="fa fa-question-circle" html="<b>Цветовой статус изготовления:</b><br><span class='notready unvisible'>Выполнение не требуется</span><br><span class='notready'>Не дано в работу</span><br><span class='inwork'>Дано в работу</span><br><span class='ready'>Выполнено</span>"></i></label></th>
 			<th width="40"><input type="checkbox" disabled value="11" name="CF" class="print_col" id="CF"><label for="CF">Принят <i class="fa fa-question-circle" html="<b>Статус принятия набора:</b><br><i class='fa fa-check-circle fa-2x not_confirmed'></i> - Не принят в работу<br><i class='fa fa-check-circle fa-2x confirmed'></i> - Принят в работу (изменение набора может быть ограничено)"></i></label></th>
 			<th width="40"><input type="checkbox" disabled value="12" name="X" class="print_col" id="X"><label for="X">X</label>
-			<?
+			<?php
 				if( isset($_GET["shpid"]) ) {
 					$checked = $_GET["X"] ? 'checked' : '';
 					$X = $_GET["X"] ? "" : "1";
@@ -639,7 +639,7 @@
 		</tr>
 		</thead>
 		<tbody>
-<?
+<?php
 	$MT_IDs = (!isset($_GET["shpid"]) and $_SESSION["f_M"] != "") ? implode(",", $_SESSION["f_M"]) : "";
 
 	$is_invoice = 0;	// Если встретится накладная - поменяется на 1
@@ -1139,7 +1139,7 @@
 
 <script>
 	$(function() {
-		<?
+		<?php
 		// Выделяем рамкой отфильтрованные этапы
 		if (!isset($_GET["shpid"]) and ($_SESSION["f_PR"] != "" or $_SESSION["f_ST"] != "")) {
 			if ($_SESSION["f_PR"] != "" and $_SESSION["f_ST"] != "") {
@@ -1160,7 +1160,7 @@
 		?>
 	});
 </script>
-<?
+<?php
 	// Генерируем Select2 для фильтра материалов
 	$MT_filter = '';
 	$MT_string = '';
@@ -1198,7 +1198,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<label>Город:</label>
 				<select name="CT_ID" required>
 					<?=$_GET["shpid"] ? '' : '<option value="">-=Выберите город=-</option>'?>
-					<?
+					<?php
 					// Ограничиваем вывод списка салонов в дропдауне
 					$query = "SET @@group_concat_max_len = 50;";
 					mysqli_query( $mysqli, $query );
@@ -1313,7 +1313,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 	}
 
 	$(function(){
-<?
+<?php
 		//Расскрашиваем экран в зависимости от выбранной вкладки (В работе, Свободные, Отгруженные, Удаленные)
 		switch ($archive) {
 			case 0:
@@ -1357,7 +1357,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#main_filter_form').submit();
 		});
 
-		<?
+		<?php
 		// На экране отгрузки проверяем можно ли отгружать или отменять отгрузку
 		if (isset($_GET['shpid'])) {
 			$filter = (($_GET["shop"] != "" and $check_shops == 0) or $_GET["X"] != "") ? 1 : 0;
@@ -1464,7 +1464,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#orders_to_shipment').html('');
 			$('#add_shipment_form .accordion').accordion( "option", "active", 1 );
 
-			<?
+			<?php
 			// Если на экране отгрузки - заполняем форму отгрузки
 			if( isset($_GET["shpid"]) ) { // Если в отгрузке - заполняем форму отгрузки
 				echo "$('#add_shipment_form select[name=CT_ID]').val('{$CT_ID}');";
@@ -1515,6 +1515,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

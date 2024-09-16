@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 	$title = 'Касса';
 	include "header.php";
@@ -261,7 +261,7 @@
 	}
 </style>
 
-<?
+<?php
 	//Узнаем дефолтный счет для пользователя
 	$query = "SELECT FA_ID FROM FinanceAccount WHERE USR_ID = {$_SESSION['id']} ORDER BY IFNULL(bank, 0) LIMIT 1";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -390,14 +390,14 @@
 
 <div style="width: 1000px; margin: auto;">
 	<div id="wr_account">
-		<?
+		<?php
 		if( !in_array('finance_account', $Rights) ) {
 			echo "<a href='#' class='add_account_btn' style='margin: 10px; display: block; text-align: center;'><b><i class='fa fa-plus'></i> Добавить счет</b></a>";
 		}
 		?>
 		<table class="main_table">
 			<tbody>
-				<?
+				<?php
 					$total = 0;
 					$query = "SELECT FA_ID, name, start_balance, end_balance, USR_ID, bank, color
 								FROM FinanceAccount
@@ -432,14 +432,14 @@
 				?>
 			</tbody>
 		</table>
-		<?
+		<?php
 		if( !in_array('finance_account', $Rights) ) {
 			echo "<a href='#' class='add_category_btn' style='margin: 10px; display: block; text-align: center;'><b><i class='fa fa-plus'></i> Добавить категорию</b></a>";
 		}
 		?>
 	</div>
 
-	<?
+	<?php
 		// Инкассация
 		$query = "
 			SELECT OP.OP_ID
@@ -497,7 +497,7 @@
 			<input readonly type="text" name="cash_to" class="date to" value="<?=$cash_to?>">
 			 ]
 		</form>
-		<?
+		<?php
 		if( in_array('finance_all', $Rights) ) {
 //			echo "<p style='display: inline-block; margin: 10px;'>Изменение локальное: <b id='cash_change_local'></b></p>";
 		}
@@ -767,7 +767,7 @@
 						<i class="fa fa-filter fa-lg"></i>
 						<div id="account_filter" class="filter_block" style="width: 200px;">
 							<div class='btnset'>
-								<?
+								<?php
 								echo "<input id='account_select_all' class='select_all' type='checkbox' name='all_accounts' value='1' form='filter_form'><label for='account_select_all'>Все счета</label>";
 								$query = "
 									SELECT FA_ID
@@ -794,7 +794,7 @@
 						<i class="fa fa-filter fa-lg"></i>
 						<div id="category_filter" class="filter_block" style="width: 200px; height: 300px;">
 							<div class='btnset'>
-								<?
+								<?php
 								echo "<input id='category_select_all' class='select_all' type='checkbox' name='all_categories' value='1' form='filter_form'><label for='category_select_all'>Все категории</label>";
 								$query = "SELECT FC_ID, name FROM FinanceCategory ORDER BY FC_ID";
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -814,7 +814,7 @@
 						<i class="fa fa-filter fa-lg"></i>
 						<div id="author_filter" class="filter_block" style="width: 200px;">
 							<div class='btnset'>
-								<?
+								<?php
 								echo "<input id='author_select_all' class='select_all' type='checkbox' name='all_authors' value='1' form='filter_form'><label for='author_select_all'>Все авторы</label>";
 								$query = "SELECT USR_ID, USR_Name(USR_ID) Name FROM Users WHERE USR_ID IN (SELECT author FROM Finance) ORDER BY Name";
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -838,7 +838,7 @@
 				</tr>
 			</thead>
 			<tbody>
-			<?
+			<?php
 				// Переменные фильтрации из сессии
 				$FA_IDs = $_SESSION["cash_account"] != "" ? implode(",", $_SESSION["cash_account"]) : "";
 				$FC_IDs = $_SESSION["cash_category"] != "" ? implode(",", $_SESSION["cash_category"]) : "";
@@ -1034,7 +1034,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<label for="account">Счёт:</label><br>
 				<select required name="account" id="account" style="width: 140px;">
 					<option value="">-=Выберите счёт=-</option>
-						<?
+						<?php
 						if( !in_array('finance_account', $Rights) ) {
 							echo "<optgroup label='Нал'>";
 							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0 AND archive = 0";
@@ -1091,7 +1091,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<div class='btnset'>
 					<p>Принять <b id="payment_sum"></b> из кассы <b id="cashbox"></b> в кассу:</p>
 					<select size="4" name="account" style="width: 100%;" required>
-						<?
+						<?php
 						$query = "SELECT FA_ID, name FROM FinanceAccount WHERE USR_ID = {$_SESSION["id"]} AND IFNULL(bank, 0) = 0 AND archive = 0";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						$account_cnt = mysqli_num_rows($res);
@@ -1143,7 +1143,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<label for="USR_ID">Пользователь:</label><br>
 				<select name="USR_ID" id="USR_ID" style="width: 150px;">
 					<option value="">-=Выберите пользователя=-</option>
-					<?
+					<?php
 						$query = "SELECT USR_ID, USR_Name(USR_ID) Name FROM Users WHERE act = 1 AND KA_ID IS NULL ORDER BY Name";
 						$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 						while( $row = mysqli_fetch_array($res) )
@@ -1174,7 +1174,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 					</tr>
 				</thead>
 				<tbody>
-					<?
+					<?php
 					echo "<tr style='background: #6f6;'>";
 					echo "<td><input type='text' name='name_add' autocomplete='off' style='width: 250px;'></td>";
 					echo "<td><div class='btnset'>";
@@ -1384,6 +1384,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

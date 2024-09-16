@@ -1,4 +1,4 @@
-<?
+<?php
 	// Список названий контрагентов для автокомплита
 	include "config.php";
 //	include "checkrights.php";

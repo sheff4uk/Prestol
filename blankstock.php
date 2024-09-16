@@ -1,4 +1,4 @@
-<?
+<?php
 //	session_start();
 	include "config.php";
 	$title = 'Заготовки';
@@ -75,7 +75,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 						<option value="">-=Выберите работника=-</option>
 						<option value="0">Без работника</option>
 						<optgroup label="Частые">
-							<?
+							<?php
 							$query = "
 								SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name, COUNT(1) cnt
 								FROM Users USR
@@ -92,7 +92,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 							?>
 						</optgroup>
 						<optgroup label="Остальные">
-							<?
+							<?php
 							$query = "
 								SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name
 								FROM Users USR
@@ -108,7 +108,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 							?>
 						</optgroup>
 						<optgroup label="Уволенные">
-							<?
+							<?php
 							$query = "
 								SELECT USR.USR_ID, USR_ShortName(USR.USR_ID) Name
 								FROM Users USR
@@ -167,7 +167,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</tr>
 			</thead>
 			<tbody id="exist_blank">
-			<?
+			<?php
 				// Рекурсивная функция вывода дерева заготовок
 				function blank_tree( $pid, $level ) {
 					global $mysqli;
@@ -411,6 +411,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

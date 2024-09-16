@@ -1,4 +1,4 @@
-<?
+<?php
 include_once "config.php";
 include_once "checkrights.php";
 $_GET['ajax'] = 1;

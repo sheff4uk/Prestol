@@ -1,4 +1,4 @@
-<?
+<?php
 	// Массив форм столешниц в зависимости от модели
 	$ModelForm = array();
 	$ModelForm_standart = array();
@@ -109,7 +109,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<label>Модель:</label>
 			<input type='hidden' id='Model'>
 			<select name='Model' required style="width: 300px;">
-			<?
+			<?php
 				echo "<option value=''>-=Выберите модель=-</option>";
 				$query = "
 					SELECT PM_ID
@@ -133,7 +133,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<label>Патина:</label>
 			<select name="P_ID" style="width: 160px;">
 				<option value="0">-=Нет=-</option>
-				<?
+				<?php
 				$query = "SELECT P_ID, patina, ptn_color FROM Patina ORDER BY P_ID";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
@@ -146,7 +146,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<label>Ткань:</label>
 			<input type='text' class='materialtags_1 all' name='Material' style='width: 250px;'>
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
-				<?
+				<?php
 				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 1 ORDER BY Shipper";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
@@ -155,7 +155,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				?>
 			</select>
 		</div>
-		<?
+		<?php
 		if( in_array('order_add_confirm', $Rights) ) {
 		?>
 		<div>
@@ -179,11 +179,11 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<span>Ожидается:</span>
 			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 		</div>
-		<?
+		<?php
 		}
 		?>
 		<div>
-		<?
+		<?php
 			if( in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights) ) {
 				echo "<label>Примечание:</label>";
 				echo "<textarea name='Comment' rows='3' cols='38'></textarea>";
@@ -217,7 +217,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		<div>
 			<label>Модель:</label>
 			<select name="Model" style="width: 300px;" required>
-			<?
+			<?php
 				echo "<option value='0'>-=Столешница=-</option>";
 				$query = "
 					SELECT PM_ID
@@ -302,7 +302,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<label>Патина:</label>
 			<select name="P_ID" style="width: 160px;">
 				<option value="0">-=Нет=-</option>
-				<?
+				<?php
 				$query = "SELECT P_ID, patina, ptn_color FROM Patina ORDER BY P_ID";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
@@ -316,7 +316,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<label>Пластик:</label>
 			<input type='text' class="materialtags_2 all" name='Material' style="width: 250px;" placeholder="Для поиска вводите только цифры">
 			<select name="Shipper" style="width: 110px;" title="Поставщик">
-				<?
+				<?php
 				$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 2 ORDER BY Shipper";
 				$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 				while( $row = mysqli_fetch_array($res) ) {
@@ -325,7 +325,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				?>
 			</select>
 		</div>
-		<?
+		<?php
 		if ($page != "calc") {
 			if (in_array('order_add_confirm', $Rights)) {
 		?>
@@ -350,7 +350,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<span>Ожидается:</span>
 			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 		</div>
-		<?
+		<?php
 			}
 		?>
 		<div>
@@ -365,7 +365,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 					<label for='3radio3'><img src='/img/wedge.png' style="height: 24px;"><br>Клин</label>
 			</div>
 			<select name="PVC_ID" style="width: 300px;">
-			<?
+			<?php
 				echo "<option value='' selected>-=Выберите кромку=-</option>";
 				$query = "SELECT PVC_ID, edge FROM PVCedge ORDER BY edge";
 				$result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -389,7 +389,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</div>
 		</div>
 		<div>
-		<?
+		<?php
 			if( in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights) ) {
 				echo "<label>Примечание:</label>";
 				echo "<textarea name='Comment' rows='3' cols='38'></textarea>";
@@ -399,7 +399,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			}
 		?>
 		</div>
-		<?
+		<?php
 		}
 		?>
 		</fieldset>
@@ -426,7 +426,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<select required name="Blanks" style="width: 300px;">
 					<option value="">-=Выберите заготовку=-</option>
 					<optgroup label="Стулья">
-						<?
+						<?php
 						$query = "SELECT BL.BL_ID, BL.Name, IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
 								  FROM BlankList BL
 								  LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
@@ -441,7 +441,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 						?>
 					</optgroup>
 					<optgroup label="Столы">
-						<?
+						<?php
 						$query = "SELECT BL.BL_ID, BL.Name, IF(PB.BL_ID IS NOT NULL, 'bold', '') Bold
 								  FROM BlankList BL
 								  LEFT JOIN ProductBlank PB ON PB.BL_ID = BL.BL_ID
@@ -465,7 +465,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<label>Патина:</label>
 				<select name="P_ID" style="width: 160px;">
 					<option value="0">-=Нет=-</option>
-					<?
+					<?php
 					$query = "SELECT P_ID, patina, ptn_color FROM Patina ORDER BY P_ID";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
@@ -478,7 +478,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<label>Ткань:</label>
 				<input type='text' class='materialtags_1 all' name='Material' style='width: 250px;'>
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
-					<?
+					<?php
 					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 1 ORDER BY Shipper";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
@@ -491,7 +491,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<label>Пластик:</label>
 				<input type='text' class="materialtags_2 all" name='Material' style="width: 250px;" placeholder="Для поиска вводите только цифры">
 				<select name="Shipper" style="width: 110px;" title="Поставщик">
-					<?
+					<?php
 					$query = "SELECT SH_ID, Shipper FROM Shippers WHERE mtype = 2 ORDER BY Shipper";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
@@ -501,7 +501,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				</select>
 			</div>
 			<input type="hidden" name="mtype">
-			<?
+			<?php
 			if( in_array('order_add_confirm', $Rights) ) {
 			?>
 			<div>
@@ -525,11 +525,11 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<span>Ожидается:</span>
 				<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
 			</div>
-			<?
+			<?php
 			}
 			?>
 			<div>
-		<?
+		<?php
 			if( in_array('order_add_confirm', $Rights) or in_array('order_add_free', $Rights) ) {
 				echo "<label>Примечание:</label>";
 				echo "<textarea name='Comment' rows='3' cols='38'></textarea>";

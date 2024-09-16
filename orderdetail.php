@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 	include "checkrights.php";
 
@@ -564,7 +564,7 @@
 		<thead>
 		<tr class='nowrap'>
 			<th width="90">Код набора</th>
-			<?
+			<?php
 			if ($retail and $StartDate) {
 				echo "<th width='125'>Клиент<br>Квитанция<br>Телефон</th>";
 				echo "<th width='20%'>Адрес доставки</th>";
@@ -576,7 +576,7 @@
 			<th width="170">Цвет краски <i class="fa fa-question-circle" html="<b>Цветовой статус лакировки:</b><br><span class='empty'>Покраска не требуется</span><br><span class='notready'>Не дано в покраску</span><br><span class='inwork'>Дано в покраску</span><br><span class='ready'>Покрашено</span>"></i></th>
 			<th width="40">Принят</th>
 			<th width="65">Стоимость<br>набора</th>
-			<?
+			<?php
 			// Если розница и набор свой - видна оплата
 			if( $retail and $editable ) {
 				echo "<th width='65'>Оплата</th>";
@@ -589,7 +589,7 @@
 		<tbody>
 		<tr class='ord_log_row' lnk='*OD_ID<?=$id?>*' id='ord<?=$id?>'>
 			<td class="nowrap"><b class='code' style='font-size: 1.6em;'><?=$Code?></b><br><?=$GroupOrders?><br><?=$AddDate?></td>
-<?
+<?php
 		if ($retail and $StartDate) {
 			echo "
 				<td>
@@ -639,7 +639,7 @@
 			<select name='Shop' class='select_shops' <?=((in_array('order_add', $Rights) and !$is_lock and !$Del and $editable) ? "" : "disabled")?> style="width: 100%;">
 				<!--Список салонов выводится аяксом ниже-->
 			</select>
-			<?
+			<?php
 				if ($Naimenovanie) {
 					echo "<n class='ul'>{$Naimenovanie}</n><br>";
 					echo "<a href='/bills.php?payer={$KA_ID}' target='_blank'>Счета</a>&nbsp;&nbsp;<a href='/sverki.php?payer={$KA_ID}' target='_blank'>Сверки</a>";
@@ -648,7 +648,7 @@
 			</div>
 		</td>
 
-<?
+<?php
 		switch ($IsPainting) {
 			case 0:
 				$class = "empty";
@@ -727,7 +727,7 @@
 		</td>
 		<td style="text-align: center;">
 
-<?
+<?php
 	if ($editable) {
 		// Если набор не заблокирован и не удален, то показываем кнопку разделения
 		if( !$is_lock and in_array('order_add', $Rights) and !$Del ) {
@@ -778,7 +778,7 @@
 			}
 		});
 	</script>
-<?
+<?php
 		if ( $confirmed == 1 and !$ReadyDate ) {
 			echo "<div id='order_in_work_label' style='position: absolute; top: 77px; left: 140px; font-weight: bold; color: green; font-size: 1.2em;'>Набор принят в работу.</div>";
 		}
@@ -810,7 +810,7 @@
 		</tr>
 		</thead>
 		<tbody>
-<?
+<?php
 	$query = "
 		SELECT ODD.ODD_ID
 			,ODD.Amount
@@ -910,7 +910,7 @@
 		border-left: 4px solid white;
 	}
 </style>
-<?
+<?php
 // Узнаем количество вложенных файлов
 $query = "SELECT COUNT(1) cnt FROM OrdersAttachments WHERE OD_ID = {$id}";
 $result = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -947,7 +947,7 @@ if( $id != "NULL" ) {
 					</tr>
 				</thead>
 				<tbody>
-		<?
+		<?php
 			$query = "SELECT IF(OCL.OD_ID IS NOT NULL, 'OD_ID', 'ODD_ID') table_key
 							,IF(OCL.OD_ID IS NOT NULL, OCL.OD_ID, IFNULL(OCL.ODD_ID, ODS.ODD_ID)) table_value
 							,CONCAT(OFN.field_name, IFNULL(CONCAT(' \"', ST.Step, '\"'), '')) field_name
@@ -1001,7 +1001,7 @@ if( $id != "NULL" ) {
 					<tr>
 					<th width="40"><i class="fas fa-question-circle fa-lg" html="<p>Если нажать на красный конверт слева от сообщения, то конверт станет зеленым - это означает, что сообщение прочитано. Оно так же исчезнет из уведомлений в верхнем-левом углу и там остануться только самые актуальные сообщения.</p><p>Непрочитанные сообщения спустя месяц автоматически закрываются.</p>"></i></th>
 					<th width="">Сообщение
-					<?
+					<?php
 					if( in_array('order_add', $Rights) and ($editable or !$SH_ID) ) {
 						echo "<br><a href='#' class='add_message_btn button'>".(in_array('order_add_confirm', $Rights) ? "Сообщение с производства" : "Сообщение на производство")."</a>";
 					}
@@ -1012,7 +1012,7 @@ if( $id != "NULL" ) {
 					</tr>
 				</thead>
 				<tbody>
-		<?
+		<?php
 			$query = "SELECT OM.OM_ID
 							,OM.Message
 							,OM.priority
@@ -1074,7 +1074,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 					</tr>
 				</thead>
 				<tbody>
-				<?
+				<?php
 				$query = "SELECT OA.filename, OA.comment, OA.OA_ID
 							FROM OrdersAttachments OA
 							WHERE OA.OD_ID = {$id}
@@ -1096,7 +1096,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</div>
 	</div>
 </div>
-<?
+<?php
 }
 ?>
 <!-- Форма добавления сообщения к набору -->
@@ -1152,7 +1152,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<label>Цвет NCS:</label>
 				<select name="NCS" style="width: 200px;" <?=(!in_array('paint_color_admin', $Rights) ? "disabled" : "")?>>
 					<option value="">-=NCS цвет не указан=-</option>
-					<?
+					<?php
 					$query = "
 						SELECT NCS_ID, NCScolor, HTML, IF(R+G+B < 200, 'white', 'black') txt_color
 						FROM NCScolors
@@ -1171,7 +1171,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		<div>
 			<hr>
 			<input type='submit' name="subbut" value='Сохранить' style='float: right;'>
-			<?
+			<?php
 			if( in_array('paint_color_admin', $Rights) and $CL_ID ) {
 				$query = "SELECT SUM(1) cnt FROM OrdersData WHERE CL_ID = {$CL_ID}";
 				$res = mysqli_query( $mysqli, $query );
@@ -1179,7 +1179,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$cnt = $row["cnt"];
 			?>
 				<input type='submit' name="subbut" value='Редактировать (<?=$cnt?>)' style='float: right; background: #f55; color: #fff;'>
-			<?
+			<?php
 			}
 			?>
 		</div>
@@ -1255,14 +1255,14 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 		$( "#wr_order_change_log" ).tabs();
 
-		<?
+		<?php
 		// Переключаемся на вкладку
 		if( isset($_GET["tabs"]) ) {
 			echo "$( '#wr_order_change_log' ).tabs( 'option', 'active', {$_GET["tabs"]} );";
 		}
 		?>
 
-		<?
+		<?php
 		if( !in_array('order_add_confirm', $Rights) ) {
 			echo "$( '#IsPainting input' ).button( 'option', 'disabled', true );";
 		}
@@ -1276,7 +1276,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('.ord_log_row[lnk="'+lnk+'"]').css('border-left', '4px solid white');
 		});
 
-		<?
+		<?php
 		// Если пришли из калькулятора - открывается форма редактирования стола
 		if ($_GET["odd_id"]) {
 			echo "$('#{$_GET["odd_id"]}.edit_product2').click();";
@@ -1285,6 +1285,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

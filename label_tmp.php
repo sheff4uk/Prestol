@@ -1,4 +1,4 @@
-<?
+<?php
 	ini_set('display_errors', 1);
 	error_reporting(E_ALL);
 ?>
@@ -87,7 +87,7 @@
 </script>
 </head>
 <body>
-<?
+<?php
 	include "config.php";
 
 	foreach ($_POST["prod"] as $key => $value) {
@@ -135,7 +135,7 @@
 				fontSize('.prod<?=$key?> .date', 24);
 				fontSize('.prod<?=$key?> .number', 24);
 		</script>
-		<?
+		<?php
 	}
 ?>
 <script>

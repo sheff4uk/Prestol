@@ -1,4 +1,4 @@
-<?
+<?php
 include "config.php";
 
 $query = "DELETE FROM ExhibitionCostLog WHERE date = CURRENT_DATE()";

@@ -1,4 +1,4 @@
-<?
+<?php
 foreach ($_POST["data"] as $entry) {
 	$lines = explode("\n",$entry);
 	switch ($lines[0]) {

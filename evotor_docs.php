@@ -6,23 +6,27 @@ include "config.php";
 $Authorization = 'c7a9f2fa-424c-4333-b9f0-3559ffd8f5c0'; // АВ
 
 // Даты периода выборки в нужном формате
-$gtCloseDate_out = "2023-09-31T00:00:00.000+0000";
-$gtCloseDate = "2023-10-01T12:58:18.000+0000";
-$ltCloseDate = "2023-10-22T15:15:00.000+0000";
+$gtCloseDate_out = "2024-04-15T00:00:00.000+0000";
+$gtCloseDate = "2024-04-15T00:00:00.000+0000";
+$ltCloseDate = "2024-04-20T00:00:00.000+0000";
 
 //$deviceUuid = '20190528-8698-409A-8002-A0C67CCF7B3F';
 //$deviceUuid = '20190528-D09D-405F-8011-874610944D19'; // Гулливер Б
 //$deviceUuid = '20201117-E2FD-402E-80E1-2AEC80643D5B'; // Престол Мегадом
 //$deviceUuid = '20230829-2518-403C-8079-E2FAA2D88EAC'; // АВ МегаДом
-$deviceUuid = '20230829-E51E-4004-80F8-CC7E1352B209'; // АВ ГигаМарт
+//$deviceUuid = '20230829-E51E-4004-80F8-CC7E1352B209'; // АВ ГигаМарт
+//$deviceUuid = '20231102-E672-40B6-8066-44C001E9F768'; // АВ ЭМА
+//$deviceUuid = '20231116-7CD0-4053-80ED-5C33090C2769'; // АВ БУМ
+$deviceUuid = '20231004-7550-4007-80BC-090757DBB197'; // АВ ГА
 
 //$storeUuid = '20190528-BFDD-4056-802A-2BFD4C905D57'; // ИП
 //$storeUuid = '20190528-92E7-4012-80D2-C5CDAF90F275'; // ООО
-$storeUuid = '20230829-FA47-4000-80F0-E62DD7156DB6'; // ИП
+$storeUuid = '20230829-FA47-4000-80F0-E62DD7156DB6'; // АВ 1
+//$storeUuid = '20231102-78FB-40BD-80BC-7E71C8CF8B02'; // АВ 2
 
 if( $curl = curl_init() ) {
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
-	//curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate_out);
+	//curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate);
 	//curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate.'&ltCloseDate='.$ltCloseDate);
 	curl_setopt($curl, CURLOPT_URL, 'https://api.evotor.ru/api/v1/inventories/stores/'.$storeUuid.'/documents?deviceUuid='.$deviceUuid.'&gtCloseDate='.$gtCloseDate.'&ltCloseDate='.$ltCloseDate.'&types=CASH_OUTCOME');
 	curl_setopt($curl, CURLOPT_HTTPHEADER, array(

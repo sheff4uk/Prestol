@@ -1,4 +1,4 @@
-<?
+<?php
 	include "../config.php";
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -46,13 +46,13 @@
 	</style>
 </head>
 <body>
-<?
+<?php
 	// Собираем идентификаторы изделий
 	$ODD_IDs = implode(",", $_GET["prod"]);
 ?>
 	<table>
 		<tbody>
-	<?
+	<?php
 	$query = "
 		SELECT CONCAT(MT.Material, IFNULL(CONCAT(' <b>', SHP.Shipper, '</b>'), '')) Material
 			,CONCAT('<i>', IF(SHP.mtype = 1, CONCAT(ROUND(ODD.MT_amount, 1), '<br>м.п.'), GROUP_CONCAT(CONCAT('<b>', ST.Short, ':</b> ', USR_ShortName(ODS.USR_ID)) ORDER BY ST.Sort SEPARATOR '<br>')), '</i>') MT_amount

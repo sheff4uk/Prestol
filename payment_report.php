@@ -1,4 +1,4 @@
-<?
+<?php
 include "config.php";
 $title = 'Чеки';
 include "header.php";
@@ -26,7 +26,7 @@ if( !$_GET["R_ID"] ) {
 	<div class="nowrap" style="display: inline-block; margin-bottom: 10px; margin-right: 30px;">
 		<span>Организация:</span>
 		<select name="R_ID" onchange="this.form.submit()">
-			<?
+			<?php
 			$query = "
 				SELECT R_ID, Name FROM Rekvizity WHERE R_ID != 3
 			";
@@ -41,7 +41,7 @@ if( !$_GET["R_ID"] ) {
 </form>
 <br>
 
-<?
+<?php
 $query = "
 	SELECT OP.CB_ID
 		,CB.name
@@ -65,7 +65,7 @@ while( $row = mysqli_fetch_array($res) ) {
 			</tr>
 		</thead>
 		<tbody>
-			<?
+			<?php
 			$query = "
 				SELECT DATE_FORMAT(OP.payment_date, '%H:%i') time_format
 					,IF(OP.terminal = 0, OP.payment_sum, '') cash
@@ -92,7 +92,7 @@ while( $row = mysqli_fetch_array($res) ) {
 					<td style='text-align: right;'><?=$subrow["card"]?></td>
 					<td style='text-align: right;'><?=($subrow["OD_ID"] ? "<a href='orderdetail.php?id={$subrow["OD_ID"]}' target='_blank'><b class='code'>{$subrow["code"]}</b>" : $subrow["code"])?></td>
 				</tr>
-				<?
+				<?php
 			}
 			?>
 			<tr>
@@ -103,7 +103,7 @@ while( $row = mysqli_fetch_array($res) ) {
 			</tr>
 		</tbody>
 	</table>
-	<?
+	<?php
 }
 include "footer.php";
 ?>

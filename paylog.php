@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 	$title = 'Зарплата';
 	include "header.php";
@@ -83,19 +83,19 @@
 	ul a {font-size: 1.2em;}
 </style>
 
-	<?
+	<?php
 	if( in_array('screen_paylog', $Rights) ) {
 	?>
 		<div id='add_payin_btn' class='edit_pay' worker_name='<?=$USR_ShortName?>' worker='<?=$worker?>' location='<?=$location?>' title='НАЧИСЛИТЬ заработную плату'><i class="fas fa-2x fa-user-cog"></i></div>
 		<div id='add_payout_btn' class='edit_pay' account='<?=$account?>' worker_name='<?=$USR_ShortName?>' worker='<?=$worker?>' location='<?=$location?>' title='ВЫДАТЬ заработную плату'><i class="fas fa-2x fa-user-check"></i></div>
 
-	<?
+	<?php
 		include "form_addpay.php";
 	}
 	?>
 
 	<div class="halfblock">
-		<?
+		<?php
 		// Рекурсивная функция вывода дерева пользователей
 		function user_tree( $usr_id ) {
 			global $mysqli;
@@ -159,7 +159,7 @@
 	<div class="log-pay halfblock">
 		<h1><?=$USR_Name?></h1>
 
-		<?
+		<?php
 			$query = "
 				SELECT ODS.ODS_ID
 					,ODS.ODD_ID
@@ -385,7 +385,7 @@
 			</thead>
 			<tbody>
 
-	<?
+	<?php
 			$query = "
 				SELECT PL.PL_ID ord
 					,PL.Date Date_sort
@@ -453,6 +453,6 @@
 		</table>
 	</div>
 
-<?
+<?php
 	include "footer.php";
 ?>

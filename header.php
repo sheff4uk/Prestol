@@ -1,4 +1,4 @@
-<?
+<?php
 //ini_set('display_errors', 1);
 //error_reporting(E_ALL);
 
@@ -320,7 +320,7 @@
 		}
 	</script>
 
-<?
+<?php
 	// Выводим собранные в сесии сообщения через noty
 	include "noty.php";
 ?>
@@ -337,7 +337,7 @@
 				<i class="fa fa-bars fa-lg"></i>
 			</div>
 			<a class="navbar-brand" href="/" title="На главную" style="position: relative;"><?=$company_name?></a>
-			<?
+			<?php
 			if( in_array('order_add', $Rights) ) {
 			?>
 			<div id="navbar_workflow" style="background: <?=$workflow_color?>; box-shadow: 0 0 3px 3px <?=$workflow_color?>;">
@@ -356,7 +356,7 @@
 					</div>
 				</div>
 			</div>
-			<?
+			<?php
 			}
 			if( in_array('selling_all', $Rights) or in_array('selling_city', $Rights) or in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
 				echo "<a href='calc.php' id='navbar_calc' title='Калькулятор стоимости стола'><i class='fas fa-calculator fa-2x'></i></a>";
@@ -369,7 +369,7 @@
 				$( "#tabs_workflow" ).tabs();
 			});
 		</script>
-<?
+<?php
 	if( empty($_SESSION['id']) ) {
 		//$menu = array ("Вход" => "login.php", "Регистрация" => "reg.php");
 		$menu = array ();

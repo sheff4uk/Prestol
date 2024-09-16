@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 	$title = 'Подготовка этикеток для упаковок';
 	include "header.php";
@@ -196,7 +196,7 @@
 	}
 
 $(document).ready(function() {
-<?
+<?php
 	$query = "
 		SELECT Color_print(OD.CL_ID) Color
 			,OD.Code
@@ -247,6 +247,6 @@ $(document).ready(function() {
 });
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

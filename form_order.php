@@ -6,7 +6,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<fieldset>
 				<legend>Подразделение:</legend>
 				<select required name='Shop' style="width: 100%;">
-					<?
+					<?php
 					if( !$USR_Shop ) {
 						echo "<option value=''>-=Выберите подразделение=-</option>";
 					}

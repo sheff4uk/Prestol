@@ -1,4 +1,4 @@
-<?
+<?php
 	include "../config.php";
 	// Узнаём токен и по нему доп информацию из БД
 	$token = $_GET["t"];
@@ -185,7 +185,7 @@
 					<td style="text-align: right;"><?=($start_saldo < 0 ? $start_saldo_format : "")?></td>
 					<td style="text-align: right;"><?=($start_saldo > 0 ? $start_saldo_format : "")?></td>
 				</tr>
-<?
+<?php
 	$query = "
 		SELECT PFI.PFI_ID ID
 			,IF(PFI.rtrn = 1, PFI.summa * -1, PFI.summa) debet
@@ -254,7 +254,7 @@
 		<div style="display: flex; margin-top: 40px;">
 			<div style="width: 50%;">
 				По данным <?=$gruzootpravitel_name?><br>
-				<?
+				<?php
 					echo "<b>на {$date_to} задолженность ".(($end_saldo < 0) ? "в пользу {$gruzootpravitel_name} {$debt_format} руб." : (($end_saldo > 0) ? "в пользу {$platelshik_name} {$debt_format} руб." : "отсутствует."))."</b>";
 				?>
 			</div>

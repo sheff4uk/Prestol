@@ -1,4 +1,4 @@
-<?
+<?php
 $end_date = date_create(date('Y-m-d'));
 $working_days = 0;
 $year = 0;

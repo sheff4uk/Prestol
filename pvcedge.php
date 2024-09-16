@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 	$title = 'Кромки ПВХ';
 	include "header.php";
@@ -100,7 +100,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<div>
 				<label>Кромка:</label>
 				<select required name="PVCedge" id="edge" style="width: 200px;">
-					<?
+					<?php
 					$query = "
 						SELECT PVC.PVC_ID, PVC.edge
 						FROM PVCedge PVC
@@ -174,7 +174,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</tr>
 		</thead>
 		<tbody>
-<?
+<?php
 	$query = "
 		SELECT PVC.PVC_ID
 			,PVC.edge
@@ -260,7 +260,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</tr>
 		</thead>
 		<tbody>
-<?
+<?php
 	$query = "
 		SELECT PVCL_ID
 			,Friendly_date(PVCL.date) date
@@ -308,7 +308,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		</tr>
 		</thead>
 		<tbody>
-<?
+<?php
 	$query = "
 		SELECT Friendly_date(PVCL.date) date
 			,DATE_FORMAT(PVCL.date, '%H:%i') time
@@ -396,6 +396,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

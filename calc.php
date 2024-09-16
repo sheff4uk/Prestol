@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 	$title = 'Калькулятор стоимости стола';
 	include "header.php";
@@ -30,7 +30,7 @@
 	<h1 style="display: inline-block; width: 50%;">Калькулятор стоимости стола</h1>
 	<div style="display: inline-block; width: 49%; text-align: right;">
 		<h2 style="display: inline-block;">Действующий прайс: </h2>
-<?
+<?php
 		if ($price_type == 0 or $price_type == 1) {
 			echo "<a href='/files/Розничные цены с 1 сентября 2024 года.pdf' target='_blank' title='Розничный прайс'><i class='fas fa-file-pdf fa-3x'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;";
 		}
@@ -46,7 +46,7 @@
 				<th width="50"></th>
 				<th>Стол</th>
 				<th>Пластик</th>
-			<?
+			<?php
 				if ($price_type == 0) {
 					echo "
 						<th width='100'>Розница</th>
@@ -73,7 +73,7 @@
 				<th></th>
 				<th></th>
 				<th width="100"></th>
-			<?
+			<?php
 				if ($price_type == 0) {
 					echo "
 						<th width='100'></th>
@@ -87,7 +87,7 @@
 			</tr>
 		</thead>
 		<tbody>
-		<?
+		<?php
 		$query = "
 			SELECT ODD.ODD_ID
 				,PM.code
@@ -160,6 +160,6 @@
 	</table>
 </div>
 
-<?
+<?php
 	include "footer.php";
 ?>

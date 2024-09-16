@@ -1,4 +1,4 @@
-<?
+<?php
 include_once "config.php";
 include_once "checkrights.php";
 
@@ -332,7 +332,7 @@ switch( $_GET["do"] ) {
 			</form>
 		</div>
 
-<?
+<?php
 	include "footer.php";
 }
 ?>

@@ -1,4 +1,4 @@
-<?
+<?php
 	include "config.php";
 
 	// Сохранение статуса упаковки
@@ -58,7 +58,7 @@
 	<title>УПАКОВКА</title>
 </head>
 <body style="padding-top: 0px; padding-bottom: 150px;">
-	<?
+	<?php
 	// Кнопки регионов
 	$query = "
 		SELECT 'СВОБОДНЫЕ' City, 0 CT_ID, NULL shipment
@@ -224,7 +224,7 @@
 			<fieldset>
 				<input type="hidden" name="ODD_ID">
 				<input type="hidden" name="CT_ID" value="<?=$_GET["ct_id"]?>">
-				<?
+				<?php
 				// Формирование дропдауна со списком рабочих. Сортировка по релевантности.
 				$selectworker = $ready_date ? "" : "<option value='' selected>-=Работник не выбран=-</option>";
 				$query = "

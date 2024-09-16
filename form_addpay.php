@@ -1,4 +1,4 @@
-<?
+<?php
 	// Добавление начисления/выдачи
 	if( isset($_POST["Pay"]) ) {
 		if( $_POST["Pay"] ) {
@@ -62,7 +62,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<label>Счёт:</label>
 				<select name="account" id="account">
 					<option value="">-=Выберите счёт=-</option>
-						<?
+						<?php
 						if( !in_array('finance_account', $Rights) ) {
 							echo "<optgroup label='Нал'>";
 							$query = "SELECT FA_ID, name FROM FinanceAccount WHERE IFNULL(bank, 0) = 0 AND archive = 0";

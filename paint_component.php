@@ -1,4 +1,4 @@
-<?
+<?php
 include "config.php";
 include "checkrights.php";
 
@@ -71,7 +71,7 @@ include "header.php";
 	</thead>
 	<tbody style="text-align: center;">
 
-<?
+<?php
 $query = "
 	SELECT PC.PC_ID
 		,PC.material
@@ -89,7 +89,7 @@ while( $row = mysqli_fetch_array($res) ) {
 		<td><?=$row["density"]?></td>
 		<td><a href="#" class="material_edit" PC_ID="<?=$row["PC_ID"]?>" material="<?=htmlspecialchars($row["material"])?>" vendor="<?=htmlspecialchars($row["vendor"])?>" density="<?=$row["density"]?>" title="Редактировать"><i class="fa fa-pencil-alt fa-lg"></i></a></td>
 	</tr>
-	<?
+	<?php
 }
 ?>
 	</tbody>
@@ -173,6 +173,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 include "footer.php";
 ?>

@@ -1,4 +1,4 @@
-<?
+<?php
 	include "../config.php";
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -104,7 +104,7 @@
 	</script>
 </head>
 <body>
-<?
+<?php
 	// Формируем ценнки на наборы
 	foreach ($_GET["od"] as $k => $od_id) {
 		$query = "
@@ -147,7 +147,7 @@
 			</div>
 			<div style="display: flex;">
 
-			<?
+			<?php
 			// Генерируем содержимое набора
 			$query = "
 				SELECT CONCAT('g_odd', ODD.ODD_ID) id
@@ -202,7 +202,7 @@
 				<script>
 					fontSize('#<?=$row["id"]?> .prod', 80);
 				</script>
-			<?
+			<?php
 			}
 			?>
 			</div>
@@ -211,7 +211,7 @@
 				<b>РОССИЯ</b><b style="color: #C00000;"> / </b><b>КИРОВ</b>
 			</div>
 		</div>
-	<?
+	<?php
 	}
 
 	// Собираем идентификаторы изделий и прочего
@@ -301,7 +301,7 @@
 		<script>
 			fontSize('#<?=$row["id"]?> .prod', 80);
 		</script>
-	<?
+	<?php
 	}
 ?>
 </body>

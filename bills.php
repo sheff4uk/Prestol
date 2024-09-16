@@ -1,4 +1,4 @@
-<?
+<?php
 include "config.php";
 
 $title = 'Счета';
@@ -317,7 +317,7 @@ if( isset($_GET["add_bill"]) ) {
 	</script>
 	<label for="year">Год:</label>
 	<select name="year" id="year" onchange="this.form.submit()">
-<?
+<?php
 	$query = "
 		SELECT YEAR(date) year FROM PrintFormsBill GROUP BY YEAR(date)
 		UNION
@@ -333,7 +333,7 @@ if( isset($_GET["add_bill"]) ) {
 	&nbsp;&nbsp;
 	<label for="payer">Контрагент:</label>
 	<select name="payer" id="payer" onchange="this.form.submit()">
-<?
+<?php
 	if( in_array('sverki_opt', $Rights) ) {
 		// Выводим контрагента оптовика
 		$query = "
@@ -397,7 +397,7 @@ if( isset($_GET["add_bill"]) ) {
 	}
 </style>
 
-<?
+<?php
 if( !in_array('sverki_opt', $Rights) ) {
 	echo "<div id='add_bill_btn' title='Создать счёт'></div>";
 }
@@ -417,7 +417,7 @@ if( !in_array('sverki_opt', $Rights) ) {
 		</tr>
 	</thead>
 	<tbody>
-<?
+<?php
 $query = "SELECT PFB.PFB_ID
 				,PFB.summa
 				,KA.Naimenovanie pokupatel
@@ -461,7 +461,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset id="wr_platelshik" style="text-align: left;">
 			<legend>Информация о покупателе:</legend>
 			<select name="KA_ID" id="kontragenty" style="width: 100%;">
-				<?
+				<?php
 				echo "<option value=''></option>";
 				// Список регионов для добавления новых розничных контрагентов
 				$query = "
@@ -538,7 +538,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 						<td valign="top">
 							<select name="R_ID" id="R_ID" required>
 								<option value=""></option>
-								<?
+								<?php
 								$query = "SELECT R_ID, Name FROM Rekvizity";
 
 								$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -770,6 +770,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 	});
 </script>
 
-<?
+<?php
 	include "footer.php";
 ?>

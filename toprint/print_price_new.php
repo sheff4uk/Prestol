@@ -1,4 +1,4 @@
-<?
+<?php
 //ini_set('display_errors', 1);
 //error_reporting(E_ALL);
 	include "../config.php";
@@ -94,7 +94,7 @@
 	</script>
 </head>
 <body>
-<?
+<?php
 	// Собираем идентификаторы изделий и прочего
 	$ODD_IDs = 0;
 
@@ -217,7 +217,7 @@
 			fontSize('#<?=$row["id"]?>1 .prod', 45);
 			fontSize('#<?=$row["id"]?>2 .prod', 45);
 		</script>
-	<?
+	<?php
 	}
 ?>
 </body>
