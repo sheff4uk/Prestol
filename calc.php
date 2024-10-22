@@ -1,6 +1,6 @@
 <?php
 	include "config.php";
-	$title = 'Калькулятор стоимости стола';
+	$title = 'Калькулятор стоимости стола_';
 	include "header.php";
 	$page = "calc";
 	include "forms.php";
