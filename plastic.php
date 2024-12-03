@@ -85,7 +85,7 @@
 		die;
 	}
 
-	include "forms.php";
+	 "forms.php";
 ?>
 
 	<form method='get' id='MTfilter'>
@@ -146,7 +146,8 @@
 					";
 					$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $subrow = mysqli_fetch_array($subres) ) {
-						$selected = in_array($subrow["MT_ID"], $_GET["MT_ID"]) ? "selected" : "";
+						$arr = ($_GET["MT_ID"] != "") ? $_GET["MT_ID"] : array();
+						$selected = in_array($subrow["MT_ID"], $arr) ? "selected" : "";
 						echo "<option {$selected} value='{$subrow["MT_ID"]}'>{$subrow["Material"]} ({$row["Shipper"]})</option>";
 					}
 
@@ -293,7 +294,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			else {
 				$color = "bg-gray";
 			}
-			$material .= "<span class='wr_mt'>".(($subrow["outdate"] <= 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span shid='{$subrow["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}{$subrow["Shipper"]}</span><input type='text' value='{$subrow["Material"]}' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' ".($subrow["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span><br>";
+			$material .= "<span class='wr_mt'>".(($subrow["outdate"] < 0 and $subrow["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$subrow["outdate"]} дн.'></i>" : "")."<span shid='{$subrow["SH_ID"]}' mtid='{$subrow["MT_ID"]}' id='m{$subrow["ODD_ID"]}' class='mt{$subrow["MT_ID"]} {$subrow["removed"]} {$subrow["MTfilter"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$color}'>{$subrow["Material"]}{$subrow["Shipper"]}</span><input type='text' value='{$subrow["Material"]}' class='materialtags_{$subrow["mtype"]}' style='display: none;'><input type='checkbox' ".($subrow["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span><br>";
 
 			$MT_amount .= "<input class='footage' type='number' step='0.1' min='0' style='width: 50px; height: 19px;' value='{$subrow["MT_amount"]}' oddid='{$subrow["ODD_ID"]}'>";
 
@@ -367,7 +368,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<span>Заказано:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Ожидается:</span><br>
 			<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>" readonly>
 			&nbsp;&nbsp;-&nbsp;&nbsp;
-			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
+			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="">
 		</div>
 	</p>
 <!--

@@ -105,7 +105,7 @@ $(function(){
 	$('.radiostatus input').change(function(){
 		if( $(this).val() == 1 ) {
 			$(this).parents( "form" ).find('.order_material').show('fast');
-			$(this).parents( "form" ).find('.order_material input').attr("required", true);
+			$(this).parents( "form" ).find('.order_material input.from').attr("required", true);
 			$(this).parents( "form" ).find('.from').val( $(this).parents( "form" ).find('.from').attr("defaultdate") );
 			$(this).parents( "form" ).find('.to').val( $(this).parents( "form" ).find('.to').attr("defaultdate") );
 		}

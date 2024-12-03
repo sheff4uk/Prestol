@@ -177,7 +177,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>" readonly>
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<span>Ожидается:</span>
-			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
+			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="">
 		</div>
 		<?php
 		}
@@ -348,7 +348,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>" readonly>
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<span>Ожидается:</span>
-			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
+			<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="">
 		</div>
 		<?php
 			}
@@ -523,7 +523,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				<input class='date from' type='text' name='order_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y") ?>" readonly>
 				&nbsp;&nbsp;&nbsp;&nbsp;
 				<span>Ожидается:</span>
-				<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="<?= date("d.m.Y", strtotime("+14 days")) ?>" readonly>
+				<input class='date to' type='text' name='arrival_date' size='12' autocomplete="off" defaultdate="">
 			</div>
 			<?php
 			}
@@ -628,7 +628,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			$('#2radio').prop('checked', true);
 			$('#0radio').prop('checked', true);
 			$(element+' .order_material').hide('fast');
-			$(element+' .order_material input').attr("required", false);
+			$(element+' .order_material input.from').attr("required", false);
 			$(element+' .order_material input').val('');
 			$(element+' .order_material input.from').datepicker( "option", "maxDate", null );
 			$(element+' .order_material input.to').datepicker( "option", "minDate", null );
@@ -1002,7 +1002,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#addchair input[type="radio"]').button('refresh');
 				if( odd_data['isexist'] == 1 ) {
 					$('#addchair .order_material').show('fast');
-					$('#addchair .order_material input').attr("required", true);
+					$('#addchair .order_material input.from').attr("required", true);
 					$('#addchair .order_material input.from').val( odd_data['order_date'] );
 					$('#addchair .order_material input.to' ).val( odd_data['arrival_date'] );
 				}
@@ -1173,7 +1173,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#addtable input[type="radio"]').button('refresh');
 				if( odd_data['isexist'] == 1 ) {
 					$('#addtable .order_material').show('fast');
-					$('#addtable .order_material input').attr("required", true);
+					$('#addtable .order_material input.from').attr("required", true);
 					$('#addtable .order_material input.from').val( odd_data['order_date'] );
 					$('#addtable .order_material input.to' ).val( odd_data['arrival_date'] );
 				}
@@ -1376,7 +1376,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 				$('#addblank input[type="radio"]').button('refresh');
 				if( odd_data['isexist'] == 1 ) {
 					$('#addblank .order_material').show('fast');
-					$('#addblank .order_material input').attr("required", true);
+					$('#addblank .order_material input.from').attr("required", true);
 					$('#addblank .order_material input.from').val( odd_data['order_date'] );
 					$('#addblank .order_material input.to' ).val( odd_data['arrival_date'] );
 				}

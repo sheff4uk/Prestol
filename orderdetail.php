@@ -865,7 +865,7 @@
 		else {
 			$bgcolor = "bg-gray";
 		}
-		$material = "<span class='wr_mt'>".(($row["outdate"] <= 0 and $row["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$row["outdate"]} дн.'></i>" : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' id='m{$row["ODD_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$bgcolor}'>{$row["Material"]}{$row["Shipper"]}</span><input type='text' value='{$row["Material"]}' class='materialtags_{$row["mtype"]}' style='display: none;'><input type='checkbox' ".($row["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span>";
+		$material = "<span class='wr_mt'>".(($row["outdate"] < 0 and $row["IsExist"] == 1) ? "<i class='fas fa-exclamation-triangle' style='color: #E74C3C;' title='{$row["outdate"]} дн.'></i>" : "")."<span shid='{$row["SH_ID"]}' mtid='{$row["MT_ID"]}' id='m{$row["ODD_ID"]}' class='mt{$row["MT_ID"]} {$row["removed"]} material ".(in_array('screen_materials', $Rights) ? "mt_edit" : "")." {$bgcolor}'>{$row["Material"]}{$row["Shipper"]}</span><input type='text' value='{$row["Material"]}' class='materialtags_{$row["mtype"]}' style='display: none;'><input type='checkbox' ".($row["removed"] ? "checked" : "")." style='display: none;' title='Выведен'></span>";
 
 		$steps = "<a id='{$row["ODD_ID"]}' class='".(in_array('step_update', $Rights) ? "edit_steps " : "")."' location='{$location}'>{$row["Steps"]}</a>";
 
