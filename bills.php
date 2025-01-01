@@ -247,6 +247,7 @@ if( isset($_GET["add_bill"]) ) {
 		$_POST["tovar_ed"][$Counter] = "шт";
 		$_POST["tovar_kol"][$Counter] = $row["Amount"];
 		$_POST["tovar_cena"][$Counter] = $row["Price"];
+		$_POST["tovar_nds"][$Counter] = "5";
 		$Counter++;
 	}
 
@@ -553,7 +554,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 			</table>
 		</fieldset>
 
-		<input type="hidden" name="nds" value="0">
+		<input type="hidden" name="nds" value="1">
 
 		<fieldset style="text-align: left;">
 			<legend>Список наборов:</legend>

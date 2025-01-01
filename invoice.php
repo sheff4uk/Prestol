@@ -202,6 +202,7 @@ while( $row = mysqli_fetch_array($res) ) {
 	$_POST["tovar_kol"][$Counter] = $row["Amount"];
 	$_POST["tovar_cena"][$Counter] = $row["Price"];
 	$_POST["tovar_km"][$Counter] = $row["boxes"];
+	$_POST["tovar_nds"][$Counter] = "5";
 	$Counter++;
 }
 
@@ -266,6 +267,8 @@ if( $return ) {
 	$_POST["gruzootpravitel_bank_adres"] = $platelshik_bank_adres;
 	$_POST["gruzootpravitel_director"] = '';
 }
+
+$_POST["nds"] = 1;
 
 // Удаляем старые файлы
 $expire_time = 2*365*24*60*60; // Время через которое файл считается устаревшим (в сек.)
