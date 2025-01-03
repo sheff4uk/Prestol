@@ -12,9 +12,9 @@
 		die('Недостаточно прав для совершения операции');
 	}
 
-	// Узнаем какие цены можно показывать пользователю: 0 - все; 1 - розница; 2 - опт; 3 - региональный опт
+	// Узнаем какие цены можно показывать пользователю: 0 - все; 1 - розница; 2 - опт; 3 - региональный опт; 4 - Клён
 	$query = "
-		SELECT if(SH1.retail IS NULL AND SH2.reg IS NULL, 0, if(SH1.retail = 1, 1, if(SH2.reg = 1, 3, 2))) price_type
+		SELECT if(SH1.retail IS NULL AND SH2.reg IS NULL, 0, if(SH1.SH_ID = 36, 4, if(SH1.retail = 1, 1, if(SH2.reg = 1, 3, 2)))) price_type
 		FROM Users USR
 		LEFT JOIN Shops SH1 ON SH1.SH_ID = USR.SH_ID
 		LEFT JOIN Kontragenty KA ON KA.KA_ID = USR.KA_ID
@@ -51,7 +51,7 @@
 					echo "
 						<th width='100'>Розница</th>
 						<th width='100'>Опт</th>
-						<th width='100'>Рег. опт</th>
+						<th width='100'>Клён</th>
 					";
 				}
 				else {
@@ -101,6 +101,7 @@
 				,Price(ODD.ODD_ID, 1) rozn
 				,Price(ODD.ODD_ID, 2) opt
 				,Price(ODD.ODD_ID, 3) reg
+				,Price(ODD.ODD_ID, 4) klen
 				,USR_Icon(OCL.author) Name
 				,Friendly_date(OCL.date_time) friendly_date
 				,DATE_FORMAT(OCL.date_time, '%H:%i') Time
@@ -133,7 +134,7 @@
 				echo "
 					<td class='txtright'><p class='price'>{$row["rozn"]}</p></td>
 					<td class='txtright'><p class='price'>{$row["opt"]}</p></td>
-					<td class='txtright'><p class='price'>{$row["reg"]}</p></td>
+					<td class='txtright'><p class='price'>{$row["klen"]}</p></td>
 				";
 			}
 			elseif ($price_type == 1) {
@@ -142,8 +143,11 @@
 			elseif ($price_type == 2) {
 				echo "<td class='txtright'><p class='price'>{$row["opt"]}</p></td>";
 			}
-			else {
+			elseif ($price_type == 3) {
 				echo "<td class='txtright'><p class='price'>{$row["reg"]}</p></td>";
+			}
+			else {
+				echo "<td class='txtright'><p class='price'>{$row["klen"]}</p></td>";
 			}
 			echo "
 					<td>{$row["Name"]}</td>

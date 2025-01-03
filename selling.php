@@ -145,8 +145,13 @@
 				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 
-			// Пересчитываем стоимость по прайсу
-			$query = "UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 1) WHERE OD_ID = {$OD_ID}";
+			// Пересчитываем стоимость по прайсу (исключение для Клёна)
+			if( $SH_ID = 36 ) {
+				$query = "UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 4) WHERE OD_ID = {$OD_ID}";
+			}
+			else {
+				$query = "UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 1) WHERE OD_ID = {$OD_ID}";
+			}
 			mysqli_query( $mysqli, $query );
 
 			// Ставим цену по прайсу
