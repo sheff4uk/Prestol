@@ -202,7 +202,10 @@ while( $row = mysqli_fetch_array($res) ) {
 	$_POST["tovar_kol"][$Counter] = $row["Amount"];
 	$_POST["tovar_cena"][$Counter] = $row["Price"];
 	$_POST["tovar_km"][$Counter] = $row["boxes"];
-	$_POST["tovar_nds"][$Counter] = "5";
+	# НДС 5%
+	if( $year >= 2025 ) {
+		$_POST["tovar_nds"][$Counter] = "5";	
+	}
 	$Counter++;
 }
 
@@ -267,8 +270,10 @@ if( $return ) {
 	$_POST["gruzootpravitel_bank_adres"] = $platelshik_bank_adres;
 	$_POST["gruzootpravitel_director"] = '';
 }
-
-$_POST["nds"] = 1;
+# НДС 5%
+if( $year >= 2025 ) {
+	$_POST["nds"] = 1;
+}
 
 // Удаляем старые файлы
 $expire_time = 2*365*24*60*60; // Время через которое файл считается устаревшим (в сек.)
@@ -315,7 +320,7 @@ $out = file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
 $filename = 'invoice_'.$id.'_'.$_POST["nomer"].'.pdf';
 file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
 
-exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
+exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($year).'&payer='.($_GET["payer"]).'">');
 die;
 
 ?>

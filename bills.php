@@ -193,7 +193,7 @@ if( isset($_GET["add_bill"]) ) {
 	}
 
 	// Получаем номер очередного документа
-	$year = date('Y');
+	$year = date( 'Y', strtotime($_POST["date"]) );
 	$query = "SELECT MAX(count)+1 count FROM PrintFormsBill WHERE YEAR(date) = {$year}";
 	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	$count = mysqli_result($res,0,'count') ? mysqli_result($res,0,'count') : 1;
@@ -247,7 +247,10 @@ if( isset($_GET["add_bill"]) ) {
 		$_POST["tovar_ed"][$Counter] = "шт";
 		$_POST["tovar_kol"][$Counter] = $row["Amount"];
 		$_POST["tovar_cena"][$Counter] = $row["Price"];
-		$_POST["tovar_nds"][$Counter] = "5";
+		# НДС 5%
+		if( $year >= 2025 ) {
+			$_POST["tovar_nds"][$Counter] = "5";
+		}
 		$Counter++;
 	}
 
@@ -270,6 +273,11 @@ if( isset($_GET["add_bill"]) ) {
 
 	$_POST["schet_add_stamp_and_signatures"] = 1;
 	$_POST["print_qr_code"] = "true";
+
+	# НДС 5%
+	if( $year >= 2025 ) {
+		$_POST["nds"] = 1;
+	}
 
 	$data = http_build_query($_POST);
 
@@ -419,22 +427,24 @@ if( !in_array('sverki_opt', $Rights) ) {
 	</thead>
 	<tbody>
 <?php
-$query = "SELECT PFB.PFB_ID
-				,PFB.summa
-				,KA.Naimenovanie pokupatel
-				,KA.KA_ID
-				,PFB.count
-				,Friendly_date(PFB.date) date_format
-				,USR_Icon(PFB.USR_ID) Name
-				,ROUND((PFB.discount / (PFB.summa + PFB.discount)) * 100, 1) discount
-				,R.Name seller
-			FROM PrintFormsBill PFB
-			LEFT JOIN Kontragenty KA ON KA.KA_ID = PFB.pokupatel_id
-			LEFT JOIN Rekvizity R ON R.R_ID = PFB.R_ID
-			WHERE YEAR(PFB.date) = {$year}
-				AND KA.KA_ID IN ({$KA_IDs})
-				".($payer ? "AND KA.KA_ID = {$payer}" : "")."
-			ORDER BY PFB.PFB_ID DESC";
+$query = "
+	SELECT PFB.PFB_ID
+		,PFB.summa
+		,KA.Naimenovanie pokupatel
+		,KA.KA_ID
+		,PFB.count
+		,Friendly_date(PFB.date) date_format
+		,USR_Icon(PFB.USR_ID) Name
+		,ROUND((PFB.discount / (PFB.summa + PFB.discount)) * 100, 1) discount
+		,R.Name seller
+	FROM PrintFormsBill PFB
+	LEFT JOIN Kontragenty KA ON KA.KA_ID = PFB.pokupatel_id
+	LEFT JOIN Rekvizity R ON R.R_ID = PFB.R_ID
+	WHERE YEAR(PFB.date) = {$year}
+		AND KA.KA_ID IN ({$KA_IDs})
+		".($payer ? "AND KA.KA_ID = {$payer}" : "")."
+	ORDER BY PFB.PFB_ID DESC
+";
 $res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 while( $row = mysqli_fetch_array($res) ) {
 	$summa = number_format($row["summa"], 0, '', ' ');
@@ -553,8 +563,6 @@ this.subbut.value='Подождите, пожалуйста!';">
 				</tbody>
 			</table>
 		</fieldset>
-
-		<input type="hidden" name="nds" value="1">
 
 		<fieldset style="text-align: left;">
 			<legend>Список наборов:</legend>
