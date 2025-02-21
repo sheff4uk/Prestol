@@ -98,7 +98,13 @@
 		$type = $_POST["type"];
 
 		// Получаем из базы доп. сведения по набору
-		$query = "SELECT OD.SH_ID, OD.StartDate, OD.ClientName FROM OrdersData OD WHERE OD.OD_ID = {$OD_ID}";
+		$query = "
+			SELECT OD.SH_ID
+				,OD.StartDate
+				,OD.ClientName
+			FROM OrdersData OD
+			WHERE OD.OD_ID = {$OD_ID}
+		";
 		$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		$SH_ID = mysqli_result($subres,0,'SH_ID');
 		$StartDate = mysqli_result($subres,0,'StartDate');
@@ -106,16 +112,32 @@
 
 		if( $StartDate ) {
 			if( $old_sum ) {
-				$query = "INSERT INTO Otkazi
-					SET OD_ID = {$OD_ID}, type = {$type}, SH_ID = {$SH_ID}, StartDate = '{$StartDate}', old_sum = {$old_sum}, comment = '{$ClientName}'
-					ON DUPLICATE KEY UPDATE type = {$type}, old_sum = {$old_sum}";
+				$query = "
+					INSERT INTO Otkazi
+					SET OD_ID = {$OD_ID}
+						,type = {$type}
+						,SH_ID = {$SH_ID}
+						,StartDate = '{$StartDate}'
+						,old_sum = {$old_sum}
+						,comment = '{$ClientName}'
+					ON DUPLICATE KEY UPDATE
+						type = {$type}
+						,old_sum = {$old_sum}
+				";
 				if( mysqli_query( $mysqli, $query ) ) {
 					$_SESSION["alert"][] = "В таблице отказов/замен сделана запись.";
 				}
 				else { $_SESSION["alert"][] = mysqli_error( $mysqli ); }
 			}
 			// Очищаем дату продажи, остальное сделает триггер Clear_client_if_reject
-			$query = "UPDATE OrdersData SET StartDate = NULL, EndDate = NULL, sell_comment = CONCAT(IFNULL(sell_comment, ''), IF({$type} = 1, ' Замена ({$ClientName})', ' Отказ ({$ClientName})')), author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}";
+			$query = "
+				UPDATE OrdersData
+				SET StartDate = NULL
+					,EndDate = NULL
+					,sell_comment = CONCAT(IFNULL(sell_comment, '')
+					,IF({$type} = 1, ' Замена ({$ClientName})', ' Отказ ({$ClientName})'))
+					,author = {$_SESSION['id']} WHERE OD_ID = {$OD_ID}
+			";
 			if( mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["alert"][] = "Набор перемещен в \"Свободные\"";
 			}
@@ -124,11 +146,15 @@
 			}
 
 			// Обновляем автора
-			$query = "UPDATE OrdersDataDetail SET author = NULL WHERE OD_ID = {$OD_ID}";
+			$query = "
+				UPDATE OrdersDataDetail SET author = NULL WHERE OD_ID = {$OD_ID}
+			";
 			mysqli_query( $mysqli, $query );
 
 			// Очищаем скидку
-			$query = "UPDATE OrdersDataDetail SET discount = NULL WHERE OD_ID = {$OD_ID}";
+			$query = "
+				UPDATE OrdersDataDetail SET discount = NULL WHERE OD_ID = {$OD_ID}
+			";
 			if( mysqli_query( $mysqli, $query ) ) {
 				// Если были изменения
 				if (mysqli_affected_rows($mysqli)) {
@@ -140,22 +166,17 @@
 			}
 
 			// Обновляем минимальную цену по последнему прайсу (триггер обновит цену при необходимости)
-			$query = "UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 1) WHERE OD_ID = {$OD_ID}";
+			$query = "
+				UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 1) WHERE OD_ID = {$OD_ID}
+			";
 			if( !mysqli_query( $mysqli, $query ) ) {
 				$_SESSION["error"][] = mysqli_error( $mysqli );
 			}
 
-			// Пересчитываем стоимость по прайсу (исключение для Клёна)
-			if( $SH_ID = 36 ) {
-				$query = "UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 4) WHERE OD_ID = {$OD_ID}";
-			}
-			else {
-				$query = "UPDATE OrdersDataDetail SET min_price = Price(ODD_ID, 1) WHERE OD_ID = {$OD_ID}";
-			}
-			mysqli_query( $mysqli, $query );
-
 			// Ставим цену по прайсу
-			$query = "UPDATE OrdersDataDetail SET Price = IF(IFNULL(min_price, 0) > 0, min_price, Price) WHERE OD_ID = {$OD_ID}";
+			$query = "
+				UPDATE OrdersDataDetail SET Price = IF(IFNULL(min_price, 0) > 0, min_price, Price) WHERE OD_ID = {$OD_ID}
+			";
 			if( mysqli_query( $mysqli, $query ) ) {
 				// Если были изменения
 				if (mysqli_affected_rows($mysqli)) {
