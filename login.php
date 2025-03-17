@@ -55,6 +55,9 @@ switch( $_GET["do"] ) {
 						}
 					} else {
 						$_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
+						$_SESSION["code"] = rand(1000, 9999);
+						message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
+
 					}
 				}
 				else $_SESSION["error"][] = "Ваша учетная запись не активна! Свяжитесь с администрацией.";
