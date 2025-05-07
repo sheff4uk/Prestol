@@ -76,7 +76,6 @@
 </head>
 <body style="font-size: 0px;">
 <?php
-//	include "config.php";
 
 	foreach ($_POST["prod"] as $key => $value) {
 		?>
@@ -120,5 +119,8 @@
 		<?php
 	}
 ?>
+<script>
+	window.print();
+</script>
 </body>
 </html>
