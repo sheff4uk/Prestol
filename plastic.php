@@ -170,8 +170,7 @@
 		<a id="copy-button" data-clipboard-target="#materials_name" style="display: block; height: 100%" title="Скопировать список материалов в буфер обмена"></a>
 	</div>
 
-<form method='post' id="formdiv" style='position: relative;' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+<form method='post' id="formdiv" style='position: relative;' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 	<p><input type='checkbox' id='selectalltop'><label for='selectalltop'>Выбрать все</label></p>
 	<table class="main_table">
 		<thead>

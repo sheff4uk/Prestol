@@ -176,8 +176,7 @@ if( !in_array('users', $Rights) ) {
 <div id='add_btn' class="add_user" title='Добавить пользователя'></div>
 
 <div id='user_form' class='addproduct' title='Данные пользователя' style='display:none;'>
-	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<div id="USR_ID" style="width: auto; float: right;"></div>
 			<input type="hidden" name="USR_ID">

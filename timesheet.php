@@ -349,8 +349,7 @@ $days = date('t', $timestamp);
 
 	<!-- Форма ворклог -->
 	<div id='dayworklog' class="addproduct" style="display:none">
-		<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+		<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 			<fieldset>
 				<legend style="font-weight: bold; font-size: 1.5em;"></legend>
 				<input type="hidden" name="date">

@@ -467,8 +467,7 @@ while( $row = mysqli_fetch_array($res) ) {
 <!-- Форма подготовки счёта -->
 <div id='add_bill_form' style='display:none' title="Счёт на оплату">
 	<h1>Счёт на оплату</h1>
-	<form action="?add_bill&year=<?=$year?>&payer=<?=$payer?>" method="post" id="formdiv" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form action="?add_bill&year=<?=$year?>&payer=<?=$payer?>" method="post" id="formdiv" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset id="wr_platelshik" style="text-align: left;">
 			<legend>Информация о покупателе:</legend>
 			<select name="KA_ID" id="kontragenty" style="width: 100%;">

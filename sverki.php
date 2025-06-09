@@ -609,8 +609,7 @@ while( $row = mysqli_fetch_array($res) ) {
 
 <!-- Форма подготовки накладной -->
 <div id='add_invoice_form' style='display:none'>
-	<form method='post' action="invoice.php?year=<?=$year?>&payer=<?=$payer?>" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' action="invoice.php?year=<?=$year?>&payer=<?=$payer?>" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<div>
 			<fieldset id="wr_platelshik" style="text-align: left;">
 				<legend id="KA_info"></legend>
@@ -817,8 +816,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <!-- Форма подготовки акта сверки -->
 <div id='add_act_sverki_form' style='display:none' title="Акт сверки">
-	<form method='post' action="?add_act=1&year=<?=$year?>&payer=<?=$payer?>" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' action="?add_act=1&year=<?=$year?>&payer=<?=$payer?>" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<div>
 				Период:&nbsp;[&nbsp;
@@ -861,7 +859,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <!-- Форма добавления платежа -->
 <div id='addpay' class="addproduct" style='display:none' title='Внесение оплаты'>
-	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true; JavaScript:this.subbut.value='Подождите, пожалуйста!';">
+	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<input type='hidden' name='F_ID'>
 			<input type='hidden' name='location' value='<?=$location?>'>

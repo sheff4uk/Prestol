@@ -65,8 +65,7 @@
 
 	<!-- Форма добавления заготовки -->
 	<div id='addblank' title='Заготовки' class="addproduct" style='display:none'>
-		<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+		<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 			<fieldset style="font-size: 1.2em;">
 				<input type='hidden' name='BS_ID'>
 				<div>

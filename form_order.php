@@ -1,7 +1,6 @@
 <!-- Форма добавления набора -->
 <div id='order_form' class='addproduct' title='Новый набор' style='display:none;'>
-	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<fieldset>
 				<legend>Подразделение:</legend>

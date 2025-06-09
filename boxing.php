@@ -219,8 +219,7 @@
 
 	<!-- Форма статуса упаковки -->
 	<div id='form_packer' style='display:none'>
-		<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
-	this.subbut.value='Подождите, пожалуйста!';">
+		<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;	this.subbut.value='Подождите, пожалуйста!';">
 			<fieldset>
 				<input type="hidden" name="ODD_ID">
 				<input type="hidden" name="CT_ID" value="<?=$_GET["ct_id"]?>">

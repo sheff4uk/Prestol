@@ -1057,8 +1057,7 @@ if( $id != "NULL" ) {
 			</table>
 		</div>
 		<div id="attachments">
-			<form action="upload.php" method="post" enctype="multipart/form-data" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+			<form action="upload.php" method="post" enctype="multipart/form-data" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 				<input type="hidden" name="odid" value="<?=$id?>">
 				<input type=file name=uploadfile>
 				<input type="text" name="comment" placeholder="Комментарий">
@@ -1101,8 +1100,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 ?>
 <!-- Форма добавления сообщения к набору -->
 <div id='add_message' title='Сообщение' style='display:none'>
-	<form method='post' action='<?=$location?>&add_message' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' action='<?=$location?>&add_message' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<div>
 				<label for="message">Текст сообщения:</label><br>
@@ -1129,8 +1127,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <!-- Форма изменения цвета краски -->
 <div id='paint_color' class="addproduct" title='Цвет краски' style='display:none'>
-	<form method='post' action='<?=$location?>&paint_color' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' action='<?=$location?>&paint_color' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<input type="hidden" name="CL_ID" value="<?=$CL_ID?>">
 			<div>

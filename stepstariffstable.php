@@ -316,8 +316,7 @@ while( $row = mysqli_fetch_array($res) ) {
 </style>
 
 <div id='tariff_edit_form' title='Изменение тарифа' style='display:none;'>
-	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<input type="hidden" name="PMM_ID">
 			<input type="hidden" name="ST_ID">

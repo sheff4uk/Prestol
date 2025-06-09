@@ -1191,8 +1191,7 @@
 
 <!-- Форма добавления наименования отгрузки -->
 <div id='add_shipment_form' title='Параметры отгрузки' style='display:none'>
-	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset style="text-align: center;">
 			<div>
 				<label>Город:</label>

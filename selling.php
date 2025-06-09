@@ -1202,8 +1202,7 @@
 
 <!-- Форма добавления/редактирования расхода/прихода -->
 <div id='add_cost' style='display:none'>
-	<form method='post' action='<?=$location?>&add_cost=1' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' action='<?=$location?>&add_cost=1' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<input type="hidden" name="OP_ID" id="OP_ID">
 			<input type="hidden" name="sign" id="sign">
@@ -1250,8 +1249,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <!-- Форма отказа -->
 <div id='order_otkaz' style='display:none'>
-	<form method='post' action="<?=$location?>&order_otkaz" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' action="<?=$location?>&order_otkaz" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<div style="display: inline-block;">
 			<i class='fa fa-hand-paper fa-4x' aria-hidden='true'></i>
 		</div>

@@ -43,8 +43,7 @@
 
 <!-- Форма добавления платежа -->
 <div id='addpay' class="addproduct" style='display:none'>
-	<form method="post" action="form_addpay.php" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method="post" action="form_addpay.php" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<i class="fas fa-3x fa-user-check" style="color: #fff; position: absolute; right: 30px; top: 20px; display: none;"></i>
 			<i class="fas fa-3x fa-user-cog" style="color: #fff; position: absolute; right: 30px; top: 20px; display: none;"></i>

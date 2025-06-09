@@ -97,8 +97,7 @@
 
 <!-- Форма добавления стула -->
 <div id='addchair' title='Параметры стула' class='addproduct' style='display:none'>
-	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 		<input type='hidden' value='1' name='Type'>
 		<div>
@@ -204,8 +203,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <!-- Форма добавения стола -->
 <div id='addtable' title='Параметры стола' class='addproduct' style='display:none'>
-	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 		<span>Стандартные столы после добавления помечаются символом - <b>❋</b></span>
 		<input type='hidden' value='2' name='Type'>
@@ -413,8 +411,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <!-- Форма добавления заготовки -->
 <div id='addblank' title='Параметры заготовки/прочего' class='addproduct' style='display:none'>
-	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 			<div>
 				<label>Kол-во:</label>
@@ -549,8 +546,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 <!-- Конец формы добавления заготовки -->
 
 <!-- Форма добавления этапов производства -->
-<div id='steps' title='Этапы производства' style='display:none' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+<div id='steps' title='Этапы производства' style='display:none' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 	<form method='post'>
 		<fieldset>
 			<div id='formsteps'></div> <!-- Форма создается в ajax.php -->
@@ -565,8 +561,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <!-- Форма разбитя набора -->
 <div id='order_cut' title='Разделение набора' style='display:none'>
-	<form method="post" action="index.php" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method="post" action="index.php" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 
 		</fieldset>
@@ -580,8 +575,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <!-- Форма редактирования стоимости набора -->
 <div id='update_price' title='Изменение стоимости набора' style='display:none'>
-	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset>
 		</fieldset>
 		<div>
@@ -602,8 +596,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 		text-align: right;
 	}
 </style>
-<div id='add_payment' title='Добавление оплаты' style='display:none' onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+<div id='add_payment' title='Добавление оплаты' style='display:none' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 	<form method='post'>
 		<fieldset>
 		</fieldset>

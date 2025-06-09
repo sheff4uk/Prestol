@@ -94,8 +94,7 @@
 
 <!-- Форма добавления заготовки -->
 <div id='addpvc' title='Приход кромки ПВХ' class="addproduct" style='display:none'>
-	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset style="font-size: 1.2em;">
 			<div>
 				<label>Кромка:</label>
@@ -142,8 +141,7 @@ this.subbut.value='Подождите, пожалуйста!';">
 
 <!-- Форма добавления/редактирования кромки -->
 <div id='editpvc' title='Кромка ПВХ' class="addproduct" style='display:none'>
-	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;
-this.subbut.value='Подождите, пожалуйста!';">
+	<form method="post" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<fieldset style="font-size: 1.2em;">
 			<input type='hidden' name='PVC_ID'>
 			<div>
