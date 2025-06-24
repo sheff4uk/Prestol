@@ -607,9 +607,9 @@ while( $row = mysqli_fetch_array($res) ) {
 	});
 </script>
 
-<!-- Форма подготовки накладной -->
+<!-- Форма подготовки УПД -->
 <div id='add_invoice_form' style='display:none'>
-	<form method='post' action="invoice.php?year=<?=$year?>&payer=<?=$payer?>" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
+	<form method='post' action="upd.php?year=<?=$year?>&payer=<?=$payer?>" onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
 		<div>
 			<fieldset id="wr_platelshik" style="text-align: left;">
 				<legend id="KA_info"></legend>
@@ -624,50 +624,22 @@ while( $row = mysqli_fetch_array($res) ) {
 				<table width="100%" class="forms">
 					<tbody>
 						<tr>
-							<td width="200" align="left" valign="top">Название ООО или ИП:</td>
+							<td width="200" align="left" valign="top">Название ООО или ФИО ИП:</td>
 							<td align="left" valign="top">
-								<input required type="text" autocomplete="off" name="platelshik_name" id="platelshik_name" class="forminput" placeholder="">
+								<input required type="text" autocomplete="off" name="pokupatel_name" id="pokupatel_name" class="forminput" placeholder="">
 							</td>
 						</tr>
 						<tr>
+							<td align="left" valign="top">Адрес:</td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="pokupatel_adres" id="pokupatel_adres" class="forminput" placeholder=""></td>
+						</tr>
+						<tr>
 							<td align="left" valign="top">ИНН:</td>
-							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_inn" id="platelshik_inn" class="forminput" placeholder=""></td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="pokupatel_inn" id="pokupatel_inn" class="forminput" placeholder=""></td>
 						</tr>
 						<tr>
 							<td align="left" valign="top">КПП:</td>
-							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_kpp" id="platelshik_kpp" class="forminput" placeholder=""></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">ОКПО:</td>
-							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_okpo" id="platelshik_okpo" class="forminput" placeholder=""></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">Адрес:</td>
-							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_adres" id="platelshik_adres" class="forminput" placeholder=""></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">Телефоны:</td>
-							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_tel" id="platelshik_tel" class="forminput" placeholder=""></td>
-						</tr>
-						<tr>
-							<td width="200" align="left" valign="top">Расчетный счет:</td>
-							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_schet" id="platelshik_schet" class="forminput" placeholder=""></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">Наименование банка:</td>
-							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank" id="platelshik_bank" class="forminput" placeholder=""></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">БИК:</td>
-							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bik" id="platelshik_bik" class="forminput" placeholder=""></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">Корреспондентский счет:</td>
-							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_ks" id="platelshik_ks" class="forminput" placeholder=""></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">Местонахождение банка:</td>
-							<td align="left" valign="top"><input type="text" autocomplete="off" name="platelshik_bank_adres" id="platelshik_bank_adres" class="forminput" placeholder=""></td>
+							<td align="left" valign="top"><input type="text" autocomplete="off" name="pokupatel_kpp" id="pokupatel_kpp" class="forminput" placeholder=""></td>
 						</tr>
 					</tbody>
 				</table>
@@ -703,18 +675,18 @@ while( $row = mysqli_fetch_array($res) ) {
 						<tr class="forms">
 							<td width="200" align="left" valign="top">Грузополучатель:</td>
 							<td valign="top" class="btnset">
-								<input type="radio" name="gruzopoluchatel" value="0" id="gruzopoluchatel_0">
-								<label for="gruzopoluchatel_0">Такой же, как плательщик</label>
 								<input type="radio" name="gruzopoluchatel" value="1" id="gruzopoluchatel_1">
-								<label for="gruzopoluchatel_1">Сторонняя организация</label>
+								<label for="gruzopoluchatel_1">Покупатель</label>
+								<input type="radio" name="gruzopoluchatel" value="2" id="gruzopoluchatel_2">
+								<label for="gruzopoluchatel_2">Сторонняя организация</label>
 							</td>
 						</tr>
 					</tbody>
 				</table>
-				<table width="100%" class="forms" id="gruzopoluchatel1">
+				<table width="100%" class="forms" id="gruzopoluchatel2">
 					<tbody>
 						<tr>
-							<td width="200" align="left" valign="top">Название ООО или ИП:</td>
+							<td width="200" align="left" valign="top">Название грузополучателя:</td>
 							<td align="left" valign="top">
 								<input type="text" name="gruzopoluchatel_name" id="gruzopoluchatel_name" class="forminput" placeholder="" autocomplete="off">
 							</td>
@@ -728,36 +700,8 @@ while( $row = mysqli_fetch_array($res) ) {
 							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_kpp" id="gruzopoluchatel_kpp" class="forminput" placeholder="" autocomplete="off"></td>
 						</tr>
 						<tr>
-							<td align="left" valign="top">ОКПО:</td>
-							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_okpo" id="gruzopoluchatel_okpo" class="forminput" placeholder="" autocomplete="off"></td>
-						</tr>
-						<tr>
 							<td align="left" valign="top">Адрес:</td>
 							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_adres" id="gruzopoluchatel_adres" class="forminput" placeholder="" autocomplete="off"></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">Телефоны:</td>
-							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_tel" id="gruzopoluchatel_tel" class="forminput" placeholder="" autocomplete="off"></td>
-						</tr>
-						<tr>
-							<td width="200" align="left" valign="top">Расчетный счет:</td>
-							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_schet" id="gruzopoluchatel_schet" class="forminput" placeholder="" autocomplete="off"></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">Наименование банка:</td>
-							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank" id="gruzopoluchatel_bank" class="forminput" placeholder="" autocomplete="off"></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">БИК:</td>
-							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bik" id="gruzopoluchatel_bik" class="forminput" placeholder="" autocomplete="off"></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">Корреспондентский счет:</td>
-							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_ks" id="gruzopoluchatel_ks" class="forminput" placeholder="" autocomplete="off"></td>
-						</tr>
-						<tr>
-							<td align="left" valign="top">Местонахождение банка:</td>
-							<td align="left" valign="top"><input type="text" name="gruzopoluchatel_bank_adres" id="gruzopoluchatel_bank_adres" class="forminput" placeholder="" autocomplete="off"></td>
 						</tr>
 					</tbody>
 				</table>
@@ -767,11 +711,11 @@ while( $row = mysqli_fetch_array($res) ) {
 				<table width="100%" class="forms">
 					<tbody>
 						<tr>
-							<td width="200" align="left">Основание:</td>
+							<td width="200" align="left">Основание передачи / получения:</td>
 							<td align="left">
-								<input type="text" name="osnovanie" id="osnovanie" style="width: 490px;" placeholder="" value="" autocomplete="off">&nbsp;
-								<input type="text" name="osnovanie_nomer" id="osnovanie_nomer" style="width: 100px;" placeholder="номер" value="" autocomplete="off">&nbsp;
-								<input type="text" name="osnovanie_data" id="osnovanie_data" class="date" style="width: 90px;" placeholder="дата" value="" autocomplete="off">
+								<input type="text" name="osnovanie[]" id="osnovanie" style="width: 490px;" placeholder="" value="" autocomplete="off">&nbsp;
+								<input type="text" name="osnovanie_nomer[]" id="osnovanie_nomer" style="width: 100px;" placeholder="номер" value="" autocomplete="off">&nbsp;
+								<input type="text" name="osnovanie_date[]" id="osnovanie_date" class="date" style="width: 90px;" placeholder="дата" value="" autocomplete="off">
 							</td>
 						</tr>
 					</tbody>
@@ -1069,8 +1013,8 @@ while( $row = mysqli_fetch_array($res) ) {
 			}
 			// Очистка
 			$('select[name="KA_ID"]').val('').change();
-			$('#gruzopoluchatel1 input').val('');
-			$('#gruzopoluchatel_0').prop('checked', true).button('refresh').change();
+			$('#gruzopoluchatel2 input').val('');
+			$('#gruzopoluchatel_1').prop('checked', true).button('refresh').change();
 			$('#date').val('<?=( date('d.m.Y') )?>');
 			$('#shipping_year select').val(<?=date('Y')?>);
 			$('#invoice_subbut').prop('disabled', true).button('refresh');
@@ -1113,11 +1057,11 @@ while( $row = mysqli_fetch_array($res) ) {
 
 		// При выборе сторонней организации отображается форма грузополучателя
 		$('#wr_gruzopoluchatel input[name=gruzopoluchatel]').on('change', function() {
-			if ($(this).val() == 0){
-				$('#gruzopoluchatel1').hide('fast');
+			if ($(this).val() == 1){
+				$('#gruzopoluchatel2').hide('fast');
 			}
 			else{
-				$('#gruzopoluchatel1').show('fast');
+				$('#gruzopoluchatel2').show('fast');
 			}
 		});
 
@@ -1136,31 +1080,39 @@ while( $row = mysqli_fetch_array($res) ) {
 			if (KA_ID > 0) {
 				var KA_data = Kontragenty[KA_ID];
 				$('#R_ID').val(KA_data["R_ID"]);
-				$('#platelshik_name').val(KA_data["Naimenovanie"]);
-				$('#platelshik_inn').val(KA_data["INN"]);
-				$('#platelshik_kpp').val(KA_data["KPP"]);
-				$('#platelshik_okpo').val(KA_data["OKPO"]);
-				$('#platelshik_adres').val(KA_data["Jur_adres"]);
-				$('#platelshik_tel').val(KA_data["Telefony"]);
-				$('#platelshik_schet').val(KA_data["Schet"]);
-				$('#platelshik_bank').val(KA_data["Bank"]);
-				$('#platelshik_bik').val(KA_data["BIK"]);
-				$('#platelshik_ks').val(KA_data["KS"]);
-				$('#platelshik_bank_adres').val(KA_data["Bank_adres"]);
+				$('#pokupatel_name').val(KA_data["Naimenovanie"]);
+				$('#pokupatel_adres').val(KA_data["Jur_adres"]);
+				$('#pokupatel_inn').val(KA_data["INN"]);
+				$('#pokupatel_kpp').val(KA_data["KPP"]);
+				// $('#platelshik_name').val(KA_data["Naimenovanie"]);
+				// $('#platelshik_inn').val(KA_data["INN"]);
+				// $('#platelshik_kpp').val(KA_data["KPP"]);
+				// $('#platelshik_okpo').val(KA_data["OKPO"]);
+				// $('#platelshik_adres').val(KA_data["Jur_adres"]);
+				// $('#platelshik_tel').val(KA_data["Telefony"]);
+				// $('#platelshik_schet').val(KA_data["Schet"]);
+				// $('#platelshik_bank').val(KA_data["Bank"]);
+				// $('#platelshik_bik').val(KA_data["BIK"]);
+				// $('#platelshik_ks').val(KA_data["KS"]);
+				// $('#platelshik_bank_adres').val(KA_data["Bank_adres"]);
 			}
 			else {
 				$('#R_ID').val('');
-				$('#platelshik_name').val('');
-				$('#platelshik_inn').val('');
-				$('#platelshik_kpp').val('');
-				$('#platelshik_okpo').val('');
-				$('#platelshik_adres').val('');
-				$('#platelshik_tel').val('');
-				$('#platelshik_schet').val('');
-				$('#platelshik_bank').val('');
-				$('#platelshik_bik').val('');
-				$('#platelshik_ks').val('');
-				$('#platelshik_bank_adres').val('');
+				$('#pokupatel_name').val('');
+				$('#pokupatel_adres').val('');
+				$('#pokupatel_inn').val('');
+				$('#pokupatel_kpp').val('');
+				// $('#platelshik_name').val('');
+				// $('#platelshik_inn').val('');
+				// $('#platelshik_kpp').val('');
+				// $('#platelshik_okpo').val('');
+				// $('#platelshik_adres').val('');
+				// $('#platelshik_tel').val('');
+				// $('#platelshik_schet').val('');
+				// $('#platelshik_bank').val('');
+				// $('#platelshik_bik').val('');
+				// $('#platelshik_ks').val('');
+				// $('#platelshik_bank_adres').val('');
 				$("#kontragenty").val('');
 			}
 			if (CT_ID) {
