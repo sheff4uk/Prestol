@@ -78,6 +78,7 @@ while( $row = mysqli_fetch_array($res) ) {
 				WHERE OP.uuid IS NOT NULL
 					AND DATE(OP.payment_date) = '{$_GET["payment_date"]}'
 					AND OP.CB_ID = {$row["CB_ID"]}
+					AND OP.send IS NULL
 			";
 			$subres = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 			$sumcash = 0;
