@@ -30,35 +30,35 @@ switch( $_GET["do"] ) {
 					// Отправляем телефон на который поступит звонок
 					//$body = file_get_contents("https://sms.ru/code/call?api_id=".($api_id)."&phone=".($mtel)."&ip=".$_SERVER["REMOTE_ADDR"]);
 
-					// $ch = curl_init("https://sms.ru/code/call");
-					// curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-					// curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-					// curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
-					// 	"phone" => $mtel, // номер телефона пользователя
-					// 	"ip" => $_SERVER["REMOTE_ADDR"], // ip адрес пользователя
-					// 	"api_id" => $api_id
-					// )));
-					// $body = curl_exec($ch);
-					// curl_close($ch);
+					$ch = curl_init("https://sms.ru/code/call");
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+					curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
+						"phone" => $mtel, // номер телефона пользователя
+						"ip" => $_SERVER["REMOTE_ADDR"], // ip адрес пользователя
+						"api_id" => $api_id
+					)));
+					$body = curl_exec($ch);
+					curl_close($ch);
 
-					// $json = json_decode($body);
-					// if( $json ) { // Получен ответ от сервера
-					// 	if( $json->status == "OK" ) { // Запрос выполнился
-					// 		// Сохраняем код в сессию для дальнейшей проверки
-					// 		$_SESSION["code"] = $json->code;
-					// 	}
-					// 	else {
-					// 		$_SESSION["error"][] = "Звонок не может быть выполнен. Текст ошибки: $json->status_text";
-					// 		//$_SESSION["code"] = $json->code;
-					// 		$_SESSION["code"] = rand(1000, 9999);
-					// 		message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
-					// 	}
-					// } else {
+					$json = json_decode($body);
+					if( $json ) { // Получен ответ от сервера
+						if( $json->status == "OK" ) { // Запрос выполнился
+							// Сохраняем код в сессию для дальнейшей проверки
+							$_SESSION["code"] = $json->code;
+						}
+						else {
+							$_SESSION["error"][] = "Звонок не может быть выполнен. Чтобы узнать код, свяжитесь с администратором. Текст ошибки: $json->status_text";
+							//$_SESSION["code"] = $json->code;
+							$_SESSION["code"] = rand(1000, 9999);
+							message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
+						}
+					} else {
 						$_SESSION["error"][] = "Запрос не выполнился. Не удалось установить связь с сервером. Чтобы узнать код, свяжитесь с администратором.";
 						$_SESSION["code"] = rand(1000, 9999);
 						message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
 
-					// }
+					}
 				}
 				else $_SESSION["error"][] = "Ваша учетная запись не активна! Свяжитесь с администрацией.";
 			}
