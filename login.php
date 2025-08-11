@@ -54,10 +54,10 @@ switch( $_GET["do"] ) {
 					// 		message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
 					// 	}
 					// } else {
+						message_to_telegram("Попытка входа", $myrow["chatid"]);
 						$_SESSION["error"][] = "Запрос не выполнился. Не удалось установить связь с сервером. Чтобы узнать код, свяжитесь с администратором.";
 						$_SESSION["code"] = rand(1000, 9999);
-						//message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
-						message_to_telegram($_SESSION["code"], $myrow["chatid"]);
+						message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
 
 					// }
 				}
