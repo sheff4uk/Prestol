@@ -570,7 +570,7 @@ while( $row = mysqli_fetch_array($res) ) {
 
 		<fieldset style="text-align: left;">
 			<legend>Сообщение для клиента:</legend>
-			<textarea name="text" class="comment">Внимание! Оплата данного счета означает согласие с условиями поставки товара. Товар отпускается по факту прихода денег на р/с Поставщика, самовывозом, при наличии доверенности и паспорта.</textarea>
+			<textarea name="text" class="comment">Внимание! Оплата данного счета означает согласие с условиями поставки товара. Товар отпускается по факту прихода денег на р/с Поставщика.</textarea>
 		</fieldset>
 
 		<input name="n" type="hidden" value="1">
