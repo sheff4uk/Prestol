@@ -1665,17 +1665,17 @@ case "add_payment":
 		elseif( $is_lock ) {
 			$html .= "<tr style='background: #6f6;'><td colspan='7'><b>Отчетный период закрыт. Внесение оплаты невозможно.</b></td></tr>";
 		}
-		// else { // Если набор не закрыт и не удален то можно добавить оплату
-		// 	$payment_date = date('d.m.y');
-		// 	$html .= "<tr style='background: #6f6;'>";
-		// 	$html .= "<td><b>{$CashBox}</b><input type='hidden' name='cb_id' value='{$CB_ID}'></td>";
-		// 	$html .= "<td>{$payment_date}</td>";
-		// 	$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
-		// 	$html .= "<td><label><input type='checkbox' class='terminal' name='terminal_add' value='1'>Оплата картой</label></td>";
-		// 	$html .= "<td>{$USR_Icon}</td>";
-		// 	$html .= "<td></td>";
-		// 	$html .= "</tr>";
-		// }
+		else { // Если набор не закрыт и не удален то можно добавить оплату
+			$payment_date = date('d.m.y');
+			$html .= "<tr style='background: #6f6;'>";
+			$html .= "<td><b>{$CashBox}</b><input type='hidden' name='cb_id' value='{$CB_ID}'></td>";
+			$html .= "<td>{$payment_date}</td>";
+			$html .= "<td><input type='number' class='payment_sum' name='payment_sum_add'></td>";
+			$html .= "<td><label><input type='checkbox' class='terminal' name='terminal_add' value='1'>Оплата картой</label></td>";
+			$html .= "<td>{$USR_Icon}</td>";
+			$html .= "<td></td>";
+			$html .= "</tr>";
+		}
 	}
 	$html .= "</tbody></table>";
 
