@@ -44,40 +44,45 @@
 		.prod {
 			display: inline-block;
 			white-space: nowrap;
-			margin: 10px 0;
 			height: 50px;
-			line-height: 70px;
 			font-weight: bold;
 		}
 		.price_wr {
-			height: 90px;
+			height: 80px;
 			text-align: center;
 			position: relative;
 			white-space: nowrap;
 		}
 		.price {
-			font-size: 90px;
+			font-size: 80px;
 			font-weight: bold;
 			display: block;
-			line-height: 90px;
+			line-height: 80px;
 		}
 		.discount {
 			padding: 5px;
 			border-radius: 10px;
 			font-weight: bold;
-			position: absolute;
-			top: 5px;
-			right: 5px;
 			box-shadow: 3px 3px 5px #666;
 			border: 1px solid #666;
+			display: inline;
+    		font-size: 20px;
+			margin-left: 10px;
 		}
 		.old_price {
 			display: inline;
-			margin-right: 50px;
+			margin-right: 10px;
 			position: relative;
 			text-decoration: line-through;
 			color: #fff;
-			text-shadow: 2px 2px 3px #000, -2px 2px 3px #000, -2px -2px 3px #000, 2px -2px 3px #000;
+			text-shadow: 1px 1px 2px #000, -1px 1px 2px #000, -1px -1px 2px #000, 1px -1px 2px #000;
+		}
+		.sample_price {
+			height: 30px;
+			text-align: center;
+			white-space: nowrap;
+			font-size: 30px;
+			font-weight: bold;
 		}
 	</style>
 	<script>
@@ -121,6 +126,7 @@
 				,ODD.Price old_Price
 				,IFNULL(ODD.discount, 0) discount
 				,ROUND((ODD.discount * 100) / ODD.Price) percent
+				,(SELECT MIN(rozn) FROM ProductModelsMechanism WHERE PM_ID = ODD.PM_ID) Price_from
 		FROM OrdersDataDetail ODD
 		JOIN OrdersData OD  ON OD.OD_ID = ODD.OD_ID
 		JOIN Shops S ON S.SH_ID = OD.SH_ID
@@ -139,12 +145,13 @@
 	while( $row = mysqli_fetch_array($res) )
 	{
 		$price = number_format($row["Price"], 0, '', ' ');
+		$price_from = number_format($row["Price_from"], 0, '', ' ');
 
 		if($row["discount"]) {
 			$old_price = number_format($row["old_Price"], 0, '', ' ');
 			$discount = number_format($row["discount"], 0, '', ' ');
 			$old_price = "<div class='old_price'>{$old_price}</div>";
-			$discount = "<div class='discount' style='z-index: -1;'>Выгода {$discount} руб!</div>";
+			$discount = "<div class='discount'>Выгода {$discount} руб!</div>";
 		}
 		else {
 			$old_price = "";
@@ -155,13 +162,15 @@
 			<div style="width: 74%; margin-left: 3%;">
 				<div style="position: relative; text-align: center;">
 					<div class="code" style="z-index: -1;"><?=$row["Code"]?></div>
-					<?=$discount?>
 				</div>
 				<div style="text-align: center;">
 					<div class="prod" style="font-size: 24px;" fontSize="24"><?=$row["product"]?></div>
 				</div>
+				<div class="sample_price">
+					Цена образца <?=$old_price?><?=$price?><?=$discount?>
+				</div>
 				<div class="price_wr">
-					<span class="price"><?=$old_price?><?=$price?></span>
+					<span class="price">от <?=$price_from?></span>
 				</div>
 				<div style="display: flex; height: 120px; font-size:20px; white-space: nowrap;">
 					<div style="width: 120px; text-align: right; padding: 5px;">
@@ -185,14 +194,16 @@
 		<div id="<?=$row["id"]?>2" class="label-wr">
 			<div style="width: 74%; margin-left: 3%;">
 				<div style="position: relative; text-align: center;">
-					<div class="code"><?=$row["Code"]?></div>
-					<?=$discount?>
+					<div class="code" style="z-index: -1;"><?=$row["Code"]?></div>
 				</div>
 				<div style="text-align: center;">
 					<div class="prod" style="font-size: 24px;" fontSize="24"><?=$row["product"]?></div>
 				</div>
+				<div class="sample_price">
+					Цена образца <?=$old_price?><?=$price?><?=$discount?>
+				</div>
 				<div class="price_wr">
-					<span class="price"><?=$old_price?><?=$price?></span>
+					<span class="price">от <?=$price_from?></span>
 				</div>
 				<div style="display: flex; height: 120px; font-size:20px; white-space: nowrap;">
 					<div style="width: 120px; text-align: right; padding: 5px;">
