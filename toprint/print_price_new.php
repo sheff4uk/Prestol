@@ -186,7 +186,7 @@
 						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "пластик {$row["material"]}" : ""))?>
 					</div>
 					<div style="width: 120px;">
-						<img src="<?=(new QRCode)->render($row["site"]."/product.php?name=".$row["code"])?>" style="width: 120px;" alt="QR Code" />
+						<img src="<?=(new QRCode)->render("https://".$row["site"]."/product.php?name=".$row["code"])?>" style="width: 120px;" alt="QR Code" />
 					</div>
 				</div>
 			</div>
@@ -219,7 +219,7 @@
 						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "пластик {$row["material"]}" : ""))?>
 					</div>
 					<div style="width: 120px;">
-						<img src="<?=(new QRCode)->render($row["site"]."/product.php?name=".$row["code"])?>" style="width: 120px;" alt="QR Code" />
+						<img src="<?=(new QRCode)->render("https://".$row["site"]."/product.php?name=".$row["code"])?>" style="width: 120px;" alt="QR Code" />
 					</div>
 				</div>
 			</div>
