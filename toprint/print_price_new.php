@@ -48,16 +48,16 @@
 			font-weight: bold;
 		}
 		.price_wr {
-			height: 80px;
+			height: 40px;
 			text-align: center;
 			position: relative;
 			white-space: nowrap;
 		}
 		.price {
-			font-size: 80px;
+			font-size: 40px;
 			font-weight: bold;
 			display: block;
-			line-height: 80px;
+			line-height: 40px;
 		}
 		.discount {
 			padding: 5px;
@@ -66,23 +66,29 @@
 			box-shadow: 3px 3px 5px #666;
 			border: 1px solid #666;
 			display: inline;
-    		font-size: 20px;
-			margin-left: 10px;
+    		font-size: 16px;
+			position: absolute;
+    		left: 20px;
+			top: -10px;
 		}
 		.old_price {
 			display: inline;
-			margin-right: 10px;
+			margin-right: 25px;
 			position: relative;
 			text-decoration: line-through;
 			color: #fff;
-			text-shadow: 1px 1px 2px #000, -1px 1px 2px #000, -1px -1px 2px #000, 1px -1px 2px #000;
+			text-shadow: 2px 2px 3px #000, -2px 2px 3px #000, -2px -2px 3px #000, 2px -2px 3px #000;
 		}
 		.sample_price {
-			height: 30px;
+			height: 70px;
 			text-align: center;
 			white-space: nowrap;
 			font-size: 30px;
 			font-weight: bold;
+			position: relative;
+		}
+		.sample_price span {
+			font-size: 60px;
 		}
 	</style>
 	<script>
@@ -166,11 +172,11 @@
 				<div style="text-align: center;">
 					<div class="prod" style="font-size: 24px;" fontSize="24"><?=$row["product"]?></div>
 				</div>
-				<div class="sample_price">
-					Цена образца <?=$old_price?><?=$price?><?=$discount?>
-				</div>
 				<div class="price_wr">
-					<span class="price">от <?=$price_from?></span>
+					<span class="price">от <?=$price_from?> руб.</span>
+				</div>
+				<div class="sample_price">
+					Цена образца <span><?=$old_price?><?=$price?></span><?=$discount?>
 				</div>
 				<div style="display: flex; height: 120px; font-size:20px; white-space: nowrap;">
 					<div style="width: 120px; text-align: right; padding: 5px;">
@@ -199,11 +205,11 @@
 				<div style="text-align: center;">
 					<div class="prod" style="font-size: 24px;" fontSize="24"><?=$row["product"]?></div>
 				</div>
-				<div class="sample_price">
-					Цена образца <?=$old_price?><?=$price?><?=$discount?>
-				</div>
 				<div class="price_wr">
-					<span class="price">от <?=$price_from?></span>
+					<span class="price">от <?=$price_from?> руб.</span>
+				</div>
+				<div class="sample_price">
+					Цена образца <span><?=$old_price?><?=$price?></span><?=$discount?>
 				</div>
 				<div style="display: flex; height: 120px; font-size:20px; white-space: nowrap;">
 					<div style="width: 120px; text-align: right; padding: 5px;">
