@@ -189,7 +189,7 @@
 						<?=($row["size"] ? "{$row["size"]}<br>" : "")?>
 						<?=($row["mechanism"] ? "{$row["mechanism"]}<br>" : "")?>
 						<?=($row["materials"] ? "{$row["materials"]}<br>" : "")?>
-						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "пластик {$row["material"]}" : ""))?>
+						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "{$row["material"]}" : ""))?>
 					</div>
 					<div style="width: 120px;">
 						<img src="<?=(new QRCode)->render("https://".$row["site"]."/product.php?name=".$row["code"])?>" style="width: 120px;" alt="QR Code" />
@@ -222,7 +222,7 @@
 						<?=($row["size"] ? "{$row["size"]}<br>" : "")?>
 						<?=($row["mechanism"] ? "{$row["mechanism"]}<br>" : "")?>
 						<?=($row["materials"] ? "{$row["materials"]}<br>" : "")?>
-						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "пластик {$row["material"]}" : ""))?>
+						<?=($row["mtype"] == 1 ? "{$row["material"]}" : ($row["mtype"] == 2 ? "{$row["material"]}" : ""))?>
 					</div>
 					<div style="width: 120px;">
 						<img src="<?=(new QRCode)->render("https://".$row["site"]."/product.php?name=".$row["code"])?>" style="width: 120px;" alt="QR Code" />
