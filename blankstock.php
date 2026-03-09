@@ -171,12 +171,14 @@
 				function blank_tree( $pid, $level ) {
 					global $mysqli;
 
-					$query = "SELECT BLL.BLL_ID, BL.Name, IFNULL(SUM(BC.count + BC.start_balance), 0) Amount, IFNULL(SUM(BC.start_balance), 0) start_balance
-								FROM BlankLink BLL
-								JOIN BlankList BL ON BL.BL_ID = BLL.BLL_ID
-								LEFT JOIN BlankCount BC ON BC.BL_ID = BLL.BLL_ID
-								WHERE BLL.BL_ID = {$pid}
-								GROUP BY BLL.BLL_ID";
+					$query = "
+						SELECT BLL.BLL_ID, BL.Name, IFNULL(SUM(BC.count + BC.start_balance), 0) Amount, IFNULL(SUM(BC.start_balance), 0) start_balance
+						FROM BlankLink BLL
+						JOIN BlankList BL ON BL.BL_ID = BLL.BLL_ID
+						LEFT JOIN BlankCount BC ON BC.BL_ID = BLL.BLL_ID
+						WHERE BLL.BL_ID = {$pid}
+						GROUP BY BLL.BLL_ID
+					";
 					$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 					while( $row = mysqli_fetch_array($res) ) {
 						$color = ( $row["Amount"] < 0 ) ? ' bg-red' : '';

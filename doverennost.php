@@ -83,12 +83,28 @@
 				'content' => $data
 			)
 		));
-		$path = file_get_contents('https://service-online.su/forms/doverennost_TMC/doverennost_TMC.php', false, $headers);
-		$path = strstr($path, '/blank/');
-		$path = strstr($path, '.pdf', true);
-		$out = file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
-		$filename = 'doverennost_'.$id.'_'.$_POST["nomer"].'.pdf';
-		file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
+		// $path = file_get_contents('https://service-online.su/forms/doverennost_TMC/doverennost_TMC.php', false, $headers);
+		// $path = strstr($path, '/blank/');
+		// $path = strstr($path, '.pdf', true);
+		// $out = file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
+		// $filename = 'doverennost_'.$id.'_'.$_POST["nomer"].'.pdf';
+		// file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
+
+		$content = file_get_contents('https://service-online.su/forms/doverennost_TMC/doverennost_TMC.php', false, $headers);
+		// Проверяем, были ли редиректы в заголовках
+		if (isset($http_response_header)) {
+			foreach ($http_response_header as $header) {
+				if (strpos(strtolower($header), 'location:') !== false) {
+					// Получаем последний Location
+					$path = trim(substr($header, 9));
+					$path = strstr($path, '/blank/');
+					$path = strstr($path, '.pdf', true);
+					$out = file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
+					$filename = 'doverennost_'.$id.'_'.$_POST["nomer"].'.pdf';
+					file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
+				}
+			}
+		}
 
 		exit ('<meta http-equiv="refresh" content="0; url=doverennost.php">');
 		die;

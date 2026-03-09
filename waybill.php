@@ -98,9 +98,26 @@ $headers = stream_context_create(array(
 		'content' => $data
 	)
 ));
-$path = file_get_contents('https://service-online.su/forms/auto/ttn/blanc.php', false, $headers);
-$path = strstr($path, '/blank/');
-$path = strstr($path, '.pdf', true);
-header('Content-Type: application/pdf');
-echo file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
+
+// $path = file_get_contents('https://service-online.su/forms/auto/ttn/blanc.php', false, $headers);
+// $path = strstr($path, '/blank/');
+// $path = strstr($path, '.pdf', true);
+// header('Content-Type: application/pdf');
+// echo file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
+
+$content = file_get_contents('https://service-online.su/forms/auto/ttn/blanc.php', false, $headers);
+// Проверяем, были ли редиректы в заголовках
+if (isset($http_response_header)) {
+	foreach ($http_response_header as $header) {
+		if (strpos(strtolower($header), 'location:') !== false) {
+			// Получаем последний Location
+			$path = trim(substr($header, 9));
+			$path = file_get_contents('https://service-online.su/forms/auto/ttn/blanc.php', false, $headers);
+			$path = strstr($path, '/blank/');
+			$path = strstr($path, '.pdf', true);
+			header('Content-Type: application/pdf');
+			echo file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
+		}
+	}
+}
 ?>
