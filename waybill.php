@@ -112,7 +112,6 @@ if (isset($http_response_header)) {
 		if (strpos(strtolower($header), 'location:') !== false) {
 			// Получаем последний Location
 			$path = trim(substr($header, 9));
-			$path = file_get_contents('https://service-online.su/forms/auto/ttn/blanc.php', false, $headers);
 			$path = strstr($path, '/blank/');
 			$path = strstr($path, '.pdf', true);
 			header('Content-Type: application/pdf');
