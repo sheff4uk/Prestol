@@ -298,8 +298,7 @@ if( isset($_GET["add_bill"]) ) {
 		$headers = stream_context_create(array(
 			'http' => array(
 				'method' => 'POST',
-				'header' => array(
-				),
+				'header' => array('Referer: https://service-online.su/forms/buh/schet/'),
 				'content' => $data
 			)
 		));
