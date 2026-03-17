@@ -189,7 +189,7 @@ while( $row = mysqli_fetch_array($res) ) {
 $_POST["nomer"] = $count;
 $_POST["status"] = "1";
 $_POST["valyuta"] = "0";
-$_POST["version"] = "20241001";
+$_POST["version"] = "20260101";
 
 // Информация о продавце
 $query = "
@@ -204,7 +204,8 @@ if( $row["prodavets_type"] == "ip" ) {
     $_POST["prodavets_name_ip"] = $row["Name"];
     $_POST["prodavets_adres_ip"] = $row["Addres"];
     $_POST["prodavets_inn_ip"] = $row["INN"];
-    $_POST["prodavets_svidetelstvo_ip"] = $row["svidetelstvo_ip"];
+    $_POST["prodavets_ogrnip_ip"] = $row["ogrnip"];
+    $_POST["prodavets_ogrnip_date_ip"] = $row["ogrnip_date"];
 }
 if( $row["prodavets_type"] == "ooo" ) {
     $_POST["prodavets_type"] = $row["prodavets_type"];
