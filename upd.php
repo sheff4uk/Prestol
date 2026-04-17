@@ -186,10 +186,10 @@ while( $row = mysqli_fetch_array($res) ) {
 	$Counter++;
 }
 
-$_POST["nomer"] = $count;
+$_POST["nomer"] = "БП-" . $count;
 $_POST["status"] = "1";
 $_POST["valyuta"] = "0";
-$_POST["version"] = "20260101";
+$_POST["version"] = "20260401";
 
 // Информация о продавце
 $query = "
@@ -303,7 +303,7 @@ $headers = stream_context_create(array(
 				$path = strstr($path, '/blank/');
 				$path = strstr($path, '.pdf', true);
 				$out = file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
-				$filename = 'invoice_'.$id.'_'.$_POST["nomer"].'.pdf';
+				$filename = 'invoice_'.$id.'_'.$count.'.pdf';
 				file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
 			}
 		}
