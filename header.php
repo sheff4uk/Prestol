@@ -4,6 +4,27 @@
 
 	include_once "checkrights.php";
 
+	$location = $_SERVER['REQUEST_URI'];
+
+	// Добавление в базу нового уведомления
+	if( isset($_POST["notification"]) )
+	{
+		$notification = convert_str($_POST["notification"]);
+		$notification = mysqli_real_escape_string($mysqli, $notification);
+		$query = "
+			INSERT INTO Notifications
+			SET notification = '{$notification}'
+				,notification_time = NOW()
+				,author = {$_SESSION['id']}
+		";
+		if( !mysqli_query( $mysqli, $query ) ) {
+			$_SESSION["error"][] = mysqli_error( $mysqli );
+		}
+
+		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		die;
+	}
+
 	// Функция делает ссылки кликабельными
 	function src_url($src) {
 		$src = preg_replace('/((?:\w+:\/\/|www\.)[\w.\/%\d&?#+=-]+)/i', '<a href="\1" target="_blank" class="button">\1</a>', $src);
@@ -145,6 +166,65 @@
 		}
 		$workflow_table_outcoming .= "</tbody></table>";
 
+		if ( in_array('order_add_confirm', $Rights) ) {
+			$query = "
+				SELECT
+					N.notification,
+					Friendly_date(N.notification_time) friendly_notification_time,
+					USR_Icon(N.author) author
+				FROM Notifications N
+				ORDER BY N.N_ID DESC
+				LIMIT 50
+			";
+		} else {
+			// Находим новые уведомления младше 5 суток и добавляем в очередь на прочтение пользователем
+			$query = "
+				INSERT INTO NotificationsUsers (N_ID, USR_ID)
+				SELECT N_ID, {$_SESSION['id']} FROM Notifications WHERE notification_time > NOW() - INTERVAL 5 DAY
+				ON DUPLICATE KEY UPDATE
+					read_time = read_time
+			";
+			mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+			$query = "
+				SELECT
+					N.notification,
+					Friendly_date(N.notification_time) friendly_notification_time,
+					USR_Icon(N.author) author
+				FROM NotificationsUsers NU
+				LEFT JOIN Notifications N ON N.N_ID = NU.N_ID
+				LEFT JOIN Users U ON U.USR_ID = NU.USR_ID
+				WHERE NU.USR_ID = {$_SESSION['id']}
+				ORDER BY NU.N_ID DESC
+				LIMIT 50
+			";
+		}
+		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+
+		$workflow_table_notifications = "
+			<table class='main_table'>
+				<thead>
+					<tr>
+						<th width='60'>Когда</th>
+						<th width='50'>Автор</th>
+						<th>Уведомление</th>
+					</tr>
+				</thead>
+				<tbody>
+		";
+
+		while( $row = mysqli_fetch_assoc($res) )
+		{
+			$workflow_table_notifications .= "
+				<tr>
+					<td>{$row["friendly_notification_time"]}</td>
+					<td>{$row["author"]}</td>
+					<td>{$row["notification"]}</td>
+				</tr>
+			";
+		}
+		$workflow_table_notifications .= "</tbody></table>";
+
 		// Проверяем отметку об изменении стоимости набора и выводим сообщение
 		$query = "SELECT OD.Code FROM OrdersData OD WHERE OD.author = {$_SESSION['id']} AND OD.change_price = 1";
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
@@ -160,7 +240,7 @@
 	<title><?=$title?></title>
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=79'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=80'>
 <!--	<script src="https://kit.fontawesome.com/020f21ae61.js" crossorigin="anonymous"></script>-->
 <!--	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">-->
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.2.0/css/all.css">
@@ -270,6 +350,16 @@
 					}
 				}
 			});
+
+			// Кнопка добавления уведомления
+			$('#add_notification_btn').click( function() {
+				$('#add_notification').dialog({
+					resizable: false,
+					width: 500,
+					modal: true,
+					closeText: 'Закрыть'
+				});
+			});
 		});
 
 		// Диалог подтверждения действия
@@ -330,6 +420,23 @@
 
 	<div id="loading" class='uil-default-css' style='transform:scale(1); position: absolute; left: calc(50% - 100px); top: calc(50% - 100px);'><img src="/img/logo.svg" alt=""><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(0deg) translate(0,-60px);transform:rotate(0deg) translate(0,-60px);border-radius:10px;position:absolute;'></div><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(30deg) translate(0,-60px);transform:rotate(30deg) translate(0,-60px);border-radius:10px;position:absolute;'></div><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(60deg) translate(0,-60px);transform:rotate(60deg) translate(0,-60px);border-radius:10px;position:absolute;'></div><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(90deg) translate(0,-60px);transform:rotate(90deg) translate(0,-60px);border-radius:10px;position:absolute;'></div><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(120deg) translate(0,-60px);transform:rotate(120deg) translate(0,-60px);border-radius:10px;position:absolute;'></div><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(150deg) translate(0,-60px);transform:rotate(150deg) translate(0,-60px);border-radius:10px;position:absolute;'></div><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(180deg) translate(0,-60px);transform:rotate(180deg) translate(0,-60px);border-radius:10px;position:absolute;'></div><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(210deg) translate(0,-60px);transform:rotate(210deg) translate(0,-60px);border-radius:10px;position:absolute;'></div><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(240deg) translate(0,-60px);transform:rotate(240deg) translate(0,-60px);border-radius:10px;position:absolute;'></div><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(270deg) translate(0,-60px);transform:rotate(270deg) translate(0,-60px);border-radius:10px;position:absolute;'></div><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(300deg) translate(0,-60px);transform:rotate(300deg) translate(0,-60px);border-radius:10px;position:absolute;'></div><div style='top:80px;left:93px;width:14px;height:40px;background:#e78f08;-webkit-transform:rotate(330deg) translate(0,-60px);transform:rotate(330deg) translate(0,-60px);border-radius:10px;position:absolute;'></div></div>
 
+	<!-- Форма добавления уведомления -->
+	<div id='add_notification' title='Уведомление' style='display:none'>
+		<form method='post' action='<?=$location?>' onsubmit="JavaScript:this.subbut.disabled=true;this.subbut.value='Подождите, пожалуйста!';">
+			<fieldset>
+				<div>
+					<label for="notification">Текст уведомления:</label><br>
+					<textarea name="notification" id="notification" style="width: 100%; height: 100px;" required></textarea>
+				</div>
+			</fieldset>
+			<div>
+				<hr>
+				<input type='submit' name="subbut" value='Отправить' style='float: right;'>
+			</div>
+		</form>
+	</div>
+	<!-- Конец формы добавления уведомления -->
+
 	<!-- NAVBAR -->
 	<nav class="navbar">
 		<div class="navbar-header" id="main">
@@ -338,7 +445,7 @@
 			</div>
 			<a class="navbar-brand" href="/" title="На главную" style="position: relative;"><?=$company_name?></a>
 			<?php
-			if( in_array('order_add', $Rights) ) {
+			if (in_array('order_add', $Rights)) {
 			?>
 			<div id="navbar_workflow" style="background: <?=$workflow_color?>; box-shadow: 0 0 3px 3px <?=$workflow_color?>;">
 				<div>
@@ -346,12 +453,16 @@
 						<ul>
 							<li><a href="#incoming">Входящие</a></li>
 							<li><a href="#outcoming">Отправленные</a></li>
+							<li><a href="#notifications">Уведомления</a></li>
 						</ul>
 						<div id="incoming" style="height: calc(100% - 35px); overflow: auto;">
 							<?=$workflow_table?>
 						</div>
 						<div id="outcoming" style="height: calc(100% - 35px); overflow: auto;">
 							<?=$workflow_table_outcoming?>
+						</div>
+						<div id="notifications" style="height: calc(100% - 35px); overflow: auto;">
+							<?=$workflow_table_notifications?>
 						</div>
 					</div>
 				</div>
@@ -360,6 +471,10 @@
 			}
 			if( in_array('selling_all', $Rights) or in_array('selling_city', $Rights) or in_array('sverki_all', $Rights) or in_array('sverki_city', $Rights) or in_array('sverki_opt', $Rights) ) {
 				echo "<a href='calc.php' id='navbar_calc' title='Калькулятор стоимости стола'><i class='fas fa-calculator fa-2x'></i></a>";
+			}
+			
+			if (in_array('order_add_confirm', $Rights)) {
+				echo "<a href='#' id='add_notification_btn' title='Создать уведомление'><i class='fas fa-message fa-2x'></i></a>";
 			}
 			?>
 		</div>

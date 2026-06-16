@@ -597,7 +597,7 @@ while( $row = mysqli_fetch_array($res) ) {
 			<h3 style="display: inline-block; margin: 10px;">Процент скидки: <span id="bill_percent" style="color: #16A085;"></span></h3>
 			<input type="hidden" name="summa" value="0">
 			<input type="hidden" name="total_discount" value="0">
-			<input type='submit' name="subbut" value='Создать счет' style='float: right;'>
+			<input type='submit' name="subbut" id="bill_subbut" value='Создать счет' style='float: right;'>
 			<label style="float: right; margin: 4px 10px; width: 90px;"><input type="checkbox" name="stamped" value="1" checked>С печатью</label>
 			<input type="text" name="date" id="date" value="<?=date('d.m.Y')?>" class="date" style="float: right; margin: 4px 10px; width: 90px;" readonly>
 		</div>
@@ -664,7 +664,7 @@ while( $row = mysqli_fetch_array($res) ) {
 
 	$(function() {
 		// Деактивируем сабмит
-		$('input[name="subbut"]').prop('disabled', true).button('refresh');
+		$('#bill_subbut').prop('disabled', true).button('refresh');
 
 		// Обнуляем сумму счёта
 		bill_total();
@@ -756,7 +756,7 @@ while( $row = mysqli_fetch_array($res) ) {
 			});
 			$('#selectalltop').prop('checked', checked_status);
 			$('#selectallbottom').prop('checked', checked_status);
-			$('input[name="subbut"]').prop('disabled', checked_status_submit).button('refresh');
+			$('#bill_subbut').prop('disabled', checked_status_submit).button('refresh');
 			return false;
 		});
 		// Конец обработчиков чекбоксов

@@ -915,6 +915,15 @@ td.tscell > i {
 	float: left;
 }
 
+#add_notification_btn {
+	cursor: pointer;
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	margin: 13px 0;
+	float: left;
+}
+
 .wf_is_read {
 	opacity: .5;
 }

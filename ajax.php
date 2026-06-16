@@ -2719,5 +2719,20 @@ case "odd_data":
 
 	break;
 /////////////////////////////////////////////////////////////////////
+
+// Помечаем уведомления как прочитанные
+case "notification_read":
+	$usr_id = $_GET["usr_id"];
+	$n_id = $_GET["n_id"];
+
+	$query = "
+		UPDATE NotificationsUsers
+		SET read_time = NOW()
+		WHERE USR_ID = {$usr_id} AND N_ID = {$n_id}
+	";
+	mysqli_query( $mysqli, $query );
+
+	break;
+/////////////////////////////////////////////////////////////////////
 }
 ?>
