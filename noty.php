@@ -47,12 +47,13 @@
 		$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 		while( $row = mysqli_fetch_assoc($res) ) {
 			$N_ID = $row["N_ID"];
+			$notification = str_replace(array("\r\n", "\r", "\n"), '\n', $row["notification"]);
 			echo "
 				<script>
 					noty({
 						modal: true,
 						timeout: false,
-						text: '<h2>{$row["notification"]}</h2><p style=\'text-align: right;\'>{$row["friendly_notification_time"]} <b>{$row["author"]}</b></p>',
+						text: '<div style=\'max-height: 300px; overflow-y: scroll;\'><h2 class=\'user-text\'>{$notification}</h2></div><p style=\'text-align: right;\'>{$row["friendly_notification_time"]} <b>{$row["author"]}</b></p>',
 						buttons: [
 							{addClass: 'btn btn-primary', text: 'Отметить как прочитанное', onClick: function (\$noty) {
 								\$(this).attr('disabled', true);

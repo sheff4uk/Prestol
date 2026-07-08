@@ -924,6 +924,10 @@ td.tscell > i {
 	float: left;
 }
 
+.user-text {
+	white-space: pre-wrap;
+}
+
 .wf_is_read {
 	opacity: .5;
 }

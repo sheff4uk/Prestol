@@ -89,7 +89,7 @@
 				<tr id='wfm{$row["OM_ID"]}' onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' class='".($row["priority"] ? "wf_priority" : "")." ".($row["is_read"] ? "wf_is_read" : "")."'>
 					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></td>
 					<td>{$row["author"]}</td>
-					<td>{$row["Message"]}</td>
+					<td class='user-text'>{$row["Message"]}</td>
 					<td>{$row["read_user"]}</td>
 				</tr>
 			";
@@ -159,7 +159,7 @@
 				<tr onclick='document.location = \"./orderdetail.php?id={$row["OD_ID"]}\";' class='".($row["priority"] ? "wf_priority" : "")." ".($row["is_read"] ? "wf_is_read" : "")."'>
 					<td><a href='./orderdetail.php?id={$row["OD_ID"]}'><b class='code'>{$row["Code"]}</b></a></td>
 					<td>{$row["author"]}</td>
-					<td>{$row["Message"]}</td>
+					<td class='user-text'>{$row["Message"]}</td>
 					<td>{$row["read_user"]}</td>
 				</tr>
 			";
@@ -219,7 +219,7 @@
 				<tr>
 					<td>{$row["friendly_notification_time"]}</td>
 					<td>{$row["author"]}</td>
-					<td>{$row["notification"]}</td>
+					<td class='user-text'>{$row["notification"]}</td>
 				</tr>
 			";
 		}
@@ -240,7 +240,7 @@
 	<title><?=$title?></title>
 <!--	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">-->
 	<link rel="stylesheet" type='text/css' href="js/ui/jquery-ui.css?v=1">
-	<link rel='stylesheet' type='text/css' href='css/style.css?v=80'>
+	<link rel='stylesheet' type='text/css' href='css/style.css?v=81'>
 <!--	<script src="https://kit.fontawesome.com/020f21ae61.js" crossorigin="anonymous"></script>-->
 <!--	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">-->
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.2.0/css/all.css">

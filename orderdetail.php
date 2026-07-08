@@ -1047,7 +1047,7 @@ if( $id != "NULL" ) {
 				}
 				echo "<tr".($row["priority"] ? " style='font-weight: bold;'" : "").">";
 				echo "<td>{$letter_btn}</td>";
-				echo "<td>".(src_url($row["Message"]))."</td>";
+				echo "<td class='user-text'>".(src_url($row["Message"]))."</td>";
 				echo "<td>{$row["friendly_date"]}<br>{$row["Time"]}</td>";
 				echo "<td>{$row["Name"]}</td>";
 				echo "</tr>";
