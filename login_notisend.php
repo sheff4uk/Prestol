@@ -26,36 +26,37 @@ switch( $_GET["do"] ) {
 				$myrow = mysqli_fetch_array($result);
 				// Пользователь актевен?
 				if( $myrow["act"] ) {
+					$code = rand(1000, 9999);
 
-					// Отправляем телефон на который поступит звонок
-					//$body = file_get_contents("https://sms.ru/code/call?api_id=".($api_id)."&phone=".($mtel)."&ip=".$_SERVER["REMOTE_ADDR"]);
+					// Отправляем телефон на который поступит код авторизации
+					//$body = file_get_contents("https://sms.notisend.ru/api/message/send?project=sheff4uk_test&recipients=".($mtel)."&message=".($code)."&apikey=".($notisend_apikey));
 
-					$ch = curl_init("https://sms.ru/code/call");
+					$ch = curl_init("https://sms.notisend.ru/api/message/send");
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 					curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 					curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
-						"phone" => $mtel, // номер телефона пользователя
-						"ip" => $_SERVER["REMOTE_ADDR"], // ip адрес пользователя
-						"api_id" => $api_id
+						"project" => "sheff4uk_voice", // проект
+						"recipients" => $mtel, // номер телефона пользователя
+						"message" => $code, // код авторизации
+						"apikey" => $notisend_voice_apikey
 					)));
 					$body = curl_exec($ch);
 					curl_close($ch);
 
 					$json = json_decode($body);
 					if( $json ) { // Получен ответ от сервера
-						if( $json->status == "OK" ) { // Запрос выполнился
+						if( $json->status == "success" ) { // Запрос выполнился
 							// Сохраняем код в сессию для дальнейшей проверки
-							$_SESSION["code"] = $json->code;
+							$_SESSION["code"] = $code;
 						}
 						else {
-							$_SESSION["error"][] = "Звонок не может быть выполнен. Чтобы узнать код, свяжитесь с администратором. Текст ошибки: $json->status_text";
-							//$_SESSION["code"] = $json->code;
-							$_SESSION["code"] = rand(1000, 9999);
+							$_SESSION["error"][] = "Запрос не выполнился. Чтобы узнать код, свяжитесь с администратором. Текст ошибки: $json->message";
+							$_SESSION["code"] = $code;
 							message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
 						}
 					} else {
-						$_SESSION["error"][] = "Запрос не выполнился. Не удалось установить связь с сервером. Чтобы узнать код, свяжитесь с администратором.";
-						$_SESSION["code"] = rand(1000, 9999);
+						$_SESSION["error"][] = "Не удалось установить связь с сервером. Чтобы узнать код, свяжитесь с администратором.";
+						$_SESSION["code"] = $code;
 						message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
 
 					}
@@ -80,7 +81,7 @@ switch( $_GET["do"] ) {
 				});
 			";
 			if( !isset($_SESSION["error"])  ) {
-				echo "noty({text: '<h1>Поступит звонок со случайного номера.<br><br>Введите последние 4 цифры определившегося номера.</h1>', type: 'alert'});";
+				echo "noty({text: '<h1>Поступит звонок, и код авторизации будет <span style=\'color: red;\'>сообщен голосом</span>.</h1>', type: 'alert'});";
 			}
 			else {
 				foreach ($_SESSION["error"] as $value) {
@@ -88,9 +89,44 @@ switch( $_GET["do"] ) {
 					echo "noty({text: '{$value}', type: 'error'});";
 				}
 				unset($_SESSION["error"]);
-				//echo "noty({text: '<h1>Чтобы узнать код, свяжитесь с администратором.</h1>', type: 'alert'});";
-				echo "noty({text: '<h1>Воспользуйтесь кнопкой альтернативного входа.</h1>', type: 'alert'});";
 			}
+		}
+		// Иначе перезагружаем страницу
+		else echo "location.reload();";
+	break;
+	//////////////////////////////////////////////
+	// Отправка кода в Telegram
+	case "tg_code":
+
+		$mtel = $_SESSION['mtel'];
+		$code = $_SESSION['code'];
+
+		$ch = curl_init("https://sms.notisend.ru/api/message/send");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
+			"project" => "sheff4uk_tg", // проект
+			"recipients" => $mtel, // номер телефона пользователя
+			"message" => $code, // код авторизации
+			"apikey" => $notisend_tg_apikey
+		)));
+		$body = curl_exec($ch);
+		curl_close($ch);
+
+		$json = json_decode($body);
+		if( $json ) { // Получен ответ от сервера
+			if( $json->status !== "success" ) { // Запрос выполнился
+				$_SESSION["error"][] = "Запрос не выполнился. Текст ошибки: $json->message";
+				// message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
+			}
+		} else {
+			$_SESSION["error"][] = "Не удалось установить связь с сервером.";
+			// message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
+
+		}
+
+		if( !isset($_SESSION["error"])  ) {
+			echo "noty({text: '<h1>На указанный телефон отправлен СМС с кодом авторизации.</h1>', type: 'alert'});";
 		}
 		// Иначе перезагружаем страницу
 		else echo "location.reload();";
@@ -117,37 +153,6 @@ switch( $_GET["do"] ) {
 		if( !isset($_SESSION["error"])  ) {
 			echo "var check_id = '{$check_id}';";
 			echo "noty({text: '<h1>Позвоните по этому номеру для авторизации: {$call_phone_html}</h1>', type: 'alert'});";
-		}
-		// Иначе перезагружаем страницу
-		else echo "location.reload();";
-	break;
-	//////////////////////////////////////////////
-	// Проверка статуса звонка
-	case "status":
-		$body = file_get_contents("https://sms.ru/callcheck/status?api_id=".($api_id)."&check_id=".($_GET['check_id'])."&json=1");
-		$json = json_decode($body);
-		if( $json ) { // Получен ответ от сервера
-			if( $json->status == "OK" ) { // Запрос выполнился
-				// Сохраняем check_status
-				$check_status = $json->check_status;
-				echo "check_status = {$check_status};";
-			}
-			else $_SESSION["error"][] = "Запрос не выполнился (возможно ошибка авторизации, параметрах, итд...) Код ошибки: $json->status_code Текст ошибки: $json->check_status_text";
-		}
-		else $_SESSION["error"][] = "Запрос не выполнился Не удалось установить связь с сервером.";
-
-		// Если не было ошибок - проверяем check_status
-		if( !isset($_SESSION["error"])  ) {
-			// Если звонок поступил - активируем сессию и заходим в систему
-			if( $check_status == 401 ) {
-				$query = "SELECT USR_ID, last_url FROM Users WHERE phone='{$_SESSION['mtel']}'";
-				$result = mysqli_query( $mysqli, $query );
-				$myrow = mysqli_fetch_array($result);
-				$_SESSION["id"] = $myrow["USR_ID"];
-				unset($_SESSION['code']);
-				unset($_SESSION['mtel']);
-				echo "location.href = '{$myrow["last_url"]}';";
-			}
 		}
 		// Иначе перезагружаем страницу
 		else echo "location.reload();";
@@ -234,28 +239,28 @@ switch( $_GET["do"] ) {
 		<script>
 			$(document).ready(function() {
 
-				var progressbar = $( "#progressbar" ),
-					progressLabel = $( ".progress-label" );
+				// var progressbar = $( "#progressbar" ),
+				// 	progressLabel = $( ".progress-label" );
 
-				progressbar.progressbar({
-					value: false,
-					complete: function() {
-						progressLabel.text( "Звонок не поступил" );
-						setTimeout( function() { location.reload(); }, 3000 );
-					}
-				});
+				// progressbar.progressbar({
+				// 	value: false,
+				// 	complete: function() {
+				// 		progressLabel.text( "Звонок не поступил" );
+				// 		setTimeout( function() { location.reload(); }, 3000 );
+				// 	}
+				// });
 
-				function status(check_id) {
-					$.ajax({ url: "login.php?do=status&check_id="+check_id, dataType: "script", async: false });
+				// function status(check_id) {
+				// 	$.ajax({ url: "login.php?do=status&check_id="+check_id, dataType: "script", async: false });
 
-					var val = progressbar.progressbar( "value" ) || 0;
+				// 	var val = progressbar.progressbar( "value" ) || 0;
 
-					progressbar.progressbar( "value", val + 1 );
+				// 	progressbar.progressbar( "value", val + 1 );
 
-					if ( val < 100 && check_status != 401 ) {
-						setTimeout( function() { status(check_id); }, 3000 );
-					}
-				}
+				// 	if ( val < 100 && check_status != 401 ) {
+				// 		setTimeout( function() { status(check_id); }, 3000 );
+				// 	}
+				// }
 
 				$('#login form').on("submit", function(){
 					var mtel = $('#mtel').val();
@@ -265,26 +270,31 @@ switch( $_GET["do"] ) {
 					// Отправляем телефон, на который должен поступить звонок
 					$.ajax({ url: "login.php?do=add&mtel="+mtel, dataType: "script", async: false });
 
-					$('#alternative_login').on("click", function(){
-						$('#progressbar').show();
-						$('#alternative_login').hide();
+					// Через некоторое время отправляем код в Телеграмм
+					setTimeout( function() {
+						$.ajax({ url: "login.php?do=tg_code", dataType: "script", async: false });
+					}, 30000 );
 
-						// Отправляем телефон, с которого должен поступить звонок
-						$.ajax({ url: "login.php?do=alternative_login&mtel="+mtel, dataType: "script", async: false });
+					// $('#alternative_login').on("click", function(){
+					// 	$('#progressbar').show();
+					// 	$('#alternative_login').hide();
 
-						// Узнаем статус звонка
-						setTimeout( function() { status(check_id); }, 2000 );
-					});
+					// 	// Отправляем телефон, с которого должен поступить звонок
+					// 	$.ajax({ url: "login.php?do=alternative_login&mtel="+mtel, dataType: "script", async: false });
 
-					$('#sms_code').on("click", function(){
-						$("#sms_code").css("pointer-events", "none");
+					// 	// Узнаем статус звонка
+					// 	setTimeout( function() { status(check_id); }, 2000 );
+					// });
 
-						// Отправляем телефон, с которого должен поступить звонок
-						$.ajax({ url: "login.php?do=sms_code&mtel="+mtel, dataType: "script", async: false });
-					});
+					// $('#sms_code').on("click", function(){
+					// 	$("#sms_code").css("pointer-events", "none");
+
+					// 	// Отправляем телефон, с которого должен поступить звонок
+					// 	$.ajax({ url: "login.php?do=sms_code&mtel="+mtel, dataType: "script", async: false });
+					// });
 
 					return false;
-				})
+				});
 
 				$("#code").mask('9 9 9 9', {
 					onComplete: function(cep) {
@@ -321,17 +331,17 @@ switch( $_GET["do"] ) {
 			<p><sup>*</sup>КИС - корпоративная информационная система</p>
 		</div>
 
-		<div id="send_code_form" style="display: none;" title="Последние 4 цифры входящего">
+		<div id="send_code_form" style="display: none;" title="Код авторизации">
 			<form method='post'>
 				<input type='text' id='code' name='code' autocomplete='off' style="font-size: 3em; width: 100%; text-align: center;" required>
-				<br>
+				<!-- <br>
 				<br>
 				<fieldset>
 					<legend>Альтернативный вход</legend>
 					<a href="#" id="alternative_login" class="button" style="display: block; text-align: center;">По исходящему звонку</a>
 					<div id="progressbar" style="display: none;"><div class="progress-label">Ожидание звонка...</div></div>
 					<a href="#" id="sms_code" class="button" style="display: block; text-align: center;">СМС-код (кроме Мегафон, МТС)</a>
-				</fieldset>
+				</fieldset> -->
 			</form>
 		</div>
 
