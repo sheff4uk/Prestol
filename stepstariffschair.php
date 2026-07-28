@@ -17,7 +17,9 @@ session_start();
 	}
 
 	// Перенаправление в журнал
-	exit ('<meta http-equiv="refresh" content="0; url=?PM_ID='.$_POST["gPM_ID"].'#'.$_POST["PMM_ID"].'_'.$_POST["ST_ID"].'">');
+	//exit ('<meta http-equiv="refresh" content="0; url=?PM_ID='.$_POST["gPM_ID"].'#'.$_POST["PMM_ID"].'_'.$_POST["ST_ID"].'">');
+	header("Location: ?PM_ID=" . urlencode($_POST["gPM_ID"]) . "#" . urlencode($_POST["PMM_ID"]) . "_" . urlencode($_POST["ST_ID"]));
+	exit;
 }
 
 $title = 'Тарифы для стульев';

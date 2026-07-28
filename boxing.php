@@ -13,8 +13,11 @@
 		";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 
-		exit ('<meta http-equiv="refresh" content="0; url=?ct_id='.$_POST["CT_ID"].'#'.$_POST["ODD_ID"].'">');
-		die;
+		//exit ('<meta http-equiv="refresh" content="0; url=?ct_id='.$_POST["CT_ID"].'#'.$_POST["ODD_ID"].'">');
+		//die;
+
+		header("Location: ?ct_id=" . urlencode($_POST["CT_ID"]) . "#" . urlencode($_POST["ODD_ID"]));
+		exit;
 	}
 
 	$_GET["ct_id"] = ($_GET["ct_id"] > 0 ? $_GET["ct_id"] : 0);
