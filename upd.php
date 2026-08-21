@@ -188,7 +188,8 @@ while( $row = mysqli_fetch_array($res) ) {
 
 $_POST["nomer"] = "БП-" . $count;
 $_POST["status"] = "1";
-$_POST["valyuta"] = "0";
+//$_POST["valyuta"] = "0";
+$_POST["valyuta"] = "643";
 $_POST["version"] = "20260401";
 
 // Информация о продавце
@@ -286,23 +287,26 @@ $headers = stream_context_create(array(
 	)
 ));
 
-// $path = file_get_contents('https://service-online.su/forms/buh/upd/blanc.php', false, $headers);
-// $path = strstr($path, '/blank/');
-// $path = strstr($path, '.pdf', true);
-// $out = file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
-// $filename = 'invoice_'.$id.'_'.$_POST["nomer"].'.pdf';
-// file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
-
 	$content = file_get_contents('https://service-online.su/forms/buh/upd/blanc.php', false, $headers);
-	// Проверяем, были ли редиректы в заголовках
+
+	// Извлечение пути к файлу из заголовков
 	if (isset($http_response_header)) {
 		foreach ($http_response_header as $header) {
-			if (strpos(strtolower($header), 'location:') !== false) {
-				// Получаем последний Location
-				$path = trim(substr($header, 9));
-				$path = strstr($path, '/blank/');
-				$path = strstr($path, '.pdf', true);
-				$out = file_get_contents('https://service-online.su'.$path.'.pdf', false, null);
+			if (strpos(strtolower($header), 'pdfhandoff') !== false) {
+
+				// 1. Извлекаем закодированное значение куки pdfhandoff
+				preg_match('/pdfhandoff=([^;]+)/', $header, $matches);
+					
+				// 2. Декодируем URL-символы (%7B -> {, %22 -> " и т.д.)
+				$json_string = urldecode($matches[1]);
+				
+				// 3. Декодируем полученную JSON-строку в массив
+				$data = json_decode($json_string, true);
+				
+				// 4. Забираем нужный ключ
+				$file_path = $data['file'] ?? null;
+					
+				$out = file_get_contents('https://service-online.su' . $file_path, false, null);
 				$filename = 'invoice_'.$id.'_'.$count.'.pdf';
 				file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
 			}
