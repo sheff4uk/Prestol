@@ -118,8 +118,9 @@ $content = file_get_contents('https://service-online.su/forms/auto/ttn/blanc.php
 				// 4. Забираем нужный ключ
 				$file_path = $data['file'] ?? null;
 				
-				header('Content-Type: application/pdf');
-				echo file_get_contents('https://service-online.su'.$file_path, false, null);
+				//header('Content-Type: application/pdf');
+				//echo file_get_contents('https://service-online.su'.$file_path, false, null);
+				echo 'https://service-online.su' . $file_path;
 			}
 		}
 	}
