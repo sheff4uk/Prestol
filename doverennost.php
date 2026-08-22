@@ -75,41 +75,52 @@
 		$_POST["potrebitel_selector"] = 1;
 		$_POST["platelshik_selector"] = 1;
 
-		$data = http_build_query($_POST);
-		$headers = stream_context_create(array(
-			'http' => array(
-				'method' => 'POST',
-				'header' => array('Referer: https://service-online.su/forms/doverennost_TMC/'),
-				'content' => $data
-			)
-		));
+$url = 'https://kis.konstanta.ltd/proxy.php?doc=doverennost';
 
-//		$content = file_get_contents('https://service-online.su/forms/doverennost_TMC/doverennost_TMC.php', false, $headers);
-		$content = file_get_contents('https://service-online.su/forms/doverennost_TMC/blanc.php', false, $headers);
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($_POST));
+
+$response = curl_exec($ch);
+curl_close($ch);
+$filename = 'doverennost_'.$id.'_'.$_POST["nomer"].'.pdf';
+file_put_contents("print_forms/".$filename, $response); // Сохраняем файл на сервере
+
+		// $data = http_build_query($_POST);
+		// $headers = stream_context_create(array(
+		// 	'http' => array(
+		// 		'method' => 'POST',
+		// 		'header' => array('Referer: https://service-online.su/forms/doverennost_TMC/'),
+		// 		'content' => $data
+		// 	)
+		// ));
+
+		// $content = file_get_contents('https://service-online.su/forms/doverennost_TMC/blanc.php', false, $headers);
 		
-		// Извлечение пути к файлу из заголовков
-		if (isset($http_response_header)) {
-			foreach ($http_response_header as $header) {
-				if (strpos(strtolower($header), 'pdfhandoff') !== false) {
+		// // Извлечение пути к файлу из заголовков
+		// if (isset($http_response_header)) {
+		// 	foreach ($http_response_header as $header) {
+		// 		if (strpos(strtolower($header), 'pdfhandoff') !== false) {
 
-					// 1. Извлекаем закодированное значение куки pdfhandoff
-					preg_match('/pdfhandoff=([^;]+)/', $header, $matches);
+		// 			// 1. Извлекаем закодированное значение куки pdfhandoff
+		// 			preg_match('/pdfhandoff=([^;]+)/', $header, $matches);
 						
-					// 2. Декодируем URL-символы (%7B -> {, %22 -> " и т.д.)
-					$json_string = urldecode($matches[1]);
+		// 			// 2. Декодируем URL-символы (%7B -> {, %22 -> " и т.д.)
+		// 			$json_string = urldecode($matches[1]);
 					
-					// 3. Декодируем полученную JSON-строку в массив
-					$data = json_decode($json_string, true);
+		// 			// 3. Декодируем полученную JSON-строку в массив
+		// 			$data = json_decode($json_string, true);
 					
-					// 4. Забираем нужный ключ
-					$file_path = $data['file'] ?? null;
+		// 			// 4. Забираем нужный ключ
+		// 			$file_path = $data['file'] ?? null;
 						
-					$out = file_get_contents('https://service-online.su' . $file_path, false, null);
-					$filename = 'doverennost_'.$id.'_'.$_POST["nomer"].'.pdf';
-					file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
-				}
-			}
-		}
+		// 			$out = file_get_contents('https://service-online.su' . $file_path, false, null);
+		// 			$filename = 'doverennost_'.$id.'_'.$_POST["nomer"].'.pdf';
+		// 			file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
+		// 		}
+		// 	}
+		// }
 
 		exit ('<meta http-equiv="refresh" content="0; url=doverennost.php">');
 		die;
