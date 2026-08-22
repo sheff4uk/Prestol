@@ -90,17 +90,43 @@ $_POST["gruzopoluchatel"] = 1;
 //$_POST["platelshik_ks"] = $row["KS"];
 //$_POST["platelshik_bank_adres"] = $row["Bank_adres"];
 
-$url = 'https://kis.konstanta.ltd/proxy.php?doc=waybill';
+$query = "
+	SELECT value
+	FROM vars
+	WHERE var LIKE 'service-online.su'
+";
+$res = mysqli_query( $mysqli, $query );
+$row = mysqli_fetch_assoc( $res );
+if ( $row["value"] == "1" ) {
 
-$ch = curl_init($url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($_POST));
+	$url = 'https://kis.konstanta.ltd/proxy.php?doc=waybill';
 
-$response = curl_exec($ch);
-curl_close($ch);
-header('Content-Type: application/pdf');
-echo $response;
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($_POST));
+
+	$response = curl_exec($ch);
+	curl_close($ch);
+	if ( $response ) {
+		header('Content-Type: application/pdf');
+		echo $response;
+	}
+	else {
+		message_to_telegram("service-online.su", '217756119');
+		$query = "
+			UPDATE vars
+			SET value = '0'
+			WHERE var LIKE 'service-online.su'
+		";
+		mysqli_query( $mysqli, $query );
+		echo '<h1 style="text-align: center;">Файл не найден!</h1>';
+	}
+}
+else {
+	message_to_telegram("service-online.su", '217756119');
+	echo '<h1 style="text-align: center;">Файл не найден!</h1>';
+}
 
 // $data = http_build_query($_POST);
 // $headers = stream_context_create(array(

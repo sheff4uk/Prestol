@@ -279,18 +279,42 @@ if( isset($_GET["add_bill"]) ) {
 		$_POST["nds"] = 1;
 	}
 
-$url = 'https://kis.konstanta.ltd/proxy.php?doc=schet';
-$_POST["cookie"] = $service_online;
+$query = "
+	SELECT value
+	FROM vars
+	WHERE var LIKE 'service-online.su'
+";
+$res = mysqli_query( $mysqli, $query );
+$row = mysqli_fetch_assoc( $res );
+if ( $row["value"] == "1" ) {
+	
+	$url = 'https://kis.konstanta.ltd/proxy.php?doc=schet';
+	$_POST["cookie"] = $service_online;
 
-$ch = curl_init($url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($_POST));
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($_POST));
 
-$response = curl_exec($ch);
-curl_close($ch);
-$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
-file_put_contents("print_forms/".$filename, $response); // Сохраняем файл на сервере
+	$response = curl_exec($ch);
+	curl_close($ch);
+	if ( $response ) {
+		$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
+		file_put_contents("print_forms/".$filename, $response); // Сохраняем файл на сервере
+	}
+	else {
+		message_to_telegram("service-online.su", '217756119');
+		$query = "
+			UPDATE vars
+			SET value = '0'
+			WHERE var LIKE 'service-online.su'
+		";
+		mysqli_query( $mysqli, $query );
+	}
+}
+else {
+	message_to_telegram("service-online.su", '217756119');
+}
 
 	// $data = http_build_query($_POST);
 

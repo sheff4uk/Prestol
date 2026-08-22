@@ -278,17 +278,41 @@ if (is_dir($dir)) {
 	}
 }
 
-$url = 'https://kis.konstanta.ltd/proxy.php?doc=upd';
+$query = "
+	SELECT value
+	FROM vars
+	WHERE var LIKE 'service-online.su'
+";
+$res = mysqli_query( $mysqli, $query );
+$row = mysqli_fetch_assoc( $res );
+if ( $row["value"] == "1" ) {
 
-$ch = curl_init($url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($_POST));
+	$url = 'https://kis.konstanta.ltd/proxy.php?doc=upd';
 
-$response = curl_exec($ch);
-curl_close($ch);
-$filename = 'invoice_'.$id.'_'.$count.'.pdf';
-file_put_contents("print_forms/".$filename, $response); // Сохраняем файл на сервере
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($_POST));
+
+	$response = curl_exec($ch);
+	curl_close($ch);
+	if ( $response ) {
+		$filename = 'invoice_'.$id.'_'.$count.'.pdf';
+		file_put_contents("print_forms/".$filename, $response); // Сохраняем файл на сервере
+	}
+	else {
+		message_to_telegram("service-online.su", '217756119');
+		$query = "
+			UPDATE vars
+			SET value = '0'
+			WHERE var LIKE 'service-online.su'
+		";
+		mysqli_query( $mysqli, $query );
+	}
+}
+else {
+	message_to_telegram("service-online.su", '217756119');
+}
 
 // $data = http_build_query($_POST);
 // $headers = stream_context_create(array(
