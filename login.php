@@ -212,7 +212,8 @@ switch( $_GET["do"] ) {
 ?>
 		<style>
 			body {
-				background: url(img/curve-wood-texture-tekstura.jpg) center !important;
+				background: url(img/TeoZero.jpeg) center !important;
+/*				background: url(img/curve-wood-texture-tekstura.jpg) center !important; */
 /*				background: url(img/den-svyatogo-valentina.jpg) center !important;*/
 /*				background: url(img/oboi-ng-2018-7.jpg) center !important;*/
 				background-size: cover!important;
