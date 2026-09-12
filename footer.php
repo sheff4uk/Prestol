@@ -27,7 +27,7 @@
 	box-shadow: 0 -1px 4px rgba(0,0,0,0.2);
 	text-align: center;
 	line-height: 25px;
-			">&copy; 2016-<?=( date("Y") )?> &laquo;<a href="https://fabrikaprestol.ru" target="_blank">ИП Шабалин Александр Владимирович</a>&raquo;</div>
+			">&copy; 2016-<?=( date("Y") )?> <a href="https://fabrikaprestol.ru" target="_blank">ИП Шабалин Александр Владимирович</a></div>
 
 <script>
 	$(document).ready(function(){
