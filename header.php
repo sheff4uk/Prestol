@@ -21,7 +21,9 @@
 			$_SESSION["error"][] = mysqli_error( $mysqli );
 		}
 
-		exit ('<meta http-equiv="refresh" content="0; url='.$location.'">');
+		message_to_telegram( "🔔 <b>Объявление:</b>\n{$_POST["notification"]}", '-1001231594746' );
+
+		exit( '<meta http-equiv="refresh" content="0; url='.$location.'">' );
 		die;
 	}
 
@@ -221,7 +223,7 @@
 				<tr>
 					<td>{$row["friendly_notification_time"]}</td>
 					<td>{$row["author"]}</td>
-					<td class='user-text'>{$row["notification"]}<div id=read_users_wrap><br>{$row["read_users"]}</div></td>
+					<td class='user-text'>" . src_url($row['notification']) . "<div id=read_users_wrap><br>{$row["read_users"]}</div></td>
 				</tr>
 			";
 		}
