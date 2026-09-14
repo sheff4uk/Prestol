@@ -171,7 +171,8 @@
 				SELECT
 					N.notification,
 					Friendly_date(N.notification_time) friendly_notification_time,
-					USR_Icon(N.author) author
+					USR_Icon(N.author) author,
+					(SELECT GROUP_CONCAT(USR_Icon(USR_ID) SEPARATOR '') FROM NotificationsUsers WHERE N_ID = N.N_ID) read_users
 				FROM Notifications N
 				ORDER BY N.N_ID DESC
 				LIMIT 50
@@ -190,7 +191,8 @@
 				SELECT
 					N.notification,
 					Friendly_date(N.notification_time) friendly_notification_time,
-					USR_Icon(N.author) author
+					USR_Icon(N.author) author,
+					USR_Icon({$_SESSION['id']}) read_users
 				FROM NotificationsUsers NU
 				LEFT JOIN Notifications N ON N.N_ID = NU.N_ID
 				LEFT JOIN Users U ON U.USR_ID = NU.USR_ID
@@ -219,7 +221,7 @@
 				<tr>
 					<td>{$row["friendly_notification_time"]}</td>
 					<td>{$row["author"]}</td>
-					<td class='user-text'>{$row["notification"]}</td>
+					<td class='user-text'>{$row["notification"]}<div id=read_users_wrap><br>{$row["read_users"]}</div></td>
 				</tr>
 			";
 		}
@@ -279,6 +281,15 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.js"></script>
 	<script src="/js/jquery.ui.totop.js"></script>
 
+	<style>
+		#read_users_wrap {
+			text-align: right;
+		}
+
+		#read_users_wrap div {
+			margin-left: -8px !important;
+		}
+	</style>
 	<script>
 		$(document).ready(function(){
 			$('.aside-nav-control').click(function() {
