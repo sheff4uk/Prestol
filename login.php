@@ -334,7 +334,7 @@ switch( $_GET["do"] ) {
 					<legend>Альтернативный вход</legend>
 					<a href="#" id="alternative_login" class="button" style="display: block; text-align: center;">По исходящему звонку</a>
 					<div id="progressbar" style="display: none;"><div class="progress-label">Ожидание звонка...</div></div>
-					<a href="#" id="sms_code" class="button" style="display: block; text-align: center;">СМС-код (кроме Мегафон, МТС)</a>
+					<!-- <a href="#" id="sms_code" class="button" style="display: block; text-align: center;">СМС-код (кроме Мегафон, МТС)</a> -->
 				</fieldset>
 			</form>
 		</div>
