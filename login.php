@@ -17,7 +17,7 @@ switch( $_GET["do"] ) {
 				SELECT act
 					,Surname
 					,Name
-					,IFNULL(chatid, '217756119') chatid
+					,IFNULL(chatid, '') chatid
 				FROM Users
 				WHERE phone='{$mtel}'
 			";
@@ -46,17 +46,20 @@ switch( $_GET["do"] ) {
 						if( $json->status == "OK" ) { // Запрос выполнился
 							// Сохраняем код в сессию для дальнейшей проверки
 							$_SESSION["code"] = $json->code;
+							if ( $myrow["chatid"] ) {
+								message_to_telegram($_SESSION["code"], $myrow["chatid"]);
+							}
 						}
 						else {
 							$_SESSION["error"][] = "Звонок не может быть выполнен. Чтобы узнать код, свяжитесь с администратором. Текст ошибки: $json->status_text";
 							//$_SESSION["code"] = $json->code;
 							$_SESSION["code"] = rand(1000, 9999);
-							message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
+							message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], '217756119');
 						}
 					} else {
 						$_SESSION["error"][] = "Запрос не выполнился. Не удалось установить связь с сервером. Чтобы узнать код, свяжитесь с администратором.";
 						$_SESSION["code"] = rand(1000, 9999);
-						message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], $myrow["chatid"]);
+						message_to_telegram($myrow["Surname"]." ".$myrow["Name"]." ".$_SESSION["code"], '217756119');
 
 					}
 				}
