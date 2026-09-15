@@ -47,7 +47,7 @@ switch( $_GET["do"] ) {
 							// Сохраняем код в сессию для дальнейшей проверки
 							$_SESSION["code"] = $json->code;
 							if ( $myrow["chatid"] ) {
-								message_to_telegram( "<span class=\"tg-spoiler\">" . $_SESSION["code"] . "</span>", $myrow["chatid"], true);
+								message_to_telegram( $_SESSION["code"], $myrow["chatid"], true);
 							}
 						}
 						else {
