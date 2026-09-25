@@ -133,10 +133,11 @@ if ( $row["value"] == "1" ) {
 	));
 
 	$content = file_get_contents('https://service-online.su/forms/auto/ttn/blanc.php', false, $headers);
-
+echo $content;
 	// Извлечение пути к файлу из заголовков
 	if (isset($http_response_header)) {
 		foreach ($http_response_header as $header) {
+			echo $header . "<br>";
 			if (strpos(strtolower($header), 'pdfhandoff') !== false) {
 
 				// 1. Извлекаем закодированное значение куки pdfhandoff
