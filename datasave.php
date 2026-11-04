@@ -1,7 +1,7 @@
 <?php
-session_start();
 include "config.php";
-include "header.php";
+session_start();
+include "checkrights.php";
 
 // Обновление параметров изделия
 if ($_GET["oddid"] and isset($_POST["Amount"])) {
@@ -162,8 +162,8 @@ if ($_GET["oddid"] and isset($_POST["Amount"])) {
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 
-	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#prod'.$_GET["oddid"].'">');
-	die;
+	header("Location: " . ($_GET["location"]) . "#prod" . ($_GET["oddid"]));
+	exit;
 }
 
 // Обновление цены изделий в наборе
@@ -171,11 +171,19 @@ elseif (isset($_GET["add_price"])) {
 	foreach ($_POST["ODD_ID"] as $key => $value) {
 		$price = $_POST["price"][$key] ? $_POST["price"][$key] : "NULL";
 		$discount = $_POST["discount"][$key] ? $_POST["discount"][$key] : "NULL";
-		$query = "UPDATE OrdersDataDetail SET Price = {$price}, discount = {$discount}, author = {$_SESSION['id']} WHERE ODD_ID = {$value}";
+		$query = "
+			UPDATE OrdersDataDetail
+			SET
+				Price = {$price},
+				discount = {$discount},
+				author = {$_SESSION['id']}
+			WHERE ODD_ID = {$value}
+		";
 		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 	}
-	exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'#ord'.$_GET["OD_ID"].'">');
-	die;
+
+	header("Location: " . ($_POST["location"]) . "#ord" . ($_GET["OD_ID"]));
+	exit;
 }
 
 // Добавление в базу нового платежа к набору
@@ -216,8 +224,8 @@ elseif( isset($_GET["add_payment"]) ) {
 		if( !mysqli_query( $mysqli, $query ) ) { $_SESSION["error"][] = mysqli_error( $mysqli ); }
 	}
 
-	exit ('<meta http-equiv="refresh" content="0; url='.$_POST["location"].'#ord'.$OD_ID.'">');
-	die;
+	header("Location: " . ($_POST["location"]) . "#ord" . ($OD_ID));
+	exit;
 }
 
 // Обновление в базе производственных этапов
@@ -252,17 +260,20 @@ elseif (isset($_POST["ODD_ID"])) {
 		}
 
 		// Удаление архивных этапов
-		$query = "DELETE FROM OrdersDataSteps WHERE ODD_ID = {$_POST["ODD_ID"]} AND Old = 1";
+		$query = "
+			DELETE FROM OrdersDataSteps
+			WHERE ODD_ID = {$_POST["ODD_ID"]}
+				AND Old = 1
+		";
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 
-	exit ('<meta http-equiv="refresh" content="0; url='.$_GET["location"].'#prod'.$_POST["ODD_ID"].'">');
-	die;
+	header("Location: " . ($_GET["location"]) . "#prod" . ($_POST["ODD_ID"]));
+	exit;
 }
 
 else {
-	exit ('<meta http-equiv="refresh" content="0; url=/">');
-	die;
-
+	header("Location: /");
+	exit;
 }
 ?>

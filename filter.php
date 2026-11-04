@@ -1,7 +1,7 @@
 <?php
 	// Фильтрация главной таблицы
-	session_start();
 	include "config.php";
+	session_start();
 
 switch( $_GET["do"] )
 {
