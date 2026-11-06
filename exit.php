@@ -1,4 +1,5 @@
 <?php
+	include "config.php";
 	session_start();
 	unset($_SESSION['id']);// уничтожаем переменные в сессиях
 	unset($_SESSION['end_date']);
