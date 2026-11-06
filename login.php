@@ -28,18 +28,18 @@ switch( $_GET["do"] ) {
 				if( $myrow["act"] ) {
 
 					// Отправляем телефон на который поступит звонок
-					//$body = file_get_contents("https://sms.ru/code/call?api_id=".($api_id)."&phone=".($mtel)."&ip=".$_SERVER["REMOTE_ADDR"]);
+					$body = file_get_contents("https://sms.ru/code/call?api_id=".($api_id)."&phone=".($mtel)."&ip=".$_SERVER["REMOTE_ADDR"]);
 
-					$ch = curl_init("https://sms.ru/code/call");
-					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-					curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-					curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
-						"phone" => $mtel, // номер телефона пользователя
-						"ip" => $_SERVER["REMOTE_ADDR"], // ip адрес пользователя
-						"api_id" => $api_id
-					)));
-					$body = curl_exec($ch);
-					curl_close($ch);
+					// $ch = curl_init("https://sms.ru/code/call");
+					// curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					// curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+					// curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
+					// 	"phone" => $mtel, // номер телефона пользователя
+					// 	"ip" => $_SERVER["REMOTE_ADDR"], // ip адрес пользователя
+					// 	"api_id" => $api_id
+					// )));
+					// $body = curl_exec($ch);
+					// curl_close($ch);
 
 					$json = json_decode($body);
 					if( $json ) { // Получен ответ от сервера
