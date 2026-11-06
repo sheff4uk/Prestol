@@ -1,115 +1,6 @@
 <?php
 include "config.php";
 
-$title = 'Счета';
-include "header.php";
-
-// Проверка прав на доступ к экрану
-if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !in_array('sverki_opt', $Rights) ) {
-	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
-	die('Недостаточно прав для совершения операции');
-}
-
-// Формируем список контрагентов для дропдауна
-$KA_options = "";
-$KA_IDs = "0";
-if (!$USR_Shop) { // Если не продавец - показываем оптовиков
-	$KA_options .= "<optgroup label='Оптовые покупатели:'>";
-	$query = "
-		SELECT KA.KA_ID
-			,KA.R_ID
-			,CT.CT_ID
-			,CT.City
-			,KA.Naimenovanie
-			,IFNULL(Jur_adres, '') Jur_adres
-			,IFNULL(Fakt_adres, '') Fakt_adres
-			,IFNULL(Telefony, '') Telefony
-			,IFNULL(INN, '') INN
-			,IFNULL(OKPO, '') OKPO
-			,IFNULL(KPP, '') KPP
-			,IFNULL(Pasport, '') Pasport
-			,IFNULL(Email, '') Email
-			,IFNULL(Schet, '') Schet
-			,IFNULL(Bank, '') Bank
-			,IFNULL(BIK, '') BIK
-			,IFNULL(KS, '') KS
-			,IFNULL(Bank_adres, '') Bank_adres
-		FROM Kontragenty KA
-		JOIN Shops SH ON SH.KA_ID = KA.KA_ID
-		JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-		".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
-		GROUP BY KA.KA_ID
-		ORDER BY CT.City, KA.Naimenovanie
-	";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	while( $row = mysqli_fetch_array($res) ) {
-		$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]}</option>";
-		$KA_IDs .= ",{$row["KA_ID"]}";
-		$Kontragenty[$row["KA_ID"]] = array( "R_ID"=>$row["R_ID"], "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
-	}
-	$KA_options .= "</optgroup>";
-}
-
-// Список розничных контрагентов
-$KA_options .=  "<optgroup label='Розничные покупатели:'>";
-$query = "
-	SELECT KA.KA_ID
-		,KA.R_ID
-		,CT.CT_ID
-		,CT.City
-		,KA.Naimenovanie
-		,IFNULL(Jur_adres, '') Jur_adres
-		,IFNULL(Fakt_adres, '') Fakt_adres
-		,IFNULL(Telefony, '') Telefony
-		,IFNULL(INN, '') INN
-		,IFNULL(OKPO, '') OKPO
-		,IFNULL(KPP, '') KPP
-		,IFNULL(Pasport, '') Pasport
-		,IFNULL(Email, '') Email
-		,IFNULL(Schet, '') Schet
-		,IFNULL(Bank, '') Bank
-		,IFNULL(BIK, '') BIK
-		,IFNULL(KS, '') KS
-		,IFNULL(Bank_adres, '') Bank_adres
-	FROM Kontragenty KA
-	JOIN OrdersData OD ON OD.KA_ID = KA.KA_ID
-	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
-	JOIN Cities CT ON CT.CT_ID = SH.CT_ID
-	".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
-	GROUP BY KA.KA_ID, CT.CT_ID
-	ORDER BY CT.City, KA.Naimenovanie
-";
-$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-while( $row = mysqli_fetch_array($res) ) {
-	$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]}</option>";
-	$KA_IDs .= ",{$row["KA_ID"]}";
-	$Kontragenty[$row["KA_ID"]] = array( "R_ID"=>$row["R_ID"], "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
-}
-$KA_options .= "</optgroup>";
-
-if( isset($_GET["year"]) ) {
-	$year = $_GET["year"];
-}
-else {
-	$year = date('Y');
-}
-if ( $USR_KA ) { // Если пользователь - оптовик
-	$payer = $USR_KA;
-}
-elseif ( $_GET["payer"] and (int)$_GET["payer"] > 0 ) {
-	$query = "SELECT 1 FROM Kontragenty WHERE KA_ID IN ({$KA_IDs}) AND KA_ID = {$_GET["payer"]}";
-	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
-	if( mysqli_num_rows($res) ) {
-		$payer = $_GET["payer"];
-	}
-	else {
-		die('Недостаточно прав для совершения операции');
-	}
-}
-else {
-	$payer = "";
-}
-
 // Обработка полученных данных из формы
 if( isset($_GET["add_bill"]) ) {
 
@@ -134,8 +25,8 @@ if( isset($_GET["add_bill"]) ) {
 		}
 		else {
 			$_SESSION["error"][] = "При создании счёта возникла ошибка. Пожалуйста, повторите попытку.";
-			exit ('<meta http-equiv="refresh" content="0; url=bills.php?year='.($year).'&payer='.($payer).'">');
-			die;
+			header("Location: bills.php?year=" . urlencode($year) . "&payer=" . urlencode($_GET["payer"]));
+			exit;
 		}
 	}
 
@@ -279,107 +170,216 @@ if( isset($_GET["add_bill"]) ) {
 		$_POST["nds"] = 1;
 	}
 
-$query = "
-	SELECT value
-	FROM vars
-	WHERE var LIKE 'service-online.su'
-";
-$res = mysqli_query( $mysqli, $query );
-$row = mysqli_fetch_assoc( $res );
-if ( $row["value"] == "1" ) {
+	$query = "
+		SELECT value
+		FROM vars
+		WHERE var LIKE 'service-online.su'
+	";
+	$res = mysqli_query( $mysqli, $query );
+	$row = mysqli_fetch_assoc( $res );
+	if ( $row["value"] == "1" ) {
 	
-	$url = 'https://kis.konstanta.ltd/printforms/proxy_prestol.php?doc=schet';
-	$_POST["cookie"] = $service_online;
+		// $url = 'https://kis.konstanta.ltd/printforms/proxy_prestol.php?doc=schet';
+		// $_POST["cookie"] = $service_online;
 
-	$ch = curl_init($url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_POST, true);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($_POST));
+		// $ch = curl_init($url);
+		// curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		// curl_setopt($ch, CURLOPT_POST, true);
+		// curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($_POST));
 
-	$response = curl_exec($ch);
-	curl_close($ch);
-	if ( $response ) {
-		$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
-		file_put_contents("print_forms/".$filename, $response); // Сохраняем файл на сервере
-	}
-	else {
-		message_to_telegram("service-online.su", '217756119');
-		$query = "
-			UPDATE vars
-			SET value = '0'
-			WHERE var LIKE 'service-online.su'
-		";
-		mysqli_query( $mysqli, $query );
-	}
+		// $response = curl_exec($ch);
+		// curl_close($ch);
+		// if ( $response ) {
+		// 	$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
+		// 	file_put_contents("print_forms/".$filename, $response); // Сохраняем файл на сервере
+		// }
+		// else {
+		// 	message_to_telegram("service-online.su", '217756119');
+		// 	$query = "
+		// 		UPDATE vars
+		// 		SET value = '0'
+		// 		WHERE var LIKE 'service-online.su'
+		// 	";
+		// 	mysqli_query( $mysqli, $query );
+		// }
 
-	// $data = http_build_query($_POST);
+		$data = http_build_query($_POST);
 
-	// // Счет с печатью или без
-	// if( $_POST["stamped"] == 1 ) {
-	// 	$headers = stream_context_create(array(
-	// 		'http' => array(
-	// 			'method' => 'POST',
-	// 			'header' => array(
-	// 				'Cookie: '.$service_online,
-	// 				'Referer: https://service-online.su/forms/buh/schet/'
-	// 			),
-	// 			'content' => $data
-	// 		)
-	// 	));
-	// }
-	// else {
-	// 	$headers = stream_context_create(array(
-	// 		'http' => array(
-	// 			'method' => 'POST',
-	// 			'header' => array('Referer: https://service-online.su/forms/buh/schet/'),
-	// 			'content' => $data
-	// 		)
-	// 	));
-	// }
+		// Счет с печатью или без
+		if( $_POST["stamped"] == 1 ) {
+			$headers = stream_context_create(array(
+				'http' => array(
+					'method' => 'POST',
+					'header' => array(
+						'Cookie: '.$service_online,
+						'Referer: https://service-online.su/forms/buh/schet/'
+					),
+					'content' => $data
+				)
+			));
+		}
+		else {
+			$headers = stream_context_create(array(
+				'http' => array(
+					'method' => 'POST',
+					'header' => array('Referer: https://service-online.su/forms/buh/schet/'),
+					'content' => $data
+				)
+			));
+		}
 
-	// $content = file_get_contents('https://service-online.su/forms/buh/schet/blanc.php', false, $headers);
+		$content = file_get_contents('https://service-online.su/forms/buh/schet/blanc.php', false, $headers);
 
-	// // Извлечение пути к файлу из заголовков
-	// if (isset($http_response_header)) {
-	// 	foreach ($http_response_header as $header) {
-	// 		if (strpos(strtolower($header), 'pdfhandoff') !== false) {
+		// Извлечение пути к файлу из заголовков
+		if (isset($http_response_header)) {
+			foreach ($http_response_header as $header) {
+				if (strpos(strtolower($header), 'pdfhandoff') !== false) {
 
-	// 			// 1. Извлекаем закодированное значение куки pdfhandoff
-	// 			preg_match('/pdfhandoff=([^;]+)/', $header, $matches);
+					// 1. Извлекаем закодированное значение куки pdfhandoff
+					preg_match('/pdfhandoff=([^;]+)/', $header, $matches);
+						
+					// 2. Декодируем URL-символы (%7B -> {, %22 -> " и т.д.)
+					$json_string = urldecode($matches[1]);
 					
-	// 			// 2. Декодируем URL-символы (%7B -> {, %22 -> " и т.д.)
-	// 			$json_string = urldecode($matches[1]);
-				
-	// 			// 3. Декодируем полученную JSON-строку в массив
-	// 			$data = json_decode($json_string, true);
-				
-	// 			// 4. Забираем нужный ключ
-	// 			$file_path = $data['file'] ?? null;
+					// 3. Декодируем полученную JSON-строку в массив
+					$data = json_decode($json_string, true);
 					
-	// 			$out = file_get_contents('https://service-online.su' . $file_path, false, null);
-	// 			if ( $out ) {
-	// 				$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
-	// 				file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
-	// 			}
-	// 			else {
-	// 				message_to_telegram("service-online.su", '217756119');
-	// 				$query = "
-	// 					UPDATE vars
-	// 					SET value = '0'
-	// 					WHERE var LIKE 'service-online.su'
-	// 				";
-	// 				mysqli_query( $mysqli, $query );
-	// 			}
-	// 		}
-	// 	}
-	// }
+					// 4. Забираем нужный ключ
+					$file_path = $data['file'] ?? null;
+						
+					$out = file_get_contents('https://service-online.su' . $file_path, false, null);
+					if ( $out ) {
+						$filename = 'schet_'.$id.'_'.$_POST["nomer"].'.pdf';
+						file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
+					}
+					else {
+						message_to_telegram("service-online.su", '217756119');
+						$query = "
+							UPDATE vars
+							SET value = '0'
+							WHERE var LIKE 'service-online.su'
+						";
+						mysqli_query( $mysqli, $query );
+					}
+				}
+			}
+		}
+	//}
 }
 else {
 	message_to_telegram("service-online.su", '217756119');
 }
+	header("Location: bills.php?year=" . urlencode($year) . "&payer=" . urlencode($_GET["payer"]));
+	exit;
+}
 
-	exit ('<meta http-equiv="refresh" content="0; url=bills.php?year='.($year).'&payer='.($payer).'">');
-	die;
+$title = 'Счета';
+include "header.php";
+
+// Проверка прав на доступ к экрану
+if( !in_array('sverki_all', $Rights) and !in_array('sverki_city', $Rights) and !in_array('sverki_opt', $Rights) ) {
+	header($_SERVER['SERVER_PROTOCOL'].' 403 Forbidden');
+	die('Недостаточно прав для совершения операции');
+}
+
+// Формируем список контрагентов для дропдауна
+$KA_options = "";
+$KA_IDs = "0";
+if (!$USR_Shop) { // Если не продавец - показываем оптовиков
+	$KA_options .= "<optgroup label='Оптовые покупатели:'>";
+	$query = "
+		SELECT KA.KA_ID
+			,KA.R_ID
+			,CT.CT_ID
+			,CT.City
+			,KA.Naimenovanie
+			,IFNULL(Jur_adres, '') Jur_adres
+			,IFNULL(Fakt_adres, '') Fakt_adres
+			,IFNULL(Telefony, '') Telefony
+			,IFNULL(INN, '') INN
+			,IFNULL(OKPO, '') OKPO
+			,IFNULL(KPP, '') KPP
+			,IFNULL(Pasport, '') Pasport
+			,IFNULL(Email, '') Email
+			,IFNULL(Schet, '') Schet
+			,IFNULL(Bank, '') Bank
+			,IFNULL(BIK, '') BIK
+			,IFNULL(KS, '') KS
+			,IFNULL(Bank_adres, '') Bank_adres
+		FROM Kontragenty KA
+		JOIN Shops SH ON SH.KA_ID = KA.KA_ID
+		JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+		".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
+		GROUP BY KA.KA_ID
+		ORDER BY CT.City, KA.Naimenovanie
+	";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	while( $row = mysqli_fetch_array($res) ) {
+		$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]}</option>";
+		$KA_IDs .= ",{$row["KA_ID"]}";
+		$Kontragenty[$row["KA_ID"]] = array( "R_ID"=>$row["R_ID"], "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+	}
+	$KA_options .= "</optgroup>";
+}
+
+// Список розничных контрагентов
+$KA_options .=  "<optgroup label='Розничные покупатели:'>";
+$query = "
+	SELECT KA.KA_ID
+		,KA.R_ID
+		,CT.CT_ID
+		,CT.City
+		,KA.Naimenovanie
+		,IFNULL(Jur_adres, '') Jur_adres
+		,IFNULL(Fakt_adres, '') Fakt_adres
+		,IFNULL(Telefony, '') Telefony
+		,IFNULL(INN, '') INN
+		,IFNULL(OKPO, '') OKPO
+		,IFNULL(KPP, '') KPP
+		,IFNULL(Pasport, '') Pasport
+		,IFNULL(Email, '') Email
+		,IFNULL(Schet, '') Schet
+		,IFNULL(Bank, '') Bank
+		,IFNULL(BIK, '') BIK
+		,IFNULL(KS, '') KS
+		,IFNULL(Bank_adres, '') Bank_adres
+	FROM Kontragenty KA
+	JOIN OrdersData OD ON OD.KA_ID = KA.KA_ID
+	JOIN Shops SH ON SH.SH_ID = OD.SH_ID
+	JOIN Cities CT ON CT.CT_ID = SH.CT_ID
+	".(in_array('sverki_city', $Rights) ? "AND CT.CT_ID = {$USR_City}" : "")."
+	GROUP BY KA.KA_ID, CT.CT_ID
+	ORDER BY CT.City, KA.Naimenovanie
+";
+$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+while( $row = mysqli_fetch_array($res) ) {
+	$KA_options .= "<option value='{$row["KA_ID"]}' CT_ID='{$row["CT_ID"]}'>{$row["City"]} | {$row["Naimenovanie"]}</option>";
+	$KA_IDs .= ",{$row["KA_ID"]}";
+	$Kontragenty[$row["KA_ID"]] = array( "R_ID"=>$row["R_ID"], "Naimenovanie"=>$row["Naimenovanie"], "Jur_adres"=>$row["Jur_adres"], "Fakt_adres"=>$row["Fakt_adres"], "Telefony"=>$row["Telefony"], "INN"=>$row["INN"], "OKPO"=>$row["OKPO"], "KPP"=>$row["KPP"], "Pasport"=>$row["Pasport"], "Email"=>$row["Email"], "Schet"=>$row["Schet"], "Bank"=>$row["Bank"], "BIK"=>$row["BIK"], "KS"=>$row["KS"], "Bank_adres"=>$row["Bank_adres"] );
+}
+$KA_options .= "</optgroup>";
+
+if( isset($_GET["year"]) ) {
+	$year = $_GET["year"];
+}
+else {
+	$year = date('Y');
+}
+if ( $USR_KA ) { // Если пользователь - оптовик
+	$payer = $USR_KA;
+}
+elseif ( $_GET["payer"] and (int)$_GET["payer"] > 0 ) {
+	$query = "SELECT 1 FROM Kontragenty WHERE KA_ID IN ({$KA_IDs}) AND KA_ID = {$_GET["payer"]}";
+	$res = mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
+	if( mysqli_num_rows($res) ) {
+		$payer = $_GET["payer"];
+	}
+	else {
+		die('Недостаточно прав для совершения операции');
+	}
+}
+else {
+	$payer = "";
 }
 ?>
 

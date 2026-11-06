@@ -47,9 +47,9 @@ foreach ($_POST["price"] as $key => $value) {
 		mysqli_query( $mysqli, $query ) or die("Invalid query: " .mysqli_error( $mysqli ));
 	}
 	else {
-		$_SESSION["error"][] = "При создании накладной возникла ошибка. Пожалуйста, повторите попытку.";
-		exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
-		die;
+		$_SESSION["error"][] = "При создании УПД возникла ошибка. Пожалуйста, повторите попытку.";
+		header("Location: sverki.php?year=" . ($_GET["year"]) . "&payer=" . ($_GET["payer"]));
+		exit;
 	}
 }
 
@@ -101,9 +101,9 @@ if( $return ) {
 		$alert_codes .= $row["Code"];
 	}
 	if( $alert_codes <> "" ) {
-		$_SESSION["error"][] = "При создании УПД возникла ошибка. У наборов {$alert_codes} отличается организация исходном УПД.";
-		exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($_GET["year"]).'&payer='.($_GET["payer"]).'">');
-		die;
+		$_SESSION["error"][] = "При создании УПД возникла ошибка. У наборов {$alert_codes} отличается организация в исходном документе.";
+		header("Location: sverki.php?year=" . ($_GET["year"]) . "&payer=" . ($_GET["payer"]));
+		exit;
 	}
 }
 
@@ -287,80 +287,80 @@ $res = mysqli_query( $mysqli, $query );
 $row = mysqli_fetch_assoc( $res );
 if ( $row["value"] == "1" ) {
 
-	$url = 'https://kis.konstanta.ltd/printforms/proxy_prestol.php?doc=upd';
+	// $url = 'https://kis.konstanta.ltd/printforms/proxy_prestol.php?doc=upd';
 
-	$ch = curl_init($url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_POST, true);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($_POST));
+	// $ch = curl_init($url);
+	// curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	// curl_setopt($ch, CURLOPT_POST, true);
+	// curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($_POST));
 
-	$response = curl_exec($ch);
-	curl_close($ch);
-	if ( $response ) {
-		$filename = 'invoice_'.$id.'_'.$count.'.pdf';
-		file_put_contents("print_forms/".$filename, $response); // Сохраняем файл на сервере
-	}
-	else {
-		message_to_telegram("service-online.su", '217756119');
-		$query = "
-			UPDATE vars
-			SET value = '0'
-			WHERE var LIKE 'service-online.su'
-		";
-		mysqli_query( $mysqli, $query );
-	}
-
-	// $data = http_build_query($_POST);
-	// $headers = stream_context_create(array(
-	// 	'http' => array(
-	// 		'method' => 'POST',
-	// 		'header' => array('Referer: https://service-online.su/forms/buh/upd/'),
-	// 		'content' => $data
-	// 	)
-	// ));
-
-	// $content = file_get_contents('https://service-online.su/forms/buh/upd/blanc.php', false, $headers);
-
-	// // Извлечение пути к файлу из заголовков
-	// if (isset($http_response_header)) {
-	// 	foreach ($http_response_header as $header) {
-	// 		if (strpos(strtolower($header), 'pdfhandoff') !== false) {
-
-	// 			// 1. Извлекаем закодированное значение куки pdfhandoff
-	// 			preg_match('/pdfhandoff=([^;]+)/', $header, $matches);
-					
-	// 			// 2. Декодируем URL-символы (%7B -> {, %22 -> " и т.д.)
-	// 			$json_string = urldecode($matches[1]);
-				
-	// 			// 3. Декодируем полученную JSON-строку в массив
-	// 			$data = json_decode($json_string, true);
-				
-	// 			// 4. Забираем нужный ключ
-	// 			$file_path = $data['file'] ?? null;
-					
-	// 			$out = file_get_contents('https://service-online.su' . $file_path, false, null);
-	// 			if ( $out ) {
-	// 				$filename = 'invoice_'.$id.'_'.$count.'.pdf';
-	// 				file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
-	// 			}
-	// 			else {
-	// 				message_to_telegram("service-online.su", '217756119');
-	// 				$query = "
-	// 					UPDATE vars
-	// 					SET value = '0'
-	// 					WHERE var LIKE 'service-online.su'
-	// 				";
-	// 				mysqli_query( $mysqli, $query );
-	// 			}
-	// 		}
-	// 	}
+	// $response = curl_exec($ch);
+	// curl_close($ch);
+	// if ( $response ) {
+	// 	$filename = 'invoice_'.$id.'_'.$count.'.pdf';
+	// 	file_put_contents("print_forms/".$filename, $response); // Сохраняем файл на сервере
 	// }
+	// else {
+	// 	message_to_telegram("service-online.su", '217756119');
+	// 	$query = "
+	// 		UPDATE vars
+	// 		SET value = '0'
+	// 		WHERE var LIKE 'service-online.su'
+	// 	";
+	// 	mysqli_query( $mysqli, $query );
+	// }
+
+	$data = http_build_query($_POST);
+	$headers = stream_context_create(array(
+		'http' => array(
+			'method' => 'POST',
+			'header' => array('Referer: https://service-online.su/forms/buh/upd/'),
+			'content' => $data
+		)
+	));
+
+	$content = file_get_contents('https://service-online.su/forms/buh/upd/blanc.php', false, $headers);
+
+	// Извлечение пути к файлу из заголовков
+	if (isset($http_response_header)) {
+		foreach ($http_response_header as $header) {
+			if (strpos(strtolower($header), 'pdfhandoff') !== false) {
+
+				// 1. Извлекаем закодированное значение куки pdfhandoff
+				preg_match('/pdfhandoff=([^;]+)/', $header, $matches);
+					
+				// 2. Декодируем URL-символы (%7B -> {, %22 -> " и т.д.)
+				$json_string = urldecode($matches[1]);
+				
+				// 3. Декодируем полученную JSON-строку в массив
+				$data = json_decode($json_string, true);
+				
+				// 4. Забираем нужный ключ
+				$file_path = $data['file'] ?? null;
+					
+				$out = file_get_contents('https://service-online.su' . $file_path, false, null);
+				if ( $out ) {
+					$filename = 'invoice_'.$id.'_'.$count.'.pdf';
+					file_put_contents("print_forms/".$filename, $out); // Сохраняем файл на сервере
+				}
+				else {
+					message_to_telegram("service-online.su", '217756119');
+					$query = "
+						UPDATE vars
+						SET value = '0'
+						WHERE var LIKE 'service-online.su'
+					";
+					mysqli_query( $mysqli, $query );
+				}
+			}
+		}
+	}
 }
 else {
 	message_to_telegram("service-online.su", '217756119');
 }
 
-exit ('<meta http-equiv="refresh" content="0; url=sverki.php?year='.($year).'&payer='.($_GET["payer"]).'">');
-die;
+header("Location: sverki.php?year=" . urlencode($year) . "&payer=" . urlencode($_GET["payer"]));
+exit;
 
 ?>
